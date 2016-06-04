@@ -3,6 +3,8 @@
 __author__ = 'fyabc'
 
 import random
+import os
+import queue
 
 import pygame
 import pygame.locals
@@ -11,21 +13,20 @@ from pygame.color import THECOLORS as AllColors
 
 from Utils.basicUtils import getKeyName
 
-SCREEN_SIZE = (750, 750)
-
 FPS = 30
 FONT_NAME = 'C:/Windows/Fonts/msyh.ttc'
 
 ROW = 10
 COLUMN = 10
-MINE_NUM = 25
+MINE_NUM = 10
 
-CELL_SIZE = int(min(SCREEN_SIZE) * 0.7 / max(ROW, COLUMN))
+SCREEN_SIZE = (COLUMN * 45, ROW * 45)
+CELL_SIZE = int(min([SCREEN_SIZE[0] / COLUMN, SCREEN_SIZE[1] / ROW]) * 0.8)
 # CELL_SIZE = 60
 
 assert MINE_NUM < ROW * COLUMN
 
-TopLeftLoc = (SCREEN_SIZE[0] // 2 - CELL_SIZE * COLUMN // 2, int(SCREEN_SIZE[1] * 0.6) - CELL_SIZE * ROW // 2)
+TopLeftLoc = (SCREEN_SIZE[0] // 2 - CELL_SIZE * COLUMN // 2, int(SCREEN_SIZE[1] * 0.55) - CELL_SIZE * ROW // 2)
 
 BG_COLOR = AllColors['gray10']
 LINE_COLOR = AllColors['black']
@@ -53,7 +54,15 @@ NumberColors = [
 Keymap = {
     'exit': [pygame.locals.K_q, ],
     'restart': [pygame.locals.K_r, ],
+    'sweep': [pygame.locals.K_s, ],
+    'flag': [pygame.locals.K_f, ],
+    'quick': [pygame.locals.K_k, ],
 }
+
+Direction8 = (
+    (1, 0), (-1, 0), (0, 1), (0, -1),
+    (1, 1), (1, -1), (-1, 1), (-1, -1)
+)
 
 
 class GameState:
@@ -62,8 +71,8 @@ class GameState:
 
     class Cell:
         NoTag = 0
-        TodoTag = 1
-        FlagTag = 2
+        FlagTag = 1
+        TodoTag = 2
 
         def __init__(self, state):
             self.state = state
@@ -73,25 +82,30 @@ class GameState:
             self.tag = self.NoTag
 
         def sweep(self):
+            if self.swept:
+                return False
+
+            self.state.sweptNum += 1
             self.swept = True
             self.tag = self.NoTag
+
+            if self.tag == self.FlagTag:
+                self.state.flaggedMineNum -= 1
             return self.haveMine
 
         def changeTag(self, newTag):
-            """
-            :return: the FlagTag number changed
-            """
-            result = -(self.tag == self.FlagTag)
+            if self.tag == self.FlagTag:
+                self.state.flaggedMineNum -= 1
             self.tag = newTag
-            return result + (self.tag == self.FlagTag)
+            if self.tag == self.FlagTag:
+                self.state.flaggedMineNum += 1
 
         def nextTag(self):
-            """
-            :return: the FlagTag number changed
-            """
-            result = -(self.tag == self.FlagTag)
+            if self.tag == self.FlagTag:
+                self.state.flaggedMineNum -= 1
             self.tag = (self.tag + 1) % (3 if self.state.todoTag else 2)
-            return result + (self.tag == self.FlagTag)
+            if self.tag == self.FlagTag:
+                self.state.flaggedMineNum += 1
 
     def __init__(self, row, column, mineNum, todoTag=False):
         self.row = row
@@ -105,42 +119,105 @@ class GameState:
     @staticmethod
     def getFlagImage():
         if GameState.FlagImage is None:
-            pass
+            GameState.FlagImage = pygame.transform.scale(
+                pygame.image.load(os.path.join(os.sep, os.getcwd(), 'resource', 'flag.png')).convert_alpha(),
+                (CELL_SIZE, CELL_SIZE))
         return GameState.FlagImage
 
     @staticmethod
     def getTodoImage():
         if GameState.TodoImage is None:
-            pass
+            GameState.TodoImage = pygame.transform.scale(
+                pygame.image.load(os.path.join(os.sep, os.getcwd(), 'resource', 'todo.png')).convert_alpha(),
+                (CELL_SIZE, CELL_SIZE))
         return GameState.TodoImage
 
+    def win(self):
+        return self.sweptNum + self.mineNum == self.row * self.column
+
     def sweep(self, location):
-        haveMine = self.getElem(*location).sweep()
-        if self.sweptNum == 0:
+        cell = self.getElem(*location)
+        haveMine = cell.sweep()
+
+        if self.sweptNum == 1:
             self.randomMines()
 
-        self.sweptNum += 1
-
-        if haveMine:
-            # Lose
+        if haveMine:    # Lose
             return -1
 
-        if self.sweptNum + self.mineNum == self.row * self.column:
-            # Win
+        if cell.adjMineNum == 0:
+            self.expand(location)
+
+        if self.win():  # Win
             return 1
 
+        return 0
+
+    def expand(self, location):
+        visited = [[False for _ in range(self.column)] for _ in range(self.row)]
+        q = queue.Queue()
+        q.put(location, block=False)
+        visited[location[1]][location[0]] = True
+
+        while not q.empty():
+            loc = q.get(block=False)
+
+            for direction in Direction8:
+                newLoc = (loc[0] + direction[0], loc[1] + direction[1])
+                if newLoc[0] < 0 or newLoc[0] >= self.column or newLoc[1] < 0 or newLoc[1] >= self.row:
+                    continue
+                if visited[newLoc[1]][newLoc[0]]:
+                    continue
+
+                visited[newLoc[1]][newLoc[0]] = True
+                newCell = self.getElem(*newLoc)
+
+                newCell.sweep()
+                if newCell.adjMineNum == 0:
+                    q.put(newLoc, block=False)
+
+    def quickSweep(self, location):
+        cell = self.getElem(*location)
+        if not cell.swept or cell.adjMineNum == 0:
+            return 0
+
+        adjNoFlagLoc = []
+        adjFlagNum = 0
+        for direction in Direction8:
+            newLoc = (location[0] + direction[0], location[1] + direction[1])
+            if newLoc[0] < 0 or newLoc[0] >= self.column or newLoc[1] < 0 or newLoc[1] >= self.row:
+                continue
+            if self.getElem(*newLoc).tag != self.Cell.FlagTag:
+                adjNoFlagLoc.append(newLoc)
+            else:
+                adjFlagNum += 1
+
+        if adjFlagNum != cell.adjMineNum:
+            return 0
+
+        haveMine = False
+        for adjLoc in adjNoFlagLoc:
+            adjCell = self.getElem(*adjLoc)
+            haveMine |= adjCell.sweep()
+            if not adjCell.haveMine and adjCell.adjMineNum == 0:
+                self.expand(adjLoc)
+
+        if haveMine:
+            return -1
+        if self.win():
+            return 1
         return 0
 
     def changeTag(self, location):
         cell = self.getElem(*location)
         if cell.swept:
             return
-        self.flaggedMineNum += cell.nextTag()
+        cell.nextTag()
 
     def reset(self):
         for x in range(self.column):
             for y in range(self.row):
-                self.getElem(x, y).__init__()
+                self.getElem(x, y).__init__(self)
         self.sweptNum = 0
 
     def randomMines(self):
@@ -181,9 +258,14 @@ class GameState:
         return (realLocation[0] - TopLeftLoc[0]) // CELL_SIZE, (realLocation[1] - TopLeftLoc[1]) // CELL_SIZE
 
     def draw(self, surface):
+        # Draw labels.
+
+        # Draw cells.
         for x in range(self.column):
             for y in range(self.row):
                 cell = self.getElem(x, y)
+                centerPosition = (int(TopLeftLoc[0] + (x + 0.5) * CELL_SIZE),
+                                  int(TopLeftLoc[1] + (y + 0.5) * CELL_SIZE))
                 sweptRect = pygame.Rect(TopLeftLoc[0] + x * CELL_SIZE + LINE_WIDTH,
                                         TopLeftLoc[1] + y * CELL_SIZE + LINE_WIDTH,
                                         CELL_SIZE - 2 * LINE_WIDTH,
@@ -191,8 +273,6 @@ class GameState:
                 font = pygame.font.Font(FONT_NAME, CELL_SIZE // 2)
 
                 if cell.swept:
-                    centerPosition = (int(TopLeftLoc[0] + (x + 0.5) * CELL_SIZE),
-                                      int(TopLeftLoc[1] + (y + 0.5) * CELL_SIZE))
                     pygame.draw.rect(surface, SWEPT_COLOR, sweptRect)
 
                     if cell.haveMine:
@@ -207,9 +287,15 @@ class GameState:
                 else:
                     pygame.draw.rect(surface, UNSWEPT_COLOR, sweptRect)
                     if cell.tag == cell.FlagTag:
-                        pass
+                        flagImage = self.getFlagImage()
+                        flagRect = flagImage.get_rect()
+                        flagRect.center = centerPosition
+                        surface.blit(flagImage, flagRect)
                     elif cell.tag == cell.TodoTag:
-                        pass
+                        todoImage = self.getTodoImage()
+                        todoRect = todoImage.get_rect()
+                        todoRect.center = centerPosition
+                        surface.blit(todoImage, todoRect)
 
 
 def drawBackGround():
@@ -253,9 +339,23 @@ def run():
 
                 if keyName == 'exit':
                     running = False
+                elif keyName == 'restart':
+                    state.reset()
+                elif keyName == 'sweep':
+                    pos = pygame.mouse.get_pos()
+                    result = state.sweep(state.getLogicLocation(pos))
+                elif keyName == 'flag':
+                    pos = pygame.mouse.get_pos()
+                    state.changeTag(state.getLogicLocation(pos))
+                elif keyName == 'quick':
+                    pos = pygame.mouse.get_pos()
+                    result = state.quickSweep(state.getLogicLocation(pos))
+
             elif event.type == pygame.locals.MOUSEBUTTONDOWN:
                 if event.button == 1:       # Left key down
                     result = state.sweep(state.getLogicLocation(event.pos))
+                elif event.button == 2:     # Middle key down
+                    result = state.quickSweep(state.getLogicLocation(event.pos))
                 elif event.button == 3:     # Right key down
                     state.changeTag(state.getLogicLocation(event.pos))
 
@@ -264,12 +364,15 @@ def run():
         # Test result.
         if result == 1:
             # Win
-            pass
+            print('You win!')
+            pygame.time.delay(1500)
+            state.reset()
+
         elif result == -1:
             # Lose
-            pass
-
-    pass
+            print('You lose!')
+            pygame.time.delay(1500)
+            state.reset()
 
 
 def main():
