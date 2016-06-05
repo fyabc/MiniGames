@@ -9,16 +9,15 @@ import queue
 import pygame
 import pygame.locals
 from pygame.color import THECOLORS as AllColors
-# from pgu import gui
 
 from Utils.basicUtils import getKeyName
 
-FPS = 30
+FPS = 50
 FONT_NAME = 'C:/Windows/Fonts/msyh.ttc'
 
-ROW = 10
-COLUMN = 10
-MINE_NUM = 10
+ROW = 15
+COLUMN = 30
+MINE_NUM = 99
 
 SCREEN_SIZE = (COLUMN * 45, ROW * 45)
 CELL_SIZE = int(min([SCREEN_SIZE[0] / COLUMN, SCREEN_SIZE[1] / ROW]) * 0.8)
@@ -115,12 +114,14 @@ class GameState:
         self.todoTag = todoTag
         self.sweptNum = 0
         self.flaggedMineNum = 0
+        self.lose = False
 
     @staticmethod
     def getFlagImage():
         if GameState.FlagImage is None:
             GameState.FlagImage = pygame.transform.scale(
-                pygame.image.load(os.path.join(os.sep, os.getcwd(), 'resource', 'flag.png')).convert_alpha(),
+                pygame.image.load(os.path.join(os.sep, os.path.dirname(__file__), 'resource', 'flag.png')
+                                  ).convert_alpha(),
                 (CELL_SIZE, CELL_SIZE))
         return GameState.FlagImage
 
@@ -128,7 +129,8 @@ class GameState:
     def getTodoImage():
         if GameState.TodoImage is None:
             GameState.TodoImage = pygame.transform.scale(
-                pygame.image.load(os.path.join(os.sep, os.getcwd(), 'resource', 'todo.png')).convert_alpha(),
+                pygame.image.load(os.path.join(os.sep, os.path.dirname(__file__), 'resource', 'todo.png')
+                                  ).convert_alpha(),
                 (CELL_SIZE, CELL_SIZE))
         return GameState.TodoImage
 
@@ -219,14 +221,15 @@ class GameState:
             for y in range(self.row):
                 self.getElem(x, y).__init__(self)
         self.sweptNum = 0
+        self.lose = False
 
     def randomMines(self):
-        mineLocations = random.sample(
+        mineIndexes = random.sample(
             [index for index in range(self.row * self.column) if (self.getIndex(index).swept is False)],
             self.mineNum)
 
-        for location in mineLocations:
-            x, y = location // self.column, location % self.column
+        for index in mineIndexes:
+            x, y = index % self.column, index // self.column
             self.getElem(x, y).haveMine = True
 
             # increment adjust cells.
@@ -251,7 +254,10 @@ class GameState:
         return self.matrix[y][x]
 
     def getIndex(self, index):
-        return self.matrix[index % self.column][index // self.column]
+        return self.matrix[index // self.column][index % self.column]
+
+    def validLocation(self, location):
+        return 0 <= location[0] < self.column and 0 <= location[1] < self.row
 
     @staticmethod
     def getLogicLocation(realLocation):
@@ -286,7 +292,9 @@ class GameState:
                             surface.blit(text, textRect)
                 else:
                     pygame.draw.rect(surface, UNSWEPT_COLOR, sweptRect)
-                    if cell.tag == cell.FlagTag:
+                    if self.lose and cell.haveMine:
+                        pygame.draw.circle(surface, NumberColors[0], centerPosition, int(CELL_SIZE * 0.4), 0)
+                    elif cell.tag == cell.FlagTag:
                         flagImage = self.getFlagImage()
                         flagRect = flagImage.get_rect()
                         flagRect.center = centerPosition
@@ -327,11 +335,11 @@ def run():
 
     running = True
     while running:
-        Timer.tick(FPS)
+        # Timer.tick(FPS)
 
         result = 0
-
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.locals.QUIT:
                 running = False
             elif event.type == pygame.locals.KEYDOWN:
@@ -341,25 +349,36 @@ def run():
                     running = False
                 elif keyName == 'restart':
                     state.reset()
+                    pygame.event.clear()
                 elif keyName == 'sweep':
-                    pos = pygame.mouse.get_pos()
-                    result = state.sweep(state.getLogicLocation(pos))
-                elif keyName == 'flag':
-                    pos = pygame.mouse.get_pos()
-                    state.changeTag(state.getLogicLocation(pos))
+                    location = state.getLogicLocation(pygame.mouse.get_pos())
+                    if state.validLocation(location):
+                        result = state.sweep(location)
                 elif keyName == 'quick':
-                    pos = pygame.mouse.get_pos()
-                    result = state.quickSweep(state.getLogicLocation(pos))
+                    location = state.getLogicLocation(pygame.mouse.get_pos())
+                    if state.validLocation(location):
+                        result = state.quickSweep(location)
+                elif keyName == 'flag':
+                    location = state.getLogicLocation(pygame.mouse.get_pos())
+                    if state.validLocation(location):
+                        state.changeTag(location)
 
             elif event.type == pygame.locals.MOUSEBUTTONDOWN:
                 if event.button == 1:       # Left key down
-                    result = state.sweep(state.getLogicLocation(event.pos))
-                elif event.button == 2:     # Middle key down
-                    result = state.quickSweep(state.getLogicLocation(event.pos))
+                    location = state.getLogicLocation(event.pos)
+                    if state.validLocation(location):
+                        result = state.sweep(location)
                 elif event.button == 3:     # Right key down
-                    state.changeTag(state.getLogicLocation(event.pos))
+                    location = state.getLogicLocation(event.pos)
+                    if state.validLocation(location):
+                        state.changeTag(location)
+                elif event.button == 2:     # Middle key down
+                    location = state.getLogicLocation(event.pos)
+                    if state.validLocation(location):
+                        result = state.quickSweep(location)
 
-        draw(state)
+        if len(events) > 0:
+            draw(state)
 
         # Test result.
         if result == 1:
@@ -367,12 +386,15 @@ def run():
             print('You win!')
             pygame.time.delay(1500)
             state.reset()
-
+            pygame.event.clear()
         elif result == -1:
             # Lose
             print('You lose!')
+            state.lose = True
+            draw(state)
             pygame.time.delay(1500)
             state.reset()
+            pygame.event.clear()
 
 
 def main():
@@ -382,6 +404,12 @@ def main():
 
     MainWindow = pygame.display.set_mode(SCREEN_SIZE)
     Timer = pygame.time.Clock()
+
+    pygame.event.set_allowed([
+        pygame.locals.QUIT,
+        pygame.locals.MOUSEBUTTONDOWN,
+        pygame.locals.KEYDOWN,
+    ])
 
     run()
 
