@@ -6,10 +6,11 @@ Some MiniGames written in **Python**, using *pygame* library.
 
 ### Games
 
-|Name           |Create     |First Playable |
-|:-------------:|:---------:|:-------------:|
-|MineSweeper    |2016.05.24 |2016.06.06     |
-|Py2048         |2015.05.15 |2016.05.15     |
+|Name           |Create     |First Playable |Game Library   |
+|:-------------:|:---------:|:-------------:|:-------------:|
+|MineSweeper    |2016.05.24 |2016.06.06     |pygame         |
+|Py2048         |2016.05.15 |2016.05.15     |pygame         |
+|Snake          |           |               |               |
 
 -------
     
