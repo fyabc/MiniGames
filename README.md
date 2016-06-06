@@ -10,7 +10,7 @@ Some MiniGames written in **Python**, using *pygame* library.
 |:-------------:|:---------:|:-------------:|:-------------:|
 |MineSweeper    |2016.05.24 |2016.06.06     |pygame         |
 |Py2048         |2016.05.15 |2016.05.15     |pygame         |
-|Snake          |           |               |               |
+|Snake          |2016.06.06 |2016.06.07     |pygame         |
 
 -------
     
