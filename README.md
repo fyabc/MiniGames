@@ -22,4 +22,4 @@ Some MiniGames written in **Python**, using *pygame* library.
 |Name           |Create     |First Usable   |
 |:-------------:|:---------:|:-------------:|
 |Utilities      |2016.06.05 |2016.06.05     |
-|StateMachine   |2015.06.05 |               |
+|StateMachine   |2015.06.05 |2016.06.09     |

@@ -110,7 +110,7 @@ class GameState:
             location[1] >= self.row or\
             location in self.snakeLocs
 
-    def loop(self):
+    def step(self):
         Timer.tick(self.speed)
 
         if not self.running:
@@ -229,7 +229,7 @@ def run():
                     if not state.isRunning():
                         state.setSpeedLevel(event.key - pygame.locals.K_0)
 
-        result = state.loop()
+        result = state.step()
 
         if result == -1:    # Lose
             print('You lose!')
