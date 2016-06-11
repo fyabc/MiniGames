@@ -2,6 +2,7 @@
 
 __author__ = 'fyabc'
 
+import sys
 import random
 import os
 import queue
@@ -13,7 +14,11 @@ from pygame.color import THECOLORS as AllColors
 from Utils.basicUtils import getKeyName
 
 FPS = 50
-FONT_NAME = 'C:/Windows/Fonts/msyh.ttc'
+
+if sys.platform == 'linux':
+    FONT_NAME = '/usr/share/fonts/truetype/Consolas/consola.ttf'
+else:
+    FONT_NAME = 'C:/Windows/Fonts/msyh.ttc'
 
 ROW = 15
 COLUMN = 30
