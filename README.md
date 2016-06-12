@@ -1,6 +1,6 @@
 # MiniGames
 
-Some MiniGames written in **Python**, using *pygame* library.
+Some MiniGames written in **Python**, using *pygame* and *cocos2d* library.
 
 -------
 
