@@ -2,6 +2,7 @@
 
 __author__ = 'fyabc'
 
+import sys
 import random
 import json
 
@@ -14,7 +15,11 @@ from Utils.basicUtils import getKeyName
 
 SCREEN_SIZE = (750, 700)
 FPS = 30
-FONT_NAME = 'C:/Windows/Fonts/msyh.ttc'
+
+if sys.platform == 'linux':
+    FONT_NAME = '/usr/share/fonts/truetype/Consolas/consola.ttf'
+else:
+    FONT_NAME = 'C:/Windows/Fonts/msyh.ttc'
 
 GENERATE_DELAY = 130
 AUTO_GENERATE_DELAY = 60
