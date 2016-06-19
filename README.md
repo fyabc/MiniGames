@@ -13,6 +13,7 @@ Some MiniGames written in **Python**, using *pygame* and *cocos2d* library.
 |Snake          |2016.06.06 |2016.06.07     |pygame         |
 |Tetris         |2016.06.07 |               |cocos2d        |
 |Flappy Bird    |2016.06.08 |               |cocos2d        |
+|AntsSpiders    |2016.06.19 |               |pygame         |
 
 -------
     
