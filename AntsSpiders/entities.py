@@ -2,55 +2,78 @@
 
 __author__ = 'fyabc'
 
-from random import randint
-
 import pygame
 
-from AntsSpiders.config import *
-from StateMachine.simpleBrain import State, Brain
-from Utils.mySprite import MySprite, MyGroup
+from Utils.vector2 import Vector2
+from StateMachine.simpleBrain import Brain
+from AntsSpiders.config import BG_COLOR
+from AntsSpiders.states import AntExploring
 
 
-class AntExploring(State):
-    def __init__(self, ant, seeLeafRange=130., seeSpiderRange=100.):
-        super(AntExploring, self).__init__('exploring')
-        self.ant = ant
-        self.seeLeafRange = seeLeafRange
-        self.seeSpiderRange = seeSpiderRange
-
-    def randomDestination(self):
-        w, h = SCREEN_SIZE
-        self.ant.destination = [randint(0, w), randint(0, h)]
-
-    def doActions(self):
-        if randint(1, 20) == 1:
-            self.randomDestination()
-
-    def checkConditions(self):
-        # if ant sees a leaf, go to the seeking state.
-        leaf = None
-
-
-class World(MyGroup):
+class World:
     def __init__(self):
-        super(World, self).__init__()
+        self.entities = {}
+        self.nextEntityID = 0
+
+    def addEntity(self, newEntity):
+        self.entities[self.nextEntityID] = newEntity
+        newEntity.id = self.nextEntityID
+        newEntity.world = self
+        self.nextEntityID += 1
+
+    def removeEntity(self, entity):
+        self.entities[entity.id].world = None
+        del self.entities[entity.id]
+
+    def getEntity(self, entityID):
+        if entityID in self.entities:
+            return self.entities[entityID]
+        else:
+            return None
+
+    def draw(self, surface: pygame.Surface):
+        surface.fill(BG_COLOR)
+        for entity in self.entities.values():
+            entity.draw(surface)
+
+    def step(self, timePassed):
+        for entity in set(self.entities.values()):
+            entity.step(timePassed)
+
+    def getCloseEntity(self, name, location, seeRange=100.):
+        locationVec = Vector2(*location)
+        for entity in self.entities.values():
+            if entity.name == name:
+                distance = locationVec.distance(entity.location)
+                if distance < seeRange:
+                    return entity
+        return None
 
 
-class Ant(MySprite):
-    def __init__(self, world, image):
-        super(Ant, self).__init__()
+class WorldEntity:
+    def __init__(self, name, world):
+        self.name = name
         self.world = world
-        self.image = image
+        self.id = None
+        world.addEntity(self)
 
-    def draw(self, surface):
-        super(Ant, self).draw(surface)
-        
-        
-class Spider(MySprite):
-    def __init__(self, world, image):
-        super(Spider, self).__init__()
-        self.world = world
-        self.image = image
+        self.location = Vector2()
+        self.destination = Vector2()
+        self.speed = 0.
 
-    def draw(self, surface):
-        super(Spider, self).draw(surface)
+        self.brain = Brain()
+        self.image = None
+
+    def draw(self, surface: pygame.Surface):
+        x, y = self.location
+        w, h = self.image.get_size()
+        surface.blit(self.image, (x - w / 2, y - h / 2))
+
+    def step(self, timePassed):     # timePassed为一步时间间隔
+        self.brain.think()          # 通过状态机改变该物体的destination和speed等状态（先doAction，再checkCond，最后移动）
+
+        if self.speed > 0 and self.location != self.destination:
+            tempVec = self.destination - self.location                      # 从起点到终点的向量
+            distance = min(tempVec.length, timePassed * self.speed)         # 应该移动的距离
+            tempVec.normalize()                                             # 从起点到终点的单位向量
+            self.location += distance * tempVec                             # 新位置
