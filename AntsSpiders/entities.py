@@ -19,10 +19,10 @@ class World:
         self.entities[self.nextEntityID] = newEntity
         newEntity.id = self.nextEntityID
         newEntity.world = self
+        newEntity.valid = True
         self.nextEntityID += 1
 
     def removeEntity(self, entity):
-        self.entities[entity.id].world = None
         del self.entities[entity.id]
 
     def getEntity(self, entityID):
@@ -34,16 +34,30 @@ class World:
     def draw(self, surface: pygame.Surface):
         surface.fill(BG_COLOR)
         for entity in self.entities.values():
-            entity.draw(surface)
+            if entity.valid:
+                entity.draw(surface)
 
     def step(self, timePassed):
-        for entity in set(self.entities.values()):
-            entity.step(timePassed)
+        # You cannot delete an entity when iterating entities, so add its id into lostEntities,
+        # then remove them after iteration.
+
+        lostEntities = set()
+        for entity in self.entities.values():
+            if entity.valid:
+                entity.step(timePassed)
+            else:
+                # if not valid, not iterate it.
+                lostEntities.add(entity.id)
+
+        # remove all invalid entities.
+        self_entities = self.entities   # This is to speed up.
+        for entityId in lostEntities:
+            del self_entities[entityId]
 
     def getCloseEntity(self, name, location, seeRange=100.):
         locationVec = Vector2(*location)
         for entity in self.entities.values():
-            if entity.name == name:
+            if entity.valid and entity.name == name:
                 distance = locationVec.distance(entity.location)
                 if distance < seeRange:
                     return entity
@@ -51,11 +65,14 @@ class World:
 
 
 class WorldEntity:
-    def __init__(self, name, world):
+    def __init__(self, name, world=None):
         self.name = name
         self.world = world
+        if self.world is not None:
+            self.world.addEntity(self)
+
         self.id = None
-        world.addEntity(self)
+        self.valid = True
 
         self.location = Vector2()
         self.destination = Vector2()
@@ -63,6 +80,17 @@ class WorldEntity:
 
         self.brain = Brain()
         self.image = None
+
+    def __str__(self):
+        return "('%s', %d)" % (self.name, self.id)
+
+    def __repr__(self):
+        return "WorldEntity(name='%s', id=%d)" % (self.name, self.id)
+
+    def invalidate(self):
+        # invalidate an entity do not delete from self.entities, just set in into invalid.
+        self.world = None
+        self.valid = False
 
     def draw(self, surface: pygame.Surface):
         x, y = self.location
@@ -77,3 +105,27 @@ class WorldEntity:
             distance = min(tempVec.length, timePassed * self.speed)         # 应该移动的距离
             tempVec.normalize()                                             # 从起点到终点的单位向量
             self.location += distance * tempVec                             # 新位置
+
+
+def printWorld(world):
+    for entity in world.entities.values():
+        print(repr(entity), entity.valid)
+
+
+def test():
+    world = World()
+    e1 = WorldEntity('ant', world)
+    e2 = WorldEntity('spider', world)
+
+    printWorld(world)
+
+    e1.invalidate()
+
+    printWorld(world)
+
+    world.step(0)
+
+    printWorld(world)
+
+if __name__ == '__main__':
+    test()
