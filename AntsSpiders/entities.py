@@ -68,11 +68,11 @@ class WorldEntity:
     def __init__(self, name, world=None):
         self.name = name
         self.world = world
-        if self.world is not None:
-            self.world.addEntity(self)
-
         self.id = None
         self.valid = True
+
+        if self.world is not None:
+            self.world.addEntity(self)
 
         self.location = Vector2()
         self.destination = Vector2()
