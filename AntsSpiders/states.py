@@ -47,3 +47,36 @@ class AntExploring(State):
 
     def exitActions(self):
         pass
+
+
+class AntSeeking(State):
+    def __init__(self, ant, carryRange=CARRY_RANGE):
+        super(AntSeeking, self).__init__('seeking')
+        self.ant = ant
+        self.leafId = None
+        self.carryRange = carryRange
+
+    def doActions(self):
+        pass
+
+    def checkConditions(self):
+        # If the leaf is gone, then go back to exploring
+        leaf = self.ant.world.getEntity(self.ant.leafId)
+        if leaf is None:
+            return 'exploring'
+        # If we are next to the leaf, pick it up and deliver it
+        if self.ant.location.get_distance_to(leaf.location) < self.carryRange:
+            self.ant.carry(leaf.image)
+            self.ant.world.removeEntity(leaf)
+            return 'delivering'
+        return None
+
+    def entryActions(self):
+        # Set the destination to the location of the leaf
+        leaf = self.ant.world.getEntity(self.ant.leafId)
+        if leaf is not None:
+            self.ant.destination = leaf.location
+            self.ant.speed = randint(*SEEKING_SPEED_RANGE)
+
+    def exitActions(self):
+        pass

@@ -5,15 +5,14 @@ __author__ = 'fyabc'
 import pygame
 
 from AntsSpiders.config import SCREEN_SIZE
-from AntsSpiders.entities import World, Leaf, Spider, Ant
+from AntsSpiders.entities import AntsSpidersWorld, Leaf, Spider, Ant
 
 MainWindow = None
 Timer = None
 
 
 def run():
-    world = World()
-    Ant(world)
+    world = AntsSpidersWorld()
 
     world.draw(MainWindow)
     pygame.display.update()

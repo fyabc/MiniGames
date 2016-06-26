@@ -10,6 +10,7 @@ import pygame
 from Utils.vector2 import Vector2
 from StateMachine.simpleBrain import Brain
 from AntsSpiders.config import SCREEN_SIZE, BG_COLOR, NEST_COLOR, TEXT_COLOR, NEST_LOC, NEST_RADIUS
+from AntsSpiders.states import AntExploring
 
 
 def getPath(*paths):
@@ -129,10 +130,20 @@ class AntsSpidersWorld(World):
         super(AntsSpidersWorld, self).__init__()
         self.nestLoc = nestLoc
         self.nestRadius = nestRadius
+        self.background = pygame.Surface(SCREEN_SIZE).convert()
+        self.background.fill(BG_COLOR)
+        pygame.draw.circle(self.background, NEST_COLOR, self.nestLoc, self.nestRadius)
 
     def drawBackground(self, surface):
-        super(AntsSpidersWorld, self).drawBackground(surface)
-        pygame.draw.circle(surface, NEST_COLOR, self.nestLoc, self.nestRadius)
+        surface.blit(self.background, (0, 0))
+
+    def clearDeath(self, surface):
+        # 清除所有树叶和死掉的蜘蛛
+        print('巢穴里的蚂蚁清理掉了所有树叶和死掉的蜘蛛！')
+
+        self.background.fill(BG_COLOR)
+        pygame.draw.circle(self.background, NEST_COLOR, self.nestLoc, self.nestRadius)
+        surface.blit(self.background, (0, 0))
 
 
 class Leaf(WorldEntity):
@@ -197,13 +208,13 @@ class Spider(WorldEntity):
         # nextExp 升到下一级所需经验
         while True:
             if level < Spider.MaxLevel:
-                level, maxHp, attack, nextExp = level+1, maxHp+2, attack+1, 60
+                level, maxHp, attack, nextExp = level + 1, maxHp + 2, attack + 1, 60
             else:
                 maxHp, nextExp = maxHp + 1, 85
             yield level, maxHp, attack, nextExp
 
     def levelUp(self):
-        self.exp -= self.nextExp            # 升级后将经验清零
+        self.exp -= self.nextExp            # 升级后将经验清除升级所需部分
         self.level, self.maxHp, self.attack, self.nextExp = next(self.levelIter)
         self.hp = self.maxHp                # 升级回满血
         if self.level < Spider.MaxLevel:
@@ -249,6 +260,43 @@ class Ant(WorldEntity):
     def __init__(self, world=None):
         super(Ant, self).__init__('ant', world)
         self.image = self.loadImage()
+        self.alive = True
+        self.levelIter = self.nextLevel()
+        self.level, self.maxHp, self.attack, self.nextExp = next(self.levelIter)
+        self.hp = self.maxHp
+        self.speed = 30. + randint(-10, 10)
+        self.exp = 0
+        self.carryImage = None  # 蚂蚁携带的东西的图片
+
+        self.brain.addState(AntExploring(self))
+
+    def carry(self, image):
+        self.carryImage = image
+
+    def drop(self, surface):
+        # drop the carry image onto surface (often background)
+        if self.carryImage:
+            x, y = self.location
+            w, h = self.carryImage.get_size()
+            surface.blit(self.carryImage, (x - w, y - h / 2))
+            self.carryImage = None
+
+    def draw(self, surface: pygame.Surface):
+        super(Ant, self).draw(surface)
+        if self.carryImage:
+            x, y = self.location
+            w, h = self.carryImage.get_size()
+            surface.blit(self.carryImage, (x - w, y - h / 2))
+
+    @staticmethod
+    def nextLevel():
+        level, maxHp, attack, nextExp = 0, 18, 1, 12
+        while True:
+            if level < Spider.MaxLevel:
+                level, maxHp, attack, nextExp = level + 1, maxHp + 5, attack + 1, 12
+            else:
+                maxHp, nextExp = maxHp + 1, 32
+            yield level, maxHp, attack, nextExp
 
 
 def printWorld(world):
