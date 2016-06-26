@@ -2,12 +2,18 @@
 
 __author__ = 'fyabc'
 
+import os
+from random import randint
+
 import pygame
 
 from Utils.vector2 import Vector2
 from StateMachine.simpleBrain import Brain
-from AntsSpiders.config import BG_COLOR
-from AntsSpiders.states import AntExploring
+from AntsSpiders.config import SCREEN_SIZE, BG_COLOR, NEST_COLOR, TEXT_COLOR, NEST_LOC, NEST_RADIUS
+
+
+def getPath(*paths):
+    return os.path.join(os.sep, os.path.dirname(__file__), *paths)
 
 
 class World:
@@ -31,8 +37,11 @@ class World:
         else:
             return None
 
-    def draw(self, surface: pygame.Surface):
+    def drawBackground(self, surface):
         surface.fill(BG_COLOR)
+
+    def draw(self, surface: pygame.Surface):
+        self.drawBackground(surface)
         for entity in self.entities.values():
             if entity.valid:
                 entity.draw(surface)
@@ -65,6 +74,8 @@ class World:
 
 
 class WorldEntity:
+    DefaultFont = None
+
     def __init__(self, name, world=None):
         self.name = name
         self.world = world
@@ -80,6 +91,12 @@ class WorldEntity:
 
         self.brain = Brain()
         self.image = None
+
+    @staticmethod
+    def getFont():
+        if WorldEntity.DefaultFont is None:
+            WorldEntity.DefaultFont = pygame.font.SysFont(None, 8)
+        return WorldEntity.DefaultFont
 
     def __str__(self):
         return "('%s', %d)" % (self.name, self.id)
@@ -105,6 +122,133 @@ class WorldEntity:
             distance = min(tempVec.length, timePassed * self.speed)         # 应该移动的距离
             tempVec.normalize()                                             # 从起点到终点的单位向量
             self.location += distance * tempVec                             # 新位置
+
+
+class AntsSpidersWorld(World):
+    def __init__(self, nestLoc=NEST_LOC, nestRadius=NEST_RADIUS):
+        super(AntsSpidersWorld, self).__init__()
+        self.nestLoc = nestLoc
+        self.nestRadius = nestRadius
+
+    def drawBackground(self, surface):
+        super(AntsSpidersWorld, self).drawBackground(surface)
+        pygame.draw.circle(surface, NEST_COLOR, self.nestLoc, self.nestRadius)
+
+
+class Leaf(WorldEntity):
+    Image = None
+
+    @staticmethod
+    def loadImage():
+        if Leaf.Image is None:
+            Leaf.Image = pygame.image.load(getPath('resource', 'leaf.jpg')).convert_alpha()
+            Leaf.Image = pygame.transform.scale(Leaf.Image, (24, 16))
+        return Leaf.Image
+
+    def __init__(self, world=None):
+        super(Leaf, self).__init__('leaf', world)
+        self.image = self.loadImage()
+
+
+class Spider(WorldEntity):
+    Image = None
+
+    MaxLevel = 5  # 满级
+
+    @staticmethod
+    def loadImage():
+        if Spider.Image is None:
+            Spider.Image = pygame.image.load(getPath('resource', 'spider.jpg')).convert_alpha()
+            Spider.Image = pygame.transform.scale(Spider.Image, (36, 24))
+        return Spider.Image
+
+    def __init__(self, world=None):
+        super(Spider, self).__init__('spider', world)
+        self.image = self.loadImage()
+        self.alive = True
+        self.levelIter = self.nextLevel()
+        self.level, self.maxHp, self.attack, self.nextExp = next(self.levelIter)
+        self.hp = self.maxHp
+        self.speed = 35. + randint(-10, 10)
+        self.exp = 0
+
+    def died(self):
+        if self.alive:
+            print('%d号%s死亡了！' % (self.id, self.name))
+            self.alive = False
+            # 用一个翻过来的图片代表一个死掉的蜘蛛
+            self.image = pygame.transform.flip(self.image, 0, 1)
+            self.speed = 0.
+
+    def attacked(self, attacker):
+        print('%d号%s受到了%d号%s的攻击！' % (self.id, self.name, attacker.id, attacker.name))
+        self.hp -= attacker.attack * 1
+        if self.hp <= 0:
+            self.died()
+            return
+        self.exp += attacker.level * 1  # 战斗后若仍然存活，被攻击者获得经验（与攻击者相比较少）
+        if self.exp >= self.nextExp:    # 经验满则升级
+            self.levelUp()
+        self.speed = 160.
+
+    @staticmethod
+    def nextLevel():    # 一个用于得到下一级的生成器
+        level, maxHp, attack, nextExp = 0, 28, 3, 60
+        # nextExp 升到下一级所需经验
+        while True:
+            if level < Spider.MaxLevel:
+                level, maxHp, attack, nextExp = level+1, maxHp+2, attack+1, 60
+            else:
+                maxHp, nextExp = maxHp + 1, 85
+            yield level, maxHp, attack, nextExp
+
+    def levelUp(self):
+        self.exp -= self.nextExp            # 升级后将经验清零
+        self.level, self.maxHp, self.attack, self.nextExp = next(self.levelIter)
+        self.hp = self.maxHp                # 升级回满血
+        if self.level < Spider.MaxLevel:
+            x, y = self.image.get_size()    # 升一级图片放大一点
+            self.image = pygame.transform.scale(self.image, (int(x * 1.2), int(y * 1.2)))
+        print('%d号%s提升到了%d等级！' % (self.id, self.name, self.level))
+
+    def draw(self, surface: pygame.Surface):
+        super(Spider, self).draw(surface)
+        if self.alive:
+            # 画血条和经验条和等级
+            x, y = self.location
+            w, h = self.image.get_size()
+            bar_x = x - w / 2
+            bar_y = y + h / 2
+            surface.fill((255, 0, 0), (bar_x, bar_y, self.maxHp, 3))
+            surface.fill((0, 255, 0), (bar_x, bar_y, self.hp, 3))
+            surface.fill((0, 255, 255), (bar_x, bar_y + 4, self.nextExp / 3, 3))
+            surface.fill((0, 0, 255), (bar_x, bar_y + 4, self.exp / 3, 3))
+            surface.blit(self.getFont().render('%d' % self.level, True, TEXT_COLOR),
+                         (x + w / 2, y - h / 2, x + w / 2 + 12, y - h / 2 + 12))
+
+    def step(self, timePassed):
+        x, y = self.location
+        if self.alive and x > SCREEN_SIZE[0] + 2 or y < -2:      # 设置为蜘蛛到达右边界或上边界即消失
+            # 加上存活的条件是为了防止少数时候在即将离开画面之前死亡，从而导致remove一个空的东西的情况
+            print('%d号%s离开了画面！' % (self.id, self.name))
+            self.world.removeEntity(self)
+            return
+        super(Spider, self).step(timePassed)
+
+
+class Ant(WorldEntity):
+    Image = None
+
+    @staticmethod
+    def loadImage():
+        if Ant.Image is None:
+            Ant.Image = pygame.image.load(getPath('resource', 'ant.jpg')).convert_alpha()
+            Ant.Image = pygame.transform.scale(Ant.Image, (30, 20))
+        return Ant.Image
+
+    def __init__(self, world=None):
+        super(Ant, self).__init__('ant', world)
+        self.image = self.loadImage()
 
 
 def printWorld(world):

@@ -4,32 +4,33 @@ __author__ = 'fyabc'
 
 import pygame
 
-from AntsSpiders.entities import World, WorldEntity
+from AntsSpiders.config import SCREEN_SIZE
+from AntsSpiders.entities import World, Leaf, Spider, Ant
+
+MainWindow = None
+Timer = None
 
 
-class Leaf(WorldEntity):
-    Image = None
+def run():
+    world = World()
+    Ant(world)
 
-    @staticmethod
-    def loadImage():
-        if Leaf.Image is None:
-            Leaf.Image = pygame.image.load('leaf.png').convert_alpha()
-        return Leaf.Image
-
-    def __init__(self, world):
-        super(Leaf, self).__init__('leaf', world)
-        self.image = self.loadImage()
+    world.draw(MainWindow)
+    pygame.display.update()
 
 
-class Spider(WorldEntity):
-    Image = None
+def main():
+    global MainWindow, Timer
 
-    @staticmethod
-    def loadImage():
-        if Spider.Image is None:
-            Spider.Image = pygame.image.load('spider.jpg').convert_alpha()
-        return Spider.Image
+    pygame.init()
 
-    def __init__(self, world):
-        super(Spider, self).__init__('spider', world)
-        self.image = self.loadImage()
+    MainWindow = pygame.display.set_mode(SCREEN_SIZE)
+    Timer = pygame.time.Clock()
+
+    run()
+
+    pygame.quit()
+
+
+if __name__ == '__main__':
+    main()
