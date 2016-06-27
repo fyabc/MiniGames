@@ -9,8 +9,8 @@ import pygame
 
 from Utils.vector2 import Vector2
 from StateMachine.simpleBrain import Brain
-from AntsSpiders.config import SCREEN_SIZE, BG_COLOR, NEST_COLOR, TEXT_COLOR, NEST_LOC, NEST_RADIUS
-from AntsSpiders.states import AntExploring
+from AntsSpiders.config import *
+from AntsSpiders.states import AntExploring, AntSeeking, AntDelivering, AntHunting
 
 
 def getPath(*paths):
@@ -55,6 +55,8 @@ class World:
         for entity in self.entities.values():
             if entity.valid:
                 entity.step(timePassed)
+                if not entity.valid:
+                    lostEntities.add(entity.id)
             else:
                 # if not valid, not iterate it.
                 lostEntities.add(entity.id)
@@ -86,8 +88,9 @@ class WorldEntity:
         if self.world is not None:
             self.world.addEntity(self)
 
-        self.location = Vector2()
-        self.destination = Vector2()
+        w, h = SCREEN_SIZE
+        self.location = Vector2(randint(0, w), randint(0, h))
+        self.destination = Vector2(randint(0, w), randint(0, h))
         self.speed = 0.
 
         self.brain = Brain()
@@ -126,13 +129,11 @@ class WorldEntity:
 
 
 class AntsSpidersWorld(World):
-    def __init__(self, nestLoc=NEST_LOC, nestRadius=NEST_RADIUS):
+    def __init__(self):
         super(AntsSpidersWorld, self).__init__()
-        self.nestLoc = nestLoc
-        self.nestRadius = nestRadius
         self.background = pygame.Surface(SCREEN_SIZE).convert()
         self.background.fill(BG_COLOR)
-        pygame.draw.circle(self.background, NEST_COLOR, self.nestLoc, self.nestRadius)
+        pygame.draw.circle(self.background, NEST_COLOR, NEST_LOC, NEST_RADIUS)
 
     def drawBackground(self, surface):
         surface.blit(self.background, (0, 0))
@@ -142,7 +143,7 @@ class AntsSpidersWorld(World):
         print('巢穴里的蚂蚁清理掉了所有树叶和死掉的蜘蛛！')
 
         self.background.fill(BG_COLOR)
-        pygame.draw.circle(self.background, NEST_COLOR, self.nestLoc, self.nestRadius)
+        pygame.draw.circle(self.background, NEST_COLOR, NEST_LOC, NEST_RADIUS)
         surface.blit(self.background, (0, 0))
 
 
@@ -180,7 +181,7 @@ class Spider(WorldEntity):
         self.levelIter = self.nextLevel()
         self.level, self.maxHp, self.attack, self.nextExp = next(self.levelIter)
         self.hp = self.maxHp
-        self.speed = 35. + randint(-10, 10)
+        self.speed = randint(*SPIDER_SPEED_RANGE)
         self.exp = 0
 
     def died(self):
@@ -200,7 +201,7 @@ class Spider(WorldEntity):
         self.exp += attacker.level * 1  # 战斗后若仍然存活，被攻击者获得经验（与攻击者相比较少）
         if self.exp >= self.nextExp:    # 经验满则升级
             self.levelUp()
-        self.speed = 160.
+        self.speed = randint(*SPIDER_ATTACKED_SPEED_RANGE)
 
     @staticmethod
     def nextLevel():    # 一个用于得到下一级的生成器
@@ -242,7 +243,7 @@ class Spider(WorldEntity):
         if self.alive and x > SCREEN_SIZE[0] + 2 or y < -2:      # 设置为蜘蛛到达右边界或上边界即消失
             # 加上存活的条件是为了防止少数时候在即将离开画面之前死亡，从而导致remove一个空的东西的情况
             print('%d号%s离开了画面！' % (self.id, self.name))
-            self.world.removeEntity(self)
+            self.invalidate()
             return
         super(Spider, self).step(timePassed)
 
@@ -269,6 +270,9 @@ class Ant(WorldEntity):
         self.carryImage = None  # 蚂蚁携带的东西的图片
 
         self.brain.addState(AntExploring(self))
+        self.brain.addState(AntSeeking(self))
+        self.brain.addState(AntDelivering(self))
+        self.brain.addState(AntHunting(self))
 
     def carry(self, image):
         self.carryImage = image

@@ -36,7 +36,7 @@ class AntExploring(State):
         spider = self.ant.world.getCloseEntity('spider', self.ant.location, self.seeSpiderRange)
         if spider is not None:
             if self.ant.location.distance(spider.location) < self.seeSpiderRange:
-                self.ant.spiderId = spider.Id
+                self.ant.spiderId = spider.id
                 return 'hunting'
 
         return None
@@ -53,7 +53,6 @@ class AntSeeking(State):
     def __init__(self, ant, carryRange=CARRY_RANGE):
         super(AntSeeking, self).__init__('seeking')
         self.ant = ant
-        self.leafId = None
         self.carryRange = carryRange
 
     def doActions(self):
@@ -65,9 +64,9 @@ class AntSeeking(State):
         if leaf is None:
             return 'exploring'
         # If we are next to the leaf, pick it up and deliver it
-        if self.ant.location.get_distance_to(leaf.location) < self.carryRange:
+        if self.ant.location.distance(leaf.location) < self.carryRange:
             self.ant.carry(leaf.image)
-            self.ant.world.removeEntity(leaf)
+            leaf.invalidate()
             return 'delivering'
         return None
 
@@ -80,3 +79,71 @@ class AntSeeking(State):
 
     def exitActions(self):
         pass
+
+
+class AntDelivering(State):
+    def __init__(self, ant):
+        super(AntDelivering, self).__init__('delivering')
+        self.ant = ant
+
+    def doActions(self):
+        pass
+
+    def checkConditions(self):
+        # If inside the nest, randomly drop the object
+        if Vector2(*NEST_LOC).distance(self.ant.location) < NEST_RADIUS:
+            if randint(1, RANDOM_DROP_PROB) == 2:
+                self.ant.drop(self.ant.world.background)
+                return 'exploring'
+        return None
+
+    def entryActions(self):
+        # Move to a random point in the nest
+        self.ant.speed = randint(*DELIVERING_SPEED_RANGE)
+        randomOffset = Vector2(randint(-20, 20), randint(-20, 20))
+        self.ant.destination = Vector2(*NEST_LOC) + randomOffset
+
+    def exitActions(self):
+        pass
+
+
+class AntHunting(State):
+    def __init__(self, ant, seeSpiderRange=SEE_SPIDER_RANGE):
+        super(AntHunting, self).__init__('hunting')
+        self.ant = ant
+        self.gotKill = False
+        self.seeSpiderRange = seeSpiderRange
+
+    def doActions(self):
+        spider = self.ant.world.getEntity(self.ant.spiderId)
+        if spider is None:
+            return
+        self.ant.destination = spider.location
+        if self.ant.location.distance(spider.location) < ATTACK_SPIDER_RANGE:
+            # Give the spider a fighting chance to avoid being killed!
+            if randint(1, SPIDER_ATTACKED_PROB) == 2:
+                spider.attacked(self.ant)
+                # If the spider is dead, move it back to the nest
+                if spider.hp <= 0:
+                    self.ant.carry(spider.image)
+                    spider.invalidate()
+                    self.gotKill = True
+
+    def checkConditions(self):
+        if self.gotKill:
+            return 'delivering'
+        spider = self.ant.world.getEntity(self.ant.spiderId)
+        # If the spider has been killed then return to exploring state
+        if spider is None:
+            return 'exploring'
+        # If the spider gets far enough away, return to exploring state
+        # if spider.location.get_distance_to(NEST_POSITION) > NEST_SIZE * 1.25:
+        if spider.location.distance(self.ant.location) > self.seeSpiderRange:
+            return 'exploring'
+        return None
+
+    def entryActions(self):
+        self.ant.speed = randint(*HUNTING_SPEED_RANGE)
+
+    def exitActions(self):
+        self.gotKill = False

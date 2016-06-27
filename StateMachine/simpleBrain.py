@@ -56,4 +56,4 @@ class Brain:
         if self.activeState is not None:
             self.activeState.exitActions()
         self.activeState = self.states[newStateName]
-        self.activeState.enterActions()
+        self.activeState.entryActions()
