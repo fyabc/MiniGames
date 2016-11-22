@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 import sys
 import random
 
 import pygame
 import pygame.locals
-from pygame.color import THECOLORS as AllColors
+from pygame.colordict import THECOLORS as AllColors
 
 from Utils.basicUtils import getKeyName
 
@@ -15,6 +13,8 @@ if sys.platform == 'linux':
     FONT_NAME = '/usr/share/fonts/truetype/Consolas/consola.ttf'
 else:
     FONT_NAME = 'C:/Windows/Fonts/msyh.ttc'
+
+__author__ = 'fyabc'
 
 FPS = 30
 DEFAULT_SNAKE_LEVEL = 3
@@ -99,7 +99,7 @@ class GameState:
         if not self.running:
             return
 
-        if self.direction == direction or\
+        if self.direction == direction or \
                 (self.direction[0] + direction[0] == 0 and self.direction[1] + direction[1] == 0):
             return
         self.direction = direction
@@ -108,11 +108,11 @@ class GameState:
         return self.running
 
     def hit(self, location):
-        return location[0] < 0 or\
-            location[0] >= self.column or\
-            location[1] < 0 or\
-            location[1] >= self.row or\
-            location in self.snakeLocs
+        return location[0] < 0 or \
+               location[0] >= self.column or \
+               location[1] < 0 or \
+               location[1] >= self.row or \
+               location in self.snakeLocs
 
     def step(self):
         Timer.tick(self.speed)
@@ -235,7 +235,7 @@ def run():
 
         result = state.step()
 
-        if result == -1:    # Lose
+        if result == -1:  # Lose
             print('You lose!')
             pygame.time.delay(1500)
             state.reset()
@@ -255,6 +255,7 @@ def main():
     run()
 
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()

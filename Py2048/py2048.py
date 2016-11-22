@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 import sys
 import random
 import json
@@ -12,6 +10,9 @@ from pygame.color import THECOLORS as AllColors
 
 from Py2048.autoGenerators import *
 from Utils.basicUtils import getKeyName
+
+__author__ = 'fyabc'
+
 
 SCREEN_SIZE = (750, 700)
 FPS = 30

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 import sys
 import random
 import os
@@ -12,6 +10,9 @@ import pygame.locals
 from pygame.color import THECOLORS as AllColors
 
 from Utils.basicUtils import getKeyName
+
+__author__ = 'fyabc'
+
 
 FPS = 50
 

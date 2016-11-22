@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 from cocos.director import director
 from cocos.scene import Scene
 from cocos.layer import Layer
+
+__author__ = 'fyabc'
 
 
 class MainLayer(Layer):

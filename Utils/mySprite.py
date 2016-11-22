@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 import pygame
+
+__author__ = 'fyabc'
 
 
 class MySprite(pygame.sprite.Sprite):
