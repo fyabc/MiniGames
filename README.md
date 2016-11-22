@@ -24,3 +24,10 @@ Some MiniGames written in **Python**, using *pygame* and *cocos2d* library.
 |:-------------:|:---------:|:-------------:|
 |Utilities      |2016.06.05 |2016.06.05     |
 |StateMachine   |2015.06.05 |2016.06.09     |
+
+
+### Tutorials
+
+|Name           |Create     |First Usable   |Game Library   |
+|:-------------:|:---------:|:-------------:|:-------------:|
+|CocosTutorial  |2016.11.22 |2016.11.23     |cocos2d        |
