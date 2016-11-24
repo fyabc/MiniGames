@@ -25,6 +25,8 @@ Some MiniGames written in **Python**, using *pygame* and *cocos2d* library.
 |Utilities      |2016.06.05 |2016.06.05     |
 |StateMachine   |2015.06.05 |2016.06.09     |
 
+-------
+
 
 ### Tutorials
 

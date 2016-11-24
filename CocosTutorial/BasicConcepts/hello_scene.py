@@ -1,18 +1,20 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import layer, text, director, scene
+from cocos import director
+from cocos import layer
+from cocos import scene
+from cocos import scenes
+from pygame.colordict import THECOLORS
 
+from .concept_utils import center_label, runner
 
 __author__ = 'fyabc'
 
 
-def main(scene_):
-    director.director.init(resizable=True)
-    director.director.run(scene_)
-
-
 # [LEARN] 1. Scene
+# 1.1 Basic
+#
 #   A scene (implemented with the Scene object) is a more or less independent piece of the app workflow.
 #   Some people may call them "screens" or "stages".
 #   Your app can have many scenes, but only one of them is active at a given time.
@@ -54,8 +56,63 @@ def main(scene_):
 #   which allow you to make transitions between two scenes (fade out/in, slide from a side, etc).
 #
 #   Since scenes are subclass of CocosNode, they can be transformed manually or by using actions.
+
+@runner(resizable=True)
 def test_scene():
-    pass
+    s_intro = scene.Scene(layer.PythonInterpreterLayer())
+    return s_intro
 
 
-# [LEARN] 2. Director
+# 1.2 Scenes & Transitions
+#   Transactions are special Scenes.
+#   Here are some API of director to manage scenes and transactions:
+#       director.push
+#       director.pop
+#       director.replace
+
+
+class HelloLayer(layer.ColorLayer):
+    is_event_handler = True
+
+    def __init__(self, end_scene=None, color=THECOLORS['blueviolet']):
+        super(HelloLayer, self).__init__(*color)
+        self.next_scene = end_scene
+
+    def on_mouse_press(self, x, y, buttons, modifiers):
+        print('Mouse info:', x, y, buttons, modifiers)
+        if self.next_scene is None:
+            print('Game end.')
+            director.director.pop()
+        else:
+            print('Switch to next scene.')
+            director.director.replace(scenes.FadeTRTransition(self.next_scene, duration=2))
+
+
+@runner(resizable=True)
+def test_transition():
+    end_layer = HelloLayer(None, THECOLORS['green4'])
+    end_scene = scene.Scene(end_layer)
+
+    hello_layer = HelloLayer(end_scene)
+    hello_scene = scene.Scene(hello_layer)
+
+    goodbye_label = center_label('Goodbye')
+
+    def on_text_press(self, x, y, buttons, modifiers):
+        print('The text {} is pressed'.format(self.element.text))
+
+    setattr(goodbye_label, 'on_mouse_press', on_text_press)
+
+    hello_layer.add(center_label('Click to go to end'))
+    end_layer.add(goodbye_label)
+
+    return hello_scene
+
+
+def _test():
+    # test_scene()
+    test_transition()
+
+
+if __name__ == '__main__':
+    _test()
