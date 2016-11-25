@@ -1,0 +1,94 @@
+{
+    "id": 0,
+    "name": "basic",
+    "cards": [
+        {
+            "id": 0,
+            "name": "鱼人袭击者",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": ["Murloc"],
+            "CAH": [1, 2, 1],
+            "skill": []
+        },
+        {
+            "id": 1,
+            "name": "血沼迅猛龙",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": ["Beast"],
+            "CAH": [2, 3, 2],
+            "skill": []
+        },
+        {
+            "id": 2,
+            "name": "淡水鳄",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": ["Beast"],
+            "CAH": [2, 2, 3],
+            "skill": []
+        },
+        {
+            "id": 3,
+            "name": "岩浆暴怒者",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": [],
+            "CAH": [3, 5, 1],
+            "skill": []
+        },
+        {
+            "id": 4,
+            "name": "冰风雪人",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": [],
+            "CAH": [4, 4, 5],
+            "skill": []
+        },
+        {
+            "id": 5,
+            "name": "绿洲钳嘴龟",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": ["Beast"],
+            "CAH": [4, 2, 7],
+            "skill": []
+        },
+        {
+            "id": 6,
+            "name": "作战傀儡",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": [],
+            "CAH": [7, 7, 7],
+            "skill": []
+        },
+        {
+            "id": 7,
+            "name": "熔火恶犬",
+            "package": 0,
+            "rarity": 0,
+            "class": 0,
+            "type": 0,
+            "race": [],
+            "CAH": [7, 9, 5],
+            "skill": []
+        }
+    ]
+}
