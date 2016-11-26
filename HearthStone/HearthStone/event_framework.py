@@ -20,6 +20,13 @@ class Event:
     def __repr__(self):
         return self.__str__()
 
+    @classmethod
+    def get_ancestors(cls):
+        if not hasattr(cls, '_ancestors'):
+            # [:-1] means remove the base class "object"
+            setattr(cls, '_ancestors', cls.__mro__[:-1])
+        return getattr(cls, '_ancestors')
+
     def happen(self):
         pass
 
@@ -28,6 +35,8 @@ class Handler:
     CreatedHandlerNumber = 0
 
     # Event types for this class of handler to listen
+    # [WARNING] If one event type is another's super class, the event may be processed twice.
+    # We need to avoid this.
     event_types = []
 
     def __init__(self):
@@ -60,7 +69,7 @@ class Handler:
 
 
 class EventEngine:
-    def __init__(self, event_types, maxsize=None):
+    def __init__(self, event_types=(), maxsize=None):
         self.event_types = set(event_types)
         self.events = deque(maxlen=maxsize)
 
@@ -70,18 +79,41 @@ class EventEngine:
         # are sorted by the time they are added.
         self.handlers = defaultdict(list)
 
-    def register_event_type(self, *event_types):
+    # Event type
+    def add_event_type(self, *event_types):
         self.event_types.update(event_types)
 
+    # Handler
     def add_handler(self, handler):
-        pass
+        """Add a handler into the engine.
+        It will append it into all handler lists of event types in handler's event_types.
+
+        :param handler: the handler to be added
+        :return: None
+        """
+
+        for event_type in handler.event_types:
+            self.handlers[event_type].append(handler)
+
+    def remove_handler(self, handler):
+        """Remove the handler from the engine.
+        It will remove it from all handler lists of event types in handler's event_types.
+
+        :param handler: the handler to be removed
+        :return: None
+        """
+
+        for event_type in handler.event_types:
+            self.handlers[event_type].remove(handler)
 
     def remove_dead_handlers(self, event):
-        for event_type in type(event).__mro__:
+        for event_type in event.get_ancestors():
             self.handlers[event_type] = [handler for handler in self.handlers[event_type] if handler.alive]
 
+    # Dispatch event
     def dispatch_event(self, user_event):
-        """dispatch a user event to handlers.
+        """Dispatch a user event to handlers.
+        This method will clear the event queue.
         [NOTE] user_event may cause several other events.
 
         :param user_event: the event given by user.
@@ -96,7 +128,7 @@ class EventEngine:
 
             # [NOTE] When a event happens, the handler of this event type and it's base types
             # both need to be called.
-            for event_type in type(event).__mro__:
+            for event_type in event.get_ancestors():
                 for handler in self.handlers[event_type]:
                     handler.process(event)
 

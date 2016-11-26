@@ -63,3 +63,6 @@ target/
 
 # PyCharm Project Files
 .idea/
+
+# Generated distribution packages
+HearthStone/dist/
