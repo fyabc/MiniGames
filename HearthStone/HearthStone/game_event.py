@@ -12,3 +12,14 @@ class GameEvent(Event):
 
     def happen(self):
         print('{} happen!'.format(self))
+
+
+class TurnBegin(GameEvent):
+    def __init__(self, game):
+        super(TurnBegin, self).__init__(game)
+
+
+__all__ = [
+    'GameEvent',
+    'TurnBegin',
+]

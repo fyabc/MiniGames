@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.event_framework import EventEngine, Event
-from HearthStone.game_event import GameEvent
-from HearthStone.game_handler import GameHandler
+from HearthStone.game_core import Game
+from HearthStone.game_event import *
+from HearthStone.game_handler import *
 
 
 __author__ = 'fyabc'
@@ -11,16 +12,20 @@ __author__ = 'fyabc'
 
 def _test():
     engine = EventEngine()
-    game = None
+    game = Game()
 
-    handler = GameHandler(game)
-    handler.event_types.append(GameEvent)
+    class GameHandler1(GameHandler):
+        event_types = [GameEvent]
 
-    engine.add_handler(handler)
+    class TurnBeginHandler(GameHandler):
+        event_types = [TurnBegin]
+
+    engine.add_handler(game.create_handler(GameHandler1))
+    engine.add_handler(game.create_handler(TurnBeginHandler))
 
     events = [
-        GameEvent(game),
-        Event(),
+        game.create_event(TurnBegin),
+        game.create_event(GameEvent),
     ]
 
     engine.dispatch_event(*events)

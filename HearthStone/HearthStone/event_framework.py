@@ -15,7 +15,7 @@ class Event:
         Event.CreatedEventNumber += 1
 
     def __str__(self):
-        return '{}(id={})'.format(self.__class__.__name__, self.id)
+        return '{}#{}'.format(self.__class__.__name__, self.id)
 
     def __repr__(self):
         return self.__str__()
@@ -52,7 +52,7 @@ class Handler:
         self.alive = True
 
     def __str__(self):
-        return '{}(id={}, alive={})'.format(self.__class__.__name__, self.id, self.alive)
+        return '{}#{}(alive={})'.format(self.__class__.__name__, self.id, self.alive)
 
     def __repr__(self):
         return self.__str__()
@@ -88,8 +88,8 @@ class EventEngine:
 
     def add_event_type(self, *event_types):
         for event_type in event_types:
-            if event_type not in self.events:
-                self.events[event_type] = list()
+            # [NOTE] The defaultdict will set the default value if not exists.
+            _ = self.events[event_type]
 
     # Handler
     def add_handler(self, handler):
