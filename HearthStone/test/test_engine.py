@@ -1,27 +1,29 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from HearthStone.event_framework import EventEngine, Event
+from HearthStone.game_event import GameEvent
+from HearthStone.game_handler import GameHandler
 
-from HearthStone.event_engine import Event, Handler, EventEngine
 
 __author__ = 'fyabc'
 
 
 def _test():
-    class UserEvent(Event):
-        pass
-
     engine = EventEngine()
+    game = None
 
-    handler = Handler()
-    handler.event_types.append(Event)
+    handler = GameHandler(game)
+    handler.event_types.append(GameEvent)
 
     engine.add_handler(handler)
 
-    engine.dispatch_event(UserEvent())
+    events = [
+        GameEvent(game),
+        Event(),
+    ]
 
-    print(UserEvent.get_ancestors())
-    print(Event.get_ancestors())
+    engine.dispatch_event(*events)
 
 
 if __name__ == '__main__':

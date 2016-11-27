@@ -1,22 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from HearthStone.event_framework import Event, Handler, EventEngine
+from HearthStone.event_framework import EventEngine
 
 
 __author__ = 'fyabc'
 
 
-class GameEvent(Event):
-    def __init__(self, game):
-        super(GameEvent, self).__init__()
-        self.game = game
-
-
-class GameHandler(Handler):
-    def __init__(self, game):
-        super(GameHandler, self).__init__()
-        self.game = game
+class Hero:
+    pass
 
 
 class Game:
@@ -27,7 +19,7 @@ class Game:
         some game data
             minions
             cards
-            hero
+            heroes
             ...
     """
 

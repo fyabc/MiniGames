@@ -69,9 +69,11 @@ class Handler:
 
 
 class EventEngine:
-    def __init__(self, event_types=(), maxsize=None):
-        self.event_types = set(event_types)
+    def __init__(self, maxsize=None, **kwargs):
         self.events = deque(maxlen=maxsize)
+
+        event_types = kwargs.pop('event_types', [])
+        self.add_event_type(*event_types)
 
         # [NOTE] All handlers are divided by the event types they listen.
         # One handler may listen to more than one event type.
@@ -80,13 +82,20 @@ class EventEngine:
         self.handlers = defaultdict(list)
 
     # Event type
+    @property
+    def event_types(self):
+        return list(self.events.keys())
+
     def add_event_type(self, *event_types):
-        self.event_types.update(event_types)
+        for event_type in event_types:
+            if event_type not in self.events:
+                self.events[event_type] = list()
 
     # Handler
     def add_handler(self, handler):
         """Add a handler into the engine.
         It will append it into all handler lists of event types in handler's event_types.
+        It will create event type entry
 
         :param handler: the handler to be added
         :return: None
@@ -111,16 +120,16 @@ class EventEngine:
             self.handlers[event_type] = [handler for handler in self.handlers[event_type] if handler.alive]
 
     # Dispatch event
-    def dispatch_event(self, user_event):
+    def dispatch_event(self, *user_events):
         """Dispatch a user event to handlers.
         This method will clear the event queue.
         [NOTE] user_event may cause several other events.
 
-        :param user_event: the event given by user.
+        :param user_events: events given by user.
         :return: None
         """
 
-        self.events.append(user_event)
+        self.events.extend(user_events)
 
         while self.events:
             event = self.events.popleft()
@@ -129,8 +138,10 @@ class EventEngine:
             # [NOTE] When a event happens, the handler of this event type and it's base types
             # both need to be called.
             for event_type in event.get_ancestors():
-                for handler in self.handlers[event_type]:
-                    handler.process(event)
+                handlers = self.handlers.get(event_type, None)
+                if handlers is not None:
+                    for handler in handlers:
+                        handler.process(event)
 
             # [NOTE] After iteration, remove all dead handlers related to this event.
             self.remove_dead_handlers(event)
