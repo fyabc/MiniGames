@@ -11,20 +11,17 @@ __author__ = 'fyabc'
 
 
 def _test():
-    engine = EventEngine()
     game = Game()
-
-    class GameHandler1(GameHandler):
-        event_types = [GameEvent]
+    engine = game.engine
 
     class TurnBeginHandler(GameHandler):
         event_types = [TurnBegin]
 
-    engine.add_handler(game.create_handler(GameHandler1))
+    engine.add_handler(game.create_handler(TurnEndDefaultHandler))
     engine.add_handler(game.create_handler(TurnBeginHandler))
 
     events = [
-        game.create_event(TurnBegin),
+        game.create_event(TurnEnd),
         game.create_event(GameEvent),
     ]
 

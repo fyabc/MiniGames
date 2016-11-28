@@ -22,7 +22,7 @@ class Event:
 
     @classmethod
     def get_ancestors(cls):
-        if not hasattr(cls, '_ancestors'):
+        if '_ancestors' not in cls.__dict__:
             # [:-1] means remove the base class "object"
             setattr(cls, '_ancestors', cls.__mro__[:-1])
         return getattr(cls, '_ancestors')
@@ -58,6 +58,11 @@ class Handler:
         return self.__str__()
 
     def kill(self):
+        """kill the handler.
+        [NOTE]: This method just set the alive bit to False, do not destroy it.
+        It will be removed by the event engine soon.
+        """
+
         self.alive = False
 
     def process(self, event):
@@ -113,13 +118,19 @@ class EventEngine:
         """
 
         for event_type in handler.event_types:
-            self.handlers[event_type].remove(handler)
+            handlers = self.handlers.get(event_type, None)
+            if handlers is not None:
+                handlers.remove(handler)
 
     def remove_dead_handlers(self, event):
         for event_type in event.get_ancestors():
-            self.handlers[event_type] = [handler for handler in self.handlers[event_type] if handler.alive]
+            if event_type in self.handlers:
+                self.handlers[event_type] = [handler for handler in self.handlers[event_type] if handler.alive]
 
-    # Dispatch event
+    # Event
+    def add_events(self, *events):
+        self.events.extend(events)
+
     def dispatch_event(self, *user_events):
         """Dispatch a user event to handlers.
         This method will clear the event queue.

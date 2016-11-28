@@ -2,17 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.event_framework import EventEngine
-
+from HearthStone.game_entity import Player
 
 __author__ = 'fyabc'
 
 
 class HistoryManager:
-    def __init__(self, game):
-        self.game = game
-
-
-class Player:
     def __init__(self, game):
         self.game = game
 
@@ -56,6 +51,9 @@ class Game:
 
     def create_handler(self, handler_type, *args, **kwargs):
         return handler_type(self, *args, **kwargs)
+
+    def add_events(self, *events):
+        self.engine.add_events(*events)
 
     # Game operations.
     def next_turn(self):
