@@ -42,3 +42,10 @@ def color_msg(msg, fg=ConsoleColors['WhiteF'], bg=ConsoleColors['BlackB'], **kwa
     set_color(fg, bg)
     print(msg, **kwargs)
     set_color(*old_color)
+
+
+__all__ = [
+    'ConsoleColors',
+    'set_color',
+    'color_msg',
+]

@@ -1,5 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
+
 from HearthStone.event_framework import Handler
 from HearthStone.game_event import *
 
@@ -34,6 +35,8 @@ class GameHandler(Handler):
 
 
 class TurnEndDefaultHandler(GameHandler):
+    """The default handler of `TurnEnd`, push a `TurnBegin` event."""
+
     event_types = [TurnEnd]
 
     def __init__(self, game):

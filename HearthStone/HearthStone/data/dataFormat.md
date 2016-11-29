@@ -24,7 +24,7 @@ Cards are in packages.
     "class": 0,
     "type": 0,
     "CAH": [4, 4, 5],
-    "skill": [
+    "skills": [
     ]
 }
 ```

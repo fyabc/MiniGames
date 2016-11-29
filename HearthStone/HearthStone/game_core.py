@@ -7,6 +7,15 @@ from HearthStone.game_entity import Player
 __author__ = 'fyabc'
 
 
+class AuraManager:
+    """The class of an aura manager of minions and other.
+    Some minions and card
+    """
+
+    def __init__(self, game):
+        self.game = game
+
+
 class HistoryManager:
     def __init__(self, game):
         self.game = game
@@ -16,13 +25,14 @@ class Game:
     """The class of the game.
 
     This class contains:
-        an EventEngine
+        an event engine
+        an aura(光环) manager
         some game data
             turns
             minions
             cards
             heroes
-        history manager
+        a history manager
             ...
     """
 
@@ -36,6 +46,9 @@ class Game:
         # Game data.
         self.players = [Player(self) for _ in range(self.TotalPlayerNumber)]
         self.current_player_id = 0
+
+        # Aura manager.
+        self.aura_manager = AuraManager(self)
 
         # History manager.
         self.history = HistoryManager(self)
