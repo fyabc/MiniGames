@@ -110,7 +110,11 @@ class Minion(Card):
         self._silent = True
         self.auras.clear()
 
-        self._cost, self._attack, self._health = self.data.CAH
+        self._cost, self._attack, _ = self.data.CAH
+
+        # Reset health.
+        if self._health > self.max_health:
+            self._health = self.max_health
 
         self._attack_number, self._taunt, self._divine_shield = CardData.get_default(
             'attack_number', 'taunt', 'divine_shield')
