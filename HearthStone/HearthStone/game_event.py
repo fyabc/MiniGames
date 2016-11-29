@@ -1,5 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
+
 from HearthStone.event_framework import Event
 
 __author__ = 'fyabc'

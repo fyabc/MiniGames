@@ -6,7 +6,6 @@ from HearthStone.game_core import Game
 from HearthStone.game_event import *
 from HearthStone.game_handler import *
 
-
 __author__ = 'fyabc'
 
 

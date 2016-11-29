@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from HearthStone.game_data import allCards
+
 __author__ = 'fyabc'
 
 
@@ -23,3 +25,28 @@ class GameEntity:
 class Player(GameEntity):
     def __init__(self, game):
         super(Player, self).__init__(game)
+
+
+class Card(GameEntity):
+    CreatedCardNumber = 0
+
+    def __init__(self, game, card_id):
+        super(Card, self).__init__(game)
+
+        self.id = Card.CreatedCardNumber
+        Card.CreatedCardNumber += 1
+
+        # Card data.
+        self.data = allCards[card_id]
+
+        # [NOTE] Cost of card may change in game, so copy it.
+        # Some other attributes are like this.
+        self.cost = self.data.cost
+
+
+class Minion(Card):
+    def __init__(self, game, card_id):
+        super(Minion, self).__init__(game, card_id)
+
+        self.attack = self.data.attack
+        self.health = self.data.health
