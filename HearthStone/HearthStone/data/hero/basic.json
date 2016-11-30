@@ -1,0 +1,22 @@
+{
+    "id": 0,
+    "name": "basic",
+    "heroes": [
+        {
+            "id": 0,
+            "klass": "Mage",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        },
+        {
+            "id": 1,
+            "klass": "Paladin",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        }
+    ]
+}

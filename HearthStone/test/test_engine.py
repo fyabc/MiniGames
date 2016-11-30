@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.event_framework import EventEngine, Event
-from HearthStone.game_core import Game
+from HearthStone.core import Game
+from HearthStone.player import Card
 from HearthStone.game_event import *
 from HearthStone.game_handler import *
 
@@ -10,21 +11,24 @@ __author__ = 'fyabc'
 
 
 def _test():
-    game = Game()
-    engine = game.engine
-
-    class TurnBeginHandler(GameHandler):
-        event_types = [TurnBegin]
-
-    engine.add_handler(game.create_handler(TurnEndDefaultHandler))
-    engine.add_handler(game.create_handler(TurnBeginHandler))
+    game = Game('./data/example_game.json')
 
     events = [
+        game.create_event(GameBegin),
         game.create_event(TurnEnd),
-        game.create_event(GameEvent),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(TurnEnd),
+        game.create_event(GameEnd),
     ]
 
-    engine.dispatch_event(*events)
+    game.run_test(events)
 
 
 if __name__ == '__main__':

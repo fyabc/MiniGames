@@ -34,21 +34,19 @@ class GameHandler(Handler):
         print('{} is processing {}!'.format(self, event))
 
 
-class TurnEndDefaultHandler(GameHandler):
-    """The default handler of `TurnEnd`, push a `TurnBegin` event."""
+class TurnBeginDrawCardHandler(GameHandler):
+    """The default handler of `TurnBegin`.
 
-    event_types = [TurnEnd]
+    It will draw a card for current player.
+    """
 
-    def __init__(self, game):
-        super(TurnEndDefaultHandler, self).__init__(game, None)
+    event_types = [TurnBegin]
 
     def _process(self, event):
-        super()._process(event)
-        self.game.next_turn()
-        self.game.add_events(self.game.create_event(TurnBegin))
+        self.game.add_event_quick(DrawCard)
 
 
 __all__ = [
     'GameHandler',
-    'TurnEndDefaultHandler',
+    'TurnBeginDrawCardHandler',
 ]

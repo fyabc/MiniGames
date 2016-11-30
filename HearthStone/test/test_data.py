@@ -2,8 +2,9 @@
 # -*- encoding: utf-8 -*-
 
 import unittest
+import pprint
 
-from HearthStone.game_data import allCards
+from HearthStone.game_data import allCards, allHeroes
 
 __author__ = 'fyabc'
 
@@ -20,11 +21,17 @@ class TestCardData(unittest.TestCase):
 
 
 def _test_card_data():
-    import pprint
     pprint.pprint(allCards)
 
     card0 = allCards[0]
     print(card0.cost, card0.attack, card0.durability)
+
+
+def _test_hero_data():
+    pprint.pprint(allHeroes)
+
+    hero0 = allHeroes[0]
+    print(hero0.klass, hero0.health)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ It contains card data, etc.
 import os
 import json
 
-from HearthStone.utils import CardDataPath
+from HearthStone.utils import CardDataPath, HeroDataPath
 
 __author__ = 'fyabc'
 
@@ -32,6 +32,22 @@ class DataClass:
         result = cls.__new__(cls)
         result.__dict__.update(cls.attributes)
         result.__dict__.update(data)
+        return result
+
+    @classmethod
+    def load_all(cls, dir_name, dict_entry):
+        result = {}
+
+        for package_filename in os.listdir(dir_name):
+            if not package_filename.endswith('.json'):
+                continue
+            with open(os.path.join(dir_name, package_filename), 'r', encoding='utf-8') as package_file:
+                package_dict = json.load(package_file)
+
+                for card_dict in package_dict[dict_entry]:
+                    card_data = cls.from_dict(card_dict)
+                    result[card_data.id] = card_data
+
         return result
 
 
@@ -65,26 +81,32 @@ class CardData(DataClass):
 
     durability = health
 
-    @staticmethod
-    def load_all_cards(dir_name=CardDataPath):
-        result = {}
+    @classmethod
+    def from_dict(cls, data):
+        result = super().from_dict(data)
 
-        for package_filename in os.listdir(dir_name):
-            if not package_filename.endswith('.json'):
-                continue
-            with open(os.path.join(dir_name, package_filename), 'r', encoding='utf-8') as package_file:
-                package_dict = json.load(package_file)
-
-                for card_dict in package_dict['cards']:
-                    card_data = CardData.from_dict(card_dict)
-                    result[card_data.id] = card_data
+        # todo: parse skills
 
         return result
 
+
+class HeroData(DataClass):
+    attributes = {
+        "id": 0,
+        "klass": "",
+        "health": 30,
+        "skill": None,
+    }
+
     @classmethod
-    def get_default(cls, *attributes):
-        return [cls.attributes[attribute] for attribute in attributes]
+    def from_dict(cls, data):
+        result = super().from_dict(data)
+
+        # todo: parse skills
+
+        return result
 
 
 # Automatically load some data at begin of the game.
-allCards = CardData.load_all_cards()
+allCards = CardData.load_all(CardDataPath, 'cards')
+allHeroes = HeroData.load_all(HeroDataPath, 'heroes')

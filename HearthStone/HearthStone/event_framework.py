@@ -38,6 +38,10 @@ class Handler:
     # We need to avoid this.
     event_types = []
 
+    # Decide if the handler process before or after the event happens.
+    # [NOTE] True is before, False is after.
+    BeforeOrAfter = False
+
     def __init__(self):
         self.id = Handler.CreatedHandlerNumber
         Handler.CreatedHandlerNumber += 1
@@ -83,7 +87,9 @@ class EventEngine:
         # One handler may listen to more than one event type.
         # [NOTE] All handlers in this EventEngine which listen same event type
         # are sorted by the time they are added.
-        self.handlers = defaultdict(list)
+        # [NOTE] All handlers are divided by the time of process (before or after the event happens)
+        self.before_handler_set = defaultdict(list)
+        self.after_handler_set = defaultdict(list)
 
     # Event type
     @property
@@ -96,6 +102,11 @@ class EventEngine:
             _ = self.events[event_type]
 
     # Handler
+    def _get_handlers_set(self, before_or_after):
+        if before_or_after:
+            return self.before_handler_set
+        return self.after_handler_set
+
     def add_handler(self, handler):
         """Add a handler into the engine.
         It will append it into all handler lists of event types in handler's event_types.
@@ -105,8 +116,12 @@ class EventEngine:
         :return: None
         """
 
+        assert isinstance(handler, Handler)
+
+        handler_set = self._get_handlers_set(handler.BeforeOrAfter)
+
         for event_type in handler.event_types:
-            self.handlers[event_type].append(handler)
+            handler_set[event_type].append(handler)
 
     def remove_handler(self, handler):
         """Remove the handler from the engine.
@@ -116,17 +131,26 @@ class EventEngine:
         :return: None
         """
 
+        assert isinstance(handler, Handler)
+
+        handler_set = self._get_handlers_set(handler.BeforeOrAfter)
+
         for event_type in handler.event_types:
-            handlers = self.handlers.get(event_type, None)
+            handlers = handler_set.get(event_type, None)
             if handlers is not None:
                 handlers.remove(handler)
 
     def remove_dead_handlers(self, event):
         for event_type in event.get_ancestors():
-            if event_type in self.handlers:
-                self.handlers[event_type] = [handler for handler in self.handlers[event_type] if handler.alive]
+            if event_type in self.before_handler_set:
+                self.before_handler_set[event_type] = [handler for handler in self.before_handler_set[event_type] if handler.alive]
+            if event_type in self.after_handler_set:
+                self.after_handler_set[event_type] = [handler for handler in self.after_handler_set[event_type] if handler.alive]
 
     # Event
+    def add_event(self, event):
+        self.events.append(event)
+
     def add_events(self, *events):
         self.events.extend(events)
 
@@ -143,12 +167,19 @@ class EventEngine:
 
         while self.events:
             event = self.events.popleft()
-            event.happen()
 
             # [NOTE] When a event happens, the handler of this event type and it's base types
             # both need to be called.
             for event_type in event.get_ancestors():
-                handlers = self.handlers.get(event_type, None)
+                handlers = self.before_handler_set.get(event_type, None)
+                if handlers is not None:
+                    for handler in handlers:
+                        handler.process(event)
+
+            event.happen()
+
+            for event_type in event.get_ancestors():
+                handlers = self.after_handler_set.get(event_type, None)
                 if handlers is not None:
                     for handler in handlers:
                         handler.process(event)
