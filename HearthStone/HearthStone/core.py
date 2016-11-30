@@ -43,7 +43,9 @@ class Game:
 
     # Constants.
     TotalPlayerNumber = 2
+    MaxDeckNumber = 50
     MaxHandNumber = 10
+    MaxDeskNumber = 7
 
     def __init__(self, game_filename=None):
         # Event engine.
@@ -82,6 +84,9 @@ class Game:
 
     def add_event_quick(self, event_type, *args, **kwargs):
         self.engine.add_events(event_type(self, *args, **kwargs))
+
+    def dispatch_event_quick(self, event_type, *args, **kwargs):
+        self.engine.dispatch_event(event_type(self, *args, **kwargs))
 
     def create_handler(self, handler_type, *args, **kwargs):
         return handler_type(self, *args, **kwargs)

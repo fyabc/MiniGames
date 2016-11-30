@@ -13,6 +13,9 @@ class Event:
         self.id = Event.CreatedEventNumber
         Event.CreatedEventNumber += 1
 
+        # Handlers before the event may disable it. If an event is disabled, it will not happen.
+        self.alive = True
+
     def __str__(self):
         return '{}#{}'.format(self.__class__.__name__, self.id)
 
@@ -26,7 +29,14 @@ class Event:
             setattr(cls, '_ancestors', cls.__mro__[:-1])
         return getattr(cls, '_ancestors')
 
+    def disable(self):
+        self.alive = False
+
     def happen(self):
+        if self.alive:
+            self._happen()
+
+    def _happen(self):
         pass
 
 

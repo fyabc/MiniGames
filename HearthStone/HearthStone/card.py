@@ -11,7 +11,7 @@ class Card(GameEntity):
     """The class of card.
 
     [NOTE] We do not copy the value of cost from CardData into card.
-        Reason: docstring of `Minion`.
+        Reason: see docstring of `Minion`.
     """
 
     CreatedCardNumber = 0
@@ -57,6 +57,12 @@ class Card(GameEntity):
 
         return result
 
+    @property
+    def player_id(self):
+        # todo: check and return the player id of this card.
+        # [NOTE] The card may be controlled by different players, so this property may change.
+        return None
+
 
 class Minion(Card):
     """The class of minion.
@@ -69,12 +75,15 @@ class Minion(Card):
     def __init__(self, game, card_id):
         super(Minion, self).__init__(game, card_id)
 
-        self._health = self.data.health                         # Health
+        self.health = self.data.health                          # Health
 
         self._remain_attack_number = 0                          # Remain attack number in this turn
         self._divine_shield = False                             # Is this minion have divine shield?
         self._frozen = 0                                        # Is this minion frozen?
         self._silent = False                                    # Is this minion silent?
+
+    def __str__(self):
+        return '{}({})'.format(self.data.name, ','.join(str(e) for e in self.data.CAH))
 
     # Properties.
     @property
@@ -84,14 +93,6 @@ class Minion(Card):
         # todo: add auras
 
         return result
-
-    @property
-    def health(self):
-        return self._health
-
-    @health.setter
-    def health(self, value):
-        self._health = value
 
     @property
     def max_health(self):
@@ -140,7 +141,7 @@ class Minion(Card):
             self._frozen -= 1
 
     # Operations.
-    def summon(self, player_id, location):
+    def summon(self, location, player_id):
         """Summon the minion. Location: Hand -> Desk
 
         :param player_id: the player id.
@@ -158,8 +159,23 @@ class Minion(Card):
 
         self.game.players[player_id].desk.insert(location, self)
 
+    def init_before_desk(self):
+        """Initializations of the minion before put onto desk. (Both summon and put directly)"""
+        self._remain_attack_number = self.attack_number
+        self._divine_shield = self.divine_shield
+
     def run_battle_cry(self):
         pass
+
+    def death(self):
+        pass
+
+    def run_death_rattle(self):
+        pass
+
+    def take_damage(self, source, value):
+        self.health -= value
+        return self.health <= 0
 
     def silence(self):
         """Silence the minion."""
@@ -189,3 +205,30 @@ class Minion(Card):
 
     def remove_dead_auras(self):
         pass
+
+
+class Spell(Card):
+    pass
+
+
+class Weapon(Card):
+    pass
+
+
+def create_card(game, card_id, *args, **kwargs):
+    """Create card from the data.
+
+    It will create minion, spell or weapon according to `data['type']`.
+    """
+
+    card_type_id = allCards[card_id].type
+    if card_type_id == 0:
+        card_type = Minion
+    elif card_type_id == 1:
+        card_type = Spell
+    elif card_type_id == 2:
+        card_type = Weapon
+    else:
+        card_type = Card
+
+    return card_type(game, card_id, *args, **kwargs)

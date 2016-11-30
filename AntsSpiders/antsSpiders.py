@@ -33,7 +33,7 @@ def run():
     while running:
         for event in pygame.event.get():
             if event.type == pygame.locals.QUIT:
-                print('Bye!')
+                verbose('Bye!')
                 running = False
 
         timePassed = Timer.tick(TIME_PASSED)

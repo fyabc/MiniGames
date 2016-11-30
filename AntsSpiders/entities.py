@@ -140,7 +140,7 @@ class AntsSpidersWorld(World):
 
     def clearDeath(self, surface):
         # 清除所有树叶和死掉的蜘蛛
-        print('巢穴里的蚂蚁清理掉了所有树叶和死掉的蜘蛛！')
+        verbose('巢穴里的蚂蚁清理掉了所有树叶和死掉的蜘蛛！')
 
         self.background.fill(BG_COLOR)
         pygame.draw.circle(self.background, NEST_COLOR, NEST_LOC, NEST_RADIUS)
@@ -186,14 +186,14 @@ class Spider(WorldEntity):
 
     def died(self):
         if self.alive:
-            print('%d号%s死亡了！' % (self.id, self.name))
+            verbose('%d号%s死亡了！' % (self.id, self.name))
             self.alive = False
             # 用一个翻过来的图片代表一个死掉的蜘蛛
             self.image = pygame.transform.flip(self.image, 0, 1)
             self.speed = 0.
 
     def attacked(self, attacker):
-        print('%d号%s受到了%d号%s的攻击！' % (self.id, self.name, attacker.id, attacker.name))
+        verbose('%d号%s受到了%d号%s的攻击！' % (self.id, self.name, attacker.id, attacker.name))
         self.hp -= attacker.attack * 1
         if self.hp <= 0:
             self.died()
@@ -221,7 +221,7 @@ class Spider(WorldEntity):
         if self.level < Spider.MaxLevel:
             x, y = self.image.get_size()    # 升一级图片放大一点
             self.image = pygame.transform.scale(self.image, (int(x * 1.2), int(y * 1.2)))
-        print('%d号%s提升到了%d等级！' % (self.id, self.name, self.level))
+        verbose('%d号%s提升到了%d等级！' % (self.id, self.name, self.level))
 
     def draw(self, surface: pygame.Surface):
         super(Spider, self).draw(surface)
@@ -242,7 +242,7 @@ class Spider(WorldEntity):
         x, y = self.location
         if self.alive and x > SCREEN_SIZE[0] + 2 or y < -2:      # 设置为蜘蛛到达右边界或上边界即消失
             # 加上存活的条件是为了防止少数时候在即将离开画面之前死亡，从而导致remove一个空的东西的情况
-            print('%d号%s离开了画面！' % (self.id, self.name))
+            verbose('%d号%s离开了画面！' % (self.id, self.name))
             self.invalidate()
             return
         super(Spider, self).step(timePassed)
@@ -305,7 +305,7 @@ class Ant(WorldEntity):
 
 def printWorld(world):
     for entity in world.entities.values():
-        print(repr(entity), entity.valid)
+        verbose(repr(entity), entity.valid)
 
 
 def test():

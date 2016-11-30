@@ -2,8 +2,9 @@
 # -*- encoding: utf-8 -*-
 import random
 
-from HearthStone.card import Card
+from HearthStone.card import create_card
 from HearthStone.entity import GameEntity
+from HearthStone.game_exception import GameEndException
 
 __author__ = 'fyabc'
 
@@ -20,20 +21,24 @@ class Player(GameEntity):
         self.desk = []                  # Desk minions
         self.cemetery = []              # Cemetery cards
         self.attack = 0                 # todo: may need to move into `self.hero`; such as `health`, etc.
-        self._health = 30
+        self.health = 30
         self.fatigue_damage = 0         # 疲劳伤害
         self.total_crystal = 0
         self.remain_crystal = 0
         self.locked_crystal = 0
         self.next_locked_crystal = 0
 
-    @property
-    def health(self):
-        return self._health
+        # [NOTE] Cannot set this directly, because `self.game.players` haven't been built now.
+        self._player_id = None
 
-    @health.setter
-    def health(self, value):
-        self._health = value
+    def __str__(self):
+        return 'P{}'.format(self.player_id)
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            self._player_id = self.game.players.index(self)
+        return self._player_id
 
     @property
     def hand_number(self):
@@ -54,15 +59,16 @@ class Player(GameEntity):
         # result.hero = Hero(allHeroes[data['hero_id']])
         for record in data['deck']:
             if isinstance(record, int):
-                result.deck.append(Card(game, record))
+                result.deck.append(create_card(game, record))
             else:
                 card_id, number = record
-                result.deck.extend(Card(game, card_id) for _ in range(number))
+                result.deck.extend(create_card(game, card_id) for _ in range(number))
 
         random.shuffle(result.deck)
 
         return result
 
+    # Operations.
     def turn_begin(self):
         self.total_crystal += 1
         self.locked_crystal = self.next_locked_crystal
@@ -71,3 +77,13 @@ class Player(GameEntity):
 
         for minion in self.desk:
             minion.turn_begin()
+
+    def turn_end(self):
+        pass
+
+    def take_damage(self, source, value):
+        self.health -= value
+
+        if self.health <= 0:
+            raise GameEndException(self.player_id)
+        return False

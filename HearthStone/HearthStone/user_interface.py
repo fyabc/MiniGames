@@ -27,3 +27,9 @@ class GameUserInterface:
 
     def take_action(self):
         pass
+
+    def try_play_card(self):
+        pass
+
+    def try_summon_minion(self):
+        pass

@@ -21,8 +21,8 @@ Cards are in packages.
     "name": "xxx",
     "package": 0,
     "rarity": 0,
-    "class": 0,
-    "type": 0,
+    "klass": 0,
+    "type": 0,                  // 0: minion, 1: spell, 2: weapon
     "CAH": [4, 4, 5],
     "skills": [
     ]

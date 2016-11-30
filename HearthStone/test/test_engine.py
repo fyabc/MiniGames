@@ -1,11 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from HearthStone.event_framework import EventEngine, Event
 from HearthStone.core import Game
-from HearthStone.player import Card
 from HearthStone.game_event import *
-from HearthStone.game_handler import *
+from HearthStone.utils import set_debug_level, LEVEL_DEBUG
+from HearthStone.game_exception import GameEndException
 
 __author__ = 'fyabc'
 
@@ -13,22 +12,20 @@ __author__ = 'fyabc'
 def _test():
     game = Game('./data/example_game.json')
 
-    events = [
-        game.create_event(GameBegin),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(TurnEnd),
-        game.create_event(GameEnd),
-    ]
+    set_debug_level(LEVEL_DEBUG)
 
-    game.run_test(events)
+    try:
+        game.dispatch_event_quick(GameBegin)
+
+        for _ in range(12):
+            if game.current_player.hand_number > 0:
+                game.dispatch_event_quick(SummonMinion, game.current_player.hand[0], 0)
+            game.dispatch_event_quick(TurnEnd)
+            if game.current_player.hand_number > 0:
+                game.dispatch_event_quick(SummonMinion, game.current_player.hand[0], 0)
+            game.dispatch_event_quick(TurnEnd)
+    except GameEndException as e:
+        print('Game end at P{}!'.format(e.player_id))
 
 
 if __name__ == '__main__':
