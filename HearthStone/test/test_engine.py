@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.core import Game
-from HearthStone.game_event import *
+from HearthStone.game_events import *
 from HearthStone.utils import set_debug_level, LEVEL_DEBUG
 from HearthStone.game_exception import GameEndException
 
@@ -25,7 +25,7 @@ def _test():
                 game.dispatch_event_quick(SummonMinion, game.current_player.hand[0], 0)
             game.dispatch_event_quick(TurnEnd)
     except GameEndException as e:
-        print('Game end at P{}!'.format(e.player_id))
+        print(e.message())
 
 
 if __name__ == '__main__':

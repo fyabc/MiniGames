@@ -3,10 +3,10 @@
 
 import json
 
-from HearthStone.event_framework import EventEngine
-from HearthStone.player import Player
-from HearthStone.game_handler import TurnBeginDrawCardHandler
-from HearthStone.game_exception import GameEndException
+from .event_framework import EventEngine
+from .player import Player
+from .game_handler import TurnBeginDrawCardHandler
+from .game_exception import GameEndException
 
 __author__ = 'fyabc'
 

@@ -8,7 +8,7 @@ It contains card data, etc.
 import os
 import json
 
-from HearthStone.utils import CardDataPath, HeroDataPath
+from .utils import CardDataPath, HeroDataPath
 
 __author__ = 'fyabc'
 

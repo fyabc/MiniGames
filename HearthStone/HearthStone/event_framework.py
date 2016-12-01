@@ -112,7 +112,7 @@ class EventEngine:
             _ = self.events[event_type]
 
     # Handler
-    def _get_handlers_set(self, before_or_after):
+    def _get_handler_set(self, before_or_after):
         if before_or_after:
             return self.before_handler_set
         return self.after_handler_set
@@ -128,7 +128,7 @@ class EventEngine:
 
         assert isinstance(handler, Handler)
 
-        handler_set = self._get_handlers_set(handler.BeforeOrAfter)
+        handler_set = self._get_handler_set(handler.BeforeOrAfter)
 
         for event_type in handler.event_types:
             handler_set[event_type].append(handler)
@@ -143,7 +143,7 @@ class EventEngine:
 
         assert isinstance(handler, Handler)
 
-        handler_set = self._get_handlers_set(handler.BeforeOrAfter)
+        handler_set = self._get_handler_set(handler.BeforeOrAfter)
 
         for event_type in handler.event_types:
             handlers = handler_set.get(event_type, None)
@@ -164,16 +164,16 @@ class EventEngine:
     def add_events(self, *events):
         self.events.extend(events)
 
-    def dispatch_event(self, *user_events):
+    def dispatch_event(self, event):
         """Dispatch a user event to handlers.
         This method will clear the event queue.
-        [NOTE] user_event may cause several other events.
+        [NOTE] `event` may cause several other events.
 
-        :param user_events: events given by user.
+        :param event: event given by user.
         :return: None
         """
 
-        self.events.extend(user_events)
+        self.events.append(event)
 
         while self.events:
             event = self.events.popleft()

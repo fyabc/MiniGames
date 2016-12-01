@@ -2,9 +2,9 @@
 # -*- encoding: utf-8 -*-
 import random
 
-from HearthStone.card import create_card
-from HearthStone.entity import GameEntity
-from HearthStone.game_exception import GameEndException
+from .card import create_card
+from .entity import GameEntity
+from .game_exception import HeroDeathException
 
 __author__ = 'fyabc'
 
@@ -86,5 +86,5 @@ class Player(GameEntity):
         self.health -= value
 
         if self.health <= 0:
-            raise GameEndException(self.player_id)
+            raise HeroDeathException(self.game.current_player_id, self.player_id)
         return False

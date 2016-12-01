@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-from HearthStone.game_data import allCards
-from HearthStone.entity import GameEntity
+from .game_data import allCards
+from .entity import GameEntity
 
 __author__ = 'fyabc'
 

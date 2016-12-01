@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.event_framework import Handler
-from HearthStone.game_event import *
+from HearthStone.game_events import *
 
 __author__ = 'fyabc'
 
