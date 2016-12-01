@@ -56,7 +56,7 @@ class ActiveLabel(text.Label):
     def on_mouse_press(self, x, y, buttons, modifiers):
         # [NOTE] This will catch all mouse press events, regardless of where it is.
         # Sometimes you want to check if the text is clicked (using collision manager).
-        verbose('The label {} is pressed!'.format(self.element.text))
+        print('The label {} is pressed!'.format(self.element.text))
 
 
 def _test():

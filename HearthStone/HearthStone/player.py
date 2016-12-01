@@ -70,7 +70,8 @@ class Player(GameEntity):
 
     # Operations.
     def turn_begin(self):
-        self.total_crystal += 1
+        if self.total_crystal < self.game.MaxCrystal:
+            self.total_crystal += 1
         self.locked_crystal = self.next_locked_crystal
         self.next_locked_crystal = 0
         self.remain_crystal = self.total_crystal - self.locked_crystal

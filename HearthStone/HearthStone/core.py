@@ -46,6 +46,7 @@ class Game:
     MaxDeckNumber = 50
     MaxHandNumber = 10
     MaxDeskNumber = 7
+    MaxCrystal = 10
 
     def __init__(self, game_filename=None):
         # Event engine.
@@ -84,6 +85,9 @@ class Game:
 
     def add_event_quick(self, event_type, *args, **kwargs):
         self.engine.add_events(event_type(self, *args, **kwargs))
+
+    def dispatch_event(self, event):
+        self.engine.dispatch_event(event)
 
     def dispatch_event_quick(self, event_type, *args, **kwargs):
         self.engine.dispatch_event(event_type(self, *args, **kwargs))

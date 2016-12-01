@@ -35,6 +35,8 @@ class Card(GameEntity):
         # Card data.
         self.data = allCards[card_id]
 
+        # todo: load skills.
+
         # Auras on this card.
         # These auras will affect cost, attack and other attributes of card.
         self.auras = []
@@ -140,25 +142,12 @@ class Minion(Card):
         if self._frozen > 0:
             self._frozen -= 1
 
+    def _fit_health(self):
+        max_health = self.max_health
+        if self.health > max_health:
+            self.health = max_health
+
     # Operations.
-    def summon(self, location, player_id):
-        """Summon the minion. Location: Hand -> Desk
-
-        :param player_id: the player id.
-        :param location: the location of the minion to be insert.
-            The minion will at before `location`.
-            [FIXME]: The location may be changed in battle cry, this problem should be fixed in future.
-        """
-
-        self._remain_attack_number = self.attack_number
-        self._divine_shield = self.divine_shield
-
-        self.game.players[player_id].hand.remove(self)
-
-        self.run_battle_cry()
-
-        self.game.players[player_id].desk.insert(location, self)
-
     def init_before_desk(self):
         """Initializations of the minion before put onto desk. (Both summon and put directly)"""
         self._remain_attack_number = self.attack_number
@@ -184,8 +173,7 @@ class Minion(Card):
         self.auras.clear()
 
         # Reset health.
-        if self._health > self.max_health:
-            self._health = self.max_health
+        self._fit_health()
 
         self._frozen = 0
 

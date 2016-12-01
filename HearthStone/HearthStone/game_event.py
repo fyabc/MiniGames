@@ -153,8 +153,13 @@ class PlayCard(GameEvent):
     def _happen(self):
         verbose('P{} play a card {}!'.format(self.player_id, self.card))
 
+        player = self.game.players[self.player_id]
+
+        # todo: change it to `UseCrystal` event
+        player.remain_crystal -= self.card.cost
+
         # todo: change it to `RemoveCardFromHand` event
-        self.game.players[self.player_id].hand.remove(self.card)
+        player.hand.remove(self.card)
 
 
 class AddMinionToDesk(GameEvent):
