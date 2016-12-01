@@ -1,17 +1,20 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from .core import Game
+
 __author__ = 'fyabc'
 
 
 class GameUserInterface:
     """The user interface of the game.
+
     It receives user actions, execute it with the "Game" it contains, and return result.
     User can observe game status from this interface.
     It can connect to GUI or CLI.
     """
 
-    def __init__(self, game):
+    def __init__(self, game: Game):
         self.game = game
 
     ############################################
@@ -21,12 +24,9 @@ class GameUserInterface:
     def get_game(self):
         return self.game
 
-    ###############################################
-    # Methods that send some actions to the game. #
-    ###############################################
-
-    def take_action(self):
-        pass
+    #####################################################################
+    # Methods that take some actions and send some actions to the game. #
+    #####################################################################
 
     def try_play_card(self):
         pass

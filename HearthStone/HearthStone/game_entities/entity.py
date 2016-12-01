@@ -18,3 +18,8 @@ class GameEntity:
     def kill_self(self):
         for handler in self.handlers:
             handler.kill()
+
+
+__all__ = [
+    'GameEntity',
+]

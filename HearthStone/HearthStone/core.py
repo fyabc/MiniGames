@@ -3,10 +3,10 @@
 
 import json
 
+from .game_entities import Player
 from .event_framework import EventEngine
-from .player import Player
-from .game_handler import TurnBeginDrawCardHandler
 from .game_exception import GameEndException
+from .game_handler import TurnBeginDrawCardHandler
 
 __author__ = 'fyabc'
 

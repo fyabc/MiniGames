@@ -4,7 +4,7 @@ import random
 
 from .card import create_card
 from .entity import GameEntity
-from .game_exception import HeroDeathException
+from ..game_exception import HeroDeathException
 
 __author__ = 'fyabc'
 
@@ -88,3 +88,8 @@ class Player(GameEntity):
         if self.health <= 0:
             raise HeroDeathException(self.game.current_player_id, self.player_id)
         return False
+
+
+__all__ = [
+    'Player',
+]

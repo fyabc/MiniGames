@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-from .game_data import allCards
 from .entity import GameEntity
+from ..game_data import allCards
 
 __author__ = 'fyabc'
 
@@ -220,3 +220,12 @@ def create_card(game, card_id, *args, **kwargs):
         card_type = Card
 
     return card_type(game, card_id, *args, **kwargs)
+
+
+__all__ = [
+    'Card',
+    'Minion',
+    'Spell',
+    'Weapon',
+    'create_card',
+]
