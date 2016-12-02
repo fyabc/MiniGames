@@ -1,3 +1,11 @@
 {
-    "name": "HearthStone"
+    "name": "HearthStone",
+    "CLI": {
+        "windowWidth": 120,
+        "charGameBegin": "*",
+        "charTurnBegin": "=",
+        "charTurnEnd": "=",
+        "charShowBegin": "-",
+        "charShowEnd": "-"
+    }
 }

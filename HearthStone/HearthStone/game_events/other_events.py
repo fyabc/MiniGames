@@ -21,7 +21,7 @@ class AddCardToHand(GameEvent):
         if player.hand_full:
             verbose('The hand of P{} is full!'.format(self.player_id))
         else:
-            self.card.location = self.card.Hand
+            self.card.init_before_hand()
             player.hand.append(self.card)
 
 
@@ -52,7 +52,7 @@ class DrawCard(GameEvent):
             return
 
         # todo: change it to `RemoveCardFromDeck` event
-        card = source_player.deck.pop()
+        card = source_player.remove_from_deck()
         self.game.add_event_quick(AddCardToHand, card, self.target_player_id)
 
 

@@ -55,6 +55,7 @@ class CardData(DataClass):
     attributes = {
         'id': 0,
         'name': "",
+        "type": 0,
         'CAH': None,
         'skills': [],
         'taunt': False,

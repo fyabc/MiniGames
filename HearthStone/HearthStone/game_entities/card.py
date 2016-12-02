@@ -16,6 +16,11 @@ class Card(GameEntity):
 
     CreatedCardNumber = 0
 
+    # Types of the card.
+    Type_Minion = 0
+    Type_Spell = 1
+    Type_Weapon = 2
+
     # Locations of the card.
     Null = 0
     Deck = 1
@@ -85,7 +90,7 @@ class Minion(Card):
         self._silent = False                                    # Is this minion silent?
 
     def __str__(self):
-        return '{}({})'.format(self.data.name, ','.join(str(e) for e in self.data.CAH))
+        return '{}({},{},{})'.format(self.data.name, self.cost, self.attack, self.health)
 
     # Properties.
     @property
@@ -148,10 +153,14 @@ class Minion(Card):
             self.health = max_health
 
     # Operations.
+    def init_before_hand(self):
+        self.location = self.Hand
+
     def init_before_desk(self):
         """Initializations of the minion before put onto desk. (Both summon and put directly)"""
         self._remain_attack_number = self.attack_number
         self._divine_shield = self.divine_shield
+        self.location = self.Desk
 
     def run_battle_cry(self):
         pass

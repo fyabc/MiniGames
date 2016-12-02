@@ -52,6 +52,14 @@ class Player(GameEntity):
     def deck_number(self):
         return len(self.deck)
 
+    @property
+    def desk_number(self):
+        return len(self.desk)
+
+    @property
+    def desk_full(self):
+        return len(self.desk) >= self.game.MaxDeskNumber
+
     @classmethod
     def load_from_dict(cls, game, data):
         result = cls(game)
@@ -88,6 +96,21 @@ class Player(GameEntity):
         if self.health <= 0:
             raise HeroDeathException(self.game.current_player_id, self.player_id)
         return False
+
+    # Methods of remove and add cards.
+    def remove_from_deck(self, index=-1):
+        card = self.deck.pop(index)
+        card.location = card.Null
+        return card
+
+    def remove_from_hand(self, index=-1):
+        card = self.hand.pop(index)
+        card.location = card.Null
+        return card
+
+    def append_to_hand(self, card):
+        card.location = card.Hand
+        self.hand.append(card)
 
 
 __all__ = [

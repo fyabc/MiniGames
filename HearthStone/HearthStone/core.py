@@ -73,6 +73,10 @@ class Game:
     def current_player(self):
         return self.players[self.current_player_id]
 
+    @property
+    def opponent_player(self):
+        return self.players[1 - self.current_player_id]
+
     # Events and handlers.
     def create_event(self, event_type, *args, **kwargs):
         return event_type(self, *args, **kwargs)
