@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .core import Game
 from .game_events import GameBegin, GameEnd, TurnEnd, SummonMinion
-from .utils import verbose, warning, error, Config, clear_screen
+from .utils import verbose, error, Config
+from .cli_tool import simple_show_board, show_board, clear_screen
 
 __author__ = 'fyabc'
 
@@ -18,7 +18,7 @@ class GameUserInterface:
     It can connect to GUI or CLI.
     """
 
-    def __init__(self, game: Game):
+    def __init__(self, game):
         self.game = game
 
     ############################################
@@ -33,27 +33,7 @@ class GameUserInterface:
     ########################################################################
 
     def show(self):
-        p0, p1 = self.game.players
-
-        verbose('''\
-    {}
-    | P0: HP={} Crystal={}/{}
-    | Hand={}
-    | Deck={}
-    | Desk={}
-    | P1: HP={} Crystal={}/{}
-    | Hand={}
-    | Deck={}
-    | Desk={}
-    {}
-'''.format(
-            'Game Status'.center(windowWidth, Config['CLI']['charShowBegin']),
-            p0.health, p0.remain_crystal, p0.total_crystal,
-            p0.hand, p0.deck, p0.desk,
-            p1.health, p1.remain_crystal, p1.total_crystal,
-            p1.hand, p1.deck, p1.desk,
-            'Status End'.center(windowWidth, Config['CLI']['charShowEnd']),
-        ))
+        simple_show_board(self.game)
 
     def clear_screen(self):
         clear_screen()
