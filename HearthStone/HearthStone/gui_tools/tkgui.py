@@ -8,7 +8,7 @@ __author__ = 'fyabc'
 
 class GameWindow(tk.Frame):
     def __init__(self, game, master=None):
-        super(GameWindow, self).__init__(master=master)
+        super(GameWindow, self).__init__(master=master, borderwidth=30)
         self.pack(fill=tk.BOTH)
 
         self.game = game
@@ -30,13 +30,45 @@ class GameWindow(tk.Frame):
         self.menu_bar.add_cascade(label='Help', menu=self.cascade_menus['Help'])
         self.menu_bar.add_command(label='Quit', command=self.quit)
 
-        # Window Layouts.
+        ##################
+        # Window Layout. #
+        ##################
 
-        # Left: History layout.
+        ########################
+        # Left: History frame. #
+        ########################
+        self.history_frame = tk.Frame(self, borderwidth=0)
+        self.history_frame.pack(side=tk.LEFT)
 
-        # Center: Game board layout.
+        #############################
+        # Center: Game board frame. #
+        #############################
+        self.board_frame = tk.Frame(self, borderwidth=0)
+        self.board_frame.pack(side=tk.LEFT)
 
-        # Right: Deck layout.
+        ######################
+        # Right: Deck frame. #
+        ######################
+        self.deck_frame = tk.Frame(self, borderwidth=0)
+        self.deck_frame.pack(side=tk.RIGHT)
+
+        self.deck_labels = [
+            tk.Label(self.deck_frame,
+                     text='Hello'),
+            tk.Label(self.deck_frame,
+                     text='World'),
+        ]
+
+        self.deck_labels[0].pack(
+            side=tk.TOP,
+            fill=tk.BOTH,
+            expand=True,
+        )
+        self.deck_labels[1].pack(
+            side=tk.BOTTOM,
+            fill=tk.BOTH,
+            expand=True,
+        )
 
 
 __all__ = [
