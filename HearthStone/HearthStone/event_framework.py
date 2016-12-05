@@ -101,6 +101,12 @@ class EventEngine:
         self.before_handler_set = defaultdict(list)
         self.after_handler_set = defaultdict(list)
 
+    # General methods
+    def clear(self):
+        self.events.clear()
+        self.before_handler_set.clear()
+        self.after_handler_set.clear()
+
     # Event type
     @property
     def event_types(self):

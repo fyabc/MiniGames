@@ -10,6 +10,8 @@ __author__ = 'fyabc'
 
 def _test():
     root = tk.Tk(className='HearthStone')
+    root.geometry("800x600")
+
     game = Game('./data/example_game.json')
 
     app = GameWindow(game, root)
@@ -19,4 +21,3 @@ def _test():
 
 if __name__ == '__main__':
     _test()
-

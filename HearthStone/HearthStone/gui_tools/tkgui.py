@@ -6,6 +6,7 @@ from tkinter import *
 from tkinter.ttk import *
 
 from ..game_events import GameBegin, GameEnd, TurnEnd, SummonMinion
+from ..cli_tool import show_card, show_minion
 
 __author__ = 'fyabc'
 
@@ -46,6 +47,7 @@ class GameWindow(Frame):
 
         self.menu_bar.add_cascade(label='Game', menu=self.cascade_menus['Game'])
         self.menu_bar.add_command(label='Game Begin', command=self.game_begin)
+        self.menu_bar.add_command(label='Turn End', command=self.turn_end)
         self.menu_bar.add_command(label='Refresh', command=self.refresh_window)
         self.menu_bar.add_cascade(label='Help', menu=self.cascade_menus['Help'])
         self.menu_bar.add_command(label='Quit', command=self.quit)
@@ -115,12 +117,18 @@ class GameWindow(Frame):
         for i in (0, 1):
             player = self.game.players[i]
 
+            # Refresh desk.
             for n, card in enumerate(player.desk):
-                minion_button = Button(self.board_frame, text='Minion\n{}'.format(i))
+                minion_button = Button(self.board_frame, text=show_minion(card))
                 minion_button.grid(row=2 if i == 0 else 1, column=n)
 
+            # Refresh hand.
             for n, card in enumerate(player.hand):
-                minion_button = Button(self.board_frame, text='Minion\n{}'.format(i))
+                minion_button = Button(
+                    self.board_frame,
+                    text=show_card(card),
+                    command=lambda: self.on_hand_click(n),
+                )
                 minion_button.grid(row=3 if i == 0 else 0, column=n)
 
     def refresh_deck(self):
@@ -135,8 +143,16 @@ class GameWindow(Frame):
 
     # Some user operations.
     def game_begin(self):
+        self.game.restart_game()
         self.game.dispatch_event_quick(GameBegin)
         self.refresh_window()
+
+    def turn_end(self):
+        self.game.dispatch_event_quick(TurnEnd)
+        self.refresh_window()
+
+    def on_hand_click(self, index):
+        print('Click hand!', n)
 
 
 __all__ = [

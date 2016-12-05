@@ -84,7 +84,7 @@ class Minion(Card):
 
         self.health = self.data.health                          # Health
 
-        self._remain_attack_number = 0                          # Remain attack number in this turn
+        self.remain_attack_number = 0                          # Remain attack number in this turn
         self._divine_shield = False                             # Is this minion have divine shield?
         self._frozen = 0                                        # Is this minion frozen?
         self._silent = False                                    # Is this minion silent?
@@ -142,6 +142,28 @@ class Minion(Card):
 
         return result
 
+    @property
+    def charge(self):
+        if self._silent:
+            result = False
+        else:
+            result = self.data.charge
+
+        # todo: add auras
+
+        return result
+
+    @property
+    def stealth(self):
+        if self._silent:
+            result = False
+        else:
+            result = self.data.stealth
+
+        # todo: add auras
+
+        return result
+
     # Some internal methods.
     def _frozen_step(self):
         if self._frozen > 0:
@@ -158,7 +180,7 @@ class Minion(Card):
 
     def init_before_desk(self):
         """Initializations of the minion before put onto desk. (Both summon and put directly)"""
-        self._remain_attack_number = self.attack_number
+        self.remain_attack_number = self.attack_number
         self._divine_shield = self.divine_shield
         self.location = self.Desk
 
@@ -189,7 +211,7 @@ class Minion(Card):
     def turn_begin(self):
         """When a new turn start, refresh its attack number and frozen status."""
 
-        self._remain_attack_number = self.attack_number
+        self.remain_attack_number = self.attack_number
         self._frozen_step()
 
     def froze(self):
@@ -219,11 +241,11 @@ def create_card(game, card_id, *args, **kwargs):
     """
 
     card_type_id = allCards[card_id].type
-    if card_type_id == 0:
+    if card_type_id == Card.Type_Minion:
         card_type = Minion
-    elif card_type_id == 1:
+    elif card_type_id == Card.Type_Spell:
         card_type = Spell
-    elif card_type_id == 2:
+    elif card_type_id == Card.Type_Weapon:
         card_type = Weapon
     else:
         card_type = Card

@@ -19,10 +19,16 @@ class AuraManager:
     def __init__(self, game):
         self.game = game
 
+    def clear(self):
+        pass
+
 
 class HistoryManager:
     def __init__(self, game):
         self.game = game
+
+    def clear(self):
+        pass
 
 
 class Game:
@@ -53,10 +59,9 @@ class Game:
         self.engine = EventEngine()
 
         # Game data.
-        if game_filename is None:
-            self.players = [Player(self) for _ in range(self.TotalPlayerNumber)]
-        else:
-            self.players = self.load_game(game_filename)
+        self.game_filename = game_filename
+        self.players = self.load_game(game_filename)
+
         self.current_player_id = 0
         self.turn_number = 0
 
@@ -106,19 +111,33 @@ class Game:
         self.engine.add_handler(handler_type(self, *args, **kwargs))
 
     # Game operations.
-    def load_game(self, game_filename):
+    def load_game(self, game_filename=None):
+        if game_filename is None:
+            return [Player(self) for _ in range(self.TotalPlayerNumber)]
         with open(game_filename, 'r') as f:
             return [Player.load_from_dict(self, data) for data in json.load(f)]
 
     def init_handlers(self):
         self.add_handler_quick(TurnBeginDrawCardHandler)
 
+    def restart_game(self):
+        self.aura_manager.clear()
+        self.history.clear()
+
+        self.engine.clear()
+
+        self.current_player_id = 0
+        self.turn_number = 0
+
+        self.players = self.load_game(self.game_filename)
+        self.init_handlers()
+
     def run_test(self, events):
         try:
             for event in events:
                 self.engine.dispatch_event(event)
         except GameEndException as e:
-            print('Game end at P{}!'.format(e.player_id))
+            print('Game end at P{}!'.format(e.current_player_id))
 
     def next_turn(self):
         self.current_player_id = (self.current_player_id + 1) % self.TotalPlayerNumber

@@ -61,6 +61,7 @@ class CardData(DataClass):
         'taunt': False,
         'charge': False,
         'divine_shield': False,
+        'stealth': False,
         'attack_number': 1,
     }
 
