@@ -10,7 +10,7 @@ __author__ = 'fyabc'
 
 def _test():
     root = tk.Tk(className='HearthStone')
-    root.geometry("1500x550")
+    root.geometry("1050x600")
 
     game = Game('./data/example_game.json')
 
