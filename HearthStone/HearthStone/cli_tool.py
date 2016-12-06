@@ -141,7 +141,7 @@ def show_minion(minion: Minion, width=7, border=False):
 '''.format(
         b, minion.data.name.center(width), b,
         b, align_line(minion.cost, '#{}'.format(minion.data.id), width), b,
-        b, align_line([], '*' if minion.remain_attack_number > 0 else [], width), b,
+        b, align_line('*' if minion.remain_attack_number > 0 else [], [], width), b,
         b, '{} {} {} {}'.format(
             'T' if minion.taunt else ' ',
             'S' if minion.stealth else ' ',

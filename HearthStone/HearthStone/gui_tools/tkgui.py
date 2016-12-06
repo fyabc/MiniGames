@@ -1,12 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from collections import namedtuple
 import tkinter as tk
 import tkinter.ttk as ttk
 
 from ..core import Game
 from ..game_events import GameBegin, GameEnd, TurnEnd, SummonMinion
 from ..cli_tool import show_card, show_minion
+from ..utils.debug_utils import error
 
 __author__ = 'fyabc'
 
@@ -23,6 +25,8 @@ class GameWindow(ttk.Frame):
     # Some constants.
     ShowCardWidth = 7
 
+    SelectionType = namedtuple('Selection', ['player_id', 'location', 'index'])
+
     def __init__(self, game, master=None):
         super(GameWindow, self).__init__(master=master, borderwidth=30)
         self.pack(fill=tk.BOTH)
@@ -32,7 +36,14 @@ class GameWindow(ttk.Frame):
         self.game_running = tk.BooleanVar(self, False, 'game_running')
         self.game_running.trace('w', self._on_game_running_changed)
 
+        self.current_player_id = tk.IntVar(self, None, 'current_player_id')
+        self.current_player_id.trace('w', self._on_current_player_id_changed)
+
         self.selections = []
+
+        # todo: add a state machine to manage the selection state.
+        # The selection state should be a variable to be traced.
+        # For example, when select a minion in hand, then only locations in my desk can be select.
 
         ########
         # Menu #
@@ -233,6 +244,7 @@ class GameWindow(ttk.Frame):
                 ('active', 'green')
             ],
             background=[
+                ('disabled', 'purple'),
                 ('pressed', '!focus', 'cyan'),
                 ('active', 'blue')
             ],
@@ -275,7 +287,7 @@ class GameWindow(ttk.Frame):
                 if n % 2 == 0:
                     button.config(text='\n' * 5)
                 else:
-                    idx = n / 2
+                    idx = n // 2
                     if idx >= desk_number:
                         button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
                     else:
@@ -310,23 +322,83 @@ class GameWindow(ttk.Frame):
         else:
             raise ValueError('Unknown location {}'.format(location))
 
-    def _process_selection(self, player_id, location, index):
-        print(player_id, location, index)
+    def _find_card(self, selection):
+        player_id, location, index = selection
 
+        player = self.game.players[player_id]
+        if location == 'hand':
+            return player.hand[index]
+        elif location == 'desk':
+            return player.desk[index // 2]
+        else:
+            raise ValueError('Unknown location {}'.format(location))
+
+    def _check_operation(self):
+        if len(self.selections) == 2 and \
+                self.selections[0].location == 'hand' and \
+                self.selections[1].location == 'desk' and \
+                self.selections[1].index % 2 == 0 and \
+                self.selections[0].player_id == self.selections[1].player_id:
+            return 'summon'
+        elif len(self.selections) == 2 and \
+                self.selections[0].location == 'desk' and \
+                self.selections[1].location == 'desk' and \
+                self.selections[0].index % 2 != 0 and \
+                self.selections[1].index % 2 != 0 and \
+                self.selections[0].player_id != self.selections[1].player_id:
+            return 'attack'
+        else:
+            return None
+
+    def _select_button(self, selection, button=None):
+        button = button or self._find_button(selection)
+        self.selections.append(selection)
+        button.config(style='Selected.TButton')
+
+    def _deselect_button(self, selection, button=None):
+        button = button or self._find_button(selection)
+        self.selections.remove(selection)
+        button.config(style='TButton')
+
+    def _deselect_all_buttons(self):
+        for selection in self.selections:
+            button = self._find_button(selection)
+            button.config(style='TButton')
+        self.selections.clear()
+
+    def _process_selection(self, player_id, location, index):
         if not self.game_running.get():
             return
 
-        selection = player_id, location, index
+        selection = self.SelectionType(player_id, location, index)
         button = self._find_button(selection)
 
-        if selection == self.selections[-1]:
-            # If the selection is same as the last selection, make it unselected.
-            self.selections.remove(selection)
-            button.config(style='TButton')
+        if selection in self.selections:
+            # If the selection has been selected before, make it unselected.
+            self._deselect_button(selection, button)
         else:
-            # Else, check if it satisfied the condition of some operations (summon, attack, etc.)
-            self.selections.append(selection)
-            button.config(style='Selected.TButton')
+            self._select_button(selection, button)
+
+            # Check if it satisfied the condition of some operations (summon, attack, etc.)
+            operation = self._check_operation()
+            if operation is None:
+                # If not any operations, add selection into selections.
+                pass
+            else:
+                if operation == 'summon':
+                    player = self.game.current_player
+                    minion = self._find_card(self.selections[0])
+                    index_ = min(index // 2, player.desk_number)
+
+                    if player.remain_crystal < minion.cost:
+                        error('I don\'t have enough mana crystals!')
+                    else:
+                        self._try_summon_minion(minion, index_)
+                elif operation == 'attack':
+                    pass
+                else:
+                    raise ValueError('Unknown operation {}'.format(operation))
+                self._deselect_all_buttons()
 
     def _on_game_running_changed(self, *args):
         """The callback function when the running status changed.
@@ -336,12 +408,10 @@ class GameWindow(ttk.Frame):
 
         if self.game_running.get():
             self.menu_bar.entryconfig(3, state=tk.NORMAL)
-            for player_buttons in self.hand_card_buttons:
-                for button in player_buttons:
-                    button.config(state=tk.NORMAL)
             for player_buttons in self.desk_card_buttons:
                 for button in player_buttons:
                     button.config(state=tk.NORMAL)
+            self.current_player_id.set(self.game.current_player_id)
         else:
             self.menu_bar.entryconfig(3, state=tk.DISABLED)
             for player_buttons in self.hand_card_buttons:
@@ -350,6 +420,18 @@ class GameWindow(ttk.Frame):
             for player_buttons in self.desk_card_buttons:
                 for button in player_buttons:
                     button.config(state=tk.DISABLED)
+
+    def _on_current_player_id_changed(self, *args):
+        if self.current_player_id.get() == 0:
+            for button in self.hand_card_buttons[0]:
+                button.config(state=tk.NORMAL)
+            for button in self.hand_card_buttons[1]:
+                button.config(state=tk.DISABLED)
+        else:
+            for button in self.hand_card_buttons[0]:
+                button.config(state=tk.DISABLED)
+            for button in self.hand_card_buttons[1]:
+                button.config(state=tk.NORMAL)
 
     # Some user operations.
     def game_begin(self):
@@ -360,10 +442,12 @@ class GameWindow(ttk.Frame):
 
     def turn_end(self):
         self.game.dispatch_event_quick(TurnEnd)
+        self.current_player_id.set(self.game.current_player_id)
         self.refresh_window()
 
-    def _summon_minion(self, index, location):
-        pass
+    def _try_summon_minion(self, minion, index):
+        self.game.dispatch_event_quick(SummonMinion, minion, index)
+        self.refresh_window()
 
     def test_binding(self, event: tk.Event):
         print('Click', event)
