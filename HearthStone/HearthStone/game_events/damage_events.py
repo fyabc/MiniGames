@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 from .game_event import GameEvent
-from ..game_exception import GameEndException
 from ..utils import verbose
 
 __author__ = 'fyabc'
@@ -15,17 +14,17 @@ class Damage(GameEvent):
         self.value = value
 
     def _happen(self):
-        verbose('{} take {} damage to {}!'.format(self.source, self.value, self.target))
+        self._message()
 
-        try:
-            died = self.target.take_damage(self.source, self.value)
-        except GameEndException:
-            # todo: some clean work after the game here
-            raise
-        else:
-            if died:
-                verbose('{} kill {}!'.format(self.source, self.target))
-                # todo: add `MinionDeath` event
+        # todo: move add event code into handlers.
+        died = self.target.take_damage(self.source, self.value)
+
+        if died:
+            verbose('{} kill {}!'.format(self.source, self.target))
+            # todo: add `MinionDeath` event
+
+    def _message(self):
+        verbose('{} take {} damage to {}!'.format(self.source, self.value, self.target))
 
 
 __all__ = [

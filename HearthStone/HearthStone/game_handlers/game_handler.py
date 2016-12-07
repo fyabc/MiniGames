@@ -31,6 +31,9 @@ class GameHandler(Handler):
         )
 
     def _process(self, event):
+        self._message(event)
+
+    def _message(self, event):
         print('{} is processing {}!'.format(self, event))
 
 

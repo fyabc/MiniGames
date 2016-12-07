@@ -4,11 +4,14 @@
 import tkinter as tk
 from HearthStone.gui_tools import GameWindow
 from HearthStone.core import Game
+from HearthStone.utils.debug_utils import set_debug_level, LEVEL_DEBUG
 
 __author__ = 'fyabc'
 
 
 def _test():
+    set_debug_level(LEVEL_DEBUG)
+
     root = tk.Tk(className='HearthStone')
     root.geometry("1050x600")
 

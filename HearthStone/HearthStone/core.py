@@ -3,10 +3,11 @@
 
 import json
 
-from .game_entities import Player
+from .game_handlers import TurnBeginDrawCardHandler, CreateCoinHandler
 from .event_framework import EventEngine
+from .game_entities import Player
+from .game_events import GameEnd
 from .game_exception import GameEndException
-from .game_handler import TurnBeginDrawCardHandler
 
 __author__ = 'fyabc'
 
@@ -57,6 +58,7 @@ class Game:
     def __init__(self, game_filename=None):
         # Event engine.
         self.engine = EventEngine()
+        self.engine.add_terminate_event_type(GameEnd)
 
         # Game data.
         self.game_filename = game_filename
@@ -82,6 +84,10 @@ class Game:
     def opponent_player(self):
         return self.players[1 - self.current_player_id]
 
+    @property
+    def opponent_player_id(self):
+        return 1 - self.current_player_id
+
     # Events and handlers.
     def create_event(self, event_type, *args, **kwargs):
         return event_type(self, *args, **kwargs)
@@ -96,10 +102,10 @@ class Game:
         self.engine.add_events(event_type(self, *args, **kwargs))
 
     def dispatch_event(self, event):
-        self.engine.dispatch_event(event)
+        return self.engine.dispatch_event(event)
 
     def dispatch_event_quick(self, event_type, *args, **kwargs):
-        self.engine.dispatch_event(event_type(self, *args, **kwargs))
+        return self.engine.dispatch_event(event_type(self, *args, **kwargs))
 
     def create_handler(self, handler_type, *args, **kwargs):
         return handler_type(self, *args, **kwargs)
@@ -119,12 +125,13 @@ class Game:
 
     def init_handlers(self):
         self.add_handler_quick(TurnBeginDrawCardHandler)
+        self.add_handler_quick(CreateCoinHandler)
 
     def restart_game(self):
         self.aura_manager.clear()
         self.history.clear()
 
-        self.engine.clear()
+        self.engine.start(clear_handlers=True)
 
         self.current_player_id = 0
         self.turn_number = 0
@@ -142,3 +149,8 @@ class Game:
     def next_turn(self):
         self.current_player_id = (self.current_player_id + 1) % self.TotalPlayerNumber
         self.turn_number += 1
+
+    # Other utilities.
+    def log(self, *args, **kwargs):
+        """Logging something (maybe events?) into the history manager."""
+        pass

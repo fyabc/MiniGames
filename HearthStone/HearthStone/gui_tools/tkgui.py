@@ -4,6 +4,7 @@
 from collections import namedtuple
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter import messagebox
 
 from ..core import Game
 from ..game_events import GameBegin, GameEnd, TurnEnd, SummonMinion
@@ -434,19 +435,38 @@ class GameWindow(ttk.Frame):
                 button.config(state=tk.NORMAL)
 
     # Some user operations.
+    def _checked_dispatch(self, event_type, *args, **kwargs):
+        end_event = self.game.dispatch_event_quick(event_type, *args, **kwargs)
+
+        if end_event is not None:
+            ok = messagebox.askokcancel(
+                'Game End!',
+                '''\
+The game is end!
+Current player: P{}
+Loser: P{}
+Restart or Quit?
+'''.format(end_event.current_player_id, end_event.loser_id)
+            )
+
+            if ok:
+                self.game_begin()
+            else:
+                self.quit()
+
     def game_begin(self):
         self.game_running.set(True)
         self.game.restart_game()
-        self.game.dispatch_event_quick(GameBegin)
+        self._checked_dispatch(GameBegin)
         self.refresh_window()
 
     def turn_end(self):
-        self.game.dispatch_event_quick(TurnEnd)
+        self._checked_dispatch(TurnEnd)
         self.current_player_id.set(self.game.current_player_id)
         self.refresh_window()
 
     def _try_summon_minion(self, minion, index):
-        self.game.dispatch_event_quick(SummonMinion, minion, index)
+        self._checked_dispatch(SummonMinion, minion, index)
         self.refresh_window()
 
     def test_binding(self, event: tk.Event):

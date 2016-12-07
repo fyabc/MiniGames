@@ -88,6 +88,8 @@ class Handler:
 
 class EventEngine:
     def __init__(self, maxsize=None, **kwargs):
+        self._running = True
+
         self.events = deque(maxlen=maxsize)
 
         event_types = kwargs.pop('event_types', [])
@@ -101,11 +103,26 @@ class EventEngine:
         self.before_handler_set = defaultdict(list)
         self.after_handler_set = defaultdict(list)
 
+        # Event types that will terminate the engine.
+        self.terminate_event_types = set()
+
     # General methods
     def clear(self):
         self.events.clear()
         self.before_handler_set.clear()
         self.after_handler_set.clear()
+
+    def start(self, clear_handlers=False):
+        self._running = True
+
+        if clear_handlers:
+            self.clear()
+        else:
+            self.events.clear()
+
+    @property
+    def running(self):
+        return self._running
 
     # Event type
     @property
@@ -116,6 +133,9 @@ class EventEngine:
         for event_type in event_types:
             # [NOTE] The defaultdict will set the default value if not exists.
             _ = self.events[event_type]
+
+    def add_terminate_event_type(self, event_type):
+        self.terminate_event_types.add(event_type)
 
     # Handler
     def _get_handler_set(self, before_or_after):
@@ -179,7 +199,13 @@ class EventEngine:
         :return: None
         """
 
+        if not self._running:
+            print('Error: The engine is not running, please call "start" method.')
+            return
+
         self.events.append(event)
+
+        terminate_event = None
 
         while self.events:
             event = self.events.popleft()
@@ -202,3 +228,14 @@ class EventEngine:
 
             # [NOTE] After iteration, remove all dead handlers related to this event.
             self.remove_dead_handlers(event)
+
+            if type(event) in self.terminate_event_types:
+                terminate_event = event
+                self._running = False
+                self.events.clear()
+
+                break
+
+        # todo: run cartoon after all events?
+
+        return terminate_event

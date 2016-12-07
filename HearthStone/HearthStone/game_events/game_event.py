@@ -13,6 +13,9 @@ class GameEvent(Event):
         self.game = game
 
     def _happen(self):
+        self._message()
+
+    def _message(self):
         verbose('{} happen!'.format(self))
 
 

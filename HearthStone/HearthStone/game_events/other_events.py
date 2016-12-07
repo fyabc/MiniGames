@@ -1,5 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
+
 from ..game_entities import create_card
 from .game_event import GameEvent
 from .damage_events import Damage
@@ -15,7 +16,7 @@ class AddCardToHand(GameEvent):
         self.card = card
 
     def _happen(self):
-        verbose('P{} add a card {} to hand!'.format(self.player_id, self.card))
+        self._message()
 
         player = self.game.players[self.player_id]
         if player.hand_full:
@@ -23,6 +24,9 @@ class AddCardToHand(GameEvent):
         else:
             self.card.init_before_hand()
             player.hand.append(self.card)
+
+    def _message(self):
+        verbose('P{} add a card {} to hand!'.format(self.player_id, self.card))
 
 
 class CreateCardToHand(AddCardToHand):
@@ -38,8 +42,7 @@ class DrawCard(GameEvent):
         self.target_player_id = target_player_id if target_player_id is not None else self.game.current_player_id
 
     def _happen(self):
-        verbose('P{} draw a card (From: P{}, To: P{})!'.format(
-            self.game.current_player_id, self.source_player_id, self.target_player_id))
+        self._message()
 
         source_player = self.game.players[self.source_player_id]
 
@@ -55,6 +58,10 @@ class DrawCard(GameEvent):
         card = source_player.remove_from_deck()
         self.game.add_event_quick(AddCardToHand, card, self.target_player_id)
 
+    def _message(self):
+        verbose('P{} draw a card (From: P{}, To: P{})!'.format(
+            self.game.current_player_id, self.source_player_id, self.target_player_id))
+
 
 class PlayCard(GameEvent):
     def __init__(self, game, card, player_id=None):
@@ -63,7 +70,7 @@ class PlayCard(GameEvent):
         self.player_id = player_id if player_id is not None else game.current_player_id
 
     def _happen(self):
-        verbose('P{} play a card {}!'.format(self.player_id, self.card))
+        self._message()
 
         player = self.game.players[self.player_id]
 
@@ -72,6 +79,9 @@ class PlayCard(GameEvent):
 
         # todo: change it to `RemoveCardFromHand` event
         player.hand.remove(self.card)
+
+    def _message(self):
+        verbose('P{} play a card {}!'.format(self.player_id, self.card))
 
 
 class AddMinionToDesk(GameEvent):
@@ -95,6 +105,9 @@ class AddMinionToDesk(GameEvent):
         self.minion.init_before_desk()
         self.game.players[self.player_id].desk.insert(self.location, self.minion)
 
+    def _message(self):
+        pass
+
 
 class SummonMinion(PlayCard):
     def __init__(self, game, card, location, player_id=None):
@@ -103,13 +116,15 @@ class SummonMinion(PlayCard):
 
     def _happen(self):
         super(SummonMinion, self)._happen()
-        verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.card, self.location))
 
         # [NOTE] Add minion to desk BEFORE battle cry.
         # [WARNING] todo: here must be test carefully.
         self.game.add_event_quick(AddMinionToDesk, self.card, self.location, self.player_id)
 
         self.card.run_battle_cry()
+
+    def _message(self):
+        verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.card, self.location))
 
 
 __all__ = [
