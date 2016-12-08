@@ -1,18 +1,33 @@
 #! /usr/bin/python
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-from ..game_data.card_data import allCards
+from collections import ChainMap
+from types import new_class
+
 from .entity import GameEntity
 
 __author__ = 'fyabc'
 
 
-class Card(GameEntity):
+class SetDataMeta(type):
+    @staticmethod
+    def __new__(mcs, name, bases, ns):
+        # print(mcs, name, bases, ns)
+
+        assert len(bases) == 1, 'This metaclass requires the class have exactly 1 superclass.'
+
+        base_data = getattr(bases[0], 'data', ChainMap())
+        ns['data'] = base_data.new_child(ns.get('_data', {}))
+
+        return type.__new__(mcs, name, bases, ns)
+
+
+class Card(GameEntity, metaclass=SetDataMeta):
     """The class of card.
 
-    [NOTE] We do not copy the value of cost from CardData into card.
-        Reason: see docstring of `Minion`.
-    """
+        [NOTE] We do not copy the value of cost from CardData into card.
+            Reason: see docstring of `Minion`.
+        """
 
     CreatedCardNumber = 0
 
@@ -26,28 +41,37 @@ class Card(GameEntity):
     Deck = 1
     Hand = 2
     Desk = 3
-    Cemetery = 4    # This location may useless: cards in cemetery are only stored as card_id (?).
+    Cemetery = 4  # This location may useless: cards in cemetery are only stored as card_id (?).
 
-    def __init__(self, game, card_id, location=Null):
+    _data = {
+        'id': None,
+        'type': 0,
+        'name': '',
+        'package': 0,
+        'rarity': 0,
+        'klass': 0,             # The class of the card: 0 is neutral, others are class id.
+        'race': [],
+        'CAH': [0, 1, 1],
+        'overload': 0,
+    }
+
+    data = {}
+
+    def __init__(self, game):
         super(Card, self).__init__(game)
 
         self.id = Card.CreatedCardNumber
         Card.CreatedCardNumber += 1
 
-        # Location of this card.
-        self.location = location
-
         # Card data.
-        self.data = allCards[card_id]
-
-        # todo: load skills.
+        self.location = self.Null
 
         # Auras on this card.
         # These auras will affect cost, attack and other attributes of card.
         self.auras = []
 
     def __str__(self):
-        return '{}(id={},card_id={},name={})'.format(self.__class__.__name__, self.id, self.data.id, self.data.name)
+        return '{}(id={},card_id={},name={})'.format(type(self).__name__, self.id, self.data['id'], self.data['name'])
 
     def __repr__(self):
         return self.__str__()
@@ -58,7 +82,7 @@ class Card(GameEntity):
     # Such as other attributes.
     @property
     def cost(self):
-        result = self.data.cost
+        result = self.data['CAH'][0]
 
         # todo: add auras
 
@@ -70,6 +94,14 @@ class Card(GameEntity):
         # [NOTE] The card may be controlled by different players, so this property may change.
         return None
 
+    # Some utilities.
+    @classmethod
+    def create_blank(cls, name, data):
+        cls_dict = {'_data': data}
+        result = new_class(name, (cls,), {}, lambda ns: ns.update(cls_dict))
+        result.__module__ = __name__
+        return result
+
 
 class Minion(Card):
     """The class of minion.
@@ -79,23 +111,31 @@ class Minion(Card):
         other attributes should be calculated by its basic value and auras.
     """
 
-    def __init__(self, game, card_id):
-        super(Minion, self).__init__(game, card_id)
+    _data = {
+        'attack_number': 1,
+        'taunt': False,
+        'charge': False,
+        'divine_shield': False,
+        'stealth': False,
+    }
 
-        self.health = self.data.health                          # Health
+    def __init__(self, game):
+        super(Minion, self).__init__(game)
 
-        self.remain_attack_number = 0                          # Remain attack number in this turn
-        self._divine_shield = False                             # Is this minion have divine shield?
-        self._frozen = 0                                        # Is this minion frozen?
-        self._silent = False                                    # Is this minion silent?
+        self.health = self.data['CAH'][2]           # Health
+
+        self.remain_attack_number = 0               # Remain attack number in this turn
+        self._divine_shield = False                 # Is this minion have divine shield?
+        self._frozen = 0                            # Is this minion frozen?
+        self._silent = False                        # Is this minion silent?
 
     def __str__(self):
-        return '{}({},{},{})'.format(self.data.name, self.cost, self.attack, self.health)
+        return '{}({},{},{})'.format(self.data['name'], self.cost, self.attack, self.health)
 
     # Properties.
     @property
     def attack(self):
-        result = self.data.attack
+        result = self.data['CAH'][1]
 
         # todo: add auras
 
@@ -103,7 +143,7 @@ class Minion(Card):
 
     @property
     def max_health(self):
-        result = self.data.health
+        result = self.data['CAH'][2]
 
         # todo: add auras
 
@@ -114,7 +154,7 @@ class Minion(Card):
         if self._silent:
             result = 1
         else:
-            result = self.data.attack_number
+            result = self.data['attack_number']
 
         # todo: add auras
 
@@ -125,7 +165,7 @@ class Minion(Card):
         if self._silent:
             result = False
         else:
-            result = self.data.divine_shield
+            result = self.data['divine_shield']
 
         # todo: add auras
 
@@ -136,7 +176,7 @@ class Minion(Card):
         if self._silent:
             result = False
         else:
-            result = self.data.taunt
+            result = self.data['taunt']
 
         # todo: add auras
 
@@ -147,7 +187,7 @@ class Minion(Card):
         if self._silent:
             result = False
         else:
-            result = self.data.charge
+            result = self.data['charge']
 
         # todo: add auras
 
@@ -158,7 +198,7 @@ class Minion(Card):
         if self._silent:
             result = False
         else:
-            result = self.data.stealth
+            result = self.data['stealth']
 
         # todo: add auras
 
@@ -185,12 +225,14 @@ class Minion(Card):
         self.location = self.Desk
 
     def run_battle_cry(self):
+        """Overrided by subclasses."""
         pass
 
     def death(self):
         pass
 
     def run_death_rattle(self):
+        """Overrided by subclasses."""
         pass
 
     def take_damage(self, source, value):
@@ -234,29 +276,9 @@ class Weapon(Card):
     pass
 
 
-def create_card(game, card_id, *args, **kwargs):
-    """Create card from the data.
-
-    It will create minion, spell or weapon according to `data['type']`.
-    """
-
-    card_type_id = allCards[card_id].type
-    if card_type_id == Card.Type_Minion:
-        card_type = Minion
-    elif card_type_id == Card.Type_Spell:
-        card_type = Spell
-    elif card_type_id == Card.Type_Weapon:
-        card_type = Weapon
-    else:
-        card_type = Card
-
-    return card_type(game, card_id, *args, **kwargs)
-
-
 __all__ = [
     'Card',
     'Minion',
     'Spell',
     'Weapon',
-    'create_card',
 ]

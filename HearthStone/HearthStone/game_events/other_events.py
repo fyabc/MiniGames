@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..game_entities import create_card
+from ..game_datas import AllCards
 from .game_event import GameEvent
 from .damage_events import Damage
 from ..utils import verbose
@@ -31,7 +31,7 @@ class AddCardToHand(GameEvent):
 
 class CreateCardToHand(AddCardToHand):
     def __init__(self, game, card_id, player_id=None):
-        super(CreateCardToHand, self).__init__(game, create_card(game, card_id), player_id)
+        super(CreateCardToHand, self).__init__(game, AllCards[card_id](game), player_id)
 
 
 class DrawCard(GameEvent):

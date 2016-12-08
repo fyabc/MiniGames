@@ -5,7 +5,8 @@ import json
 
 from .game_handlers import TurnBeginDrawCardHandler, CreateCoinHandler
 from .event_framework import EventEngine
-from .game_entities import Player
+from .game_entities.player import Player
+from .game_datas import AllCards
 from .game_events import GameEnd
 from .game_exception import GameEndException
 
@@ -151,6 +152,9 @@ class Game:
         self.turn_number += 1
 
     # Other utilities.
+    def create_card(self, card_id):
+        return AllCards[card_id](self)
+
     def log(self, *args, **kwargs):
         """Logging something (maybe events?) into the history manager."""
         pass

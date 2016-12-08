@@ -119,7 +119,7 @@ def align_line(left_line, right_line, width=120, fill=' ', sep=' '):
 
 
 def show_card(card, width=7):
-    card_type = card.data.type
+    card_type = card.data['type']
     if card_type == card.Type_Minion:
         return show_minion(card, width)
     # todo: change to show_spell & show_weapon
@@ -139,8 +139,8 @@ def show_minion(minion: Minion, width=7, border=False):
 {}{}{}
 {}{}{}
 '''.format(
-        b, minion.data.name.center(width), b,
-        b, align_line(minion.cost, '#{}'.format(minion.data.id), width), b,
+        b, minion.data['name'].center(width), b,
+        b, align_line(minion.cost, '#{}'.format(minion.data['id']), width), b,
         b, align_line('*' if minion.remain_attack_number > 0 else [], [], width), b,
         b, '{} {} {} {}'.format(
             'T' if minion.taunt else ' ',

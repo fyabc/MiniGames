@@ -2,9 +2,8 @@
 # -*- encoding: utf-8 -*-
 import random
 
-from .card import create_card
+from ..game_datas import AllCards
 from .entity import GameEntity
-from ..game_exception import HeroDeathException
 from ..game_events.basic_events import GameEnd
 
 __author__ = 'fyabc'
@@ -68,10 +67,10 @@ class Player(GameEntity):
         # result.hero = Hero(allHeroes[data['hero_id']])
         for record in data['deck']:
             if isinstance(record, int):
-                result.deck.append(create_card(game, record))
+                result.deck.append(AllCards[record](game))
             else:
                 card_id, number = record
-                result.deck.extend(create_card(game, card_id) for _ in range(number))
+                result.deck.extend(AllCards[card_id](game) for _ in range(number))
 
         random.shuffle(result.deck)
 
