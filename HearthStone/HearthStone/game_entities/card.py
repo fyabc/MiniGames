@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
+from ..game_data.card_data import allCards
 from .entity import GameEntity
-from ..game_data import allCards
 
 __author__ = 'fyabc'
 

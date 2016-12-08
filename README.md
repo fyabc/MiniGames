@@ -14,6 +14,7 @@ Some MiniGames written in **Python**, using *pygame* and *cocos2d* library.
 |Tetris         |2016.06.07 |               |cocos2d        |
 |Flappy Bird    |2016.06.08 |               |cocos2d        |
 |AntsSpiders    |2016.06.19 |2016.06.27     |pygame         |
+|HearthStone    |2016.11.25 |               |               |
 
 -------
     

@@ -1,5 +1,6 @@
 include README.md
 
 recursive-include HearthStone/data *
+recursive-include HearthStone/userdata *
 recursive-include HearthStone/config *
 recursive-include doc *
