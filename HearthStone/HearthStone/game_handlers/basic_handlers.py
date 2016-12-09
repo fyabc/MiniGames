@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .game_handler import GameHandler
-from ..game_events import GameBegin, CreateCardToHand, Damage
+from ..game_events import GameBegin, Damage
 from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'

@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from HearthStone.game_entities.card import Minion
+from HearthStone.ext import Minion
 
 __author__ = 'fyabc'
 

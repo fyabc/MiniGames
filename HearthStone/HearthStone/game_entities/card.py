@@ -12,7 +12,8 @@ __author__ = 'fyabc'
 class SetDataMeta(type):
     @staticmethod
     def __new__(mcs, name, bases, ns):
-        # print(mcs, name, bases, ns)
+        # This called before the class created.
+        # print('New:', mcs, name, bases, ns)
 
         assert len(bases) == 1, 'This metaclass requires the class have exactly 1 superclass.'
 
@@ -21,13 +22,44 @@ class SetDataMeta(type):
 
         return type.__new__(mcs, name, bases, ns)
 
+    def __init__(cls, name, bases, ns):
+        # This called after the class created.
+        # print('Init:', cls, name, bases, ns)
+
+        super().__init__(name, bases, ns)
+
 
 class Card(GameEntity, metaclass=SetDataMeta):
     """The class of card.
 
-        [NOTE] We do not copy the value of cost from CardData into card.
-            Reason: see docstring of `Minion`.
-        """
+    Docstring for users
+    ===================
+
+    How to create your own card
+    ---------------------------
+    If you want to create your own card, you need to make a new class of your card.
+    The new class must be subclass of `Minion`, `Spell` or `Weapon` (in `HearthStone.game_entities.card` package)
+
+    Assume that the new card is a minion `Minion001`, package is `package001`.
+
+    1. Create a file
+        Create a Python file into the user card data path.
+
+        Tips:
+            The default card data path is "~/data/card/", "~" is the root of the HearthStone package.
+            The default user card data path is "~/userdata/card/".
+            You can also add your own card data path by add it into `HearthStone.utils.path_utils.LoadCardPath`.
+
+        It is recommended that the file name is same as the package name, so you should create a file `package001.py`.
+
+
+
+    Docstring for the HearthStone system
+    ====================================
+
+    [NOTE] We do not copy the value of cost from CardData into card.
+        Reason: see docstring of `Minion`.
+    """
 
     CreatedCardNumber = 0
 

@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 import random
 
-from ..game_datas import AllCards
+from ..game_data.card_data import AllCards
 from .entity import GameEntity
 from ..game_events.basic_events import GameEnd
 

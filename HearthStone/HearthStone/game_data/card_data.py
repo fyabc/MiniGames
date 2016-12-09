@@ -2,30 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import os
+from collections import defaultdict
 
-from .game_entities.card import Card, SetDataMeta
-from .utils.path_utils import CardDataPath, UserCardDataPath, CardDataPackageName, UserCardDataPackageName
+from ..game_entities.card import Card, SetDataMeta
+from ..utils import LoadCardPath, get_module_vars
 
 __author__ = 'fyabc'
 
 
 # Card data.
 AllCards = {}
+AllPackages = defaultdict(set)
 
 
 def load_all_cards():
-    for data_path, package_name in [
-        (CardDataPath, CardDataPackageName),
-        (UserCardDataPath, UserCardDataPackageName),
-    ]:
+    for data_path in LoadCardPath:
         if not os.path.exists(data_path):
             continue
         for name in os.listdir(data_path):
             if name.endswith('.py'):
-                module_name = name[:-3]
-                exec('from {} import {}'.format(package_name, module_name))
-
-                module_vars = eval('vars({})'.format(module_name))
+                module_vars = get_module_vars(os.path.join(data_path, name))
                 for card_typename, card_type in module_vars.items():
                     if type(card_type) == SetDataMeta and issubclass(card_type, Card):
                         data = card_type.data

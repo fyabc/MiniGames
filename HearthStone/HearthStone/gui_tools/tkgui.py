@@ -99,12 +99,12 @@ class GameWindow(ttk.Frame):
             ttk.Frame(self, borderwidth=frame_bw),
         ]
 
-        self.hand_frames[0].grid(row=3, column=1)
+        self.hand_frames[0].grid(row=2, column=1)
         self.hand_frames[1].grid(row=0, column=1)
 
         # Desk frame.
         self.desk_frame = ttk.Frame(self, borderwidth=frame_bw)
-        self.desk_frame.grid(row=1, column=1, columnspan=2, stick=tk.W + tk.E)
+        self.desk_frame.grid(row=1, column=1, columnspan=1, stick=tk.W + tk.E)
 
         # Fill the board with Buttons.
         # Buttons between minions should have smaller width.
@@ -168,7 +168,7 @@ class GameWindow(ttk.Frame):
                 text='Player 1 Information',
             ),
         ]
-        self.info_frames[0].grid(row=3, column=2, columnspan=1, sticky=tk.N + tk.S)
+        self.info_frames[0].grid(row=2, column=2, columnspan=1, sticky=tk.N + tk.S)
         self.info_frames[1].grid(row=0, column=2, columnspan=1, sticky=tk.N + tk.S)
 
         self.deck_number = [tk.IntVar(self, 0), tk.IntVar(self, 0)]
@@ -218,6 +218,37 @@ class GameWindow(ttk.Frame):
             health_label.grid(row=0, column=1, stick=tk.W)
             deck_number_label.grid(row=1, column=1, stick=tk.W)
             crystal_label.grid(row=2, column=1, stick=tk.W)
+
+        # Turn end button.
+        self.player_button_frame = ttk.Frame(self, borderwidth=frame_bw)
+        self.player_button_frame.grid(row=1, column=2)
+
+        self.player_buttons = [
+            [
+                ttk.Button(self.player_button_frame,
+                           text='Turn End',
+                           state=tk.DISABLED,
+                           command=self.turn_end,
+                           ),
+                ttk.Button(self.player_button_frame,
+                           text='Skill',
+                           state=tk.DISABLED,
+                           ),
+                ttk.Button(self.player_button_frame,
+                           text='Hero',
+                           state=tk.DISABLED,
+                           ),
+            ] for _ in (0, 1)
+        ]
+
+        _n_button = len(self.player_buttons[0])
+        for i in (0, 1):
+            for n, button in enumerate(self.player_buttons[i]):
+                if i == 0:
+                    _row = n + _n_button
+                else:
+                    _row = _n_button - 1 - n
+                button.grid(row=_row, column=0, pady=3)
 
         ############################
         # Some initial operations. #
@@ -393,6 +424,8 @@ class GameWindow(ttk.Frame):
 
                     if player.remain_crystal < minion.cost:
                         error('I don\'t have enough mana crystals!')
+                    elif player.desk_full:
+                        error('The desk of P{} is full!'.format(player.player_id))
                     else:
                         self._try_summon_minion(minion, index_)
                 elif operation == 'attack':
@@ -423,16 +456,20 @@ class GameWindow(ttk.Frame):
                     button.config(state=tk.DISABLED)
 
     def _on_current_player_id_changed(self, *args):
-        if self.current_player_id.get() == 0:
-            for button in self.hand_card_buttons[0]:
-                button.config(state=tk.NORMAL)
-            for button in self.hand_card_buttons[1]:
-                button.config(state=tk.DISABLED)
-        else:
-            for button in self.hand_card_buttons[0]:
-                button.config(state=tk.DISABLED)
-            for button in self.hand_card_buttons[1]:
-                button.config(state=tk.NORMAL)
+        cur = self.current_player_id.get()
+        opp = 1 - cur
+
+        for button in self.hand_card_buttons[cur]:
+            button.config(state=tk.NORMAL)
+        for button in self.hand_card_buttons[opp]:
+            button.config(state=tk.DISABLED)
+        self.player_buttons[cur][0].config(text='Turn End')
+        for button in self.player_buttons[cur]:
+            button.config(state=tk.NORMAL)
+
+        self.player_buttons[opp][0].config(text='Enemy Turn')
+        for button in self.player_buttons[opp]:
+            button.config(state=tk.DISABLED)
 
     # Some user operations.
     def _checked_dispatch(self, event_type, *args, **kwargs):

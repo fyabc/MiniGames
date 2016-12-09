@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..game_datas import AllCards
-from .game_event import GameEvent
+from ..game_data.card_data import AllCards
 from .damage_events import Damage
+from .game_event import GameEvent
 from ..utils import verbose
 
 __author__ = 'fyabc'
