@@ -7,5 +7,6 @@ from .damage_events import *
 from .other_events import *
 from .play_events import *
 from .attack_events import *
+from .card_events import *
 
 __author__ = 'fyabc'

@@ -1,7 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .game_events import GameBegin, GameEnd, TurnEnd, SummonMinion
+from .game_events.basic_events import GameBegin, GameEnd, TurnEnd
+from .game_events.play_events import SummonMinion
 from .utils import verbose, error, Config
 from .cli_tool import simple_show_board, show_board, clear_screen
 

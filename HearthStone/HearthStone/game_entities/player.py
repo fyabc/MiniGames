@@ -80,7 +80,7 @@ class Player(GameEntity):
     def turn_begin(self):
         if self.total_crystal < self.game.MaxCrystal:
             self.total_crystal += 1
-        self.locked_crystal = self.next_locked_crystal
+        self.locked_crystal = min(self.next_locked_crystal, self.game.MaxCrystal)
         self.next_locked_crystal = 0
         self.remain_crystal = self.total_crystal - self.locked_crystal
 
@@ -114,6 +114,10 @@ class Player(GameEntity):
     def append_to_hand(self, card):
         card.location = card.Hand
         self.hand.append(card)
+
+    # Other methods of game values.
+    def add_crystal(self, value):
+        self.remain_crystal = min(self.remain_crystal + value, self.game.MaxCrystal - self.locked_crystal)
 
 
 __all__ = [

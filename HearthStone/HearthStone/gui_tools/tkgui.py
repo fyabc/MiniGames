@@ -6,8 +6,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 
-from ..core import Game
-from ..game_events import GameBegin, GameEnd, TurnEnd, SummonMinion
+from ..game_events.basic_events import GameBegin, GameEnd, TurnEnd
+from ..game_events.play_events import SummonMinion
 from ..cli_tool import show_card, show_minion
 from ..utils.debug_utils import error
 
@@ -21,12 +21,27 @@ class GameWindow(ttk.Frame):
 
     # [NOTE] Some rules of the variable's name in the layout:
     # There are two players in the game. I am Player 0, opponent is Player 1.
-    # `self.deck_frame_0`, `self.deck_frame_1`
 
     # Some constants.
     ShowCardWidth = 7
 
     SelectionType = namedtuple('Selection', ['player_id', 'location', 'index'])
+
+    class SelectionStateMachine:
+        States = {
+            0: 'No Selection',
+            1: 'Select My Hand',
+        }
+
+        def __init__(self, window):
+            self.state = 0
+            self.window = window
+
+        def set_window_buttons(self):
+            pass
+
+        def transform(self, selection):
+            pass
 
     def __init__(self, game, master=None):
         super(GameWindow, self).__init__(master=master, borderwidth=30)
@@ -45,6 +60,7 @@ class GameWindow(ttk.Frame):
         # todo: add a state machine to manage the selection state.
         # The selection state should be a variable to be traced.
         # For example, when select a minion in hand, then only locations in my desk can be select.
+        self.ssm = self.SelectionStateMachine(self)
 
         ########
         # Menu #
@@ -117,13 +133,13 @@ class GameWindow(ttk.Frame):
                 width=card_width,
                 state=tk.DISABLED,
                 command=lambda i=i: self._process_selection(0, 'hand', i),
-            ) for i in range(Game.MaxHandNumber)],
+            ) for i in range(self.game.MaxHandNumber)],
             [ttk.Button(
                 self.hand_frames[1],
                 width=card_width,
                 state=tk.DISABLED,
                 command=lambda i=i: self._process_selection(1, 'hand', i),
-            ) for i in range(Game.MaxHandNumber)],
+            ) for i in range(self.game.MaxHandNumber)],
         ]
 
         for i in (0, 1):
@@ -135,12 +151,12 @@ class GameWindow(ttk.Frame):
                 self.desk_frame,
                 state=tk.DISABLED,
                 command=lambda i=i: self._process_selection(0, 'desk', i),
-            ) for i in range(2 * Game.MaxDeskNumber + 1)],
+            ) for i in range(2 * self.game.MaxDeskNumber + 1)],
             [ttk.Button(
                 self.desk_frame,
                 state=tk.DISABLED,
                 command=lambda i=i: self._process_selection(1, 'desk', i),
-            ) for i in range(2 * Game.MaxDeskNumber + 1)],
+            ) for i in range(2 * self.game.MaxDeskNumber + 1)],
         ]
 
         for i in (0, 1):
