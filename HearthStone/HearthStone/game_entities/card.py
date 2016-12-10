@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 from collections import ChainMap
 from types import new_class
 
@@ -81,22 +82,24 @@ class Card(GameEntity, metaclass=SetDataMeta):
     Type_Weapon = 2
 
     # Locations of the card.
-    Null = 0
-    Deck = 1
-    Hand = 2
-    Desk = 3
-    Cemetery = 4  # This location may useless: cards in cemetery are only stored as card_id (?).
+    NULL = 0
+    DECK = 1
+    HAND = 2
+    DESK = 3
+    CEMETERY = 4  # This location may useless: cards in cemetery are only stored as card_id (?).
 
     _data = {
         'id': None,
         'type': 0,
         'name': '',
         'package': 0,
-        'rarity': 0,
-        'klass': 0,             # The class of the card: 0 is neutral, others are class id.
+        'rarity': 0,            # The rarity of the card:
+                                #   0 = basic, 1 = common, 2 = rare, 3 = epic, 4 = legend, -1 = derivative
+        'klass': 0,             # The class of the card: 0 = neutral, others are class id.
         'race': [],
         'CAH': [0, 1, 1],
         'overload': 0,
+        'description': '',
     }
 
     data = {}
@@ -108,7 +111,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
         Card.CreatedCardNumber += 1
 
         # Card data.
-        self.location = self.Null
+        self.location = self.NULL
 
         # Auras on this card.
         # These auras will affect cost, attack and other attributes of card.
@@ -143,7 +146,9 @@ class Card(GameEntity, metaclass=SetDataMeta):
     def create_blank(cls, name, data):
         cls_dict = {'_data': data}
         result = new_class(name, (cls,), {}, lambda ns: ns.update(cls_dict))
-        result.__module__ = __name__
+
+        # Get the module name of caller.
+        result.__module__ = sys._getframe(1).f_globals['__name__']
         return result
 
 
@@ -260,13 +265,14 @@ class Minion(Card):
 
     # Operations.
     def init_before_hand(self):
-        self.location = self.Hand
+        self.location = self.HAND
 
     def init_before_desk(self):
         """Initializations of the minion before put onto desk. (Both summon and put directly)"""
-        self.remain_attack_number = self.attack_number
+        if self.charge:
+            self.remain_attack_number = self.attack_number
         self._divine_shield = self.divine_shield
-        self.location = self.Desk
+        self.location = self.DESK
 
     def run_battle_cry(self):
         """Overrided by subclasses."""
@@ -295,7 +301,13 @@ class Minion(Card):
         self._frozen = 0
 
     def turn_begin(self):
-        """When a new turn start, refresh its attack number and frozen status."""
+        """When a new turn start, refresh its attack number and frozen status.
+
+        (Only when the minion is on the desk)
+        """
+
+        if self.location != self.DESK:
+            return
 
         self.remain_attack_number = self.attack_number
         self._frozen_step()

@@ -103,16 +103,16 @@ class Player(GameEntity):
     # Methods of remove and add cards.
     def remove_from_deck(self, index=-1):
         card = self.deck.pop(index)
-        card.location = card.Null
+        card.location = card.NULL
         return card
 
     def remove_from_hand(self, index=-1):
         card = self.hand.pop(index)
-        card.location = card.Null
+        card.location = card.NULL
         return card
 
     def append_to_hand(self, card):
-        card.location = card.Hand
+        card.location = card.HAND
         self.hand.append(card)
 
     # Other methods of game values.

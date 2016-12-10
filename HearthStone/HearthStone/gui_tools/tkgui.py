@@ -9,6 +9,7 @@ from tkinter import messagebox
 from ..game_events.basic_events import GameBegin, GameEnd, TurnEnd
 from ..game_events.play_events import SummonMinion
 from ..cli_tool import show_card, show_minion
+from .tk_ext import ToolTip
 from ..utils.debug_utils import error
 
 __author__ = 'fyabc'
@@ -347,6 +348,7 @@ class GameWindow(ttk.Frame):
                     button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
                 else:
                     button.config(text=show_card(player.hand[n], self.ShowCardWidth))
+                    ToolTip(button, player.hand[n].data['description'])
 
     def refresh_info(self):
         for i in (0, 1):
