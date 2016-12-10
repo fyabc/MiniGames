@@ -8,8 +8,7 @@ __author__ = 'fyabc'
 
 Package = {
     "id": 0,
-    "name": "basic",
-    "cards": [],
+    "name": "Basic",
 }
 
 

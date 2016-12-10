@@ -10,32 +10,33 @@ __author__ = 'fyabc'
 # Package root path.
 PackageRootPath = os.path.dirname(os.path.dirname(__file__))
 
+# Package names.
+CardPackageName = 'HearthStoneCard'
+HeroPackageName = 'HearthStoneHero'
+
 # Data path.
 DataPath = os.path.join(PackageRootPath, 'data')
-CardDataPath = os.path.join(DataPath, 'card')
-HeroDataPath = os.path.join(DataPath, 'hero')
+CardDataPath = os.path.join(DataPath, CardPackageName)
+HeroDataPath = os.path.join(DataPath, HeroPackageName)
 
 # Config path.
 ConfigPath = os.path.join(PackageRootPath, 'config')
 
 # UserData path.
 UserDataPath = os.path.join(PackageRootPath, 'userdata')
-UserCardDataPath = os.path.join(UserDataPath, 'card')
-UserHeroDataPath = os.path.join(UserDataPath, 'hero')
+UserCardDataPath = os.path.join(UserDataPath, CardPackageName)
+UserHeroDataPath = os.path.join(UserDataPath, HeroPackageName)
 
 # Load data path. User can add their own paths into it.
-LoadCardPath = [
-    CardDataPath,
-    UserCardDataPath,
-]
-
-LoadHeroPath = [
-    HeroDataPath,
-    UserHeroDataPath,
+LoadDataPath = [
+    DataPath,
+    UserDataPath,
 ]
 
 __all__ = [
     'PackageRootPath',
+    'CardPackageName',
+    'HeroPackageName',
     'DataPath',
     'CardDataPath',
     'HeroDataPath',
@@ -43,6 +44,5 @@ __all__ = [
     'ConfigPath',
     'UserCardDataPath',
     'UserHeroDataPath',
-    'LoadCardPath',
-    'LoadHeroPath',
+    'LoadDataPath',
 ]

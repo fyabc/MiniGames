@@ -1,0 +1,4 @@
+Play                    = 对战模式
+Solo Adventures         = 冒险模式
+The Arena               = 竞技模式
+Tavern Brawl            = 乱斗模式
