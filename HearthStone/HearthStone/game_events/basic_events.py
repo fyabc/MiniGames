@@ -61,7 +61,7 @@ class TurnEnd(GameEvent):
         self._message()
 
         self.game.next_turn()
-        self.game.add_events(self.game.create_event(TurnBegin))
+        self.game.add_event_quick(TurnBegin)
 
     def _message(self):
         verbose('Turn {} (P{}) end!'

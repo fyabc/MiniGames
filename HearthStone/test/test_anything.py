@@ -7,7 +7,7 @@ __author__ = 'fyabc'
 
 
 def _test():
-    from HearthStone.game_datas import AllCards
+    from HearthStone.game_data.card_data import AllCards
 
     for card_id, card_type in AllCards.items():
         print(card_id)

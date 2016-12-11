@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from .game_handler import GameHandler
-from ..game_events import GameBegin, Damage
+from ..game_events.basic_events import GameBegin, TurnBegin
+from ..game_events.card_events import DrawCard
+from ..game_events.damage_events import Damage
 from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
@@ -26,6 +28,20 @@ class DamageDeathHandler(GameHandler):
     pass
 
 
+class TurnBeginDrawCardHandler(GameHandler):
+    """The default handler of `TurnBegin`.
+
+    It will draw a card for current player.
+    """
+
+    event_types = [TurnBegin]
+
+    def _process(self, event):
+        self.game.add_event_quick(DrawCard)
+
+
 __all__ = [
     'CreateCoinHandler',
+    'DamageDeathHandler',
+    'TurnBeginDrawCardHandler',
 ]

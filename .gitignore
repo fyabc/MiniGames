@@ -66,3 +66,6 @@ target/
 
 # Generated distribution packages
 HearthStone/dist/
+
+# HearthStone event engine logging files
+HearthStone/test/logs/

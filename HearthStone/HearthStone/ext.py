@@ -7,6 +7,12 @@ Users who want to extend HearthStone should import this module.
 """
 
 from .game_entities.card import Minion, Spell, Weapon
+from .game_events.basic_events import *
+from .game_events.card_events import *
+from .game_events.attack_events import *
+from .game_events.damage_events import *
+from .game_events.game_event import *
+from .game_events.play_events import *
 
 __author__ = 'fyabc'
 
@@ -16,8 +22,9 @@ def set_description(card_table):
         card._data['description'] = description
 
 
-__all__ = [
-    'Minion',
-    'Spell',
-    'Weapon',
-]
+def desk_location(game, minion):
+    for player_id in (0, 1):
+        for i, m in game.players[player_id].desk:
+            if m == minion:
+                return player_id, i
+    return None, None

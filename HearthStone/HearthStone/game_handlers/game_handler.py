@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.event_framework import Handler
-from HearthStone.game_events import *
 
 __author__ = 'fyabc'
 
@@ -37,19 +36,6 @@ class GameHandler(Handler):
         print('{} is processing {}!'.format(self, event))
 
 
-class TurnBeginDrawCardHandler(GameHandler):
-    """The default handler of `TurnBegin`.
-
-    It will draw a card for current player.
-    """
-
-    event_types = [TurnBegin]
-
-    def _process(self, event):
-        self.game.add_event_quick(DrawCard)
-
-
 __all__ = [
     'GameHandler',
-    'TurnBeginDrawCardHandler',
 ]

@@ -274,8 +274,12 @@ class Minion(Card):
         self._divine_shield = self.divine_shield
         self.location = self.DESK
 
-    def run_battle_cry(self):
-        """Overrided by subclasses."""
+    def run_battle_cry(self, player_id, location):
+        """Overrided by subclasses.
+
+        :param player_id: the player id.
+        :param location: The location of the minion to be placed.
+        """
         pass
 
     def death(self):

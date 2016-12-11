@@ -14,6 +14,9 @@ class Damage(GameEvent):
         self.target = target
         self.value = value
 
+    def __str__(self):
+        return '{}({}=>{}, value={})'.format(super().__str__(), self.source, self.target, self.value)
+
     def _happen(self):
         self._message()
 

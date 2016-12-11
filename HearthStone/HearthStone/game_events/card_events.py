@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..game_data.card_data import AllCards
+from ..game_data.card_data import get_all_cards
 from .game_event import GameEvent
 from .damage_events import Damage
 from ..utils import verbose
@@ -14,6 +14,9 @@ class AddCardToHand(GameEvent):
         super(AddCardToHand, self).__init__(game)
         self.player_id = player_id if player_id is not None else game.current_player_id
         self.card = card
+
+    def __str__(self):
+        return '{}({}=>P{})'.format(super().__str__(), self.card, self.player_id)
 
     def _happen(self):
         self._message()
@@ -31,7 +34,7 @@ class AddCardToHand(GameEvent):
 
 class CreateCardToHand(AddCardToHand):
     def __init__(self, game, card_id, player_id=None):
-        super(CreateCardToHand, self).__init__(game, AllCards[card_id](game), player_id)
+        super(CreateCardToHand, self).__init__(game, get_all_cards()[card_id](game), player_id)
 
 
 class DrawCard(GameEvent):
@@ -40,6 +43,9 @@ class DrawCard(GameEvent):
         super(DrawCard, self).__init__(game)
         self.source_player_id = source_player_id if source_player_id is not None else self.game.current_player_id
         self.target_player_id = target_player_id if target_player_id is not None else self.game.current_player_id
+
+    def __str__(self):
+        return '{}(P{} draw to P{})'.format(super().__str__(), self.source_player_id, self.target_player_id)
 
     def _happen(self):
         self._message()

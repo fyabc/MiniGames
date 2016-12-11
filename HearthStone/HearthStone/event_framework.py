@@ -13,7 +13,8 @@ class Event:
         self.id = Event.CreatedEventNumber
         Event.CreatedEventNumber += 1
 
-        # Handlers before the event may disable it. If an event is disabled, it will not happen.
+        # Handlers before the event may disable it. If an event is disabled, it will not happen,
+        # and other handlers will not process it.
         self.alive = True
 
     def __str__(self):
@@ -79,7 +80,7 @@ class Handler:
         self.alive = False
 
     def process(self, event):
-        if self.alive:
+        if self.alive and event.alive:
             self._process(event)
 
     def _process(self, event):
@@ -105,6 +106,19 @@ class EventEngine:
 
         # Event types that will terminate the engine.
         self.terminate_event_types = set()
+
+        # Logging
+        import time
+        logging_filename = kwargs.pop(
+            'logging_file',
+            'C:/Users/DELL/PycharmProjects/MiniGames/HearthStone/test/logs/log_engine_{}.txt'.format(
+                time.strftime('%y_%m_%d_%H_%M_%S')))
+        # logging_filename = None
+
+        if logging_filename is not None:
+            self.logging_file = open(logging_filename, 'w', encoding='utf-8')
+        else:
+            self.logging_file = None
 
     # General methods
     def clear(self):
@@ -190,20 +204,28 @@ class EventEngine:
     def add_events(self, *events):
         self.events.extend(events)
 
-    def dispatch_event(self, event):
+    def prepend_event(self, event):
+        self.events.appendleft(event)
+
+    def prepend_events(self, *events):
+        self.events.extendleft(events)
+
+    def dispatch_event(self, event=None):
         """Dispatch a user event to handlers.
         This method will clear the event queue.
         [NOTE] `event` may cause several other events.
 
         :param event: event given by user.
-        :return: None
+            If event is None, not any new event will be appended.
+        :return: terminate event or None.
         """
 
         if not self._running:
             print('Error: The engine is not running, please call "start" method.')
             return
 
-        self.events.append(event)
+        if event is not None:
+            self.events.append(event)
 
         terminate_event = None
 
@@ -220,11 +242,16 @@ class EventEngine:
 
             event.happen()
 
-            for event_type in event.get_ancestors():
-                handlers = self.after_handler_set.get(event_type, None)
-                if handlers is not None:
-                    for handler in handlers:
-                        handler.process(event)
+            if event.alive:
+                for event_type in event.get_ancestors():
+                    handlers = self.after_handler_set.get(event_type, None)
+                    if handlers is not None:
+                        for handler in handlers:
+                            handler.process(event)
+
+            if self.logging_file is not None:
+                self.logging_file.write('{}{}\n'.format(event, '' if event.alive else '(X)'))
+                self.logging_file.flush()
 
             # [NOTE] After iteration, remove all dead handlers related to this event.
             self.remove_dead_handlers(event)

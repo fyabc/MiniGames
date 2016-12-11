@@ -1,7 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from HearthStone.ext import Minion, set_description
+from HearthStone.ext import Minion, set_description, desk_location
+from HearthStone.ext import DrawCard, AddMinionToDesk
 
 __author__ = 'fyabc'
 
@@ -29,10 +30,22 @@ Package = {
 蓝腮战士 = Minion.create_blank('蓝腮战士', dict(id=9, name='蓝腮战士', race=['Murloc'], CAH=[2, 2, 1], charge=True))
 霜狼步兵 = Minion.create_blank('霜狼步兵', dict(id=10, name='霜狼步兵', CAH=[2, 2, 2], taunt=True))
 狗头人地卜师 = Minion.create_blank('狗头人地卜师', dict(id=11, name='狗头人地卜师', CAH=[2, 2, 2]))
-鱼人猎潮者 = Minion.create_blank('鱼人猎潮者', dict(id=12, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1]))
 # This is a typical derivative card.
 鱼人斥候 = Minion.create_blank('鱼人斥候', dict(id=13, name='鱼人斥候', race=['Murloc'], CAH=[1, 1, 1], rarity=-1))
-工程师学徒 = Minion.create_blank('工程师学徒', dict(id=14, name='工程师学徒', CAH=[2, 1, 1]))
+
+
+class 鱼人猎潮者(Minion):
+    _data = dict(id=12, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1])
+
+    def run_battle_cry(self, player_id, location):
+        self.game.add_event_quick(AddMinionToDesk, 13, location + 1, player_id)
+
+
+class 工程师学徒(Minion):
+    _data = dict(id=14, name='工程师学徒', CAH=[2, 1, 1])
+
+    def run_battle_cry(self, player_id, location):
+        self.game.add_event_quick(DrawCard)
 
 # Cost 3
 达拉然法师 = Minion.create_blank('达拉然法师', dict(id=15, name='达拉然法师', CAH=[3, 1, 4]))
@@ -52,7 +65,14 @@ Package = {
 冰风雪人 = Minion.create_blank('冰风雪人', dict(id=27, name='冰风雪人', CAH=[4, 4, 5]))
 机械幼龙技工 = Minion.create_blank('机械幼龙技工', dict(id=28, name='机械幼龙技工', CAH=[4, 2, 4]))
 机械幼龙 = Minion.create_blank('机械幼龙', dict(id=29, name='机械幼龙', race=['Mech'], CAH=[1, 2, 1], rarity=-1))
-侏儒发明家 = Minion.create_blank('侏儒发明家', dict(id=30, name='侏儒发明家', CAH=[4, 2, 4]))
+
+
+class 侏儒发明家(Minion):
+    _data = dict(id=30, name='侏儒发明家', CAH=[4, 2, 4])
+
+    def run_battle_cry(self, player_id, location):
+        self.game.add_event_quick(DrawCard)
+
 绿洲钳嘴龟 = Minion.create_blank('绿洲钳嘴龟', dict(id=31, name='绿洲钳嘴龟', race=['Beast'], CAH=[4, 2, 7]))
 食人魔法师 = Minion.create_blank('食人魔法师', dict(id=32, name='食人魔法师', CAH=[4, 4, 4]))
 
@@ -121,7 +141,7 @@ set_description({
     侏儒发明家: '',
     绿洲钳嘴龟: '',
     食人魔法师: '法术伤害+1',
-    藏宝海湾保镖: '',
+    藏宝海湾保镖: '嘲讽',
     暗鳞治愈者: '',
     霜狼督军: '',
     古拉巴什狂暴者: '',

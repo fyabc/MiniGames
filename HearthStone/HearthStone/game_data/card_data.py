@@ -10,11 +10,18 @@ __author__ = 'fyabc'
 
 
 # Card data.
-AllCards = {}
+AllCards = None
 AllPackages = defaultdict(set)
 
 
-def load_all_cards():
+def get_all_cards():
+    global AllCards
+
+    if AllCards is not None:
+        return AllCards
+
+    AllCards = {}
+
     for module_vars in get_module_vars(LoadDataPath, CardPackageName):
         for card_typename, card_type in module_vars.items():
             if type(card_type) == SetDataMeta and issubclass(card_type, Card):
@@ -29,10 +36,10 @@ def load_all_cards():
 
                 AllCards[card_id] = card_type
 
-
-load_all_cards()
+    return AllCards
 
 
 __all__ = [
     'AllCards',
+    'get_all_cards',
 ]

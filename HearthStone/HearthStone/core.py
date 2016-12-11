@@ -3,12 +3,12 @@
 
 import json
 
-from .game_data.card_data import AllCards
+from .game_data.card_data import get_all_cards
 from .event_framework import EventEngine
 from .game_entities.player import Player
-from .game_events import GameEnd
+from .game_events.basic_events import GameEnd
 from .game_exception import GameEndException
-from .game_handlers import TurnBeginDrawCardHandler, CreateCoinHandler
+from .game_handlers.basic_handlers import CreateCoinHandler, TurnBeginDrawCardHandler
 
 __author__ = 'fyabc'
 
@@ -100,7 +100,16 @@ class Game:
         self.engine.add_events(*events)
 
     def add_event_quick(self, event_type, *args, **kwargs):
-        self.engine.add_events(event_type(self, *args, **kwargs))
+        self.engine.add_event(event_type(self, *args, **kwargs))
+
+    def prepend_event(self, event):
+        self.engine.prepend_event(event)
+
+    def prepend_events(self, *events):
+        self.engine.prepend_events(*events)
+
+    def prepend_event_quick(self, event_type, *args, **kwargs):
+        self.engine.prepend_event(event_type(self, *args, **kwargs))
 
     def dispatch_event(self, event):
         return self.engine.dispatch_event(event)
@@ -153,7 +162,7 @@ class Game:
 
     # Other utilities.
     def create_card(self, card_id):
-        return AllCards[card_id](self)
+        return get_all_cards()[card_id](self)
 
     def log(self, *args, **kwargs):
         """Logging something (maybe events?) into the history manager."""
