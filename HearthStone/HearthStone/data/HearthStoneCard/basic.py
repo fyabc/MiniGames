@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, set_description, desk_location
-from HearthStone.ext import DrawCard, AddMinionToDesk
+from HearthStone.ext import DrawCard, AddMinionToDesk, Damage
 
 __author__ = 'fyabc'
 
@@ -30,8 +30,6 @@ Package = {
 蓝腮战士 = Minion.create_blank('蓝腮战士', dict(id=9, name='蓝腮战士', race=['Murloc'], CAH=[2, 2, 1], charge=True))
 霜狼步兵 = Minion.create_blank('霜狼步兵', dict(id=10, name='霜狼步兵', CAH=[2, 2, 2], taunt=True))
 狗头人地卜师 = Minion.create_blank('狗头人地卜师', dict(id=11, name='狗头人地卜师', CAH=[2, 2, 2]))
-# This is a typical derivative card.
-鱼人斥候 = Minion.create_blank('鱼人斥候', dict(id=13, name='鱼人斥候', race=['Murloc'], CAH=[1, 1, 1], rarity=-1))
 
 
 class 鱼人猎潮者(Minion):
@@ -39,6 +37,8 @@ class 鱼人猎潮者(Minion):
 
     def run_battle_cry(self, player_id, location):
         self.game.add_event_quick(AddMinionToDesk, 13, location + 1, player_id)
+# This is a typical derivative card.
+鱼人斥候 = Minion.create_blank('鱼人斥候', dict(id=13, name='鱼人斥候', race=['Murloc'], CAH=[1, 1, 1], rarity=-1))
 
 
 class 工程师学徒(Minion):
@@ -53,8 +53,15 @@ class 工程师学徒(Minion):
 铁鬃灰熊 = Minion.create_blank('铁鬃灰熊', dict(id=17, name='铁鬃灰熊', race=['Beast'], CAH=[3, 3, 3], taunt=True))
 岩浆暴怒者 = Minion.create_blank('岩浆暴怒者', dict(id=18, name='岩浆暴怒者', CAH=[3, 5, 1]))
 团队领袖 = Minion.create_blank('团队领袖', dict(id=19, name='团队领袖', CAH=[3, 2, 2]))
-剃刀猎手 = Minion.create_blank('剃刀猎手', dict(id=20, name='剃刀猎手', CAH=[3, 2, 3]))
+
+
+class 剃刀猎手(Minion):
+    _data = dict(id=20, name='剃刀猎手', CAH=[3, 2, 3])
+
+    def run_battle_cry(self, player_id, location):
+        self.game.add_event_quick(AddMinionToDesk, 21, location + 1, player_id)
 野猪 = Minion.create_blank('野猪', dict(id=21, name='野猪', race=['Beast'], CAH=[1, 1, 1], rarity=-1))
+
 破碎残阳祭司 = Minion.create_blank('破碎残阳祭司', dict(id=22, name='破碎残阳祭司', CAH=[3, 3, 2]))
 银背族长 = Minion.create_blank('银背族长', dict(id=23, name='银背族长', race=['Beast'], CAH=[3, 1, 4], taunt=True))
 狼骑兵 = Minion.create_blank('狼骑兵', dict(id=24, name='狼骑兵', CAH=[3, 3, 1], charge=True))
@@ -63,7 +70,13 @@ class 工程师学徒(Minion):
 森金持盾卫士 = Minion.create_blank('森金持盾卫士', dict(id=25, name='森金持盾卫士', CAH=[4, 3, 5], taunt=True))
 暴风城骑士 = Minion.create_blank('暴风城骑士', dict(id=26, name='暴风城骑士', CAH=[4, 2, 5], charge=True))
 冰风雪人 = Minion.create_blank('冰风雪人', dict(id=27, name='冰风雪人', CAH=[4, 4, 5]))
-机械幼龙技工 = Minion.create_blank('机械幼龙技工', dict(id=28, name='机械幼龙技工', CAH=[4, 2, 4]))
+
+
+class 机械幼龙技工(Minion):
+    _data = dict(id=28, name='机械幼龙技工', CAH=[4, 2, 4])
+
+    def run_battle_cry(self, player_id, location):
+        self.game.add_event_quick(AddMinionToDesk, 29, location + 1, player_id)
 机械幼龙 = Minion.create_blank('机械幼龙', dict(id=29, name='机械幼龙', race=['Mech'], CAH=[1, 2, 1], rarity=-1))
 
 
@@ -81,7 +94,14 @@ class 侏儒发明家(Minion):
 暗鳞治愈者 = Minion.create_blank('暗鳞治愈者', dict(id=34, name='暗鳞治愈者', CAH=[5, 4, 5]))
 霜狼督军 = Minion.create_blank('霜狼督军', dict(id=35, name='霜狼督军', CAH=[5, 4, 4]))
 古拉巴什狂暴者 = Minion.create_blank('古拉巴什狂暴者', dict(id=36, name='古拉巴什狂暴者', CAH=[5, 2, 7]))
-夜刃刺客 = Minion.create_blank('夜刃刺客', dict(id=37, name='夜刃刺客', CAH=[5, 4, 4]))
+
+
+class 夜刃刺客(Minion):
+    _data = dict(id=37, name='夜刃刺客', CAH=[5, 4, 4])
+
+    def run_battle_cry(self, player_id, location):
+        self.game.add_event_quick(Damage, self, self.game.players[1 - player_id], 3)
+
 雷矛特种兵 = Minion.create_blank('雷矛特种兵', dict(id=38, name='雷矛特种兵', CAH=[5, 4, 2]))
 
 # Cost 6
@@ -107,6 +127,11 @@ class 侏儒发明家(Minion):
 ########
 
 
+##########
+# Shaman #
+##########
+
+
 set_description({
     精灵弓箭手: '战吼：造成1点伤害。',
     闪金镇步兵: '嘲讽',
@@ -116,7 +141,7 @@ set_description({
     巫医: '战吼：恢复2点生命值。',
     淡水鳄: '',
     血沼迅猛龙: '',
-    酸性沼泽软泥怪: '战吼：摧毁对手的武器。',
+    酸性沼泽软泥怪: '战吼：摧毁你的对手的武器。',
     蓝腮战士: '冲锋',
     霜狼步兵: '嘲讽',
     狗头人地卜师: '法术伤害+1',
@@ -124,34 +149,34 @@ set_description({
     鱼人斥候: '',
     工程师学徒: '战吼：抽一张牌。',
     达拉然法师: '法术伤害+1',
-    铁炉堡火枪手: '',
-    铁鬃灰熊: '',
+    铁炉堡火枪手: '战吼：造成1点伤害。',
+    铁鬃灰熊: '嘲讽',
     岩浆暴怒者: '',
-    团队领袖: '',
-    剃刀猎手: '',
+    团队领袖: '你的其他随从获得+1攻击力。',
+    剃刀猎手: '战吼：召唤一个1/1的野猪。',
     野猪: '',
-    破碎残阳祭司: '',
-    银背族长: '',
+    破碎残阳祭司: '战吼：使一个友方随从获得+1/+1。',
+    银背族长: '嘲讽',
     狼骑兵: '冲锋',
-    森金持盾卫士: '',
+    森金持盾卫士: '嘲讽',
     暴风城骑士: '冲锋',
     冰风雪人: '',
-    机械幼龙技工: '',
+    机械幼龙技工: '战吼：召唤一个2/1的机械幼龙。',
     机械幼龙: '',
-    侏儒发明家: '',
+    侏儒发明家: '战吼：抽一张牌。',
     绿洲钳嘴龟: '',
     食人魔法师: '法术伤害+1',
     藏宝海湾保镖: '嘲讽',
-    暗鳞治愈者: '',
-    霜狼督军: '',
-    古拉巴什狂暴者: '',
-    夜刃刺客: '',
-    雷矛特种兵: '',
+    暗鳞治愈者: '战吼：为所有友方角色获得+1/+1。',
+    霜狼督军: '战吼：战场上每有一个其他友方随从，便获得+1/+1。',
+    古拉巴什狂暴者: '每当该随从收到伤害时，获得+3攻击力。',
+    夜刃刺客: '战吼：对敌方英雄造成3点伤害。',
+    雷矛特种兵: '战吼：造成2点伤害。',
     大法师: '法术伤害+1',
     石拳食人魔: '',
-    竞技场主宰: '',
+    竞技场主宰: '嘲讽',
     鲁莽火箭兵: '冲锋',
     熔火恶犬: '',
-    暴风城勇士: '',
+    暴风城勇士: '你的其他随从获得+1/+1。',
     作战傀儡: '',
 })

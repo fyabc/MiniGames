@@ -117,6 +117,11 @@ class Card(GameEntity, metaclass=SetDataMeta):
         # These auras will affect cost, attack and other attributes of card.
         self.auras = []
 
+        # Handlers of this card.
+        # [NOTE] Thinking: How to apply these handlers?
+        #   For a handler `h` which should run on desk:
+        self.handlers = {}
+
     def __str__(self):
         return '{}(id={},card_id={},name={})'.format(type(self).__name__, self.id, self.data['id'], self.data['name'])
 
@@ -174,7 +179,7 @@ class Minion(Card):
         self.health = self.data['CAH'][2]           # Health
 
         self.remain_attack_number = 0               # Remain attack number in this turn
-        self._divine_shield = False                 # Is this minion have divine shield?
+        self.divine_shield = False                  # Is this minion have divine shield?
         self._frozen = 0                            # Is this minion frozen?
         self._silent = False                        # Is this minion silent?
 
@@ -204,17 +209,6 @@ class Minion(Card):
             result = 1
         else:
             result = self.data['attack_number']
-
-        # todo: add auras
-
-        return result
-
-    @property
-    def divine_shield(self):
-        if self._silent:
-            result = False
-        else:
-            result = self.data['divine_shield']
 
         # todo: add auras
 
@@ -263,6 +257,26 @@ class Minion(Card):
         if self.health > max_health:
             self.health = max_health
 
+    # Hook methods on location change.
+    def change_location(self, location, *args, **kwargs):
+        """Change the location of the card, and call some hook methods.
+
+        :param location: the new location to be changed to.
+        :param args: some arguments to be passed, (e.g. location and player_id in changing to desk)
+        :param kwargs: such as args.
+        :return:
+        """
+
+        if location == self.DECK:
+            pass
+        elif location == self.HAND:
+            pass
+        elif location == self.DESK:
+            # Put a minion into desk. May be summon (trigger battle_cry) or not.
+            pass
+        elif location == self.CEMETERY:
+            pass
+
     # Operations.
     def init_before_hand(self):
         self.location = self.HAND
@@ -271,11 +285,11 @@ class Minion(Card):
         """Initializations of the minion before put onto desk. (Both summon and put directly)"""
         if self.charge:
             self.remain_attack_number = self.attack_number
-        self._divine_shield = self.divine_shield
+        self.divine_shield = self.data['divine_shield']
         self.location = self.DESK
 
     def run_battle_cry(self, player_id, location):
-        """Overrided by subclasses.
+        """Override by subclasses.
 
         :param player_id: the player id.
         :param location: The location of the minion to be placed.
@@ -286,12 +300,18 @@ class Minion(Card):
         pass
 
     def run_death_rattle(self):
-        """Overrided by subclasses."""
+        """Override by subclasses."""
         pass
 
     def take_damage(self, source, value):
-        self.health -= value
-        return self.health <= 0
+        if value <= 0:
+            return False
+        if self.divine_shield:
+            self.divine_shield = False
+            return False
+        else:
+            self.health -= value
+            return self.health <= 0
 
     def silence(self):
         """Silence the minion."""
@@ -303,6 +323,7 @@ class Minion(Card):
         self._fit_health()
 
         self._frozen = 0
+        self.divine_shield = False
 
     def turn_begin(self):
         """When a new turn start, refresh its attack number and frozen status.

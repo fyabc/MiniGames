@@ -93,6 +93,12 @@ class SummonMinion(PlayCard):
         verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.card, self.location))
 
 
+class PlaySpell(PlayCard):
+    def __init__(self, game, spell, player_id, *targets):
+        super(PlaySpell, self).__init__(game, spell, player_id)
+        self.targets = targets
+
+
 __all__ = [
     'PlayCard',
     'AddMinionToDesk',

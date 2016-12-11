@@ -13,7 +13,7 @@ class GameEntity:
 
     def __init__(self, game):
         self.game = game
-        self.handlers = []
+        self.handlers = {}
 
     def kill_self(self):
         for handler in self.handlers:

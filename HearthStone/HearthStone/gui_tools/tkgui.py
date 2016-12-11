@@ -494,6 +494,8 @@ class GameWindow(ttk.Frame):
         end_event = self.game.dispatch_event_quick(event_type, *args, **kwargs)
 
         if end_event is not None:
+            self.refresh_window()
+
             ok = messagebox.askokcancel(
                 'Game End!',
                 '''\
