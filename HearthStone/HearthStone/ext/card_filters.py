@@ -25,8 +25,8 @@ class Conditions:
 def filter_cards(*condition_strings, **condition_pairs):
     """Filter, cache and return the set of cards id that satisfy the conditions.
 
-    :param condition_pairs: key-value pair of conditions.
-    :return: A set of cards that
+    :param condition_pairs: key-value pairs of conditions.
+    :return: A set of cards that satisfy these conditions.
     """
 
     global _filter_result_cache

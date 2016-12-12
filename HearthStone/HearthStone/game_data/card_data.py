@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
+import sqlite3
 
 from ..game_entities.card import Card, SetDataMeta
 from ..utils import LoadDataPath, CardPackageName, get_module_vars
@@ -11,11 +11,13 @@ __author__ = 'fyabc'
 
 # Card data.
 AllCards = None
-AllPackages = defaultdict(set)
+
+AllCardsDB = None
+AllCardsDBCur = None
 
 
 def get_all_cards():
-    global AllCards
+    global AllCards, AllCardsDB, AllCardsDBCur
 
     if AllCards is not None:
         return AllCards
@@ -36,10 +38,30 @@ def get_all_cards():
 
                 AllCards[card_id] = card_type
 
+    # todo: create cards db
+    AllCardsDB = sqlite3.connect(':memory:')
+    AllCardsDBCur = AllCardsDB.cursor()
+
+    AllCardsDBCur.execute('''\
+CREATE TABLE AllCards (
+  id INTEGER PRIMARY KEY NOT NULL,
+  type INTEGER(4)
+);
+''')
+
     return AllCards
 
 
+def get_cards_db():
+    global AllCardsDB
+
+    if AllCardsDB is None:
+        get_all_cards()
+
+    return AllCardsDB
+
+
 __all__ = [
-    'AllCards',
     'get_all_cards',
+    'get_cards_db',
 ]
