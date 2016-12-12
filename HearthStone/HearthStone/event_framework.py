@@ -109,9 +109,11 @@ class EventEngine:
 
         # Logging
         import time
+        import getpass
         logging_filename = kwargs.pop(
             'logging_file',
-            'C:/Users/DELL/PycharmProjects/MiniGames/HearthStone/test/logs/log_engine_{}.txt'.format(
+            'C:/Users/{}/PycharmProjects/MiniGames/HearthStone/test/logs/log_engine_{}.txt'.format(
+                getpass.getuser(),
                 time.strftime('%y_%m_%d_%H_%M_%S')))
         # logging_filename = None
 

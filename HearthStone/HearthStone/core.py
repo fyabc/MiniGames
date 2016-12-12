@@ -56,9 +56,13 @@ class Game:
     MaxDeskNumber = 7
     MaxCrystal = 10
 
-    def __init__(self, game_filename=None):
+    def __init__(self, game_filename=None, **kwargs):
         # Event engine.
-        self.engine = EventEngine()
+        engine_kwargs = {}
+        if 'logging_filename' in kwargs:
+            engine_kwargs['logging_filename'] = kwargs.pop('logging_filename')
+
+        self.engine = EventEngine(**engine_kwargs)
         self.engine.add_terminate_event_type(GameEnd)
 
         # Game data.

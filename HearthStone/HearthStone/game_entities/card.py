@@ -337,7 +337,7 @@ class Minion(Card):
         self.remain_attack_number = self.attack_number
         self._frozen_step()
 
-    def froze(self):
+    def freeze(self):
         # (2 = frozen next turn, 1 = frozen this turn, 0 = not frozen)
         self._frozen = 2
 

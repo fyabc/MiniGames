@@ -6,13 +6,13 @@
 Users who want to extend HearthStone should import this module.
 """
 
-from .game_entities.card import Minion, Spell, Weapon
-from .game_events.basic_events import *
-from .game_events.card_events import *
-from .game_events.attack_events import *
-from .game_events.damage_events import *
-from .game_events.game_event import *
-from .game_events.play_events import *
+from ..game_entities.card import Minion, Spell, Weapon
+from ..game_events.basic_events import *
+from ..game_events.card_events import *
+from ..game_events.attack_events import *
+from ..game_events.damage_events import *
+from ..game_events.game_event import *
+from ..game_events.play_events import *
 
 __author__ = 'fyabc'
 
