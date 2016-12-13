@@ -3,7 +3,6 @@
 
 from HearthStone.ext import Minion, set_description
 from HearthStone.ext import DrawCard, AddMinionToDesk, Damage
-from HearthStone.ext import card_filters
 
 __author__ = 'fyabc'
 
