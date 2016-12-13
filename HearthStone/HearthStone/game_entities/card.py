@@ -76,11 +76,6 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
     CreatedCardNumber = 0
 
-    # Types of the card.
-    Type_Minion = 0
-    Type_Spell = 1
-    Type_Weapon = 2
-
     # Locations of the card.
     NULL = 0
     DECK = 1
@@ -93,9 +88,8 @@ class Card(GameEntity, metaclass=SetDataMeta):
         'type': 0,
         'name': '',
         'package': 0,
-        'rarity': 0,            # The rarity of the card:
-                                #   0 = basic, 1 = common, 2 = rare, 3 = epic, 4 = legend, -1 = derivative
-        'klass': 0,             # The class of the card: 0 = neutral, others are class id.
+        'rarity': 0,
+        'klass': 0,
         'race': [],
         'CAH': [0, 1, 1],
         'overload': 0,

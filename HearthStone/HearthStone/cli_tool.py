@@ -119,14 +119,13 @@ def align_line(left_line, right_line, width=120, fill=' ', sep=' '):
 
 
 def show_card(card, width=7):
-    card_type = card.data['type']
-    if card_type == card.Type_Minion:
+    if isinstance(card, Minion):
         return show_minion(card, width)
     # todo: change to show_spell & show_weapon
-    elif card_type == card.Type_Spell:
-        return show_minion(card, width)
-    elif card_type == card.Type_Weapon:
-        return show_minion(card, width)
+    elif isinstance(card, Spell):
+        return show_spell(card, width)
+    elif isinstance(card, Weapon):
+        return show_weapon(card, width)
 
 
 def show_minion(minion: Minion, width=7, border=False):

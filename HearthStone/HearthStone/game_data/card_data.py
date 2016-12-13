@@ -5,6 +5,7 @@ import sqlite3
 
 from ..game_entities.card import Card, SetDataMeta
 from ..utils import LoadDataPath, CardPackageName, get_module_vars
+from ..constants import race2str, str2race
 
 __author__ = 'fyabc'
 
@@ -14,6 +15,58 @@ AllCards = None
 
 AllCardsDB = None
 AllCardsDBCur = None
+
+
+def _create_cards_db():
+    global AllCards, AllCardsDB, AllCardsDBCur
+
+    assert AllCards is not None, 'AllCards must not be None'
+
+    AllCardsDB = sqlite3.connect(':memory:')
+    AllCardsDBCur = AllCardsDB.cursor()
+
+    AllCardsDBCur.execute('''\
+    CREATE TABLE AllCards (
+      id            INTEGER PRIMARY KEY NOT NULL,
+      type          INTEGER,
+      name          VARCHAR(255),
+      package       INTEGER,
+      rarity        INTEGER,
+      klass         INTEGER,
+      race          VARCHAR(40),
+      cost          INTEGER,
+      attack        INTEGER NULLABLE,
+      health        INTEGER NULLABLE,
+      overload      INTEGER,
+      attack_number INTEGER NULLABLE,
+      taunt         INTEGER NULLABLE,
+      charge        INTEGER NULLABLE,
+      divine_shield INTEGER NULLABLE,
+      stealth       INTEGER NULLABLE
+    );
+    ''')
+
+    AllCardsDBCur.executemany(
+        '''INSERT INTO AllCards VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);''',
+        ((
+            card.data['id'],
+            card.data['type'],
+            card.data['name'],
+            card.data['package'],
+            card.data['rarity'],
+            card.data['klass'],
+            race2str(card.data['race']),
+            card.data['CAH'][0],
+            card.data['CAH'][1] if len(card.data['CAH']) >= 2 else None,
+            card.data['CAH'][2] if len(card.data['CAH']) >= 3 else None,
+            card.data['overload'],
+            card.data.get('attack_number', None),
+            card.data.get('taunt', None),
+            card.data.get('charge', None),
+            card.data.get('divine_shield', None),
+            card.data.get('stealth', None),
+         ) for card in AllCards.values())
+    )
 
 
 def get_all_cards():
@@ -38,16 +91,7 @@ def get_all_cards():
 
                 AllCards[card_id] = card_type
 
-    # todo: create cards db
-    AllCardsDB = sqlite3.connect(':memory:')
-    AllCardsDBCur = AllCardsDB.cursor()
-
-    AllCardsDBCur.execute('''\
-CREATE TABLE AllCards (
-  id INTEGER PRIMARY KEY NOT NULL,
-  type INTEGER(4)
-);
-''')
+    _create_cards_db()
 
     return AllCards
 
