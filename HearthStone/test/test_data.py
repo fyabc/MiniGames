@@ -42,6 +42,12 @@ def _test_filters():
     pprint.pprint(filter_cards('cost = 7'))
     pprint.pprint(random_card('rarity = -1'))
 
+    card0 = all_cards[0]
+    print(card0.run_death_rattle)
+
+    card4001 = all_cards[4001]
+    print(card4001.run_death_rattle)
+
 
 def _test():
     _test_filters()

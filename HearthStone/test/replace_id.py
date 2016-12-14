@@ -15,7 +15,7 @@ def main():
     with open(filename, 'r', encoding='utf-8') as f:
         s = f.read()
 
-    i = -1
+    i = 1000 * package_id - 1
 
     def change_id(m):
         nonlocal i

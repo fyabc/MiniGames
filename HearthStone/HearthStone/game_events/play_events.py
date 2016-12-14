@@ -25,6 +25,9 @@ class PlayCard(GameEvent):
         # todo: change it to `UseCrystal` event
         player.remain_crystal -= self.card.cost
 
+        if self.card.overload > 0:
+            player.next_locked_crystal += self.card.overload
+
         # todo: change it to `RemoveCardFromHand` event
         player.hand.remove(self.card)
 

@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from HearthStone.event_framework import Handler
+from ..event_framework import Handler
 
 __author__ = 'fyabc'
 

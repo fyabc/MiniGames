@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, set_description
-from HearthStone.ext.card_creator import m_blank, m_bc_summon
-from HearthStone.ext import DrawCard, AddMinionToDesk, Damage
+from HearthStone.ext.card_creator import m_blank, m_summon
+from HearthStone.ext import DrawCard, Damage
+from HearthStone.ext import GameHandler
 
 __author__ = 'fyabc'
 
@@ -32,7 +33,7 @@ Package = {
 霜狼步兵 = m_blank('霜狼步兵', dict(id=10, name='霜狼步兵', CAH=[2, 2, 2], taunt=True))
 狗头人地卜师 = m_blank('狗头人地卜师', dict(id=11, name='狗头人地卜师', CAH=[2, 2, 2]))
 
-鱼人猎潮者 = m_bc_summon('鱼人猎潮者', dict(id=12, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1]), card_id=13)
+鱼人猎潮者 = m_summon('鱼人猎潮者', dict(id=12, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1]), card_id=13)
 # This is a typical derivative card.
 鱼人斥候 = m_blank('鱼人斥候', dict(id=13, name='鱼人斥候', race=['Murloc'], CAH=[1, 1, 1], rarity=-1))
 
@@ -50,7 +51,7 @@ class 工程师学徒(Minion):
 岩浆暴怒者 = m_blank('岩浆暴怒者', dict(id=18, name='岩浆暴怒者', CAH=[3, 5, 1]))
 团队领袖 = m_blank('团队领袖', dict(id=19, name='团队领袖', CAH=[3, 2, 2]))
 
-剃刀猎手 = m_bc_summon('剃刀猎手', dict(id=20, name='剃刀猎手', CAH=[3, 2, 3]), card_id=21)
+剃刀猎手 = m_summon('剃刀猎手', dict(id=20, name='剃刀猎手', CAH=[3, 2, 3]), card_id=21)
 野猪 = m_blank('野猪', dict(id=21, name='野猪', race=['Beast'], CAH=[1, 1, 1], rarity=-1))
 
 破碎残阳祭司 = m_blank('破碎残阳祭司', dict(id=22, name='破碎残阳祭司', CAH=[3, 3, 2]))
@@ -62,7 +63,7 @@ class 工程师学徒(Minion):
 暴风城骑士 = m_blank('暴风城骑士', dict(id=26, name='暴风城骑士', CAH=[4, 2, 5], charge=True))
 冰风雪人 = m_blank('冰风雪人', dict(id=27, name='冰风雪人', CAH=[4, 4, 5]))
 
-机械幼龙技工 = m_bc_summon('机械幼龙技工', dict(id=28, name='机械幼龙技工', CAH=[4, 2, 4]), card_id=29)
+机械幼龙技工 = m_summon('机械幼龙技工', dict(id=28, name='机械幼龙技工', CAH=[4, 2, 4]), card_id=29)
 机械幼龙 = m_blank('机械幼龙', dict(id=29, name='机械幼龙', race=['Mech'], CAH=[1, 2, 1], rarity=-1))
 
 
@@ -102,15 +103,17 @@ class 夜刃刺客(Minion):
 作战傀儡 = m_blank('作战傀儡', dict(id=45, name='作战傀儡', CAH=[7, 7, 7]))
 
 # Cost 8
-
 # Cost 9
-
 # Cost 10
 
 
 ########
 # Mage #
 ########
+
+
+class 水元素(Minion):
+    _data = dict(id=46, name='水元素', CAH=[4, 3, 6], klass=1)
 
 
 ##########

@@ -25,7 +25,7 @@ def m_blank(name, data):
     return result
 
 
-def m_bc_summon(name, data, relative_location=+1, **kwargs):
+def m_summon(name, data, bc_or_dr=True, **kwargs):
     random_summon = False
     card_id = kwargs.pop('card_id', None)
 
@@ -33,7 +33,9 @@ def m_bc_summon(name, data, relative_location=+1, **kwargs):
         random_summon = True
         conditions = kwargs.pop('conditions', [])
 
-    def run_battle_cry(self, player_id, index):
+    relative_location = kwargs.pop('relative_location', +1 if bc_or_dr else 0)
+
+    def summon(self, player_id, index):
         self.game.add_event_quick(
             AddMinionToDesk,
             card_id if not random_summon else random_card(*conditions),
@@ -41,7 +43,7 @@ def m_bc_summon(name, data, relative_location=+1, **kwargs):
             player_id,
         )
 
-    cls_dict = {'_data': data, 'run_battle_cry': run_battle_cry}
+    cls_dict = {'_data': data, 'run_battle_cry' if bc_or_dr else 'run_death_rattle': summon}
 
     result = new_class(name, (Minion,), {}, lambda ns: ns.update(cls_dict))
 
@@ -52,4 +54,5 @@ def m_bc_summon(name, data, relative_location=+1, **kwargs):
 
 __all__ = [
     'm_blank',
+    'm_summon',
 ]

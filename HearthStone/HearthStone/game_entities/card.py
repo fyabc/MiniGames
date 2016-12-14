@@ -135,6 +135,14 @@ class Card(GameEntity, metaclass=SetDataMeta):
         return result
 
     @property
+    def overload(self):
+        result = self.data['overload']
+
+        # todo: add auras
+
+        return result
+
+    @property
     def player_id(self):
         # todo: check and return the player id of this card.
         # [NOTE] The card may be controlled by different players, so this property may change.
@@ -335,12 +343,17 @@ class Minion(Card):
         if self.location != self.DESK:
             return
 
-        self.remain_attack_number = self.attack_number
         self._frozen_step()
+
+        if self._frozen == 0:
+            self.remain_attack_number = self.attack_number
+        else:
+            self.remain_attack_number = 0
 
     def freeze(self):
         # (2 = frozen next turn, 1 = frozen this turn, 0 = not frozen)
         self._frozen = 2
+        self.remain_attack_number = 0
 
     # Some other methods.
     def add_aura(self, aura):

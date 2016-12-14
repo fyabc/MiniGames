@@ -37,6 +37,17 @@ class Damage(GameEvent):
         verbose('{} take {} damage to {}!'.format(self.source, self.value, self.target))
 
 
+class SpellDamage(Damage):
+    """This class represents damage from spell.
+
+    Used to all '法术伤害+x' handlers.
+    """
+
+    def __init__(self, game, spell, target, value):
+        super(SpellDamage, self).__init__(game, spell, target, value)
+
+
 __all__ = [
     'Damage',
+    'SpellDamage',
 ]

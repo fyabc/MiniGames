@@ -3,7 +3,7 @@
     "name": "basic",
     "heroes": [
         {
-            "id": 0,
+            "id": 1,
             "klass": "Mage",
             "health": 30,
             "skill": {
@@ -11,7 +11,7 @@
             }
         },
         {
-            "id": 1,
+            "id": 2,
             "klass": "Paladin",
             "health": 30,
             "skill": {

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import set_description
-from HearthStone.ext.card_creator import m_bc_summon
+from HearthStone.ext.card_creator import m_summon
 
 __author__ = 'fyabc'
 
@@ -17,9 +17,9 @@ Package = {
 # Neutral Minions #
 ###################
 
-随机1 = m_bc_summon('随机1', dict(id=101000, name='随机1', CAH=[4, 2, 2], rarity=4), conditions=['type = 0'])
-随机2 = m_bc_summon('随机2', dict(id=101001, name='随机2', CAH=[6, 4, 2], rarity=4), conditions=['type = 0', 'rarity = 4'])
-随机3 = m_bc_summon('随机3', dict(id=101002, name='随机3', CAH=[2, 1, 1], rarity=2), conditions=['type = 0', 'cost = 3'])
+随机1 = m_summon('随机1', dict(id=101000, name='随机1', CAH=[4, 2, 2], rarity=4), conditions=['type = 0'])
+随机2 = m_summon('随机2', dict(id=101001, name='随机2', CAH=[6, 4, 2], rarity=4), conditions=['type = 0', 'rarity = 4'])
+随机3 = m_summon('随机3', dict(id=101002, name='随机3', CAH=[2, 1, 1], rarity=2), conditions=['type = 0', 'cost = 3'])
 
 
 set_description({
