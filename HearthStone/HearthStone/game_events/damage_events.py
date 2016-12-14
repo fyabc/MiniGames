@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .game_event import GameEvent
+from .death_events import MinionDeath
 from ..utils import verbose
 
 __author__ = 'fyabc'
@@ -20,12 +21,17 @@ class Damage(GameEvent):
     def _happen(self):
         self._message()
 
-        # todo: move add event code into handlers.
-        died = self.target.take_damage(self.source, self.value)
+        died = self.target.take_damage(self.source, self.value, self)
 
         if died:
             verbose('{} kill {}!'.format(self.source, self.target))
             # todo: add `MinionDeath` event
+            if self.target in self.game.players:
+                # Target is hero: pass
+                pass
+            else:
+                # Target is minion: minion death
+                self.game.add_event_quick(MinionDeath, self.target)
 
     def _message(self):
         verbose('{} take {} damage to {}!'.format(self.source, self.value, self.target))

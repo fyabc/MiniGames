@@ -8,6 +8,7 @@ from tkinter import messagebox
 
 from ..game_events.basic_events import GameBegin, GameEnd, TurnEnd
 from ..game_events.play_events import SummonMinion
+from ..game_events.attack_events import Attack
 from ..cli_tool import show_card, show_minion
 from .tk_ext import ToolTip
 from ..utils.debug_utils import error
@@ -339,13 +340,18 @@ class GameWindow(ttk.Frame):
                     idx = n // 2
                     if idx >= desk_number:
                         button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
+                        button.unbind('<Enter>')
+                        button.unbind('<Leave>')
                     else:
                         button.config(text=show_minion(player.desk[idx], self.ShowCardWidth))
+                        ToolTip(button, player.desk[idx].data['description'])
 
             # Refresh hand.
             for n, button in enumerate(self.hand_card_buttons[i]):
                 if n >= hand_number:
                     button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
+                    button.unbind('<Enter>')
+                    button.unbind('<Leave>')
                 else:
                     button.config(text=show_card(player.hand[n], self.ShowCardWidth))
                     ToolTip(button, player.hand[n].data['description'])
@@ -387,7 +393,8 @@ class GameWindow(ttk.Frame):
         if len(self.selections) == 2 and \
                 self.selections[0].location == 'hand' and \
                 self.selections[1].location == 'desk' and \
-                self.selections[1].index % 2 == 0 and \
+                (self.selections[1].index % 2 == 0 or
+                    self.selections[1].index // 2 >= self.game.current_player.desk_number) and \
                 self.selections[0].player_id == self.selections[1].player_id:
             return 'summon'
         elif len(self.selections) == 2 and \
@@ -395,6 +402,8 @@ class GameWindow(ttk.Frame):
                 self.selections[1].location == 'desk' and \
                 self.selections[0].index % 2 != 0 and \
                 self.selections[1].index % 2 != 0 and \
+                self.selections[0].index // 2 < self.game.current_player.desk_number and \
+                self.selections[1].index // 2 < self.game.opponent_player.desk_number and \
                 self.selections[0].player_id != self.selections[1].player_id:
             return 'attack'
         else:
@@ -447,7 +456,18 @@ class GameWindow(ttk.Frame):
                     else:
                         self._try_summon_minion(minion, index_)
                 elif operation == 'attack':
-                    pass
+                    player = self.game.current_player
+                    source = self._find_card(self.selections[0])
+                    target = self._find_card(self.selections[1])
+
+                    if source.attack <= 0:
+                        error('Role who don\'t have positive attack cannot attack!')
+                    elif source.remain_attack_number <= 0:
+                        error('{} cannot attack!'.format(source))
+                    elif (not target.taunt) and any(minion.taunt for minion in self.game.opponent_player.desk):
+                        error('I must attack the minion who have taunt!')
+                    else:
+                        self._try_attack(source, target)
                 else:
                     raise ValueError('Unknown operation {}'.format(operation))
                 self._deselect_all_buttons()
@@ -520,19 +540,16 @@ Restart or Quit?
     def turn_end(self):
         self._checked_dispatch(TurnEnd)
         self.current_player_id.set(self.game.current_player_id)
+        self._deselect_all_buttons()
         self.refresh_window()
 
     def _try_summon_minion(self, minion, index):
         self._checked_dispatch(SummonMinion, minion, index)
         self.refresh_window()
 
-    def test_binding(self, event: tk.Event):
-        print('Click', event)
-        for name in dir(event):
-            if name.startswith('_'):
-                continue
-            value = getattr(event, name)
-            print(name, '=', value, '({})'.format(type(value).__name__))
+    def _try_attack(self, source, target):
+        self._checked_dispatch(Attack, source, target)
+        self.refresh_window()
 
 
 __all__ = [

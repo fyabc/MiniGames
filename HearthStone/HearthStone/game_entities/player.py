@@ -90,7 +90,11 @@ class Player(GameEntity):
     def turn_end(self):
         pass
 
-    def take_damage(self, source, value):
+    def take_damage(self, source, value, event):
+        if value <= 0:
+            event.disable()
+            return False
+
         self.health -= value
 
         if self.health <= 0:

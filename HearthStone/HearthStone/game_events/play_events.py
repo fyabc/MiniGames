@@ -33,12 +33,12 @@ class PlayCard(GameEvent):
 
 
 class AddMinionToDesk(GameEvent):
-    def __init__(self, game, minion, location, player_id=None):
+    def __init__(self, game, minion, index, player_id=None):
         """
 
         :param game:
         :param minion: the minion or its id.
-        :param location: the location of the minion to be insert.
+        :param index: the location of the minion to be insert.
             The minion will at before `location`.
             [FIXME]: The location may be changed in battle cry, this problem should be fixed in future.
         :param player_id: The player id to add the minion.
@@ -50,11 +50,11 @@ class AddMinionToDesk(GameEvent):
             self.minion = self.game.create_card(minion)
         else:
             self.minion = minion
-        self.location = location
+        self.index = index
         self.player_id = player_id if player_id is not None else game.current_player_id
 
     def __str__(self):
-        return '{}(P{}, {}=>Loc{})'.format(super().__str__(), self.player_id, self.minion, self.location)
+        return '{}(P{}, {}=>Loc{})'.format(super().__str__(), self.player_id, self.minion, self.index)
 
     def _happen(self):
         player = self.game.players[self.player_id]
@@ -66,31 +66,31 @@ class AddMinionToDesk(GameEvent):
             return
 
         self.minion.init_before_desk()
-        player.desk.insert(self.location, self.minion)
+        player.desk.insert(self.index, self.minion)
 
     def _message(self):
         pass
 
 
 class SummonMinion(PlayCard):
-    def __init__(self, game, card, location, player_id=None):
+    def __init__(self, game, card, index, player_id=None):
         super(SummonMinion, self).__init__(game, card, player_id)
-        self.location = location
+        self.index = index
 
     def __str__(self):
-        return '{}(P{}, {}=>Loc{})'.format(GameEvent.__str__(self), self.player_id, self.card, self.location)
+        return '{}(P{}, {}=>Loc{})'.format(GameEvent.__str__(self), self.player_id, self.card, self.index)
 
     def _happen(self):
         super(SummonMinion, self)._happen()
 
         # [NOTE] Add minion to desk BEFORE battle cry.
         # [WARNING] todo: here must be test carefully.
-        self.game.add_event_quick(AddMinionToDesk, self.card, self.location, self.player_id)
+        self.game.add_event_quick(AddMinionToDesk, self.card, self.index, self.player_id)
 
-        self.card.run_battle_cry(self.player_id, self.location)
+        self.card.run_battle_cry(self.player_id, self.index)
 
     def _message(self):
-        verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.card, self.location))
+        verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.card, self.index))
 
 
 class PlaySpell(PlayCard):

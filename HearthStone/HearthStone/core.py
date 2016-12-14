@@ -168,6 +168,14 @@ class Game:
     def create_card(self, card_id):
         return get_all_cards()[card_id](self)
 
+    def get_player_id(self, card):
+        for i in (0, 1):
+            player = self.players[i]
+
+            if card in player.deck or card in player.hand or card in player.desk:
+                return i
+        return None
+
     def log(self, *args, **kwargs):
         """Logging something (maybe events?) into the history manager."""
         pass

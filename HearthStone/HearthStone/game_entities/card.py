@@ -282,26 +282,33 @@ class Minion(Card):
         self.divine_shield = self.data['divine_shield']
         self.location = self.DESK
 
-    def run_battle_cry(self, player_id, location):
+    def run_battle_cry(self, player_id, index):
         """Override by subclasses.
 
         :param player_id: the player id.
-        :param location: The location of the minion to be placed.
+        :param index: The location of the minion to be placed.
         """
         pass
 
     def death(self):
         pass
 
-    def run_death_rattle(self):
-        """Override by subclasses."""
+    def run_death_rattle(self, player_id, index):
+        """Override by subclasses.
+
+        :param player_id: the player id.
+        :param index: The original location of the dead minion.
+        """
         pass
 
-    def take_damage(self, source, value):
+    def take_damage(self, source, value, event):
         if value <= 0:
+            event.disable()
             return False
         if self.divine_shield:
+            # [NOTE] When breaking the divine shield, it will not really cause damage, so disable it.
             self.divine_shield = False
+            event.disable()
             return False
         else:
             self.health -= value

@@ -45,7 +45,7 @@ class ToolTip:
         self.tw.wm_overrideredirect(True)
         self.tw.wm_geometry("+%d+%d" % (x, y))
 
-        label = tk.Label(self.tw, text=self.get_text(), justify='left',
+        label = tk.Label(self.tw, text=self.get_text(), justify='left', font=('Microsoft YaHei UI', 9),
                          background='lightyellow', relief='solid', borderwidth=1)
         label.pack(ipadx=1)
 
