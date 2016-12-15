@@ -25,7 +25,7 @@ class AddCardToHand(GameEvent):
         if player.hand_full:
             verbose('The hand of P{} is full!'.format(self.player_id))
         else:
-            self.card.init_before_hand()
+            self.card.change_location(self.card.HAND)
             player.hand.append(self.card)
 
     def _message(self):

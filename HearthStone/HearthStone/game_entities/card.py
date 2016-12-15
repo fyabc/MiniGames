@@ -114,7 +114,12 @@ class Card(GameEntity, metaclass=SetDataMeta):
         # Handlers of this card.
         # [NOTE] Thinking: How to apply these handlers?
         #   For a handler `h` which should run on desk:
-        self.handlers = {}
+        #       1. enable it when the card is put onto the desk.
+        #       2. disable it (and reset it?) when the card it remove from the desk.
+        self.handlers = set()
+
+        # todo: add card creator.
+        self.creator = None
 
     def __str__(self):
         return '{}(id={},card_id={},name={})'.format(type(self).__name__, self.id, self.data['id'], self.data['name'])
@@ -147,6 +152,10 @@ class Card(GameEntity, metaclass=SetDataMeta):
         # todo: check and return the player id of this card.
         # [NOTE] The card may be controlled by different players, so this property may change.
         return None
+
+    # Hook methods on location change. To be implemented in subclasses.
+    def change_location(self, location, *args, **kwargs):
+        raise NotImplementedError()
 
     # Some utilities.
     @classmethod
@@ -259,46 +268,55 @@ class Minion(Card):
         if self.health > max_health:
             self.health = max_health
 
-    # Hook methods on location change.
     def change_location(self, location, *args, **kwargs):
         """Change the location of the card, and call some hook methods.
 
         :param location: the new location to be changed to.
-        :param args: some arguments to be passed, (e.g. location and player_id in changing to desk)
+        :param args: some arguments to be passed, (e.g. index and player_id in changing to desk)
         :param kwargs: such as args.
         :return:
         """
 
-        if location == self.DECK:
+        if self.location == self.NULL:
+            pass
+        elif self.location == self.DECK:
+            pass
+        elif self.location == self.HAND:
+            pass
+        elif self.location == self.DESK:
+            pass
+        elif self.location == self.CEMETERY:
+            pass
+
+        # Trigger all handlers of this card.
+        for handler in self.handlers:
+            handler.trigger(self.location, location)
+
+        self.location = location
+
+        if location == self.NULL:
+            pass
+        elif location == self.DECK:
             pass
         elif location == self.HAND:
             pass
         elif location == self.DESK:
-            # Put a minion into desk. May be summon (trigger battle_cry) or not.
-            pass
+            # Initializations of the minion before put onto desk. (Both summon and put directly)
+            if self.charge:
+                self.remain_attack_number = self.attack_number
+            else:
+                self.remain_attack_number = 0
+            self.divine_shield = self.data['divine_shield']
         elif location == self.CEMETERY:
             pass
 
     # Operations.
-    def init_before_hand(self):
-        self.location = self.HAND
-
-    def init_before_desk(self):
-        """Initializations of the minion before put onto desk. (Both summon and put directly)"""
-        if self.charge:
-            self.remain_attack_number = self.attack_number
-        self.divine_shield = self.data['divine_shield']
-        self.location = self.DESK
-
     def run_battle_cry(self, player_id, index):
         """Override by subclasses.
 
         :param player_id: the player id.
         :param index: The location of the minion to be placed.
         """
-        pass
-
-    def death(self):
         pass
 
     def run_death_rattle(self, player_id, index):

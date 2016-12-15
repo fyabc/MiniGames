@@ -68,7 +68,7 @@ class AddMinionToDesk(GameEvent):
             self.disable()
             return
 
-        self.minion.init_before_desk()
+        self.minion.change_location(self.minion.DESK)
         player.desk.insert(self.index, self.minion)
 
     def _message(self):
@@ -86,7 +86,7 @@ class SummonMinion(PlayCard):
     def _happen(self):
         super(SummonMinion, self)._happen()
 
-        # [NOTE] Add minion to desk BEFORE battle cry.
+        # [NOTE] Add minion to desk **BEFORE** battle cry.
         # [WARNING] todo: here must be test carefully.
         self.game.add_event_quick(AddMinionToDesk, self.card, self.index, self.player_id)
 

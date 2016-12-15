@@ -24,6 +24,9 @@ class MinionDeath(Death):
     def __init__(self, game, minion):
         super(MinionDeath, self).__init__(game, minion)
 
+        # [NOTE] Get player id now, because the minion may be removed and cannot find its player.
+        self.player_id = self.game.get_player_id(self.minion)
+
     @property
     def minion(self):
         return self.entity
@@ -31,14 +34,13 @@ class MinionDeath(Death):
     def _happen(self):
         self._message()
 
-        player_id = self.game.get_player_id(self.minion)
-        desk = self.game.players[player_id].desk
+        desk = self.game.players[self.player_id].desk
         assert self.minion in desk, 'The minion must in the desk'
 
         index = desk.index(self.minion)
         desk.remove(self.minion)
 
-        self.minion.run_death_rattle(player_id, index)
+        self.minion.run_death_rattle(self.player_id, index)
 
 
 class HeroDeath(Death):

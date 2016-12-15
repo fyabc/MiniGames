@@ -337,21 +337,23 @@ class GameWindow(ttk.Frame):
                 if n % 2 == 0:
                     button.config(text='\n' * 5)
                 else:
+                    button.unbind('<Enter>')
+                    button.unbind('<Leave>')
+
                     idx = n // 2
                     if idx >= desk_number:
                         button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
-                        button.unbind('<Enter>')
-                        button.unbind('<Leave>')
                     else:
                         button.config(text=show_minion(player.desk[idx], self.ShowCardWidth))
                         ToolTip(button, player.desk[idx].data['description'])
 
             # Refresh hand.
             for n, button in enumerate(self.hand_card_buttons[i]):
+                button.unbind('<Enter>')
+                button.unbind('<Leave>')
+
                 if n >= hand_number:
                     button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
-                    button.unbind('<Enter>')
-                    button.unbind('<Leave>')
                 else:
                     button.config(text=show_card(player.hand[n], self.ShowCardWidth))
                     ToolTip(button, player.hand[n].data['description'])
@@ -508,6 +510,7 @@ class GameWindow(ttk.Frame):
         self.player_buttons[opp][0].config(text='Enemy Turn')
         for button in self.player_buttons[opp]:
             button.config(state=tk.DISABLED)
+        self.player_buttons[opp][2].config(state=tk.NORMAL)
 
     # Some user operations.
     def _checked_dispatch(self, event_type, *args, **kwargs):

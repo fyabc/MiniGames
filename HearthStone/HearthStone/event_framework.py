@@ -71,8 +71,8 @@ class Handler:
     def __repr__(self):
         return self.__str__()
 
-    def kill(self):
-        """kill the handler.
+    def disable(self):
+        """disable the handler.
         [NOTE]: This method just set the alive bit to False, do not destroy it.
         It will be removed by the event engine soon.
         """

@@ -14,9 +14,11 @@ from ..game_events.attack_events import *
 from ..game_events.damage_events import *
 from ..game_events.game_event import *
 from ..game_events.play_events import *
+from ..game_events.death_events import *
 
 from ..game_handlers import *
 from ..game_handlers.damage_handlers import *
+from ..game_handlers.card_handlers import *
 
 __author__ = 'fyabc'
 

@@ -13,11 +13,11 @@ class GameEntity:
 
     def __init__(self, game):
         self.game = game
-        self.handlers = {}
+        self.handlers = set()
 
-    def kill_self(self):
+    def disable_all_handlers(self):
         for handler in self.handlers:
-            handler.kill()
+            handler.disable()
 
 
 __all__ = [
