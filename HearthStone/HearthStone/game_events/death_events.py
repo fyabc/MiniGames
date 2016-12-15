@@ -2,18 +2,31 @@
 # -*- encoding: utf-8 -*-
 
 from .game_event import GameEvent
+from .basic_events import GameEnd
 from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
 
 
-class MinionDeath(GameEvent):
-    def __init__(self, game, minion):
-        super(MinionDeath, self).__init__(game)
-        self.minion = minion
+class Death(GameEvent):
+    def __init__(self, game, entity):
+        super().__init__(game)
+        self.entity = entity
 
     def __str__(self):
-        return '{}({})'.format(super(MinionDeath, self).__str__(), self.minion)
+        return '{}({})'.format(super().__str__(), self.entity)
+
+    def _message(self):
+        verbose('{} died!'.format(self.entity))
+
+
+class MinionDeath(Death):
+    def __init__(self, game, minion):
+        super(MinionDeath, self).__init__(game, minion)
+
+    @property
+    def minion(self):
+        return self.entity
 
     def _happen(self):
         self._message()
@@ -27,10 +40,27 @@ class MinionDeath(GameEvent):
 
         self.minion.run_death_rattle(player_id, index)
 
-    def _message(self):
-        verbose('{} died!'.format(self.minion))
+
+class HeroDeath(Death):
+    def __init__(self, game, player):
+        super(HeroDeath, self).__init__(game, player)
+        self.player_id = player.player_id
+
+    @property
+    def player(self):
+        return self.entity
+
+    def _happen(self):
+        self._message()
+
+        self.game.add_event_quick(GameEnd, self.player_id)
+
+    def __str__(self):
+        return '{}(P{})'.format(super().__str__(), self.player_id)
 
 
 __all__ = [
+    'Death',
     'MinionDeath',
+    'HeroDeath',
 ]

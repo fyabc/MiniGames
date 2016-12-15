@@ -4,7 +4,6 @@ import random
 
 from ..game_data.card_data import get_all_cards
 from .entity import GameEntity
-from ..game_events.basic_events import GameEnd
 
 __author__ = 'fyabc'
 
@@ -97,12 +96,7 @@ class Player(GameEntity):
 
         self.health -= value
 
-        if self.health <= 0:
-            # todo: move add event code into handlers.
-            # raise HeroDeathException(self.game.current_player_id, self.player_id)
-            self.game.add_event_quick(GameEnd, self.player_id)
-            return True
-        return False
+        return self.health <= 0
 
     # Methods of remove and add cards.
     def remove_from_deck(self, index=-1):

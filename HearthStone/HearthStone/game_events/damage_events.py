@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .game_event import GameEvent
-from .death_events import MinionDeath
+from .death_events import MinionDeath, HeroDeath
 from ..utils import verbose
 
 __author__ = 'fyabc'
@@ -27,8 +27,8 @@ class Damage(GameEvent):
             verbose('{} kill {}!'.format(self.source, self.target))
             # todo: add `MinionDeath` event
             if self.target in self.game.players:
-                # Target is hero: pass
-                pass
+                # Target is hero: hero death
+                self.game.add_event_quick(HeroDeath, self.target)
             else:
                 # Target is minion: minion death
                 self.game.add_event_quick(MinionDeath, self.target)
@@ -40,7 +40,7 @@ class Damage(GameEvent):
 class SpellDamage(Damage):
     """This class represents damage from spell.
 
-    Used to all '法术伤害+x' handlers.
+    Used to all 'Spell power +X' handlers.
     """
 
     def __init__(self, game, spell, target, value):
