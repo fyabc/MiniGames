@@ -368,6 +368,12 @@ class Minion(Card):
         else:
             self.remain_attack_number = 0
 
+    def turn_end(self):
+        if self.location != self.DESK:
+            return
+
+        self.remain_attack_number = 0
+
     def freeze(self):
         # (2 = frozen next turn, 1 = frozen this turn, 0 = not frozen)
         self._frozen = 2
@@ -382,7 +388,14 @@ class Minion(Card):
 
 
 class Spell(Card):
-    pass
+    def __init__(self, game):
+        super().__init__(game)
+
+    def change_location(self, location, *args, **kwargs):
+        pass
+
+    def play(self):
+        pass
 
 
 class Weapon(Card):

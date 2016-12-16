@@ -4,7 +4,7 @@
 from HearthStone.ext import Minion, set_description
 from HearthStone.ext.card_creator import m_blank, m_summon
 from HearthStone.ext import DrawCard, Damage
-from HearthStone.ext import GameHandler
+from HearthStone.ext import DeskHandler
 
 __author__ = 'fyabc'
 
@@ -116,9 +116,44 @@ class 水元素(Minion):
     _data = dict(id=46, name='水元素', CAH=[4, 3, 6], klass=1)
 
 
+#########
+# Rogue #
+#########
+
+
+##########
+# Priest #
+##########
+
+
+###########
+# Warlock #
+###########
+
+
+###########
+# Warrior #
+###########
+
+
+##########
+# Hunter #
+##########
+
+
 ##########
 # Shaman #
 ##########
+
+
+###########
+# Paladin #
+###########
+
+
+#########
+# Druid #
+#########
 
 
 set_description({

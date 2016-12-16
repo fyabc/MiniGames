@@ -60,6 +60,7 @@ class TurnEnd(GameEvent):
     def _happen(self):
         self._message()
 
+        self.game.current_player.turn_end()
         self.game.next_turn()
         self.game.add_event_quick(TurnBegin)
 

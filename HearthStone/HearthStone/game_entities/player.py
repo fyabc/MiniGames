@@ -87,7 +87,8 @@ class Player(GameEntity):
             minion.turn_begin()
 
     def turn_end(self):
-        pass
+        for minion in self.desk:
+            minion.turn_end()
 
     def take_damage(self, source, value, event):
         if value <= 0:
