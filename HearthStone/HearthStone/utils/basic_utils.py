@@ -34,6 +34,13 @@ def get_module_vars(root_package_paths, package_name):
         sys.path.remove(path)
 
 
+def find_index(seq, e):
+    try:
+        return seq.find(e)
+    except ValueError:
+        return None
+
+
 __all__ = [
     'cls_name',
     'get_module_vars',

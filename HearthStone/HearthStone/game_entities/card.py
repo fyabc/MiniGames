@@ -6,6 +6,7 @@ from collections import ChainMap
 from types import new_class
 
 from .entity import GameEntity
+from ..utils.basic_utils import find_index
 
 __author__ = 'fyabc'
 
@@ -155,9 +156,34 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
     # Hook methods on location change. To be implemented in subclasses.
     def change_location(self, location, *args, **kwargs):
+        """Change the location of the card, and call some hook methods.
+
+        :param location: the new location to be changed to.
+        :param args: some arguments to be passed, (e.g. index and player_id in changing to desk)
+        :param kwargs: such as args.
+        :return:
+        """
+
         raise NotImplementedError()
 
     # Some utilities.
+    def get_selection(self):
+        for player_id in (0, 1):
+            player = self.game.players[player_id]
+
+            index = find_index(player.deck, self)
+            if index is not None:
+                return player_id, 'deck', index
+
+            index = find_index(player.hand, self)
+            if index is not None:
+                return player_id, 'hand', index
+
+            index = find_index(player.desk, self)
+            if index is not None:
+                return player_id, 'desk', index
+        return None
+
     @classmethod
     def create_blank(cls, name, data):
         cls_dict = {'_data': data}
@@ -269,14 +295,6 @@ class Minion(Card):
             self.health = max_health
 
     def change_location(self, location, *args, **kwargs):
-        """Change the location of the card, and call some hook methods.
-
-        :param location: the new location to be changed to.
-        :param args: some arguments to be passed, (e.g. index and player_id in changing to desk)
-        :param kwargs: such as args.
-        :return:
-        """
-
         if self.location == self.NULL:
             pass
         elif self.location == self.DECK:
@@ -388,14 +406,64 @@ class Minion(Card):
 
 
 class Spell(Card):
+    # Is this spell have target?
+    have_target = None
+
     def __init__(self, game):
         super().__init__(game)
 
+    def __str__(self):
+        return '{}({})'.format(self.data['name'], self.cost)
+
     def change_location(self, location, *args, **kwargs):
+        if self.location == self.NULL:
+            pass
+        elif self.location == self.DECK:
+            pass
+        elif self.location == self.HAND:
+            pass
+        elif self.location == self.CEMETERY:
+            pass
+
+        # Trigger all handlers of this card.
+        for handler in self.handlers:
+            handler.trigger(self.location, location)
+
+        self.location = location
+
+        if location == self.NULL:
+            pass
+        elif location == self.DECK:
+            pass
+        elif location == self.HAND:
+            pass
+        elif location == self.CEMETERY:
+            pass
+
+    def play(self, player_id, target):
+        """Override by subclasses.
+
+        :param player_id: The id of the spell player.
+        :param target: The target of this spell. None if the spell doesn't have any target.
+        """
+
         pass
 
-    def play(self):
-        pass
+    def validate_target(self, player_id, location, index):
+        """Test the legitimacy of the target.
+
+        :param player_id:
+        :param location:
+        :param index:
+        :return: True if the target is valid. String of message if invalid.
+        """
+
+        player = self.game.players[player_id]
+
+        if player.remain_crystal >= self.cost:
+            return True
+        else:
+            return 'I don\'t have enough mana crystals!'
 
 
 class Weapon(Card):

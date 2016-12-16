@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from HearthStone.ext import Minion, set_description
+from HearthStone.ext import Minion, Spell, set_description
 from HearthStone.ext.card_creator import m_blank, m_summon
-from HearthStone.ext import DrawCard, Damage
+from HearthStone.ext import DrawCard, Damage, SpellDamage
 from HearthStone.ext import DeskHandler
 
 __author__ = 'fyabc'
@@ -112,8 +112,17 @@ class 夜刃刺客(Minion):
 ########
 
 
+class 火球术(Spell):
+    have_target = True
+
+    _data = dict(id=46, name='火球术', type=1, CAH=[4], klass=1)
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, target, 6)
+
+
 class 水元素(Minion):
-    _data = dict(id=46, name='水元素', CAH=[4, 3, 6], klass=1)
+    _data = dict(id=47, name='水元素', CAH=[4, 3, 6], klass=1)
 
 
 #########
@@ -203,4 +212,7 @@ set_description({
     熔火恶犬: '',
     暴风城勇士: '你的其他随从获得+1/+1。',
     作战傀儡: '',
+
+    火球术: '造成6点伤害。',
+    水元素: '冻结所有受到该随从伤害的随从。'
 })

@@ -80,30 +80,74 @@ class SummonMinion(PlayCard):
         super(SummonMinion, self).__init__(game, card, player_id)
         self.index = index
 
+    @property
+    def minion(self):
+        return self.card
+
     def __str__(self):
-        return '{}(P{}, {}=>Loc{})'.format(GameEvent.__str__(self), self.player_id, self.card, self.index)
+        return '{}(P{}, {}=>Loc{})'.format(GameEvent.__str__(self), self.player_id, self.minion, self.index)
 
     def _happen(self):
         super(SummonMinion, self)._happen()
 
         # [NOTE] Add minion to desk **BEFORE** battle cry.
         # [WARNING] todo: here must be test carefully.
-        self.game.add_event_quick(AddMinionToDesk, self.card, self.index, self.player_id)
+        self.game.add_event_quick(AddMinionToDesk, self.minion, self.index, self.player_id)
 
-        self.card.run_battle_cry(self.player_id, self.index)
+        self.minion.run_battle_cry(self.player_id, self.index)
 
     def _message(self):
-        verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.card, self.index))
+        verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.minion, self.index))
+
+
+class RunSpell(GameEvent):
+    """Run a spell. The spell may not be played from the hand."""
+
+    def __init__(self, game, spell, player_id, target=None):
+        super().__init__(game)
+        self.spell = spell
+        self.player_id = player_id
+        self.target = target
+
+    def __str__(self):
+        return '{}(P{}, {}=>{})'.format(super().__str__(), self.player_id, self.spell, self.target)
+
+    def _happen(self):
+        # todo: may more things to do here?
+        self.spell.change_location(self.spell.CEMETERY)
+        self.spell.play(self.player_id, self.target)
+
+    def _message(self):
+        verbose('P{} run a spell {} to {}!'.format(self.player_id, self.spell, self.target))
 
 
 class PlaySpell(PlayCard):
-    def __init__(self, game, spell, player_id, *targets):
+    """Play a spell from the hand."""
+
+    def __init__(self, game, spell, target=None, player_id=None):
         super(PlaySpell, self).__init__(game, spell, player_id)
-        self.targets = targets
+        self.target = target
+
+    @property
+    def spell(self):
+        return self.card
+
+    def __str__(self):
+        return '{}(P{}, {}=>{})'.format(GameEvent.__str__(self), self.player_id, self.spell, self.target)
+
+    def _happen(self):
+        super()._happen()
+
+        self.game.add_event_quick(RunSpell, self.spell, self.player_id, self.target)
+
+    def _message(self):
+        verbose('P{} play a spell {} to {}!'.format(self.player_id, self.spell, self.target))
 
 
 __all__ = [
     'PlayCard',
     'AddMinionToDesk',
     'SummonMinion',
+    'RunSpell',
+    'PlaySpell',
 ]

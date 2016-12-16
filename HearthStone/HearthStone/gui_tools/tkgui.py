@@ -7,13 +7,247 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 
 from ..game_events.basic_events import GameBegin, GameEnd, TurnEnd
-from ..game_events.play_events import SummonMinion
+from ..game_events.play_events import SummonMinion, PlaySpell
 from ..game_events.attack_events import Attack
+from ..game_entities.card import Minion, Spell
 from ..cli_tool import show_card, show_minion
 from .tk_ext import ToolTip
 from ..utils.debug_utils import error
 
 __author__ = 'fyabc'
+
+
+class SelectionStateMachine:
+    States = {
+        # No selection. Default state.
+        # Enable current player's buttons
+        0: 'No selection',
+        
+        # To summon a minion. After selecting a minion in hand.
+        # Enable current player's location buttons on desk.
+        1: 'To summon',
+        
+        # To attack. After selecting a minion on desk.
+        # Enable opponent player's minions and hero.
+        2: 'To attack',
+        
+        # To play a spell (have target). After selecting a spell in hand.
+        # Enable all buttons ([NOTE] enable specific buttons in future).
+        3: 'To play spell',
+    }
+
+    def __init__(self, window):
+        self.state = tk.IntVar(None, 0, 'state')
+        self.window = window
+        self.game = window.game
+        
+        self.selections = []
+        self.selected_buttons = []
+        
+        self.state.trace('w', self.set_window_buttons)
+        
+    @staticmethod
+    def enable(button):
+        button.config(state=tk.NORMAL)
+        
+    @staticmethod
+    def disable(button):
+        button.config(state=tk.DISABLED)
+        
+    @staticmethod
+    def select(button):
+        button.config(style='Selected.TButton')
+    
+    @staticmethod
+    def deselect(button):
+        button.config(style='TButton')
+        
+    def add_selection(self, selection, button):
+        self.selections.append(selection)
+        self.selected_buttons.append(button)
+        self.select(button)
+        
+    def remove_selection(self, selection):
+        index = self.selections.index(selection)
+        self.deselect(self.selected_buttons[index])
+        del self.selections[index]
+        del self.selected_buttons[index]
+        
+    def clear_selection(self):
+        for button in self.selected_buttons:
+            self.deselect(button)
+        self.selections.clear()
+        self.selected_buttons.clear()
+
+    def set_window_buttons(self, *args):
+        state = self.state.get()
+
+        hero_buttons = self.window.player_buttons[0][2], self.window.player_buttons[1][2]
+        
+        cur_id = self.game.current_player_id
+        opp_id = 1 - cur_id
+        cur = self.game.current_player
+        opp = self.game.opponent_player
+        hand_numbers = cur.hand_number, opp.hand_number
+        desk_numbers = cur.desk_number, opp.desk_number
+
+        if state == 0:
+            for player_id in (0, 1):
+                self.disable(hero_buttons[player_id])
+
+            for index, hand_button in enumerate(self.window.hand_card_buttons[cur_id]):
+                if index < hand_numbers[cur_id]:
+                    self.enable(hand_button)
+                else:
+                    self.disable(hand_button)
+                    
+            for hand_button in self.window.hand_card_buttons[opp_id]:
+                self.disable(hand_button)
+                
+            for index, desk_button in enumerate(self.window.desk_card_buttons[cur_id]):
+                if index < 2 * desk_numbers[cur_id] and index % 2 == 1:
+                    self.enable(desk_button)
+                else:
+                    self.disable(desk_button)
+
+            for desk_button in self.window.desk_card_buttons[opp_id]:
+                self.disable(desk_button)
+            
+        elif state == 1:
+            for player_id in (0, 1):
+                self.disable(hero_buttons[player_id])
+
+                for hand_button in self.window.hand_card_buttons[player_id]:
+                    self.disable(hand_button)
+            
+            for index, desk_button in enumerate(self.window.desk_card_buttons[cur_id]):
+                if index < 2 * desk_numbers[cur_id] and index % 2 == 1:
+                    self.disable(desk_button)
+                else:
+                    self.enable(desk_button)
+            
+            for desk_button in self.window.desk_card_buttons[opp_id]:
+                self.disable(desk_button)
+                
+        elif state == 2:
+            self.enable(hero_buttons[opp_id])
+            self.disable(hero_buttons[cur_id])
+
+            for player_id in (0, 1):
+                for hand_button in self.window.hand_card_buttons[player_id]:
+                    self.disable(hand_button)
+                    
+            for index, desk_button in enumerate(self.window.desk_card_buttons[opp_id]):
+                if index < 2 * desk_numbers[opp_id] and index % 2 == 1:
+                    self.enable(desk_button)
+                else:
+                    self.disable(desk_button)
+                    
+            for desk_button in self.window.desk_card_buttons[cur_id]:
+                self.disable(desk_button)
+        
+        elif state == 3:
+            for player_id in (0, 1):
+                self.enable(hero_buttons[player_id])
+                
+                for hand_button in self.window.hand_card_buttons[player_id]:
+                    self.disable(hand_button)
+                        
+                for index, desk_button in enumerate(self.window.desk_card_buttons[player_id]):
+                    if index < 2 * desk_numbers[player_id] and index % 2 == 1:
+                        self.enable(desk_button)
+                    else:
+                        self.disable(desk_button)
+                        
+        # Enable all selected buttons, so that user can deselect it.
+        for button in self.selected_buttons:
+            self.enable(button)
+            
+    def find_entity(self, selection):
+        player_id, location, index = selection
+
+        player = self.game.players[player_id]
+        if location == 'hand':
+            return player.hand[index]
+        elif location == 'desk':
+            return player.desk[index // 2]
+        elif location == 'hero':
+            return player
+        else:
+            raise ValueError('Unknown location {}'.format(location))
+
+    def transform(self, selection):
+        if selection in self.selections:
+            self.remove_selection(selection)
+            # todo: add more in deselect
+            self.state.set(0)
+            return
+        
+        state = self.state.get()
+        
+        player_id, location, index = selection
+        button = self.window.find_button(selection)
+        
+        if state == 0:
+            self.add_selection(selection, button)
+            if location == 'desk':
+                self.state.set(2)
+            elif location == 'hand':
+                card = self.find_entity(selection)
+                
+                if isinstance(card, Minion):
+                    self.state.set(1)
+                elif isinstance(card, Spell):
+                    if card.have_target:
+                        self.state.set(3)
+                    else:
+                        result = card.validate_target(*selection)
+                        if result is True:
+                            self.window.try_play_spell(card, None)
+                        else:
+                            error(result)
+                        self.clear_selection()
+                
+        elif state == 1:
+            player = self.game.current_player
+            minion = self.find_entity(self.selections[0])
+            index_ = min(index // 2, player.desk_number)
+
+            if player.remain_crystal < minion.cost:
+                error('I don\'t have enough mana crystals!')
+            elif player.desk_full:
+                error('The desk of P{} is full!'.format(player.player_id))
+            else:
+                self.window.try_summon_minion(minion, index_)
+                self.clear_selection()
+                self.state.set(0)
+                
+        elif state == 2:
+            source = self.find_entity(self.selections[0])
+            target = self.find_entity(selection)
+
+            if source.attack <= 0:
+                error('Role who don\'t have positive attack cannot attack!')
+            elif source.remain_attack_number <= 0:
+                error('{} cannot attack!'.format(source))
+            elif (not target.taunt) and any(minion.taunt for minion in self.game.opponent_player.desk):
+                error('I must attack the minion who have taunt!')
+            else:
+                self.window.try_attack(source, target)
+                self.clear_selection()
+                self.state.set(0)
+        
+        elif state == 3:
+            spell = self.find_entity(self.selections[0])
+            target = self.find_entity(selection)
+            result = spell.validate_target(self.selections[0][0], selection[1], selection[2])
+            
+            if result is True:
+                self.window.try_play_spell(spell, target)
+                self.clear_selection()
+                self.state.set(0)
+            else:
+                error(result)
 
 
 class GameWindow(ttk.Frame):
@@ -29,22 +263,6 @@ class GameWindow(ttk.Frame):
 
     SelectionType = namedtuple('Selection', ['player_id', 'location', 'index'])
 
-    class SelectionStateMachine:
-        States = {
-            0: 'No Selection',
-            1: 'Select My Hand',
-        }
-
-        def __init__(self, window):
-            self.state = 0
-            self.window = window
-
-        def set_window_buttons(self):
-            pass
-
-        def transform(self, selection):
-            pass
-
     def __init__(self, game, master=None):
         super(GameWindow, self).__init__(master=master, borderwidth=30)
         self.pack(fill=tk.BOTH)
@@ -54,15 +272,10 @@ class GameWindow(ttk.Frame):
         self.game_running = tk.BooleanVar(self, False, 'game_running')
         self.game_running.trace('w', self._on_game_running_changed)
 
-        self.current_player_id = tk.IntVar(self, None, 'current_player_id')
-        self.current_player_id.trace('w', self._on_current_player_id_changed)
-
-        self.selections = []
-
         # todo: add a state machine to manage the selection state.
         # The selection state should be a variable to be traced.
         # For example, when select a minion in hand, then only locations in my desk can be select.
-        self.ssm = self.SelectionStateMachine(self)
+        self.ssm = SelectionStateMachine(self)
 
         ########
         # Menu #
@@ -134,13 +347,13 @@ class GameWindow(ttk.Frame):
                 self.hand_frames[0],
                 width=card_width,
                 state=tk.DISABLED,
-                command=lambda i=i: self._process_selection(0, 'hand', i),
+                command=lambda i=i: self.ssm.transform((0, 'hand', i)),
             ) for i in range(self.game.MaxHandNumber)],
             [ttk.Button(
                 self.hand_frames[1],
                 width=card_width,
                 state=tk.DISABLED,
-                command=lambda i=i: self._process_selection(1, 'hand', i),
+                command=lambda i=i: self.ssm.transform((1, 'hand', i)),
             ) for i in range(self.game.MaxHandNumber)],
         ]
 
@@ -152,12 +365,12 @@ class GameWindow(ttk.Frame):
             [ttk.Button(
                 self.desk_frame,
                 state=tk.DISABLED,
-                command=lambda i=i: self._process_selection(0, 'desk', i),
+                command=lambda i=i: self.ssm.transform((0, 'desk', i)),
             ) for i in range(2 * self.game.MaxDeskNumber + 1)],
             [ttk.Button(
                 self.desk_frame,
                 state=tk.DISABLED,
-                command=lambda i=i: self._process_selection(1, 'desk', i),
+                command=lambda i=i: self.ssm.transform((1, 'desk', i)),
             ) for i in range(2 * self.game.MaxDeskNumber + 1)],
         ]
 
@@ -255,8 +468,9 @@ class GameWindow(ttk.Frame):
                 ttk.Button(self.player_button_frame,
                            text='Hero',
                            state=tk.DISABLED,
+                           command=lambda i=i: self.ssm.transform((i, 'hero', 0))
                            ),
-            ] for _ in (0, 1)
+            ] for i in (0, 1)
         ]
 
         _n_button = len(self.player_buttons[0])
@@ -267,6 +481,9 @@ class GameWindow(ttk.Frame):
                 else:
                     _row = _n_button - 1 - n
                 button.grid(row=_row, column=0, pady=3)
+                
+        # All tooltips.
+        self.all_tooltips = {}
 
         ############################
         # Some initial operations. #
@@ -276,7 +493,8 @@ class GameWindow(ttk.Frame):
 
         self.refresh_window()
 
-    def _set_style(self):
+    @staticmethod
+    def _set_style():
         s = ttk.Style()
 
         s.configure(
@@ -345,10 +563,13 @@ class GameWindow(ttk.Frame):
                         button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
                     else:
                         button.config(text=show_minion(player.desk[idx], self.ShowCardWidth))
-                        ToolTip(button, player.desk[idx].data['description'])
+                        self.all_tooltips[button] = ToolTip(button, player.desk[idx].data['description'])
 
             # Refresh hand.
             for n, button in enumerate(self.hand_card_buttons[i]):
+                if button in self.all_tooltips:
+                    self.all_tooltips[button].close()
+                
                 button.unbind('<Enter>')
                 button.unbind('<Leave>')
 
@@ -356,7 +577,7 @@ class GameWindow(ttk.Frame):
                     button.config(text=(' ' * self.ShowCardWidth + '\n') * 5)
                 else:
                     button.config(text=show_card(player.hand[n], self.ShowCardWidth))
-                    ToolTip(button, player.hand[n].data['description'])
+                    self.all_tooltips[button] = ToolTip(button, player.hand[n].data['description'])
 
     def refresh_info(self):
         for i in (0, 1):
@@ -370,13 +591,17 @@ class GameWindow(ttk.Frame):
                 '\n({} to be locked)'.format(player.next_locked_crystal) if player.next_locked_crystal > 0 else '',
             ))
 
-    def _find_button(self, selection):
+    def find_button(self, selection):
+        """Find the button from the selection."""
+
         player_id, location, index = selection
 
         if location == 'hand':
             return self.hand_card_buttons[player_id][index]
         elif location == 'desk':
             return self.desk_card_buttons[player_id][index]
+        elif location == 'hero':
+            return self.player_buttons[player_id][2]
         else:
             raise ValueError('Unknown location {}'.format(location))
 
@@ -391,89 +616,6 @@ class GameWindow(ttk.Frame):
         else:
             raise ValueError('Unknown location {}'.format(location))
 
-    def _check_operation(self):
-        if len(self.selections) == 2 and \
-                self.selections[0].location == 'hand' and \
-                self.selections[1].location == 'desk' and \
-                (self.selections[1].index % 2 == 0 or
-                    self.selections[1].index // 2 >= self.game.current_player.desk_number) and \
-                self.selections[0].player_id == self.selections[1].player_id:
-            return 'summon'
-        elif len(self.selections) == 2 and \
-                self.selections[0].location == 'desk' and \
-                self.selections[1].location == 'desk' and \
-                self.selections[0].index % 2 != 0 and \
-                self.selections[1].index % 2 != 0 and \
-                self.selections[0].index // 2 < self.game.current_player.desk_number and \
-                self.selections[1].index // 2 < self.game.opponent_player.desk_number and \
-                self.selections[0].player_id != self.selections[1].player_id:
-            return 'attack'
-        else:
-            return None
-
-    def _select_button(self, selection, button=None):
-        button = button or self._find_button(selection)
-        self.selections.append(selection)
-        button.config(style='Selected.TButton')
-
-    def _deselect_button(self, selection, button=None):
-        button = button or self._find_button(selection)
-        self.selections.remove(selection)
-        button.config(style='TButton')
-
-    def _deselect_all_buttons(self):
-        for selection in self.selections:
-            button = self._find_button(selection)
-            button.config(style='TButton')
-        self.selections.clear()
-
-    def _process_selection(self, player_id, location, index):
-        if not self.game_running.get():
-            return
-
-        selection = self.SelectionType(player_id, location, index)
-        button = self._find_button(selection)
-
-        if selection in self.selections:
-            # If the selection has been selected before, make it unselected.
-            self._deselect_button(selection, button)
-        else:
-            self._select_button(selection, button)
-
-            # Check if it satisfied the condition of some operations (summon, attack, etc.)
-            operation = self._check_operation()
-            if operation is None:
-                # If not any operations, add selection into selections.
-                pass
-            else:
-                if operation == 'summon':
-                    player = self.game.current_player
-                    minion = self._find_card(self.selections[0])
-                    index_ = min(index // 2, player.desk_number)
-
-                    if player.remain_crystal < minion.cost:
-                        error('I don\'t have enough mana crystals!')
-                    elif player.desk_full:
-                        error('The desk of P{} is full!'.format(player.player_id))
-                    else:
-                        self._try_summon_minion(minion, index_)
-                elif operation == 'attack':
-                    player = self.game.current_player
-                    source = self._find_card(self.selections[0])
-                    target = self._find_card(self.selections[1])
-
-                    if source.attack <= 0:
-                        error('Role who don\'t have positive attack cannot attack!')
-                    elif source.remain_attack_number <= 0:
-                        error('{} cannot attack!'.format(source))
-                    elif (not target.taunt) and any(minion.taunt for minion in self.game.opponent_player.desk):
-                        error('I must attack the minion who have taunt!')
-                    else:
-                        self._try_attack(source, target)
-                else:
-                    raise ValueError('Unknown operation {}'.format(operation))
-                self._deselect_all_buttons()
-
     def _on_game_running_changed(self, *args):
         """The callback function when the running status changed.
 
@@ -482,10 +624,7 @@ class GameWindow(ttk.Frame):
 
         if self.game_running.get():
             self.menu_bar.entryconfig(3, state=tk.NORMAL)
-            for player_buttons in self.desk_card_buttons:
-                for button in player_buttons:
-                    button.config(state=tk.NORMAL)
-            self.current_player_id.set(self.game.current_player_id)
+            self.ssm.state.set(0)
         else:
             self.menu_bar.entryconfig(3, state=tk.DISABLED)
             for player_buttons in self.hand_card_buttons:
@@ -494,23 +633,6 @@ class GameWindow(ttk.Frame):
             for player_buttons in self.desk_card_buttons:
                 for button in player_buttons:
                     button.config(state=tk.DISABLED)
-
-    def _on_current_player_id_changed(self, *args):
-        cur = self.current_player_id.get()
-        opp = 1 - cur
-
-        for button in self.hand_card_buttons[cur]:
-            button.config(state=tk.NORMAL)
-        for button in self.hand_card_buttons[opp]:
-            button.config(state=tk.DISABLED)
-        self.player_buttons[cur][0].config(text='Turn End')
-        for button in self.player_buttons[cur]:
-            button.config(state=tk.NORMAL)
-
-        self.player_buttons[opp][0].config(text='Enemy Turn')
-        for button in self.player_buttons[opp]:
-            button.config(state=tk.DISABLED)
-        self.player_buttons[opp][2].config(state=tk.NORMAL)
 
     # Some user operations.
     def _checked_dispatch(self, event_type, *args, **kwargs):
@@ -538,20 +660,26 @@ Restart or Quit?
         self.game_running.set(True)
         self.game.restart_game()
         self._checked_dispatch(GameBegin)
+        self.ssm.clear_selection()
+        self.ssm.state.set(0)
         self.refresh_window()
 
     def turn_end(self):
         self._checked_dispatch(TurnEnd)
-        self.current_player_id.set(self.game.current_player_id)
-        self._deselect_all_buttons()
+        self.ssm.clear_selection()
+        self.ssm.state.set(0)
         self.refresh_window()
 
-    def _try_summon_minion(self, minion, index):
+    def try_summon_minion(self, minion, index):
         self._checked_dispatch(SummonMinion, minion, index)
         self.refresh_window()
 
-    def _try_attack(self, source, target):
+    def try_attack(self, source, target):
         self._checked_dispatch(Attack, source, target)
+        self.refresh_window()
+
+    def try_play_spell(self, spell, target=None):
+        self._checked_dispatch(PlaySpell, spell, target)
         self.refresh_window()
 
 
