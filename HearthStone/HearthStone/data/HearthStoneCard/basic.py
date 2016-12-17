@@ -45,7 +45,7 @@ class 工程师学徒(Minion):
         self.game.add_event_quick(DrawCard)
 
 # Cost 3
-达拉然法师 = m_blank('达拉然法师', dict(id=15, name='达拉然法师', CAH=[3, 1, 4]))
+达拉然法师 = m_blank('达拉然法师', dict(id=15, name='达拉然法师', CAH=[3, 1, 4], spell_power=1))
 铁炉堡火枪手 = m_blank('铁炉堡火枪手', dict(id=16, name='铁炉堡火枪手', CAH=[3, 2, 2]))
 铁鬃灰熊 = m_blank('铁鬃灰熊', dict(id=17, name='铁鬃灰熊', race=['Beast'], CAH=[3, 3, 3], taunt=True))
 岩浆暴怒者 = m_blank('岩浆暴怒者', dict(id=18, name='岩浆暴怒者', CAH=[3, 5, 1]))
@@ -74,7 +74,7 @@ class 侏儒发明家(Minion):
         self.game.add_event_quick(DrawCard)
 
 绿洲钳嘴龟 = m_blank('绿洲钳嘴龟', dict(id=31, name='绿洲钳嘴龟', race=['Beast'], CAH=[4, 2, 7]))
-食人魔法师 = m_blank('食人魔法师', dict(id=32, name='食人魔法师', CAH=[4, 4, 4]))
+食人魔法师 = m_blank('食人魔法师', dict(id=32, name='食人魔法师', CAH=[4, 4, 4], spell_power=1))
 
 # Cost 5
 藏宝海湾保镖 = m_blank('藏宝海湾保镖', dict(id=33, name='藏宝海湾保镖', CAH=[5, 5, 4], taunt=True))
@@ -92,9 +92,9 @@ class 夜刃刺客(Minion):
 雷矛特种兵 = m_blank('雷矛特种兵', dict(id=38, name='雷矛特种兵', CAH=[5, 4, 2]))
 
 # Cost 6
-大法师 = m_blank('大法师', dict(id=39, name='大法师', CAH=[6, 4, 7]))
+大法师 = m_blank('大法师', dict(id=39, name='大法师', CAH=[6, 4, 7], spell_power=1))
 石拳食人魔 = m_blank('石拳食人魔', dict(id=40, name='石拳食人魔', CAH=[6, 6, 7]))
-竞技场主宰 = m_blank('竞技场主宰', dict(id=41, name='竞技场主宰', CAH=[6, 6, 5]))
+竞技场主宰 = m_blank('竞技场主宰', dict(id=41, name='竞技场主宰', CAH=[6, 6, 5], taunt=True))
 鲁莽火箭兵 = m_blank('鲁莽火箭兵', dict(id=42, name='鲁莽火箭兵', CAH=[6, 5, 2], charge=True))
 
 # Cost 7
