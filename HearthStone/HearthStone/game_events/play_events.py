@@ -50,7 +50,7 @@ class AddMinionToDesk(GameEvent):
         super(AddMinionToDesk, self).__init__(game)
 
         if isinstance(minion, int):
-            self.minion = self.game.create_card(minion)
+            self.minion = self.game.create_card(minion, player_id)
         else:
             self.minion = minion
         self.index = index

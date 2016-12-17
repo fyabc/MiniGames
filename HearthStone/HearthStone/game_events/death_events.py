@@ -25,7 +25,7 @@ class MinionDeath(Death):
         super(MinionDeath, self).__init__(game, minion)
 
         # [NOTE] Get player id now, because the minion may be removed and cannot find its player.
-        self.player_id = self.game.get_player_id(self.minion)
+        self.player_id = self.minion.player_id
 
     @property
     def minion(self):

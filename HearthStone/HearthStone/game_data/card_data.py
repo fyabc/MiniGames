@@ -38,6 +38,7 @@ def _create_cards_db():
       attack        INTEGER NULLABLE,
       health        INTEGER NULLABLE,
       overload      INTEGER,
+      spell_power   INTEGER,
       attack_number INTEGER NULLABLE,
       taunt         INTEGER NULLABLE,
       charge        INTEGER NULLABLE,
@@ -47,7 +48,7 @@ def _create_cards_db():
     ''')
 
     AllCardsDBCur.executemany(
-        '''INSERT INTO AllCards VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);''',
+        '''INSERT INTO AllCards VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);''',
         ((
             card.data['id'],
             card.data['type'],
@@ -60,6 +61,7 @@ def _create_cards_db():
             card.data['CAH'][1] if len(card.data['CAH']) >= 2 else None,
             card.data['CAH'][2] if len(card.data['CAH']) >= 3 else None,
             card.data['overload'],
+            card.data['spell_power'],
             card.data.get('attack_number', None),
             card.data.get('taunt', None),
             card.data.get('charge', None),

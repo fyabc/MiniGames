@@ -40,3 +40,11 @@ def race2str(races):
 
 def str2race(races_str):
     return [ReversedRaces[race_str] for race_str in races_str]
+
+
+# Locations of the card.
+Location_NULL = 0
+Location_DECK = 1
+Location_HAND = 2
+Location_DESK = 3
+Location_CEMETERY = 4

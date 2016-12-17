@@ -133,9 +133,9 @@ class Game:
     # Game operations.
     def load_game(self, game_filename=None):
         if game_filename is None:
-            return [Player(self) for _ in range(self.TotalPlayerNumber)]
+            return [Player(self, player_id=i) for i in range(self.TotalPlayerNumber)]
         with open(game_filename, 'r') as f:
-            return [Player.load_from_dict(self, data) for data in json.load(f)]
+            return [Player.load_from_dict(self, data, player_id=i) for i, data in enumerate(json.load(f))]
 
     def init_handlers(self):
         self.add_handler_quick(TurnBeginDrawCardHandler)
@@ -165,16 +165,8 @@ class Game:
         self.turn_number += 1
 
     # Other utilities.
-    def create_card(self, card_id):
-        return get_all_cards()[card_id](self)
-
-    def get_player_id(self, card):
-        for i in (0, 1):
-            player = self.players[i]
-
-            if card in player.deck or card in player.hand or card in player.desk:
-                return i
-        return None
+    def create_card(self, card_id, player_id=None):
+        return get_all_cards()[card_id](self, player_id=player_id)
 
     def log(self, *args, **kwargs):
         """Logging something (maybe events?) into the history manager."""

@@ -33,6 +33,40 @@ def clear_screen():
         os.system('clear')
 
 
+'''The game board is like this:
+
+T = Taunt
+S = Stealth
+D = Divine Shield
+C = Charge
+(W = Windfury, but not shown in the card)
+
+                ---------
+Cost ---------> |2  #100| <-- Card ID
+Can attack? --> |*      |
+Attributes ---> |T S D C|
+Attack -------> |3     2| <-- Health
+                ---------
+
+        ================================================
+        |   P1            [6]                   |      |
+        |---------------------------------------|      |
+        |              |  Name |                |      |
+        |              |2    #1|                |      |
+        |              |*      |                | [26] |
+        |              |T S D C|                |      |
+        |              |3     2|                |      |
+        |---------------------------------------|------|
+        |                                       |      |
+        |                                       |      |
+        |                                       | [25] |
+        |                                       |      |
+        |---------------------------------------|      |
+        | * P0                                  |      |
+        ================================================
+'''
+
+
 def simple_show_board(game: Game):
     p0, p1 = game.players
 
@@ -55,50 +89,6 @@ def simple_show_board(game: Game):
         p1.hand, p1.deck, p1.desk,
         'Status End'.center(windowWidth, Config['CLI']['charShowEnd']),
     ))
-
-
-def show_board(game: Game):
-    """Show the board of the game.
-
-    :param game: The game to be show.
-    :return: None
-    """
-
-    '''The game board is like this:
-
-    T = Taunt
-    S = Stealth
-    D = Divine Shield
-    C = Charge
-    (W = Windfury, but not shown in the card)
-
-                    ---------
-    Cost ---------> |2  #100| <-- Card ID
-    Can attack? --> |*      |
-    Attributes ---> |T S D C|
-    Attack -------> |3     2| <-- Health
-                    ---------
-
-            ================================================
-            |   P1            [6]                   |      |
-            |---------------------------------------|      |
-            |              |2    #1|                |      |
-            |              |*      |                | [26] |
-            |              |T S D C|                |      |
-            |              |3     2|                |      |
-            |---------------------------------------|------|
-            |                                       |      |
-            |                                       |      |
-            |                                       | [25] |
-            |                                       |      |
-            |---------------------------------------|      |
-            | * P0                                  |      |
-            ================================================
-    '''
-
-    p0, p1 = game.players
-
-    columns, lines = shutil.get_terminal_size()
 
 
 def align_line(left_line, right_line, width=120, fill=' ', sep=' '):
@@ -128,7 +118,7 @@ def show_card(card, width=7):
         return show_weapon(card, width)
 
 
-def show_minion(minion: Minion, width=7, border=False):
+def show_minion(minion: Minion, width=10, border=False):
     b = '|' if border else ''
 
     return '''\
@@ -151,11 +141,25 @@ def show_minion(minion: Minion, width=7, border=False):
     )
 
 
-def show_spell(spell: Spell, width=7):
-    pass
+def show_spell(spell: Spell, width=10, border=False):
+    b = '|' if border else ''
+
+    return '''\
+{}{}{}
+{}{}{}
+{}{}{}
+{}{}{}
+{}{}{}
+'''.format(
+        b, spell.data['name'].center(width), b,
+        b, align_line(spell.cost, '#{}'.format(spell.data['id']), width), b,
+        b, align_line([], [], width), b,
+        b, align_line([], [], width), b,
+        b, align_line([], [], width), b,
+    )
 
 
-def show_weapon(weapon: Weapon, width=7):
+def show_weapon(weapon: Weapon, width=10):
     pass
 
 
@@ -163,7 +167,6 @@ __all__ = [
     'CLIConfig',
     'clear_screen',
     'simple_show_board',
-    'show_board',
     'align_line',
     'show_card',
     'show_minion',

@@ -21,6 +21,8 @@ class Attack(GameEvent):
         self._message()
 
         self.source.remain_attack_number -= 1
+        if self.source.stealth:
+            self.source.stealth = False
 
         src_atk = self.source.attack
         if src_atk > 0:

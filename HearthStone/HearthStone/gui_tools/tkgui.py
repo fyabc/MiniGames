@@ -86,10 +86,8 @@ class SelectionStateMachine:
         
         cur_id = self.game.current_player_id
         opp_id = 1 - cur_id
-        cur = self.game.current_player
-        opp = self.game.opponent_player
-        hand_numbers = cur.hand_number, opp.hand_number
-        desk_numbers = cur.desk_number, opp.desk_number
+        hand_numbers = self.game.players[0].hand_number, self.game.players[1].hand_number
+        desk_numbers = self.game.players[0].desk_number, self.game.players[1].desk_number
 
         if state == 0:
             for player_id in (0, 1):
@@ -230,6 +228,8 @@ class SelectionStateMachine:
                 error('Role who don\'t have positive attack cannot attack!')
             elif source.remain_attack_number <= 0:
                 error('{} cannot attack!'.format(source))
+            elif target.stealth:
+                error('{} is stealth, cannot be target!'.format(target))
             elif (not target.taunt) and any(minion.taunt for minion in self.game.opponent_player.desk):
                 error('I must attack the minion who have taunt!')
             else:

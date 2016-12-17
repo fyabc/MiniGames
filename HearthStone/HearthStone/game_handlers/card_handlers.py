@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..game_entities.card import Card
+from ..constants import Location_DESK
 from .game_handler import GameHandler
 
 __author__ = 'fyabc'
@@ -39,9 +39,9 @@ class CardHandler(GameHandler):
 
 
 class DeskHandler(CardHandler):
-    """The most common used handler type, that enable in desk."""
+    """The most common used handler type, that enable only in desk."""
 
-    enable_locations = [Card.DESK]
+    enable_locations = [Location_DESK]
 
 
 __all__ = [

@@ -28,10 +28,10 @@ Package = {
 # Cost 2
 淡水鳄 = m_blank('淡水鳄', dict(id=6, name='淡水鳄', race=['Beast'], CAH=[2, 2, 3]))
 血沼迅猛龙 = m_blank('血沼迅猛龙', dict(id=7, name='血沼迅猛龙', race=['Beast'], CAH=[2, 3, 2]))
-酸性沼泽软泥怪 = m_blank('酸性沼泽软泥怪', dict(id=8, name='酸性沼泽软泥怪', CAH=[2, 2, 2]))
+酸性沼泽软泥怪 = m_blank('酸性沼泽软泥怪', dict(id=8, name='酸性沼泽软泥怪', CAH=[2, 3, 2]))
 蓝腮战士 = m_blank('蓝腮战士', dict(id=9, name='蓝腮战士', race=['Murloc'], CAH=[2, 2, 1], charge=True))
 霜狼步兵 = m_blank('霜狼步兵', dict(id=10, name='霜狼步兵', CAH=[2, 2, 2], taunt=True))
-狗头人地卜师 = m_blank('狗头人地卜师', dict(id=11, name='狗头人地卜师', CAH=[2, 2, 2]))
+狗头人地卜师 = m_blank('狗头人地卜师', dict(id=11, name='狗头人地卜师', CAH=[2, 2, 2], spell_power=1))
 
 鱼人猎潮者 = m_summon('鱼人猎潮者', dict(id=12, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1]), card_id=13)
 # This is a typical derivative card.

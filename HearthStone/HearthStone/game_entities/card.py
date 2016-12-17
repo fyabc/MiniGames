@@ -6,6 +6,7 @@ from collections import ChainMap
 from types import new_class
 
 from .entity import GameEntity
+from ..game_handlers.damage_handlers import SpellPowerHandler
 from ..utils.basic_utils import find_index
 
 __author__ = 'fyabc'
@@ -94,12 +95,11 @@ class Card(GameEntity, metaclass=SetDataMeta):
         'race': [],
         'CAH': [0, 1, 1],
         'overload': 0,
+        'spell_power': 0,
         'description': '',
     }
 
-    data = {}
-
-    def __init__(self, game):
+    def __init__(self, game, **kwargs):
         super(Card, self).__init__(game)
 
         self.id = Card.CreatedCardNumber
@@ -121,6 +121,10 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
         # todo: add card creator.
         self.creator = None
+
+        player_id = kwargs.pop('player_id', None)
+        if player_id is not None:
+            self._player_id = player_id
 
     def __str__(self):
         return '{}(id={},card_id={},name={})'.format(type(self).__name__, self.id, self.data['id'], self.data['name'])
@@ -150,9 +154,22 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
     @property
     def player_id(self):
-        # todo: check and return the player id of this card.
-        # [NOTE] The card may be controlled by different players, so this property may change.
-        return None
+        if hasattr(self, '_player_id'):
+            return self._player_id
+
+        if self.location == self.NULL:
+            return None
+        else:
+            p0, p1 = self.game.players
+
+            if self.location == self.DECK:
+                return 0 if self in p0.deck else 1
+            elif self.location == self.HAND:
+                return 0 if self in p0.hand else 1
+            elif self.location == self.DESK:
+                return 0 if self in p0.desk else 1
+            else:
+                return None
 
     # Hook methods on location change. To be implemented in subclasses.
     def change_location(self, location, *args, **kwargs):
@@ -210,20 +227,26 @@ class Minion(Card):
         'stealth': False,
     }
 
-    def __init__(self, game):
-        super(Minion, self).__init__(game)
+    def __init__(self, game, **kwargs):
+        super(Minion, self).__init__(game, **kwargs)
 
         self.health = self.data['CAH'][2]           # Health
 
         self.remain_attack_number = 0               # Remain attack number in this turn
         self.divine_shield = False                  # Is this minion have divine shield?
+        self.stealth = False
         self._frozen = 0                            # Is this minion frozen?
         self._silent = False                        # Is this minion silent?
+
+        # Set spell power handlers.
+        if self.data['spell_power'] > 0:
+            self.handlers.add(SpellPowerHandler(self.game, self))
 
     def __str__(self):
         return '{}({},{},{})'.format(self.data['name'], self.cost, self.attack, self.health)
 
     # Properties.
+
     @property
     def attack(self):
         result = self.data['CAH'][1]
@@ -274,11 +297,11 @@ class Minion(Card):
         return result
 
     @property
-    def stealth(self):
+    def spell_power(self):
         if self._silent:
-            result = False
+            result = 0
         else:
-            result = self.data['stealth']
+            result = self.data['spell_power']
 
         # todo: add auras
 
@@ -369,6 +392,7 @@ class Minion(Card):
 
         self._frozen = 0
         self.divine_shield = False
+        self.stealth = False
 
     def turn_begin(self):
         """When a new turn start, refresh its attack number and frozen status.
@@ -409,8 +433,8 @@ class Spell(Card):
     # Is this spell have target?
     have_target = None
 
-    def __init__(self, game):
-        super().__init__(game)
+    def __init__(self, game, **kwargs):
+        super().__init__(game, **kwargs)
 
     def __str__(self):
         return '{}({})'.format(self.data['name'], self.cost)

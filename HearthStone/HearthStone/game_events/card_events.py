@@ -34,7 +34,7 @@ class AddCardToHand(GameEvent):
 
 class CreateCardToHand(AddCardToHand):
     def __init__(self, game, card_id, player_id=None):
-        super(CreateCardToHand, self).__init__(game, get_all_cards()[card_id](game), player_id)
+        super(CreateCardToHand, self).__init__(game, game.create_card(card_id, player_id), player_id)
 
 
 class DrawCard(GameEvent):

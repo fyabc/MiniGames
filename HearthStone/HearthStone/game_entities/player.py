@@ -9,7 +9,7 @@ __author__ = 'fyabc'
 
 
 class Player(GameEntity):
-    def __init__(self, game):
+    def __init__(self, game, player_id=None):
         super(Player, self).__init__(game)
 
         self.hero = None
@@ -19,7 +19,6 @@ class Player(GameEntity):
         self.hand = []                  # Hand cards
         self.desk = []                  # Desk minions
         self.cemetery = []              # Cemetery cards
-        self.attack = 0                 # todo: may need to move into `self.hero`; such as `health`, etc.
         self.health = 30
         self.fatigue_damage = 0         # 疲劳伤害
         self.total_crystal = 0
@@ -28,7 +27,7 @@ class Player(GameEntity):
         self.next_locked_crystal = 0
 
         # [NOTE] Cannot set this directly, because `self.game.players` haven't been built now.
-        self._player_id = None
+        self._player_id = player_id
 
     def __str__(self):
         return 'P{}'.format(self.player_id)
@@ -59,17 +58,30 @@ class Player(GameEntity):
     def desk_full(self):
         return len(self.desk) >= self.game.MaxDeskNumber
 
+    # Hero properties.
+    @property
+    def taunt(self):
+        return False
+
+    @property
+    def stealth(self):
+        return False
+
+    @property
+    def attack(self):
+        return 0
+
     @classmethod
-    def load_from_dict(cls, game, data):
-        result = cls(game)
+    def load_from_dict(cls, game, data, player_id=None):
+        result = cls(game, player_id)
 
         # result.hero = Hero(allHeroes[data['hero_id']])
         for record in data['deck']:
             if isinstance(record, int):
-                result.deck.append(get_all_cards()[record](game))
+                result.deck.append(game.create_card(record, player_id))
             else:
                 card_id, number = record
-                result.deck.extend(get_all_cards()[card_id](game) for _ in range(number))
+                result.deck.extend(game.create_card(card_id, player_id) for _ in range(number))
 
         random.shuffle(result.deck)
 

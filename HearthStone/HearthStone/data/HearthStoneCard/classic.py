@@ -31,7 +31,7 @@ class 诅咒教派领袖(Minion):
                 # Do not process the death of myself (may be it will not happen in fact?).
                 return
 
-            owner_id = self.game.get_player_id(self.owner)
+            owner_id = self.owner.player_id
             if event.player_id != owner_id:
                 return
 
@@ -41,8 +41,8 @@ class 诅咒教派领袖(Minion):
         def _message(self, event):
             verbose('{} skill: draw a card!'.format(self.owner))
 
-    def __init__(self, game):
-        super().__init__(game)
+    def __init__(self, game, **kwargs):
+        super().__init__(game, **kwargs)
         self.handlers.add(self.MinionDeathHandler(game, self))
 
 

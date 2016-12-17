@@ -46,6 +46,10 @@ class SpellDamage(Damage):
     def __init__(self, game, spell, target, value):
         super(SpellDamage, self).__init__(game, spell, target, value)
 
+    @property
+    def spell(self):
+        return self.source
+
 
 __all__ = [
     'Damage',
