@@ -19,6 +19,9 @@ class GameEntity:
         for handler in self.handlers:
             handler.disable()
 
+    def add_handler_quick(self, handler_type):
+        self.handlers.add(handler_type(self.game, self))
+
 
 __all__ = [
     'GameEntity',

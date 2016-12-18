@@ -43,7 +43,7 @@ class 诅咒教派领袖(Minion):
 
     def __init__(self, game, **kwargs):
         super().__init__(game, **kwargs)
-        self.handlers.add(self.MinionDeathHandler(game, self))
+        self.add_handler_quick(self.MinionDeathHandler)
 
 
 ##########

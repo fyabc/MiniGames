@@ -4,7 +4,7 @@
 from HearthStone.ext import Minion, Spell, set_description
 from HearthStone.ext.card_creator import m_blank, m_summon
 from HearthStone.ext import DrawCard, Damage, SpellDamage
-from HearthStone.ext import DeskHandler
+from HearthStone.ext import FreezeOnDamage
 
 __author__ = 'fyabc'
 
@@ -112,6 +112,70 @@ class 夜刃刺客(Minion):
 ########
 
 
+class 奥术飞弹(Spell):
+    have_target = False
+
+    _data = dict(id=0, name='奥术飞弹', type=1, CAH=[1], klass=1)
+
+    def play(self, player_id, target):
+        pass
+
+
+class 镜像(Spell):
+    have_target = False
+
+    _data = dict(id=0, name='镜像', type=1, CAH=[1], klass=1)
+
+    def play(self, player_id, target):
+        pass
+
+
+class 魔爆术(Spell):
+    have_target = False
+
+    _data = dict(id=0, name='魔爆术', type=1, CAH=[2], klass=1)
+
+    def play(self, player_id, target):
+        pass
+
+
+class 寒冰箭(Spell):
+    have_target = True
+
+    _data = dict(id=0, name='寒冰箭', type=1, CAH=[2], klass=1)
+
+    def play(self, player_id, target):
+        pass
+
+
+class 奥术智慧(Spell):
+    have_target = False
+
+    _data = dict(id=0, name='奥术智慧', type=1, CAH=[3], klass=1)
+
+    def play(self, player_id, target):
+        for _ in range(2):
+            self.game.add_handler_quick(DrawCard, self.player_id, self.player_id)
+
+
+class 冰霜新星(Spell):
+    have_target = False
+
+    _data = dict(id=0, name='冰霜新星', type=1, CAH=[3], klass=1)
+
+    def play(self, player_id, target):
+        pass
+
+
+class 变形术(Spell):
+    have_target = True
+
+    _data = dict(id=0, name='变形术', type=1, CAH=[4], klass=1)
+
+    def play(self, player_id, target):
+        pass
+
+
 class 火球术(Spell):
     have_target = True
 
@@ -123,6 +187,20 @@ class 火球术(Spell):
 
 class 水元素(Minion):
     _data = dict(id=47, name='水元素', CAH=[4, 3, 6], klass=1)
+
+    def __init__(self, game, **kwargs):
+        super().__init__(game, **kwargs)
+
+        self.add_handler_quick(FreezeOnDamage)
+
+
+class 烈焰风暴(Spell):
+    have_target = False
+
+    _data = dict(id=46, name='烈焰风暴', type=1, CAH=[7], klass=1)
+
+    def play(self, player_id, target):
+        pass
 
 
 #########
@@ -213,6 +291,7 @@ set_description({
     暴风城勇士: '你的其他随从获得+1/+1。',
     作战傀儡: '',
 
+    奥术飞弹: '造成3点伤害，随机分配给敌方角色。',
     火球术: '造成6点伤害。',
     水元素: '冻结所有受到该随从伤害的随从。'
 })
