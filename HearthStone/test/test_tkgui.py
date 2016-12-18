@@ -13,9 +13,9 @@ def _test():
     set_debug_level(LEVEL_DEBUG)
 
     root = tk.Tk(className='HearthStone')
-    root.geometry("1050x600")
+    root.geometry("1140x600")
 
-    game = Game('./data/example_game.json')
+    game = Game('./data/test_basic_mage.json')
 
     app = GameWindow(game, root)
 

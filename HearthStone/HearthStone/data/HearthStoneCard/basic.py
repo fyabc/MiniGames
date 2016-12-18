@@ -4,7 +4,8 @@
 from HearthStone.ext import Minion, Spell, set_description
 from HearthStone.ext.card_creator import m_blank, m_summon
 from HearthStone.ext import DrawCard, Damage, SpellDamage
-from HearthStone.ext import FreezeOnDamage
+from HearthStone.ext import FreezeOnDamage, RandomTargetDamage
+from HearthStone.ext import AddMinionToDesk
 
 __author__ = 'fyabc'
 
@@ -113,27 +114,30 @@ class 夜刃刺客(Minion):
 
 
 class 奥术飞弹(Spell):
-    have_target = False
+    _data = dict(id=46, name='奥术飞弹', type=1, CAH=[1], klass=1)
 
-    _data = dict(id=0, name='奥术飞弹', type=1, CAH=[1], klass=1)
+    def where(self):
+        opp = self.game.players[1 - self.player_id]
+
+        return opp.desk + [opp]
 
     def play(self, player_id, target):
-        pass
+        for i in range(3):
+            self.game.add_event_quick(RandomTargetDamage, self, 1, self.where)
 
 
 class 镜像(Spell):
-    have_target = False
-
-    _data = dict(id=0, name='镜像', type=1, CAH=[1], klass=1)
+    _data = dict(id=47, name='镜像', type=1, CAH=[1], klass=1)
 
     def play(self, player_id, target):
-        pass
+        for i in range(2):
+            self.game.add_event_quick(AddMinionToDesk, 48, self.game.MaxDeskNumber + 1)
+
+镜像_d = m_blank('镜像_d', dict(id=48, name='镜像', type=1, CAH=[1, 0, 2], klass=1, taunt=True, rarity=-1))
 
 
 class 魔爆术(Spell):
-    have_target = False
-
-    _data = dict(id=0, name='魔爆术', type=1, CAH=[2], klass=1)
+    _data = dict(id=49, name='魔爆术', type=1, CAH=[2], klass=1)
 
     def play(self, player_id, target):
         pass
@@ -142,16 +146,14 @@ class 魔爆术(Spell):
 class 寒冰箭(Spell):
     have_target = True
 
-    _data = dict(id=0, name='寒冰箭', type=1, CAH=[2], klass=1)
+    _data = dict(id=50, name='寒冰箭', type=1, CAH=[2], klass=1)
 
     def play(self, player_id, target):
         pass
 
 
 class 奥术智慧(Spell):
-    have_target = False
-
-    _data = dict(id=0, name='奥术智慧', type=1, CAH=[3], klass=1)
+    _data = dict(id=51, name='奥术智慧', type=1, CAH=[3], klass=1)
 
     def play(self, player_id, target):
         for _ in range(2):
@@ -159,9 +161,7 @@ class 奥术智慧(Spell):
 
 
 class 冰霜新星(Spell):
-    have_target = False
-
-    _data = dict(id=0, name='冰霜新星', type=1, CAH=[3], klass=1)
+    _data = dict(id=52, name='冰霜新星', type=1, CAH=[3], klass=1)
 
     def play(self, player_id, target):
         pass
@@ -170,7 +170,7 @@ class 冰霜新星(Spell):
 class 变形术(Spell):
     have_target = True
 
-    _data = dict(id=0, name='变形术', type=1, CAH=[4], klass=1)
+    _data = dict(id=53, name='变形术', type=1, CAH=[4], klass=1)
 
     def play(self, player_id, target):
         pass
@@ -179,14 +179,14 @@ class 变形术(Spell):
 class 火球术(Spell):
     have_target = True
 
-    _data = dict(id=46, name='火球术', type=1, CAH=[4], klass=1)
+    _data = dict(id=54, name='火球术', type=1, CAH=[4], klass=1)
 
     def play(self, player_id, target):
         self.game.add_event_quick(SpellDamage, self, target, 6)
 
 
 class 水元素(Minion):
-    _data = dict(id=47, name='水元素', CAH=[4, 3, 6], klass=1)
+    _data = dict(id=55, name='水元素', CAH=[4, 3, 6], klass=1)
 
     def __init__(self, game, **kwargs):
         super().__init__(game, **kwargs)
@@ -195,9 +195,7 @@ class 水元素(Minion):
 
 
 class 烈焰风暴(Spell):
-    have_target = False
-
-    _data = dict(id=46, name='烈焰风暴', type=1, CAH=[7], klass=1)
+    _data = dict(id=56, name='烈焰风暴', type=1, CAH=[7], klass=1)
 
     def play(self, player_id, target):
         pass
@@ -292,6 +290,14 @@ set_description({
     作战傀儡: '',
 
     奥术飞弹: '造成3点伤害，随机分配给敌方角色。',
+    镜像: '召唤2个0/2，并具有嘲讽的随从。',
+    镜像_d: '嘲讽',
+    魔爆术: '对所有敌方随从造成1点伤害。',
+    寒冰箭: '对一个角色造成3点伤害，并使其冻结。',
+    奥术智慧: '抽两张牌。',
+    冰霜新星: '冻结所有敌方随从。',
+    变形术: '使一个随从变形成为1/1的绵羊。',
     火球术: '造成6点伤害。',
-    水元素: '冻结所有受到该随从伤害的随从。'
+    水元素: '冻结所有受到该随从伤害的随从。',
+    烈焰风暴: '对所有敌方随从造成4点伤害。',
 })

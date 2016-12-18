@@ -99,6 +99,9 @@ class Card(GameEntity, metaclass=SetDataMeta):
         'description': '',
     }
 
+    # Is this spell have target?
+    have_target = False
+
     def __init__(self, game, **kwargs):
         super(Card, self).__init__(game)
 
@@ -151,6 +154,10 @@ class Card(GameEntity, metaclass=SetDataMeta):
         # todo: add auras
 
         return result
+
+    @property
+    def type(self):
+        return self.data['type']
 
     @property
     def player_id(self):
@@ -297,6 +304,10 @@ class Minion(Card):
         return result
 
     @property
+    def frozen(self):
+        return self._frozen > 0
+
+    @property
     def spell_power(self):
         if self._silent:
             result = 0
@@ -430,9 +441,6 @@ class Minion(Card):
 
 
 class Spell(Card):
-    # Is this spell have target?
-    have_target = None
-
     def __init__(self, game, **kwargs):
         super().__init__(game, **kwargs)
 

@@ -118,7 +118,7 @@ def show_card(card, width=7):
         return show_weapon(card, width)
 
 
-def show_minion(minion: Minion, width=10, border=False):
+def show_minion(minion: Minion, width=11, border=False):
     b = '|' if border else ''
 
     return '''\
@@ -131,17 +131,18 @@ def show_minion(minion: Minion, width=10, border=False):
         b, minion.data['name'].center(width), b,
         b, align_line(minion.cost, '#{}'.format(minion.data['id']), width), b,
         b, align_line('*' if minion.remain_attack_number > 0 else [], [], width), b,
-        b, '{} {} {} {}'.format(
+        b, '{} {} {} {} {}'.format(
             'T' if minion.taunt else ' ',
             'S' if minion.stealth else ' ',
             'D' if minion.divine_shield else ' ',
             'C' if minion.charge else ' ',
+            'F' if minion.frozen else ' ',
         ), b,
         b, align_line(minion.attack, minion.health, width), b,
     )
 
 
-def show_spell(spell: Spell, width=10, border=False):
+def show_spell(spell: Spell, width=11, border=False):
     b = '|' if border else ''
 
     return '''\
@@ -159,7 +160,7 @@ def show_spell(spell: Spell, width=10, border=False):
     )
 
 
-def show_weapon(weapon: Weapon, width=10):
+def show_weapon(weapon: Weapon, width=11):
     pass
 
 

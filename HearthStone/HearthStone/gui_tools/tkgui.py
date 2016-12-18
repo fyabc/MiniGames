@@ -259,7 +259,7 @@ class GameWindow(ttk.Frame):
     # There are two players in the game. I am Player 0, opponent is Player 1.
 
     # Some constants.
-    ShowCardWidth = 7
+    ShowCardWidth = 11
 
     SelectionType = namedtuple('Selection', ['player_id', 'location', 'index'])
 
