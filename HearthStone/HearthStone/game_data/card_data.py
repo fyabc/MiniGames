@@ -4,7 +4,8 @@
 import sqlite3
 
 from ..game_entities.card import Card, SetDataMeta
-from ..utils import LoadDataPath, CardPackageName, get_module_vars
+from ..utils.path_utils import LoadDataPath, CardPackageName
+from ..utils.basic_utils import get_module_vars
 from ..constants import race2str, str2race
 
 __author__ = 'fyabc'

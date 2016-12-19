@@ -8,9 +8,9 @@ Try to run HearthStone on command line more effectively.
 
 import sys
 import os
-import shutil
 
-from .utils import verbose, Config
+from .utils.debug_utils import verbose
+from .utils.config import Config
 from .core import Game
 from .game_entities.card import Card, Minion, Spell, Weapon
 

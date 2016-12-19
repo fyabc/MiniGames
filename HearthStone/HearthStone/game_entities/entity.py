@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from ..utils.debug_utils import verbose
+
 __author__ = 'fyabc'
 
 
@@ -16,6 +18,8 @@ class GameEntity:
         self.handlers = set()
 
     def disable_all_handlers(self):
+        verbose('Handlers of {} are disabled!'.format(self))
+
         for handler in self.handlers:
             handler.disable()
 

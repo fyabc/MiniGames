@@ -2,8 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 from .game_event import GameEvent
-from ..game_data.card_data import get_all_cards
-from ..utils import verbose
+from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
 

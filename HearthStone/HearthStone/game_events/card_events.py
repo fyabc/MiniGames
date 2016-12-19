@@ -4,7 +4,7 @@
 from ..game_data.card_data import get_all_cards
 from .game_event import GameEvent
 from .damage_events import Damage
-from ..utils import verbose
+from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
 

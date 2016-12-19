@@ -3,7 +3,7 @@
 
 from .game_event import GameEvent
 from .death_events import MinionDeath, HeroDeath
-from ..utils import verbose
+from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
 

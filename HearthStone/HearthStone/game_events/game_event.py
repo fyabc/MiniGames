@@ -9,7 +9,7 @@
 #   the new event should be appended to the tail of the event queue.
 
 from ..event_framework import Event
-from ..utils import verbose
+from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
 

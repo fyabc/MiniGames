@@ -271,6 +271,10 @@ class Minion(Card):
         return result
 
     @property
+    def alive(self):
+        return self.health > 0
+
+    @property
     def attack_number(self):
         if self._silent:
             result = 1
@@ -390,7 +394,13 @@ class Minion(Card):
             return False
         else:
             self.health -= value
-            return self.health <= 0
+            if self.health > 0:
+                return False
+
+            # If the minion will died, disable it's all handlers.
+            # [WARNING] todo: here must be test carefully.
+            self.disable_all_handlers()
+            return True
 
     def silence(self):
         """Silence the minion."""
