@@ -36,7 +36,7 @@ Package = {
 
 鱼人猎潮者 = m_summon('鱼人猎潮者', dict(id=12, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1]), card_id=13)
 # This is a typical derivative card.
-鱼人斥候 = m_blank('鱼人斥候', dict(id=13, name='鱼人斥候', race=['Murloc'], CAH=[1, 1, 1], rarity=-1))
+鱼人猎潮者_d = m_blank('鱼人猎潮者_d', dict(id=13, name='鱼人斥候', race=['Murloc'], CAH=[1, 1, 1], rarity=-1))
 
 
 class 工程师学徒(Minion):
@@ -53,7 +53,7 @@ class 工程师学徒(Minion):
 团队领袖 = m_blank('团队领袖', dict(id=19, name='团队领袖', CAH=[3, 2, 2]))
 
 剃刀猎手 = m_summon('剃刀猎手', dict(id=20, name='剃刀猎手', CAH=[3, 2, 3]), card_id=21)
-野猪 = m_blank('野猪', dict(id=21, name='野猪', race=['Beast'], CAH=[1, 1, 1], rarity=-1))
+剃刀猎手_d = m_blank('剃刀猎手_d', dict(id=21, name='野猪', race=['Beast'], CAH=[1, 1, 1], rarity=-1))
 
 破碎残阳祭司 = m_blank('破碎残阳祭司', dict(id=22, name='破碎残阳祭司', CAH=[3, 3, 2]))
 银背族长 = m_blank('银背族长', dict(id=23, name='银背族长', race=['Beast'], CAH=[3, 1, 4], taunt=True))
@@ -65,7 +65,7 @@ class 工程师学徒(Minion):
 冰风雪人 = m_blank('冰风雪人', dict(id=27, name='冰风雪人', CAH=[4, 4, 5]))
 
 机械幼龙技工 = m_summon('机械幼龙技工', dict(id=28, name='机械幼龙技工', CAH=[4, 2, 4]), card_id=29)
-机械幼龙 = m_blank('机械幼龙', dict(id=29, name='机械幼龙', race=['Mech'], CAH=[1, 2, 1], rarity=-1))
+机械幼龙技工_d = m_blank('机械幼龙技工_d', dict(id=29, name='机械幼龙', race=['Mech'], CAH=[1, 2, 1], rarity=-1))
 
 
 class 侏儒发明家(Minion):
@@ -257,7 +257,7 @@ set_description({
     霜狼步兵: '嘲讽',
     狗头人地卜师: '法术伤害+1',
     鱼人猎潮者: '战吼：召唤一个1/1的鱼人斥候。',
-    鱼人斥候: '',
+    鱼人猎潮者_d: '',
     工程师学徒: '战吼：抽一张牌。',
     达拉然法师: '法术伤害+1',
     铁炉堡火枪手: '战吼：造成1点伤害。',
@@ -265,7 +265,7 @@ set_description({
     岩浆暴怒者: '',
     团队领袖: '你的其他随从获得+1攻击力。',
     剃刀猎手: '战吼：召唤一个1/1的野猪。',
-    野猪: '',
+    剃刀猎手_d: '',
     破碎残阳祭司: '战吼：使一个友方随从获得+1/+1。',
     银背族长: '嘲讽',
     狼骑兵: '冲锋',
@@ -273,7 +273,7 @@ set_description({
     暴风城骑士: '冲锋',
     冰风雪人: '',
     机械幼龙技工: '战吼：召唤一个2/1的机械幼龙。',
-    机械幼龙: '',
+    机械幼龙技工_d: '',
     侏儒发明家: '战吼：抽一张牌。',
     绿洲钳嘴龟: '',
     食人魔法师: '法术伤害+1',
