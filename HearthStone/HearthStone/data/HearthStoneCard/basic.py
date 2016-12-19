@@ -140,7 +140,8 @@ class 魔爆术(Spell):
     _data = dict(id=49, name='魔爆术', type=1, CAH=[2], klass=1)
 
     def play(self, player_id, target):
-        pass
+        for minion in self.game.players[1 - self.player_id].desk:
+            self.game.add_event_quick(SpellDamage, self, minion, 1)
 
 
 class 寒冰箭(Spell):
@@ -157,7 +158,7 @@ class 奥术智慧(Spell):
 
     def play(self, player_id, target):
         for _ in range(2):
-            self.game.add_handler_quick(DrawCard, self.player_id, self.player_id)
+            self.game.add_event_quick(DrawCard, self.player_id, self.player_id)
 
 
 class 冰霜新星(Spell):
@@ -198,7 +199,8 @@ class 烈焰风暴(Spell):
     _data = dict(id=56, name='烈焰风暴', type=1, CAH=[7], klass=1)
 
     def play(self, player_id, target):
-        pass
+        for minion in self.game.players[1 - self.player_id].desk:
+            self.game.add_event_quick(SpellDamage, self, minion, 4)
 
 
 #########
