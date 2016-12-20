@@ -8,6 +8,7 @@ from types import new_class
 
 from .ext import *
 from .card_filters import *
+from ..constants import card_constants as cc
 
 __author__ = 'fyabc'
 
@@ -52,7 +53,35 @@ def m_summon(name, data, bc_or_dr=True, **kwargs):
     return result
 
 
+# Common target validators.
+def validator_minion(self, target):
+    result = super(self.__class__, self).validate_target(target)
+    if result is not True:
+        return result
+
+    if target.type != cc.Type_minion:
+        return 'The target must be a minion!'
+
+    return True
+
+
+def validator_enemy_minion(self, target):
+    result = super(self.__class__, self).validate_target(target)
+    if result is not True:
+        return result
+
+    if target.type != cc.Type_minion:
+        return 'The target must be a minion!'
+
+    if target.player_id == self.player_id:
+        return 'Must choose an enemy minion!'
+
+    return True
+
+
 __all__ = [
     'm_blank',
     'm_summon',
+    'validator_minion',
+    'validator_enemy_minion',
 ]

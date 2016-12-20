@@ -3,7 +3,7 @@
 
 from .game_handler import GameHandler
 from ..game_events.basic_events import GameBegin, TurnBegin
-from ..game_events.card_events import DrawCard
+from ..game_events.card_events import DrawCard, AddCardToHand
 from ..game_events.damage_events import Damage
 from ..game_events.play_events import PlayCard
 from ..utils.debug_utils import verbose
@@ -16,7 +16,7 @@ class CreateCoinHandler(GameHandler):
 
     def _process(self, event):
         self._message(event)
-        # self.game.add_event_quick(CreateCardToHand, None, self.game.opponent_player_id)
+        self.game.add_event_quick(AddCardToHand, 0, self.game.opponent_player_id)
         pass
 
     def _message(self, event):

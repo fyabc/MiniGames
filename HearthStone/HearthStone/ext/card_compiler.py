@@ -31,7 +31,7 @@ ReservedWords = {
 }
 
 # Token list.
-tokens = ['DICT', 'NUM', 'LP', 'RP', 'CARD_TYPE', 'ID']
+tokens = ['DICT', 'NUM', 'LP', 'RP', 'ID'] + list(set(ReservedWords.values()))
 
 # Ignored characters.
 t_ignore = ' \t\r\n'

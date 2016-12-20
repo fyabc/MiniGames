@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..game_data.card_data import get_all_cards
 from .game_event import GameEvent
 from .damage_events import Damage
 from ..utils.debug_utils import verbose
@@ -13,7 +12,11 @@ class AddCardToHand(GameEvent):
     def __init__(self, game, card, player_id=None):
         super(AddCardToHand, self).__init__(game)
         self.player_id = player_id if player_id is not None else game.current_player_id
-        self.card = card
+
+        if isinstance(card, int):
+            self.card = game.create_card(card, player_id)
+        else:
+            self.card = card
 
     def __str__(self):
         return '{}({}=>P{})'.format(super().__str__(), self.card, self.player_id)
@@ -30,11 +33,6 @@ class AddCardToHand(GameEvent):
 
     def _message(self):
         verbose('P{} add a card {} to hand!'.format(self.player_id, self.card))
-
-
-class CreateCardToHand(AddCardToHand):
-    def __init__(self, game, card_id, player_id=None):
-        super(CreateCardToHand, self).__init__(game, game.create_card(card_id, player_id), player_id)
 
 
 class DrawCard(GameEvent):
@@ -71,6 +69,5 @@ class DrawCard(GameEvent):
 
 __all__ = [
     'AddCardToHand',
-    'CreateCardToHand',
     'DrawCard',
 ]
