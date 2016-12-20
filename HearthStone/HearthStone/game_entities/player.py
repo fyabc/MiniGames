@@ -4,6 +4,7 @@ import random
 
 from ..game_data.card_data import get_all_cards
 from .entity import GameEntity
+from ..constants.card_constants import Type_player
 
 __author__ = 'fyabc'
 
@@ -25,6 +26,7 @@ class Player(GameEntity):
         self.remain_crystal = 0
         self.locked_crystal = 0
         self.next_locked_crystal = 0
+        self.played_cards = False       # Is the player play cards this turn? Used for combo cards.
 
         # [NOTE] Cannot set this directly, because `self.game.players` haven't been built now.
         self._player_id = player_id
@@ -37,6 +39,11 @@ class Player(GameEntity):
         if self._player_id is None:
             self._player_id = self.game.players.index(self)
         return self._player_id
+
+    @property
+    def type(self):
+        """The same interface as card."""
+        return Type_player
 
     @property
     def hand_number(self):
@@ -129,6 +136,14 @@ class Player(GameEntity):
     # Other methods of game values.
     def add_crystal(self, value):
         self.remain_crystal = min(self.remain_crystal + value, self.game.MaxCrystal - self.locked_crystal)
+
+    # Other utils.
+    def iter_desk(self):
+        """Iterator on desk.
+
+        To be sorted in order of summon.
+        """
+        return self.desk
 
 
 __all__ = [

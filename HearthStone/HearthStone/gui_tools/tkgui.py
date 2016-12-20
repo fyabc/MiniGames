@@ -199,7 +199,7 @@ class SelectionStateMachine:
                     if card.have_target:
                         self.state.set(3)
                     else:
-                        result = card.validate_target(*selection)
+                        result = card.validate_target(None)
                         if result is True:
                             self.window.try_play_spell(card, None)
                         else:
@@ -240,7 +240,7 @@ class SelectionStateMachine:
         elif state == 3:
             spell = self.find_entity(self.selections[0])
             target = self.find_entity(selection)
-            result = spell.validate_target(self.selections[0][0], selection[1], selection[2])
+            result = spell.validate_target(target)
             
             if result is True:
                 self.window.try_play_spell(spell, target)

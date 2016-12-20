@@ -8,7 +8,7 @@ from .event_framework import EventEngine
 from .game_entities.player import Player
 from .game_events.basic_events import GameEnd
 from .game_exception import GameEndException
-from .game_handlers.basic_handlers import CreateCoinHandler, TurnBeginDrawCardHandler
+from .game_handlers.basic_handlers import CreateCoinHandler, TurnBeginDrawCardHandler, ComboHandler
 
 __author__ = 'fyabc'
 
@@ -140,6 +140,7 @@ class Game:
     def init_handlers(self):
         self.add_handler_quick(TurnBeginDrawCardHandler)
         self.add_handler_quick(CreateCoinHandler)
+        self.add_handler_quick(ComboHandler)
 
     def restart_game(self):
         self.aura_manager.clear()

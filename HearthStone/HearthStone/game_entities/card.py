@@ -491,16 +491,14 @@ class Spell(Card):
 
         pass
 
-    def validate_target(self, player_id, location, index):
+    def validate_target(self, target):
         """Test the legitimacy of the target.
 
-        :param player_id:
-        :param location:
-        :param index:
+        :param target: The target of the spell. None if there is not any target.
         :return: True if the target is valid. String of message if invalid.
         """
 
-        player = self.game.players[player_id]
+        player = self.game.players[self.player_id]
 
         if player.remain_crystal >= self.cost:
             return True

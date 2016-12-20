@@ -10,6 +10,7 @@ __author__ = 'fyabc'
 Type_minion = 0
 Type_spell = 1
 Type_weapon = 2
+Type_player = 3
 
 # Rarity: 0 = basic, 1 = common, 2 = rare, 3 = epic, 4 = legend, -1 = derivative
 Rarity_basic = 0

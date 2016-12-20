@@ -1,62 +1,80 @@
 #! /usr/bin/python
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 
-"""Create cards with a simple language.
+"""A simple compiler of card definition language, using PLY.
 
-This is a simple compiler of the card.
-
-The simple card definition language (still designing...):
-
-    {
-        data { id = 0, type = 0, name = '侏儒发明家', CAH = [4, 2, 4], klass = 0 }
+Example:
+    Minion {        # Define a new minion
+        data {% %}
         bc { d 1 }
         dr { d 1 }
     }
 """
 
-from collections import namedtuple
-import re
+from ply.lex import lex
+from ply.yacc import yacc
+
+from HearthStone.game_entities.card import Minion, Spell, Weapon
 
 __author__ = 'fyabc'
 
 
-# Tokens.
-T_LP = r'(?P<T_LP>\{)'
-T_RP = r'(?P<T_RP>})'
-T_NUM = r'(?P<T_NUM>\d+)'
-T_ID = r'(?P<T_ID>[a-zA-Z_][a-zA-Z_0-9]*)'
-T_WS = r'(?P<T_WS>\s+)'
+#########
+# Lexer #
+#########
+
+# Reserved words.
+ReservedWords = {
+    'Minion': 'CARD_TYPE',
+    'Spell': 'CARD_TYPE',
+    'Weapon': 'CARD_TYPE',
+}
+
+# Token list.
+tokens = ['DICT', 'NUM', 'LP', 'RP', 'CARD_TYPE', 'ID']
+
+# Ignored characters.
+t_ignore = ' \t\r\n'
+
+# Token specifications (as Regex).
+t_DICT = r'\{%.*?%}'
+t_LP = r'\{'
+t_RP = r'}'
 
 
-MasterPattern = re.compile('|'.join([T_LP, T_RP, T_NUM, T_ID, T_WS]))
+# Token processing functions.
+def t_NUM(t):
+    r"""\d+"""
+    t.value = int(t.value)
+    return t
 
 
-def tokenizer(string, pattern=MasterPattern, skips=('T_WS',)):
-    Token = namedtuple('Token', ['type', 'value'])
-
-    scanner = pattern.scanner(string)
-
-    for m in iter(scanner.match, None):
-        token = Token(m.lastgroup, m.group())
-        if token.type in skips:
-            continue
-        yield token
+def t_ID(t):
+    r"""[a-zA-Z_][a-zA-Z_0-9]*"""
+    t.type = ReservedWords.get(t.value, 'ID')
+    return t
 
 
-def create_card_from_string(card_string):
+def t_COMMENT(t):
+    r"""\#.*"""
     pass
 
 
-def _test():
-    for tok in tokenizer('''
-{
-    bc { d 1 }
-    dr { d 1 }
-}
-'''):
-        print(tok)
+# Error handler.
+def t_error(t):
+    print('Bad character: {!r}'.format(t.value[0]))
+    t.skip(1)
 
 
-if __name__ == '__main__':
-    _test()
+# Build the lexer
+lexer = lex()
 
+
+##########
+# Parser #
+##########
+
+
+__all__ = [
+    'lexer',
+]

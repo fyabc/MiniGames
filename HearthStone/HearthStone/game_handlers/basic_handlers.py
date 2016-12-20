@@ -5,6 +5,7 @@ from .game_handler import GameHandler
 from ..game_events.basic_events import GameBegin, TurnBegin
 from ..game_events.card_events import DrawCard
 from ..game_events.damage_events import Damage
+from ..game_events.play_events import PlayCard
 from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
@@ -40,8 +41,22 @@ class TurnBeginDrawCardHandler(GameHandler):
         self.game.add_event_quick(DrawCard)
 
 
+class ComboHandler(GameHandler):
+    """The handler of combo."""
+
+    event_types = [TurnBegin, PlayCard]
+
+    def _process(self, event):
+        if isinstance(event, TurnBegin):
+            for player in self.game.players:
+                player.played_cards = False
+        else:
+            self.game.current_player.played_cards = True
+
+
 __all__ = [
     'CreateCoinHandler',
     'DamageDeathHandler',
     'TurnBeginDrawCardHandler',
+    'ComboHandler',
 ]

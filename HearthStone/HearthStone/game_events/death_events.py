@@ -16,6 +16,9 @@ class Death(GameEvent):
     def __str__(self):
         return '{}({})'.format(super().__str__(), self.entity)
 
+    def _happen(self):
+        raise NotImplementedError()
+
     def _message(self):
         verbose('{} died!'.format(self.entity))
 
