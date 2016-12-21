@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .card_handlers import DeskHandler
-from ..game_events.damage_events import Damage, SpellDamage
+from ..game_events.health_events import Damage, SpellDamage
 from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'

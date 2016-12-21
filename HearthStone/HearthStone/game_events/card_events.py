@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .game_event import GameEvent
-from .damage_events import Damage
+from .health_events import Damage
 from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'

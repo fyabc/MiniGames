@@ -402,6 +402,18 @@ class Minion(Card):
             self.disable_all_handlers()
             return True
 
+    def restore_health(self, source, value, event):
+        if value <= 0:
+            event.disable()
+            return False
+        max_health = self.max_health
+        if self.health >= max_health:
+            event.disable()
+            return False
+        else:
+            self.health = min(max_health, self.health + value)
+            return True
+
     def silence(self):
         """Silence the minion."""
 

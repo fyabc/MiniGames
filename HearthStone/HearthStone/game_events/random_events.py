@@ -4,7 +4,7 @@
 from random import sample
 
 from .game_event import GameEvent
-from .damage_events import Damage, SpellDamage
+from .health_events import Damage, SpellDamage
 from ..constants.card_constants import Type_spell
 from ..utils.debug_utils import verbose
 
