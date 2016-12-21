@@ -2,14 +2,14 @@
 # -*- encoding: utf-8 -*-
 import random
 
-from ..game_data.card_data import get_all_cards
 from .entity import GameEntity
+from .minion_like import IMinion
 from ..constants.card_constants import Type_player
 
 __author__ = 'fyabc'
 
 
-class Player(GameEntity):
+class Player(GameEntity, IMinion):
     def __init__(self, game, player_id=None):
         super(Player, self).__init__(game)
 
@@ -20,7 +20,6 @@ class Player(GameEntity):
         self.hand = []                  # Hand cards
         self.desk = []                  # Desk minions
         self.cemetery = []              # Cemetery cards
-        self.health = 30
         self.fatigue_damage = 0         # 疲劳伤害
         self.total_crystal = 0
         self.remain_crystal = 0
@@ -30,6 +29,12 @@ class Player(GameEntity):
 
         # [NOTE] Cannot set this directly, because `self.game.players` haven't been built now.
         self._player_id = player_id
+
+        # Hero attributes.
+        self.health = 30
+        self.divine_shield = False
+        self._frozen = 0
+        self.remain_attack_number = 1
 
     def __str__(self):
         return 'P{}'.format(self.player_id)
@@ -67,6 +72,11 @@ class Player(GameEntity):
 
     # Hero properties.
     @property
+    def max_health(self):
+        # [NOTE] More in future.
+        return 30
+
+    @property
     def taunt(self):
         return False
 
@@ -77,6 +87,10 @@ class Player(GameEntity):
     @property
     def attack(self):
         return 0
+
+    @property
+    def attack_number(self):
+        return 1
 
     @classmethod
     def load_from_dict(cls, game, data, player_id=None):
@@ -102,21 +116,16 @@ class Player(GameEntity):
         self.next_locked_crystal = 0
         self.remain_crystal = self.total_crystal - self.locked_crystal
 
+        self._minion_turn_begin()
+
         for minion in self.desk:
             minion.turn_begin()
 
     def turn_end(self):
+        self._minion_turn_end()
+
         for minion in self.desk:
             minion.turn_end()
-
-    def take_damage(self, source, value, event):
-        if value <= 0:
-            event.disable()
-            return False
-
-        self.health -= value
-
-        return self.health <= 0
 
     # Methods of remove and add cards.
     def remove_from_deck(self, index=-1):

@@ -6,6 +6,7 @@ from collections import ChainMap
 from types import new_class
 
 from .entity import GameEntity
+from .minion_like import IMinion
 from ..game_handlers.damage_handlers import SpellPowerHandler
 from ..utils.basic_utils import find_index
 
@@ -18,7 +19,7 @@ class SetDataMeta(type):
         # This called before the class created.
         # print('New:', mcs, name, bases, ns)
 
-        assert len(bases) == 1, 'This metaclass requires the class have exactly 1 superclass.'
+        # assert len(bases) == 1, 'This metaclass requires the class have exactly 1 superclass.'
 
         base_data = getattr(bases[0], 'data', ChainMap())
         ns['data'] = base_data.new_child(ns.get('_data', {}))
@@ -218,7 +219,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
         return result
 
 
-class Minion(Card):
+class Minion(Card, IMinion):
     """The class of minion.
 
     [NOTE] Attributes of the minion are affected by its auras (EXCEPT health)
@@ -271,10 +272,6 @@ class Minion(Card):
         return result
 
     @property
-    def alive(self):
-        return self.health > 0
-
-    @property
     def attack_number(self):
         if self._silent:
             result = 1
@@ -308,10 +305,6 @@ class Minion(Card):
         return result
 
     @property
-    def frozen(self):
-        return self._frozen > 0
-
-    @property
     def spell_power(self):
         if self._silent:
             result = 0
@@ -323,15 +316,6 @@ class Minion(Card):
         return result
 
     # Some internal methods.
-    def _frozen_step(self):
-        if self._frozen > 0:
-            self._frozen -= 1
-
-    def _fit_health(self):
-        max_health = self.max_health
-        if self.health > max_health:
-            self.health = max_health
-
     def change_location(self, location, *args, **kwargs):
         if self.location == self.NULL:
             pass
@@ -383,37 +367,6 @@ class Minion(Card):
         """
         pass
 
-    def take_damage(self, source, value, event):
-        if value <= 0:
-            event.disable()
-            return False
-        if self.divine_shield:
-            # [NOTE] When breaking the divine shield, it will not really cause damage, so disable it.
-            self.divine_shield = False
-            event.disable()
-            return False
-        else:
-            self.health -= value
-            if self.health > 0:
-                return False
-
-            # If the minion will died, disable it's all handlers.
-            # [WARNING] todo: here must be test carefully.
-            self.disable_all_handlers()
-            return True
-
-    def restore_health(self, source, value, event):
-        if value <= 0:
-            event.disable()
-            return False
-        max_health = self.max_health
-        if self.health >= max_health:
-            event.disable()
-            return False
-        else:
-            self.health = min(max_health, self.health + value)
-            return True
-
     def silence(self):
         """Silence the minion."""
 
@@ -428,31 +381,16 @@ class Minion(Card):
         self.stealth = False
 
     def turn_begin(self):
-        """When a new turn start, refresh its attack number and frozen status.
-
-        (Only when the minion is on the desk)
-        """
-
         if self.location != self.DESK:
             return
 
-        self._frozen_step()
-
-        if self._frozen == 0:
-            self.remain_attack_number = self.attack_number
-        else:
-            self.remain_attack_number = 0
+        self._minion_turn_begin()
 
     def turn_end(self):
         if self.location != self.DESK:
             return
 
-        self.remain_attack_number = 0
-
-    def freeze(self):
-        # (2 = frozen next turn, 1 = frozen this turn, 0 = not frozen)
-        self._frozen = 2
-        self.remain_attack_number = 0
+        self._minion_turn_end()
 
     # Some other methods.
     def add_aura(self, aura):
