@@ -3,11 +3,12 @@
 
 from HearthStone.ext import Minion, Spell, Weapon, set_description
 from HearthStone.ext.card_creator import m_blank, m_summon, validator_minion, validator_enemy_minion
-from HearthStone.ext import DrawCard, Damage, SpellDamage
-from HearthStone.ext import FreezeOnDamage, RandomTargetDamage
+from HearthStone.ext import DrawCard, Damage, SpellDamage, RandomTargetDamage, RestoreHealth
+from HearthStone.ext import FreezeOnDamage, GameHandler
 from HearthStone.ext import AddMinionToDesk
 from HearthStone.ext import MinionDeath
 from HearthStone.ext import constants
+from HearthStone.utils.debug_utils import verbose
 
 __author__ = 'fyabc'
 
@@ -307,6 +308,25 @@ class 疾跑(Spell):
 
 class 北郡牧师(Minion):
     _data = dict(id=68, name='北郡牧师', type=0, CAH=[1, 1, 3], klass=3)
+
+    class RestoreHealthDrawCardHandler(GameHandler):
+        event_types = [RestoreHealth]
+
+        def _process(self, event):
+            if event.target.type == constants.Type_player:
+                return
+
+            self._message(event)
+
+            owner_id = self.owner.player_id
+            self.game.add_event_quick(DrawCard, owner_id, owner_id)
+
+        def _message(self, event):
+            verbose('{} skill: draw a card due to {}!'.format(self.owner, event.target))
+
+    def __init__(self, game, **kwargs):
+        super().__init__(game, **kwargs)
+        self.add_handler_quick(self.RestoreHealthDrawCardHandler)
 
 
 ###########
