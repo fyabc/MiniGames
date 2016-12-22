@@ -313,7 +313,7 @@ class 北郡牧师(Minion):
         event_types = [RestoreHealth]
 
         def _process(self, event):
-            if event.target.type == constants.Type_player:
+            if event.target.type != constants.Type_minion:
                 return
 
             self._message(event)
@@ -419,4 +419,17 @@ set_description({
     火球术: '造成6点伤害。',
     水元素: '冻结所有受到该随从伤害的随从。',
     烈焰风暴: '对所有敌方随从造成4点伤害。',
+
+    背刺: '对一个未受伤害的随从造成2点伤害。',
+    影袭: '对敌方英雄造成3点伤害。',
+    致命药膏: '使你的武器获得+2攻击力。',
+    闷棍: '将一个敌方随从移回你的对手的手牌。',
+    毒刃: '造成1点伤害，抽一张牌。',
+    刀扇: '对所有敌方随从造成1点伤害，抽一张牌。',
+    刺杀: '消灭一个敌方随从。',
+    刺客之刃: '',
+    消失: '将所有随从移回其拥有者的手牌。',
+    疾跑: '抽四张牌。',
+
+    北郡牧师: '每当一个随从获得治疗时，抽一张牌。',
 })
