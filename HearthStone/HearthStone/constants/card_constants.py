@@ -22,6 +22,15 @@ Rarity_derivative = -1
 
 # Klass: 0 = neutral, others are class id.
 Klass_neutral = 0
+Klass_mage = 1
+Klass_rogue = 2
+Klass_priest = 3
+Klass_warlock = 4
+Klass_warrior = 5
+Klass_hunter = 6
+Klass_shaman = 7
+Klass_paladin = 8
+Klass_druid = 9
 
 # Race: to be stored into database, it can be mapped to single char.
 Races = {

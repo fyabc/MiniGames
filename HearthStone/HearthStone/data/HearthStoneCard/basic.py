@@ -329,6 +329,52 @@ class 北郡牧师(Minion):
         self.add_handler_quick(self.RestoreHealthDrawCardHandler)
 
 
+class 真言术_盾(Spell):
+    have_target = True
+
+    _data = dict(id=69, name='真言术：盾', type=1, CAH=[1], klass=3)
+
+    def play(self, player_id, target):
+        pass
+
+
+class 神圣惩击(Spell):
+    have_target = True
+
+    _data = dict(id=70, name='神圣惩击', type=1, CAH=[1], klass=3)
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, target, 2)
+
+
+class 心灵视界(Spell):
+    _data = dict(id=71, name='心灵视界', type=1, CAH=[1], klass=3)
+
+
+class 暗言术_痛(Spell):
+    _data = dict(id=72, name='暗言术：痛', type=1, CAH=[2], klass=3)
+
+
+class 心灵震爆(Spell):
+    _data = dict(id=73, name='心灵震爆', type=1, CAH=[2], klass=3)
+
+
+class 神圣之灵(Spell):
+    _data = dict(id=74, name='神圣之灵', type=1, CAH=[2], klass=3)
+
+
+class 暗言术_灭(Spell):
+    _data = dict(id=75, name='暗言术：灭', type=1, CAH=[3], klass=3)
+
+
+class 神圣新星(Spell):
+    _data = dict(id=76, name='神圣新星', type=1, CAH=[5], klass=3)
+
+
+class 精神控制(Spell):
+    _data = dict(id=77, name='精神控制', type=1, CAH=[10], klass=3)
+
+
 ###########
 # Warlock #
 ###########
