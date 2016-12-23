@@ -12,7 +12,7 @@ from ..game_events.basic_events import *
 from ..game_events.card_events import *
 from ..game_events.attack_events import *
 from ..game_events.health_events import *
-from ..game_events.real_time_events import RandomTargetDamage
+from ..game_events.real_time_events import *
 from ..game_events.game_event import *
 from ..game_events.play_events import *
 from ..game_events.death_events import *

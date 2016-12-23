@@ -13,7 +13,16 @@ Example:
     1. Spell: Take 1 damage to a random friend minion.
         If I have a "紫罗兰教师", this spell will summon a new minion.
         Then the new minion can be selected as the target.
-    2. Spell: Take
+    2. Spell(烈焰风暴): Take 4 damage to all enemy minions.
+        If enemy has a "颤地者特罗格佐尔", it will summon a new minion.
+        Then the new minion will be selected as the target.
+    3. Spell: Take 1 damage to a random minion.
+        If I have a minion "When I play a spell, destroy a random minion",
+        I must select the minion after the destroy event.
+
+Note:
+    Is AOEEvent really needed? When an AOE spell is running its `play` method,
+    it seems that its targets will not change.
 """
 
 from random import sample
@@ -34,6 +43,21 @@ class RealTimeEvent(GameEvent):
     def _get_targets(self):
         raise NotImplementedError()
 
+    def _happen(self):
+        targets = self._get_targets()
+
+        if targets is None:
+            # If not have enough targets, skip and disable it.
+            self.disable()
+            return
+
+        self._apply_to_targets(targets)
+
+        self._message()
+
+    def _apply_to_targets(self, targets):
+        pass
+
 
 class RandomTargetEvent(RealTimeEvent):
     def __init__(self, game, where, target_number=1):
@@ -51,44 +75,30 @@ class RandomTargetEvent(RealTimeEvent):
 
 class AOEEvent(RealTimeEvent):
     def _get_targets(self):
-        return self.where()
-
-
-class RandomTargetDamage(GameEvent):
-    """Random target damage.
-
-    The damage will randomly select its target(s) when happening.
-    Note:
-        Because the target may died or removed from the desk,
-        so we cannot select the target when the event is added to event engine.
-    """
-
-    def __init__(self, game, source, value, where, target_number=1):
-        super().__init__(game)
-        self.source = source
-        self.value = value
-        self.where = where
-        self.target_number = target_number
-
-    def _happen(self):
         candidates = self.where()
 
-        if len(candidates) < self.target_number:
-            # If not have enough targets, skip and disable it.
-            self.disable()
-            return
+        if not candidates:
+            return None
+        return candidates
 
-        targets = sample(candidates, self.target_number)
 
-        if self.source.type == Type_spell:
-            damage_type = Damage
-        else:
-            damage_type = SpellDamage
+def _apply_damage(self, targets):
+    if self.source.type == Type_spell:
+        damage_type = Damage
+    else:
+        damage_type = SpellDamage
 
-        for target in targets:
-            self.game.add_event_quick(damage_type, self.source, target, self.value)
+    for target in targets:
+        self.game.add_event_quick(damage_type, self.source, target, self.value)
 
-        self._message()
+
+class RandomTargetDamage(RandomTargetEvent):
+    def __init__(self, game, source, value, where, target_number=1):
+        super().__init__(game, where, target_number)
+        self.source = source
+        self.value = value
+
+    _apply_to_targets = _apply_damage
 
     def __str__(self):
         return '{}({}=>random, value={})'.format(super().__str__(), self.source, self.value)
@@ -97,6 +107,24 @@ class RandomTargetDamage(GameEvent):
         verbose('{} take {} damage to random target!'.format(self.source, self.value))
 
 
+class AOEDamage(AOEEvent):
+    def __init__(self, game, source, value, where):
+        super().__init__(game, where)
+        self.source = source
+        self.value = value
+
+    _apply_to_targets = _apply_damage
+
+    def __str__(self):
+        return '{}({}=>AOE, value={})'.format(super().__str__(), self.source, self.value)
+
+    def _message(self):
+        verbose('{} take {} damage to all matched targets!'.format(self.source, self.value))
+
+
 __all__ = [
+    'RandomTargetEvent',
+    'AOEEvent',
     'RandomTargetDamage',
+    'AOEDamage',
 ]

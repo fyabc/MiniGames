@@ -3,7 +3,8 @@
 
 from HearthStone.ext import Minion, Spell, Weapon, set_description
 from HearthStone.ext.card_creator import m_blank, m_summon, validator_minion, validator_enemy_minion
-from HearthStone.ext import DrawCard, Damage, SpellDamage, RandomTargetDamage, RestoreHealth
+from HearthStone.ext import DrawCard, Damage, SpellDamage, RestoreHealth
+from HearthStone.ext import RandomTargetDamage, AOEDamage
 from HearthStone.ext import FreezeOnDamage, GameHandler
 from HearthStone.ext import AddMinionToDesk
 from HearthStone.ext import MinionDeath
@@ -198,7 +199,12 @@ class 水元素(Minion):
 class 烈焰风暴(Spell):
     _data = dict(id=57, name='烈焰风暴', type=1, CAH=[7], klass=1)
 
+    # def where(self):
+    #     return self.game.players[1 - self.player_id].desk
+
     def play(self, player_id, target):
+        # [NOTE] Another implementation of AOE
+        # self.game.add_event_quick(AOEDamage, self, 4, self.where)
         for minion in self.game.players[1 - self.player_id].iter_desk():
             self.game.add_event_quick(SpellDamage, self, minion, 4)
 
