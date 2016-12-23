@@ -1,6 +1,21 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Real time events.
+
+These events will happen and select target(s) real time.
+These events contains random target events and AOE events.
+
+The implementation of these targets must select target when it happens,
+not the time it was added into the event engine.
+
+Example:
+    1. Spell: Take 1 damage to a random friend minion.
+        If I have a "紫罗兰教师", this spell will summon a new minion.
+        Then the new minion can be selected as the target.
+    2. Spell: Take
+"""
+
 from random import sample
 
 from .game_event import GameEvent
@@ -9,6 +24,34 @@ from ..constants.card_constants import Type_spell
 from ..utils.debug_utils import verbose
 
 __author__ = 'fyabc'
+
+
+class RealTimeEvent(GameEvent):
+    def __init__(self, game, where):
+        super().__init__(game)
+        self.where = where
+
+    def _get_targets(self):
+        raise NotImplementedError()
+
+
+class RandomTargetEvent(RealTimeEvent):
+    def __init__(self, game, where, target_number=1):
+        super().__init__(game, where)
+        self.target_number = target_number
+
+    def _get_targets(self):
+        candidates = self.where()
+
+        if len(candidates) < self.target_number:
+            return None
+
+        return sample(candidates, self.target_number)
+
+
+class AOEEvent(RealTimeEvent):
+    def _get_targets(self):
+        return self.where()
 
 
 class RandomTargetDamage(GameEvent):

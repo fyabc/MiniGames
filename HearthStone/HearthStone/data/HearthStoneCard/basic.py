@@ -380,6 +380,45 @@ class 精神控制(Spell):
 ###########
 
 
+class 牺牲契约(Spell):
+    _data = dict(id=78, name='牺牲契约', type=1, CAH=[0], klass=4)
+
+
+虚空行者 = m_blank('虚空行者', dict(id=79, name='虚空行者', CAH=[1, 1, 3], race=['Devil'], klass=4, taunt=True))
+
+
+class 灵魂之火(Spell):
+    _data = dict(id=80, name='灵魂之火', type=1, CAH=[1], klass=4)
+
+
+class 腐蚀术(Spell):
+    _data = dict(id=81, name='腐蚀术', type=1, CAH=[1], klass=4)
+
+
+class 死亡缠绕(Spell):
+    _data = dict(id=82, name='死亡缠绕', type=1, CAH=[1], klass=4)
+
+
+class 魅魔(Minion):
+    _data = dict(id=83, name='魅魔', CAH=[2, 4, 3], race=['Devil'], klass=4)
+
+
+class 吸取生命(Spell):
+    _data = dict(id=82, name='吸取生命', type=1, CAH=[3], klass=4)
+
+
+class 暗影箭(Spell):
+    _data = dict(id=82, name='暗影箭', type=1, CAH=[3], klass=4)
+
+
+class 地狱烈焰(Spell):
+    _data = dict(id=82, name='地狱烈焰', type=1, CAH=[4], klass=4)
+
+
+class 恐惧地狱火(Minion):
+    _data = dict(id=83, name='恐惧地狱火', CAH=[6, 6, 6], race=['Devil'], klass=4)
+
+
 ###########
 # Warrior #
 ###########
