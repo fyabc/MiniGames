@@ -404,19 +404,19 @@ class 魅魔(Minion):
 
 
 class 吸取生命(Spell):
-    _data = dict(id=82, name='吸取生命', type=1, CAH=[3], klass=4)
+    _data = dict(id=84, name='吸取生命', type=1, CAH=[3], klass=4)
 
 
 class 暗影箭(Spell):
-    _data = dict(id=82, name='暗影箭', type=1, CAH=[3], klass=4)
+    _data = dict(id=85, name='暗影箭', type=1, CAH=[3], klass=4)
 
 
 class 地狱烈焰(Spell):
-    _data = dict(id=82, name='地狱烈焰', type=1, CAH=[4], klass=4)
+    _data = dict(id=86, name='地狱烈焰', type=1, CAH=[4], klass=4)
 
 
 class 恐惧地狱火(Minion):
-    _data = dict(id=83, name='恐惧地狱火', CAH=[6, 6, 6], race=['Devil'], klass=4)
+    _data = dict(id=87, name='恐惧地狱火', CAH=[6, 6, 6], race=['Devil'], klass=4)
 
 
 ###########
