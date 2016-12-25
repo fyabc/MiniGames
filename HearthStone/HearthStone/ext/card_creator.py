@@ -81,11 +81,26 @@ def validator_enemy_minion(self, target):
     return True
 
 
+# Common spell actions.
+def action_damage(value):
+    def action(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, target, value)
+    return action
+
+
+def action_destroy(self, player_id, target):
+    self.game.add_event_quick(MinionDeath, target)
+
+
 __all__ = [
     'create_blank',
     'm_blank',
     'w_blank',
     'm_summon',
+
     'validator_minion',
     'validator_enemy_minion',
+
+    'action_damage',
+    'action_destroy',
 ]

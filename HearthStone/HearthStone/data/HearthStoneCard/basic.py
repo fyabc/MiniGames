@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, Spell, Weapon, set_description
-from HearthStone.ext.card_creator import m_blank, w_blank, m_summon, validator_minion, validator_enemy_minion
+from HearthStone.ext.card_creator import m_blank, w_blank, m_summon
+from HearthStone.ext.card_creator import validator_minion, validator_enemy_minion
+from HearthStone.ext.card_creator import action_damage, action_destroy
 from HearthStone.ext import DrawCard, Damage, SpellDamage, RestoreHealth
 from HearthStone.ext import RandomTargetDamage
 from HearthStone.ext import FreezeOnDamage, GameHandler
@@ -183,8 +185,7 @@ class 火球术(Spell):
 
     _data = dict(id=55, name='火球术', type=1, CAH=[4], klass=1)
 
-    def play(self, player_id, target):
-        self.game.add_event_quick(SpellDamage, self, target, 6)
+    play = action_damage(6)
 
 
 class 水元素(Minion):
@@ -227,8 +228,7 @@ class 背刺(Spell):
 
         return True
 
-    def play(self, player_id, target):
-        self.game.add_event_quick(SpellDamage, self, target, 2)
+    play = action_damage(2)
 
 
 class 影袭(Spell):
@@ -279,8 +279,7 @@ class 刺杀(Spell):
 
     validate_target = validator_enemy_minion
 
-    def play(self, player_id, target):
-        self.game.add_event_quick(MinionDeath, target)
+    play = action_destroy
 
 刺客之刃 = w_blank('刺客之刃', dict(id=65, name='刺客之刃', type=2, CAH=[5, 3, 4], klass=2))
 
@@ -342,8 +341,7 @@ class 神圣惩击(Spell):
 
     _data = dict(id=70, name='神圣惩击', type=1, CAH=[1], klass=3)
 
-    def play(self, player_id, target):
-        self.game.add_event_quick(SpellDamage, self, target, 2)
+    play = action_damage(2)
 
 
 class 心灵视界(Spell):
@@ -352,6 +350,17 @@ class 心灵视界(Spell):
 
 class 暗言术_痛(Spell):
     _data = dict(id=72, name='暗言术：痛', type=1, CAH=[2], klass=3)
+
+    def validate_target(self, target):
+        result = validator_minion(self, target)
+        if result is not None:
+            return result
+
+        # todo
+
+        return True
+
+    play = action_destroy
 
 
 class 心灵震爆(Spell):
@@ -364,6 +373,17 @@ class 神圣之灵(Spell):
 
 class 暗言术_灭(Spell):
     _data = dict(id=75, name='暗言术：灭', type=1, CAH=[3], klass=3)
+
+    def validate_target(self, target):
+        result = validator_minion(self, target)
+        if result is not None:
+            return result
+
+        # todo
+
+        return True
+
+    play = action_destroy
 
 
 class 神圣新星(Spell):
@@ -409,6 +429,8 @@ class 吸取生命(Spell):
 class 暗影箭(Spell):
     _data = dict(id=85, name='暗影箭', type=1, CAH=[3], klass=4)
 
+    play = action_damage(4)
+
 
 class 地狱烈焰(Spell):
     _data = dict(id=86, name='地狱烈焰', type=1, CAH=[4], klass=4)
@@ -437,6 +459,8 @@ class 英勇打击(Spell):
 class 斩杀(Spell):
     _data = dict(id=91, name='斩杀', type=1, CAH=[2], klass=5)
 
+    play = action_destroy
+
 炽炎战斧 = w_blank('炽炎战斧', dict(id=92, name='炽炎战斧', type=2, CAH=[2, 3, 2], klass=5))
 
 
@@ -463,6 +487,8 @@ class 盾牌格挡(Spell):
 
 class 奥术射击(Spell):
     _data = dict(id=98, name='奥术射击', type=1, CAH=[1], klass=6)
+
+    play = action_damage(2)
 
 
 class 森林狼(Minion):
@@ -599,6 +625,8 @@ class 激活(Spell):
 
 class 月火术(Spell):
     _data = dict(id=129, name='月火术', type=1, CAH=[0], klass=9)
+
+    play = action_damage(1)
 
 
 class 爪击(Spell):
