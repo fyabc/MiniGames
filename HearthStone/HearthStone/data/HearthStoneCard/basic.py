@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, Spell, Weapon, set_description
-from HearthStone.ext.card_creator import m_blank, m_summon, validator_minion, validator_enemy_minion
+from HearthStone.ext.card_creator import m_blank, w_blank, m_summon, validator_minion, validator_enemy_minion
 from HearthStone.ext import DrawCard, Damage, SpellDamage, RestoreHealth
 from HearthStone.ext import RandomTargetDamage
 from HearthStone.ext import FreezeOnDamage, GameHandler
@@ -282,9 +282,7 @@ class 刺杀(Spell):
     def play(self, player_id, target):
         self.game.add_event_quick(MinionDeath, target)
 
-
-class 刺客之刃(Weapon):
-    _data = dict(id=65, name='刺客之刃', type=2, CAH=[5, 3, 4], klass=2)
+刺客之刃 = w_blank('刺客之刃', dict(id=65, name='刺客之刃', type=2, CAH=[5, 3, 4], klass=2))
 
 
 class 消失(Spell):
@@ -424,10 +422,83 @@ class 恐惧地狱火(Minion):
 # Warrior #
 ###########
 
+class 冲锋(Spell):
+    _data = dict(id=88, name='冲锋', type=1, CAH=[1], klass=5)
+
+
+class 旋风斩(Spell):
+    _data = dict(id=89, name='旋风斩', type=1, CAH=[1], klass=5)
+
+
+class 英勇打击(Spell):
+    _data = dict(id=90, name='英勇打击', type=1, CAH=[2], klass=5)
+
+
+class 斩杀(Spell):
+    _data = dict(id=91, name='斩杀', type=1, CAH=[2], klass=5)
+
+炽炎战斧 = w_blank('炽炎战斧', dict(id=92, name='炽炎战斧', type=2, CAH=[2, 3, 2], klass=5))
+
+
+class 顺劈斩(Spell):
+    _data = dict(id=93, name='顺劈斩', type=1, CAH=[2], klass=5)
+
+
+class 战歌指挥官(Minion):
+    _data = dict(id=94, name='战歌指挥官', CAH=[3, 2, 3], klass=5)
+
+
+class 盾牌格挡(Spell):
+    _data = dict(id=95, name='顺劈斩', type=1, CAH=[3], klass=5)
+
+
+库卡隆精英卫士 = m_blank('库卡隆精英卫士', dict(id=96, name='库卡隆精英卫士', CAH=[4, 4, 3], klass=5, charge=True))
+奥金斧 = w_blank('奥金斧', dict(id=97, name='奥金斧', type=2, CAH=[5, 5, 2], klass=5))
+
 
 ##########
 # Hunter #
 ##########
+
+
+class 奥术射击(Spell):
+    _data = dict(id=98, name='奥术射击', type=1, CAH=[1], klass=6)
+
+
+class 森林狼(Minion):
+    _data = dict(id=99, name='森林狼', CAH=[1, 1, 1], klass=6)
+
+
+class 追踪术(Spell):
+    _data = dict(id=100, name='追踪术', type=1, CAH=[1], klass=6)
+
+
+class 猎人印记(Spell):
+    _data = dict(id=101, name='猎人印记', type=1, CAH=[1], klass=6)
+
+
+class 动物伙伴(Spell):
+    _data = dict(id=102, name='动物伙伴', type=1, CAH=[3], klass=6)
+
+
+class 杀戮命令(Spell):
+    _data = dict(id=103, name='杀戮命令', type=1, CAH=[3], klass=6)
+
+
+class 驯兽师(Minion):
+    _data = dict(id=104, name='驯兽师', CAH=[4, 4, 3], klass=6)
+
+
+class 多重射击(Spell):
+    _data = dict(id=105, name='多重射击', type=1, CAH=[4], klass=6)
+
+
+class 饥饿的秃鹫(Minion):
+    _data = dict(id=106, name='饥饿的秃鹫', CAH=[5, 3, 2], race=['Beast'], klass=6)
+
+
+class 苔原犀牛(Minion):
+    _data = dict(id=107, name='苔原犀牛', CAH=[5, 2, 5], race=['Beast'], klass=6)
 
 
 ##########
@@ -435,14 +506,130 @@ class 恐惧地狱火(Minion):
 ##########
 
 
+class 先祖治疗(Spell):
+    _data = dict(id=108, name='先祖治疗', type=1, CAH=[0], klass=7)
+
+
+class 图腾之力(Spell):
+    _data = dict(id=109, name='图腾之力', type=1, CAH=[0], klass=7)
+
+
+class 冰霜震击(Spell):
+    _data = dict(id=110, name='冰霜震击', type=1, CAH=[1], klass=7)
+
+
+class 风怒(Spell):
+    _data = dict(id=111, name='风怒', type=1, CAH=[2], klass=7)
+
+
+class 石化武器(Spell):
+    _data = dict(id=112, name='石化武器', type=1, CAH=[2], klass=7)
+
+
+class 火舌图腾(Minion):
+    _data = dict(id=113, name='火舌图腾', CAH=[2, 0, 3], race=['Totem'], klass=7)
+
+
+class 妖术(Spell):
+    _data = dict(id=114, name='妖术', type=1, CAH=[3], klass=7)
+
+
+class 风语者(Minion):
+    _data = dict(id=115, name='风语者', CAH=[4, 3, 3], klass=7)
+
+
+class 嗜血(Spell):
+    _data = dict(id=116, name='嗜血', type=1, CAH=[5], klass=7)
+
+
+class 火元素(Minion):
+    _data = dict(id=117, name='火元素', CAH=[6, 6, 5], klass=7)
+
+
 ###########
 # Paladin #
 ###########
+
+class 保护之手(Spell):
+    _data = dict(id=118, name='保护之手', type=1, CAH=[1], klass=8)
+
+
+圣光的正义 = w_blank('圣光的正义', dict(id=119, name='圣光的正义', type=2, CAH=[1, 1, 4], klass=8))
+
+
+class 力量祝福(Spell):
+    _data = dict(id=120, name='力量祝福', type=1, CAH=[1], klass=8)
+
+
+class 谦逊(Spell):
+    _data = dict(id=121, name='谦逊', type=1, CAH=[1], klass=8)
+
+
+class 圣光术(Spell):
+    _data = dict(id=122, name='圣光术', type=1, CAH=[2], klass=8)
+
+
+class 愤怒之锤(Spell):
+    _data = dict(id=123, name='愤怒之锤', type=1, CAH=[4], klass=8)
+
+
+class 真银圣剑(Weapon):
+    _data = dict(id=124, name='真银圣剑', type=2, CAH=[4, 4, 2], klass=8)
+
+
+class 王者祝福(Spell):
+    _data = dict(id=125, name='王者祝福', type=1, CAH=[4], klass=8)
+
+
+class 奉献(Spell):
+    _data = dict(id=126, name='奉献', type=1, CAH=[4], klass=8)
+
+
+class 列王守卫(Minion):
+    _data = dict(id=127, name='列王守卫', CAH=[7, 5, 6], klass=8)
 
 
 #########
 # Druid #
 #########
+
+class 激活(Spell):
+    _data = dict(id=128, name='激活', type=1, CAH=[0], klass=9)
+
+
+class 月火术(Spell):
+    _data = dict(id=129, name='月火术', type=1, CAH=[0], klass=9)
+
+
+class 爪击(Spell):
+    _data = dict(id=130, name='爪击', type=1, CAH=[1], klass=9)
+
+
+class 野性成长(Spell):
+    _data = dict(id=131, name='野性成长', type=1, CAH=[2], klass=9)
+
+
+class 野性印记(Spell):
+    _data = dict(id=132, name='野性印记', type=1, CAH=[2], klass=9)
+
+
+class 治疗之触(Spell):
+    _data = dict(id=133, name='治疗之触', type=1, CAH=[3], klass=9)
+
+
+class 野蛮咆哮(Spell):
+    _data = dict(id=134, name='野蛮咆哮', type=1, CAH=[3], klass=9)
+
+
+class 横扫(Spell):
+    _data = dict(id=135, name='横扫', type=1, CAH=[4], klass=9)
+
+
+class 星火术(Spell):
+    _data = dict(id=136, name='星火术', type=1, CAH=[6], klass=9)
+
+
+埃隆巴克保护者 = m_blank('埃隆巴克保护者', dict(id=137, name='埃隆巴克保护者', CAH=[8, 8, 8], klass=9, taunt=True))
 
 
 set_description({

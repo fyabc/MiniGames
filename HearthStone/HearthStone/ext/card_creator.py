@@ -5,6 +5,7 @@
 
 import sys
 from types import new_class
+from functools import partial
 
 from .ext import *
 from .card_filters import *
@@ -13,17 +14,18 @@ from ..constants import card_constants as cc
 __author__ = 'fyabc'
 
 
-# Minion creators.
-# m_xxx, m represents Minion.
-
-def m_blank(name, data):
+def create_blank(name, data, card_type=Minion):
     cls_dict = {'_data': data}
 
-    result = new_class(name, (Minion,), {}, lambda ns: ns.update(cls_dict))
+    result = new_class(name, (card_type,), {}, lambda ns: ns.update(cls_dict))
 
     # Get the module name of caller.
     result.__module__ = sys._getframe(1).f_globals['__name__']
     return result
+
+
+m_blank = partial(create_blank, card_type=Minion)
+w_blank = partial(create_blank, card_type=Weapon)
 
 
 def m_summon(name, data, bc_or_dr=True, **kwargs):
@@ -80,7 +82,9 @@ def validator_enemy_minion(self, target):
 
 
 __all__ = [
+    'create_blank',
     'm_blank',
+    'w_blank',
     'm_summon',
     'validator_minion',
     'validator_enemy_minion',
