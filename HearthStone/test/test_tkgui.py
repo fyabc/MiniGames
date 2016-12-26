@@ -15,7 +15,7 @@ def _test():
     root = tk.Tk(className='HearthStone')
     root.geometry("1140x600")
 
-    game = Game('./data/test_basic_mage.json')
+    game = Game('./data/example_game.json')
 
     app = GameWindow(game, root)
 

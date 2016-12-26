@@ -5,10 +5,11 @@ from HearthStone.ext import Minion, Spell, Weapon, set_description
 from HearthStone.ext.card_creator import m_blank, w_blank, m_summon
 from HearthStone.ext.card_creator import validator_minion, validator_enemy_minion
 from HearthStone.ext.card_creator import action_damage, action_destroy
-from HearthStone.ext import DrawCard, Damage, SpellDamage, RestoreHealth
+from HearthStone.ext import DrawCard, Damage, SpellDamage, RestoreHealth, GetArmor
 from HearthStone.ext import RandomTargetDamage
-from HearthStone.ext import FreezeOnDamage, GameHandler
+from HearthStone.ext import GameHandler, DeskHandler, FreezeOnDamage
 from HearthStone.ext import AddMinionToDesk
+from HearthStone.ext import TurnBegin
 from HearthStone.ext import MinionDeath
 from HearthStone.ext import constants
 from HearthStone.utils.debug_utils import verbose
@@ -356,7 +357,8 @@ class 暗言术_痛(Spell):
         if result is not None:
             return result
 
-        # todo
+        if target.attack > 3:
+            return 'The attack of the target must <= 3!'
 
         return True
 
@@ -365,6 +367,9 @@ class 暗言术_痛(Spell):
 
 class 心灵震爆(Spell):
     _data = dict(id=73, name='心灵震爆', type=1, CAH=[2], klass=3)
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, self.game.players[1 - self.player_id], 5)
 
 
 class 神圣之灵(Spell):
@@ -379,7 +384,8 @@ class 暗言术_灭(Spell):
         if result is not None:
             return result
 
-        # todo
+        if target.attack < 5:
+            return 'The attack of the target must >= 5!'
 
         return True
 
@@ -413,6 +419,33 @@ class 灵魂之火(Spell):
 class 腐蚀术(Spell):
     _data = dict(id=81, name='腐蚀术', type=1, CAH=[1], klass=4)
 
+    have_target = True
+
+    class DestroyOnMyTurnBegin(DeskHandler):
+        event_types = [TurnBegin]
+
+        def __init__(self, game, owner, player_id):
+            super().__init__(game, owner)
+            self.player_id = player_id
+
+        def _process(self, event):
+            if event.player_id != self.player_id:
+                return
+
+            self.game.add_event_quick(MinionDeath, self.owner)
+            self._message(event)
+
+            # This handler will be used only once.
+            self.disable()
+
+        def _message(self, event):
+            verbose('腐蚀术 spell skill: destroy {}!'.format(self.owner))
+
+    validate_target = validator_enemy_minion
+
+    def play(self, player_id, target):
+        target.add_handler_inplace(self.DestroyOnMyTurnBegin, player_id)
+
 
 class 死亡缠绕(Spell):
     _data = dict(id=82, name='死亡缠绕', type=1, CAH=[1], klass=4)
@@ -425,9 +458,19 @@ class 魅魔(Minion):
 class 吸取生命(Spell):
     _data = dict(id=84, name='吸取生命', type=1, CAH=[3], klass=4)
 
+    have_target = True
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, target, 2)
+        self.game.add_event_quick(RestoreHealth, self, self.game.players[self.player_id], 2)
+
 
 class 暗影箭(Spell):
     _data = dict(id=85, name='暗影箭', type=1, CAH=[3], klass=4)
+
+    have_target = True
+
+    validate_target = validator_minion
 
     play = action_damage(4)
 
@@ -473,7 +516,11 @@ class 战歌指挥官(Minion):
 
 
 class 盾牌格挡(Spell):
-    _data = dict(id=95, name='顺劈斩', type=1, CAH=[3], klass=5)
+    _data = dict(id=95, name='盾牌格挡', type=1, CAH=[3], klass=5)
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(GetArmor, self, self.game.players[self.player_id], 5)
+        self.game.add_event_quick(DrawCard, self.player_id, self.player_id)
 
 
 库卡隆精英卫士 = m_blank('库卡隆精英卫士', dict(id=96, name='库卡隆精英卫士', CAH=[4, 4, 3], klass=5, charge=True))
@@ -492,7 +539,7 @@ class 奥术射击(Spell):
 
 
 class 森林狼(Minion):
-    _data = dict(id=99, name='森林狼', CAH=[1, 1, 1], klass=6)
+    _data = dict(id=99, name='森林狼', CAH=[1, 1, 1], race=['Beast'], klass=6)
 
 
 class 追踪术(Spell):
@@ -506,25 +553,52 @@ class 猎人印记(Spell):
 class 动物伙伴(Spell):
     _data = dict(id=102, name='动物伙伴', type=1, CAH=[3], klass=6)
 
+动物伙伴_霍弗 = m_blank('霍弗', dict(id=103, name='霍弗', CAH=[3, 4, 2], race=['Beast'], klass=6, charge=True, rarity=-1))
+动物伙伴_米莎 = m_blank('米莎', dict(id=104, name='米莎', CAH=[3, 4, 4], race=['Beast'], klass=6, taunt=True, rarity=-1))
+
+
+class 动物伙伴_雷欧克(Minion):
+    _data = dict(id=105, name='雷欧克', CAH=[3, 2, 4], race=['Beast'], klass=6, rarity=-1)
+
 
 class 杀戮命令(Spell):
-    _data = dict(id=103, name='杀戮命令', type=1, CAH=[3], klass=6)
+    _data = dict(id=106, name='杀戮命令', type=1, CAH=[3], klass=6)
 
 
 class 驯兽师(Minion):
-    _data = dict(id=104, name='驯兽师', CAH=[4, 4, 3], klass=6)
+    _data = dict(id=107, name='驯兽师', CAH=[4, 4, 3], klass=6)
 
 
 class 多重射击(Spell):
-    _data = dict(id=105, name='多重射击', type=1, CAH=[4], klass=6)
+    _data = dict(id=108, name='多重射击', type=1, CAH=[4], klass=6)
 
 
 class 饥饿的秃鹫(Minion):
-    _data = dict(id=106, name='饥饿的秃鹫', CAH=[5, 3, 2], race=['Beast'], klass=6)
+    _data = dict(id=109, name='饥饿的秃鹫', CAH=[5, 3, 2], race=['Beast'], klass=6)
+
+    class DrawCardOnAddBeast(DeskHandler):
+        event_types = [AddMinionToDesk]
+
+        def _process(self, event):
+            if event.player_id != self.owner.player_id or \
+                    event.minion == self.owner or \
+                    'Beast' not in event.minion.race:
+                return
+
+            self._message(event)
+
+            self.game.add_event_quick(DrawCard, self.owner.player_id, self.owner.player_id)
+
+        def _message(self, event):
+            verbose('A beast {} add to desk, {} draw a card!'.format(event.minion, self.owner))
+
+    def __init__(self, game, **kwargs):
+        super().__init__(game, **kwargs)
+        self.add_handler_quick(self.DrawCardOnAddBeast)
 
 
 class 苔原犀牛(Minion):
-    _data = dict(id=107, name='苔原犀牛', CAH=[5, 2, 5], race=['Beast'], klass=6)
+    _data = dict(id=110, name='苔原犀牛', CAH=[5, 2, 5], race=['Beast'], klass=6)
 
 
 ##########
@@ -533,43 +607,43 @@ class 苔原犀牛(Minion):
 
 
 class 先祖治疗(Spell):
-    _data = dict(id=108, name='先祖治疗', type=1, CAH=[0], klass=7)
+    _data = dict(id=111, name='先祖治疗', type=1, CAH=[0], klass=7)
 
 
 class 图腾之力(Spell):
-    _data = dict(id=109, name='图腾之力', type=1, CAH=[0], klass=7)
+    _data = dict(id=112, name='图腾之力', type=1, CAH=[0], klass=7)
 
 
 class 冰霜震击(Spell):
-    _data = dict(id=110, name='冰霜震击', type=1, CAH=[1], klass=7)
+    _data = dict(id=113, name='冰霜震击', type=1, CAH=[1], klass=7)
 
 
 class 风怒(Spell):
-    _data = dict(id=111, name='风怒', type=1, CAH=[2], klass=7)
+    _data = dict(id=114, name='风怒', type=1, CAH=[2], klass=7)
 
 
 class 石化武器(Spell):
-    _data = dict(id=112, name='石化武器', type=1, CAH=[2], klass=7)
+    _data = dict(id=115, name='石化武器', type=1, CAH=[2], klass=7)
 
 
 class 火舌图腾(Minion):
-    _data = dict(id=113, name='火舌图腾', CAH=[2, 0, 3], race=['Totem'], klass=7)
+    _data = dict(id=116, name='火舌图腾', CAH=[2, 0, 3], race=['Totem'], klass=7)
 
 
 class 妖术(Spell):
-    _data = dict(id=114, name='妖术', type=1, CAH=[3], klass=7)
+    _data = dict(id=117, name='妖术', type=1, CAH=[3], klass=7)
 
 
 class 风语者(Minion):
-    _data = dict(id=115, name='风语者', CAH=[4, 3, 3], klass=7)
+    _data = dict(id=118, name='风语者', CAH=[4, 3, 3], klass=7)
 
 
 class 嗜血(Spell):
-    _data = dict(id=116, name='嗜血', type=1, CAH=[5], klass=7)
+    _data = dict(id=119, name='嗜血', type=1, CAH=[5], klass=7)
 
 
 class 火元素(Minion):
-    _data = dict(id=117, name='火元素', CAH=[6, 6, 5], klass=7)
+    _data = dict(id=120, name='火元素', CAH=[6, 6, 5], klass=7)
 
 
 ###########
@@ -577,42 +651,42 @@ class 火元素(Minion):
 ###########
 
 class 保护之手(Spell):
-    _data = dict(id=118, name='保护之手', type=1, CAH=[1], klass=8)
+    _data = dict(id=121, name='保护之手', type=1, CAH=[1], klass=8)
 
 
-圣光的正义 = w_blank('圣光的正义', dict(id=119, name='圣光的正义', type=2, CAH=[1, 1, 4], klass=8))
+圣光的正义 = w_blank('圣光的正义', dict(id=122, name='圣光的正义', type=2, CAH=[1, 1, 4], klass=8))
 
 
 class 力量祝福(Spell):
-    _data = dict(id=120, name='力量祝福', type=1, CAH=[1], klass=8)
+    _data = dict(id=123, name='力量祝福', type=1, CAH=[1], klass=8)
 
 
 class 谦逊(Spell):
-    _data = dict(id=121, name='谦逊', type=1, CAH=[1], klass=8)
+    _data = dict(id=124, name='谦逊', type=1, CAH=[1], klass=8)
 
 
 class 圣光术(Spell):
-    _data = dict(id=122, name='圣光术', type=1, CAH=[2], klass=8)
+    _data = dict(id=125, name='圣光术', type=1, CAH=[2], klass=8)
 
 
 class 愤怒之锤(Spell):
-    _data = dict(id=123, name='愤怒之锤', type=1, CAH=[4], klass=8)
+    _data = dict(id=126, name='愤怒之锤', type=1, CAH=[4], klass=8)
 
 
 class 真银圣剑(Weapon):
-    _data = dict(id=124, name='真银圣剑', type=2, CAH=[4, 4, 2], klass=8)
+    _data = dict(id=127, name='真银圣剑', type=2, CAH=[4, 4, 2], klass=8)
 
 
 class 王者祝福(Spell):
-    _data = dict(id=125, name='王者祝福', type=1, CAH=[4], klass=8)
+    _data = dict(id=128, name='王者祝福', type=1, CAH=[4], klass=8)
 
 
 class 奉献(Spell):
-    _data = dict(id=126, name='奉献', type=1, CAH=[4], klass=8)
+    _data = dict(id=129, name='奉献', type=1, CAH=[4], klass=8)
 
 
 class 列王守卫(Minion):
-    _data = dict(id=127, name='列王守卫', CAH=[7, 5, 6], klass=8)
+    _data = dict(id=130, name='列王守卫', CAH=[7, 5, 6], klass=8)
 
 
 #########
@@ -620,44 +694,44 @@ class 列王守卫(Minion):
 #########
 
 class 激活(Spell):
-    _data = dict(id=128, name='激活', type=1, CAH=[0], klass=9)
+    _data = dict(id=131, name='激活', type=1, CAH=[0], klass=9)
 
 
 class 月火术(Spell):
-    _data = dict(id=129, name='月火术', type=1, CAH=[0], klass=9)
+    _data = dict(id=132, name='月火术', type=1, CAH=[0], klass=9)
 
     play = action_damage(1)
 
 
 class 爪击(Spell):
-    _data = dict(id=130, name='爪击', type=1, CAH=[1], klass=9)
+    _data = dict(id=133, name='爪击', type=1, CAH=[1], klass=9)
 
 
 class 野性成长(Spell):
-    _data = dict(id=131, name='野性成长', type=1, CAH=[2], klass=9)
+    _data = dict(id=134, name='野性成长', type=1, CAH=[2], klass=9)
 
 
 class 野性印记(Spell):
-    _data = dict(id=132, name='野性印记', type=1, CAH=[2], klass=9)
+    _data = dict(id=135, name='野性印记', type=1, CAH=[2], klass=9)
 
 
 class 治疗之触(Spell):
-    _data = dict(id=133, name='治疗之触', type=1, CAH=[3], klass=9)
+    _data = dict(id=136, name='治疗之触', type=1, CAH=[3], klass=9)
 
 
 class 野蛮咆哮(Spell):
-    _data = dict(id=134, name='野蛮咆哮', type=1, CAH=[3], klass=9)
+    _data = dict(id=137, name='野蛮咆哮', type=1, CAH=[3], klass=9)
 
 
 class 横扫(Spell):
-    _data = dict(id=135, name='横扫', type=1, CAH=[4], klass=9)
+    _data = dict(id=138, name='横扫', type=1, CAH=[4], klass=9)
 
 
 class 星火术(Spell):
-    _data = dict(id=136, name='星火术', type=1, CAH=[6], klass=9)
+    _data = dict(id=139, name='星火术', type=1, CAH=[6], klass=9)
 
 
-埃隆巴克保护者 = m_blank('埃隆巴克保护者', dict(id=137, name='埃隆巴克保护者', CAH=[8, 8, 8], klass=9, taunt=True))
+埃隆巴克保护者 = m_blank('埃隆巴克保护者', dict(id=140, name='埃隆巴克保护者', CAH=[8, 8, 8], klass=9, taunt=True))
 
 
 set_description({

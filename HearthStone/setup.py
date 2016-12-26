@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='HearthStone',
-    version='0.1',
+    version='1.0',
     keywords=('HearthStone',),
     description='A Python implementation of HearthStone.',
     license='MIT',

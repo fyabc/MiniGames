@@ -403,7 +403,7 @@ class GameWindow(ttk.Frame):
         self.info_frames[1].grid(row=0, column=2, columnspan=1, sticky=tk.N + tk.S)
 
         self.deck_number = [tk.IntVar(self, 0), tk.IntVar(self, 0)]
-        self.hero_health = [tk.IntVar(self, 0), tk.IntVar(self, 0)]
+        self.hero_health = [tk.StringVar(self, '0'), tk.StringVar(self, '0')]
         self.crystal = [tk.StringVar(self, '0/0'), tk.StringVar(self, '0/0')]
 
         # Add information name and value labels.
@@ -583,7 +583,10 @@ class GameWindow(ttk.Frame):
         for i in (0, 1):
             player = self.game.players[i]
             self.deck_number[i].set(player.deck_number)
-            self.hero_health[i].set(player.health)
+            self.hero_health[i].set('{}{}'.format(
+                player.health,
+                '(+{})'.format(player.armor) if player.armor > 0 else '',
+            ))
             self.crystal[i].set('{}/{}{}{}'.format(
                 player.remain_crystal,
                 player.total_crystal,

@@ -34,15 +34,25 @@ class IMinion:
             self.divine_shield = False
             event.disable()
             return False
-        else:
-            self.health -= value
-            if self.health > 0:
-                return False
 
-            # If the minion will died, disable it's all handlers.
-            # [WARNING] todo: here must be test carefully.
-            self.disable_all_handlers()
-            return True
+        if hasattr(self, 'armor'):
+            # Armor check
+            if self.armor >= value:
+                self.armor -= value
+                event.disable()
+                return False
+            else:
+                value -= self.armor
+                self.armor = 0
+
+        self.health -= value
+        if self.health > 0:
+            return False
+
+        # If the minion will died, disable it's all handlers.
+        # [WARNING] todo: here must be test carefully.
+        self.disable_all_handlers()
+        return True
 
     def restore_health(self, source, value, event):
         if value <= 0:

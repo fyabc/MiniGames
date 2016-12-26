@@ -35,6 +35,7 @@ class Player(GameEntity, IMinion):
         self.divine_shield = False
         self._frozen = 0
         self.remain_attack_number = 1
+        self.armor = 0
 
     def __str__(self):
         return 'P{}'.format(self.player_id)

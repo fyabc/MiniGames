@@ -4,6 +4,7 @@
 from .game_event import GameEvent
 from .basic_events import GameEnd
 from ..utils.debug_utils import verbose
+from ..constants import card_constants as cc
 
 __author__ = 'fyabc'
 
@@ -35,6 +36,11 @@ class MinionDeath(Death):
         return self.entity
 
     def _happen(self):
+        if self.minion.location != cc.Location_DESK:
+            # Only minions in desk can death.
+            self.disable()
+            return
+
         self._message()
 
         desk = self.game.players[self.player_id].desk
@@ -42,6 +48,8 @@ class MinionDeath(Death):
 
         index = desk.index(self.minion)
         desk.remove(self.minion)
+
+        self.minion.change_location(cc.Location_CEMETERY)
 
         self.minion.run_death_rattle(self.player_id, index)
 

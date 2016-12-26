@@ -23,8 +23,14 @@ class GameEntity:
         for handler in self.handlers:
             handler.disable()
 
-    def add_handler_quick(self, handler_type):
-        self.handlers.add(handler_type(self.game, self))
+    def add_handler_quick(self, handler_type, *args, **kwargs):
+        self.handlers.add(handler_type(self.game, self, *args, **kwargs))
+
+    def add_handler_inplace(self, handler_type, *args, **kwargs):
+        """Add the handler and enable it inplace."""
+        new_handler = handler_type(self.game, self, *args, **kwargs)
+        self.game.add_handler(new_handler)
+        self.handlers.add(new_handler)
 
 
 __all__ = [

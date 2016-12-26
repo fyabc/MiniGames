@@ -161,6 +161,10 @@ class Card(GameEntity, metaclass=SetDataMeta):
         return self.data['type']
 
     @property
+    def race(self):
+        return self.data['race']
+
+    @property
     def player_id(self):
         if hasattr(self, '_player_id'):
             return self._player_id
