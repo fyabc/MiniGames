@@ -24,6 +24,10 @@ class SetDataMeta(type):
         base_data = getattr(bases[0], 'data', ChainMap())
         ns['data'] = base_data.new_child(ns.get('_data', {}))
 
+        doc = ns.get('__doc__', None)
+        if doc is not None and not doc.startswith('[NO_DESCRIPTION]'):
+            ns['data']['description'] = doc
+
         return type.__new__(mcs, name, bases, ns)
 
     def __init__(cls, name, bases, ns):
@@ -34,7 +38,9 @@ class SetDataMeta(type):
 
 
 class Card(GameEntity, metaclass=SetDataMeta):
-    """The class of card.
+    """[NO_DESCRIPTION]
+
+    The class of card.
 
     Docstring for users
     ===================
@@ -224,7 +230,9 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
 
 class Minion(Card, IMinion):
-    """The class of minion.
+    """[NO_DESCRIPTION]
+
+    The class of minion.
 
     [NOTE] Attributes of the minion are affected by its auras (EXCEPT health)
         So we only need to save the health value,

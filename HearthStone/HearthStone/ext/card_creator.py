@@ -14,7 +14,38 @@ from ..constants import card_constants as cc
 __author__ = 'fyabc'
 
 
+def gen_basic_description(data):
+    descriptions = []
+
+    attack_number = data.get('attack_number')
+    if attack_number is not None:
+        if attack_number == 0:
+            descriptions.append('无法攻击')
+        elif attack_number == 2:
+            descriptions.append('风怒')
+        elif attack_number == 4:
+            descriptions.append('超级风怒')
+
+    if data.get('charge') is True:
+        descriptions.append('冲锋')
+
+    if data.get('divine_shield') is True:
+        descriptions.append('圣盾')
+
+    if data.get('taunt') is True:
+        descriptions.append('嘲讽')
+
+    spell_power = data.get('spell_power')
+    if spell_power is not None and spell_power != 0:
+        descriptions.append('法术伤害{}{}'.format('+' if spell_power > 0 else '', spell_power))
+
+    return '，'.join(descriptions)
+
+
 def create_blank(name, data, card_type=Minion):
+    if 'description' not in data:
+        data['description'] = gen_basic_description(data)
+
     cls_dict = {'_data': data}
 
     result = new_class(name, (card_type,), {}, lambda ns: ns.update(cls_dict))
