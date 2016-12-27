@@ -272,9 +272,7 @@ def get_skill_locals():
 # Build the parser
 parser = yacc()
 
-
-def parse_card(card_string):
-    return parser.parse(card_string)
+parse_card = parser.parse
 
 
 __all__ = [
