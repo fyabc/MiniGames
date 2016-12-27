@@ -5,7 +5,8 @@ from HearthStone.ext import Minion, Spell, Weapon, set_description
 from HearthStone.ext.card_creator import m_blank, w_blank, m_summon
 from HearthStone.ext.card_creator import validator_minion, validator_enemy_minion
 from HearthStone.ext.card_creator import action_damage, action_destroy
-from HearthStone.ext import DrawCard, Damage, SpellDamage, RestoreHealth, GetArmor
+from HearthStone.ext import DrawCard, AddCardToHand
+from HearthStone.ext import Damage, SpellDamage, RestoreHealth, GetArmor
 from HearthStone.ext import RandomTargetDamage
 from HearthStone.ext import GameHandler, DeskHandler, FreezeOnDamage
 from HearthStone.ext import AddMinionToDesk
@@ -668,9 +669,20 @@ class 谦逊(Spell):
 class 圣光术(Spell):
     _data = dict(id=125, name='圣光术', type=1, CAH=[2], klass=8)
 
+    have_target = True
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(RestoreHealth, self, target, 6)
+
 
 class 愤怒之锤(Spell):
     _data = dict(id=126, name='愤怒之锤', type=1, CAH=[4], klass=8)
+
+    have_target = True
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, target, 3)
+        self.game.add_event_quick(DrawCard, self.player_id, self.player_id)
 
 
 class 真银圣剑(Weapon):
@@ -688,6 +700,9 @@ class 奉献(Spell):
 class 列王守卫(Minion):
     _data = dict(id=130, name='列王守卫', CAH=[7, 5, 6], klass=8)
 
+    def run_battle_cry(self, player_id, index):
+        self.game.add_event_quick(RestoreHealth, self, self.game.players[self.player_id], 6)
+
 
 #########
 # Druid #
@@ -695,6 +710,9 @@ class 列王守卫(Minion):
 
 class 激活(Spell):
     _data = dict(id=131, name='激活', type=1, CAH=[0], klass=9)
+
+    def play(self, player_id, target):
+        self.game.players[player_id].add_crystal(2)
 
 
 class 月火术(Spell):
@@ -710,28 +728,54 @@ class 爪击(Spell):
 class 野性成长(Spell):
     _data = dict(id=134, name='野性成长', type=1, CAH=[2], klass=9)
 
+    def play(self, player_id, target):
+        player = self.game.players[self.player_id]
+
+        if player.total_crystal >= self.game.MaxCrystal:
+            self.game.add_event_quick(AddCardToHand, 135, self.player_id)
+        else:
+            player.total_crystal += 1
+
+
+class 法力过剩(Spell):
+    _data = dict(id=135, name='法力过剩', type=1, CAH=[0], klass=9, rarity=-1)
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(DrawCard, self.player_id, self.player_id)
+
 
 class 野性印记(Spell):
-    _data = dict(id=135, name='野性印记', type=1, CAH=[2], klass=9)
+    _data = dict(id=136, name='野性印记', type=1, CAH=[2], klass=9)
 
 
 class 治疗之触(Spell):
-    _data = dict(id=136, name='治疗之触', type=1, CAH=[3], klass=9)
+    _data = dict(id=137, name='治疗之触', type=1, CAH=[3], klass=9)
+
+    have_target = True
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(RestoreHealth, self, target, 8)
 
 
 class 野蛮咆哮(Spell):
-    _data = dict(id=137, name='野蛮咆哮', type=1, CAH=[3], klass=9)
+    _data = dict(id=138, name='野蛮咆哮', type=1, CAH=[3], klass=9)
 
 
 class 横扫(Spell):
-    _data = dict(id=138, name='横扫', type=1, CAH=[4], klass=9)
+    _data = dict(id=139, name='横扫', type=1, CAH=[4], klass=9)
 
 
 class 星火术(Spell):
-    _data = dict(id=139, name='星火术', type=1, CAH=[6], klass=9)
+    _data = dict(id=140, name='星火术', type=1, CAH=[6], klass=9)
+
+    have_target = True
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, target, 5)
+        self.game.add_event_quick(DrawCard, self.player_id, self.player_id)
 
 
-埃隆巴克保护者 = m_blank('埃隆巴克保护者', dict(id=140, name='埃隆巴克保护者', CAH=[8, 8, 8], klass=9, taunt=True))
+埃隆巴克保护者 = m_blank('埃隆巴克保护者', dict(id=141, name='埃隆巴克保护者', CAH=[8, 8, 8], klass=9, taunt=True))
 
 
 set_description({
