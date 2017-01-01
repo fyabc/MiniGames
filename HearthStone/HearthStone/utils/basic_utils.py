@@ -8,6 +8,9 @@ from importlib import import_module
 __author__ = 'fyabc'
 
 
+WINDOWS = sys.platform == 'win32'
+
+
 def cls_name(obj):
     if isinstance(obj, type):
         return obj.__name__
@@ -42,6 +45,7 @@ def find_index(seq, e):
 
 
 __all__ = [
+    'WINDOWS',
     'cls_name',
     'get_module_vars',
 ]

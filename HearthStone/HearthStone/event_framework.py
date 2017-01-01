@@ -107,13 +107,13 @@ class EventEngine:
         # Event types that will terminate the engine.
         self.terminate_event_types = set()
 
-        # Logging
+        # Logging （for debug)
         import time
-        import getpass
+        import os
         logging_filename = kwargs.pop(
             'logging_file',
-            'C:/Users/{}/PycharmProjects/MiniGames/HearthStone/test/logs/log_engine_{}.txt'.format(
-                getpass.getuser(),
+            '{}/PycharmProjects/MiniGames/HearthStone/test/logs/log_engine_{}.txt'.format(
+                os.path.expanduser('~'),
                 time.strftime('%y_%m_%d_%H_%M_%S')))
         # logging_filename = None
 

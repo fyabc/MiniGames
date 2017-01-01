@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 from collections import namedtuple
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -12,6 +13,7 @@ from ..game_events.attack_events import Attack
 from ..game_entities.card import Minion, Spell
 from ..cli_tool import show_card, show_minion
 from .tk_ext import ToolTip
+from ..utils.basic_utils import WINDOWS
 from ..utils.debug_utils import error
 
 __author__ = 'fyabc'
@@ -497,42 +499,81 @@ class GameWindow(ttk.Frame):
     def _set_style():
         s = ttk.Style()
 
-        s.configure(
-            'TButton',
-            background='black',
-            foreground='black',
-            highlightthickness='20',
-            font=('Microsoft YaHei UI', 9),
-        )
+        # Tkinter show different on Windows and Ubuntu.
+        if WINDOWS:
+            s.configure(
+                'TButton',
+                foreground='black',
+                background='black',
+                highlightthickness='20',
+                font=('Microsoft YaHei UI', 9),
+            )
 
-        s.map(
-            'TButton',
-            foreground=[
-                ('pressed', 'red'),
-                ('active', 'green')
-            ],
-            background=[
-                ('disabled', 'purple'),
-                ('pressed', '!focus', 'cyan'),
-                ('active', 'blue')
-            ],
-            highlightcolor=[
-                ('focus', 'blue'),
-                ('!focus', 'red')
-            ],
-            relief=[
-                ('pressed', 'groove'),
-                ('!pressed', 'ridge')
-            ],
-        )
+            s.map(
+                'TButton',
+                foreground=[
+                    ('pressed', 'red'),
+                    ('active', 'green')
+                ],
+                background=[
+                    ('disabled', 'purple'),
+                    ('pressed', '!focus', 'cyan'),
+                    ('active', 'lightblue')
+                ],
+                highlightcolor=[
+                    ('focus', 'blue'),
+                    ('!focus', 'red')
+                ],
+                relief=[
+                    ('pressed', 'groove'),
+                    ('!pressed', 'ridge')
+                ],
+            )
 
-        s.configure(
-            'Selected.TButton',
-            foreground='green',
-            background='green',
-            highlightthickness='20',
-            font=('Microsoft YaHei UI', 9),
-        )
+            s.configure(
+                'Selected.TButton',
+                foreground='green',
+                background='green',
+                highlightthickness='20',
+                font=('Microsoft YaHei UI', 9),
+            )
+        else:
+            s.configure(
+                'TButton',
+                foreground='black',
+                background='white',
+                highlightthickness='20',
+                font=('Microsoft YaHei UI', 9),
+            )
+
+            s.map(
+                'TButton',
+                foreground=[
+                    ('pressed', 'red'),
+                    ('active', 'green')
+                ],
+                background=[
+                    ('disabled', 'purple'),
+                    ('pressed', '!focus', 'cyan'),
+                    ('active', 'lightblue')
+                ],
+                highlightcolor=[
+                    ('focus', 'blue'),
+                    ('!focus', 'red')
+                ],
+                relief=[
+                    ('pressed', 'groove'),
+                    ('!pressed', 'ridge')
+                ],
+            )
+
+            s.configure(
+                'Selected.TButton',
+                foreground='green',
+                background='white',
+                highlightthickness='20',
+                font=('Microsoft YaHei UI', 9),
+            )
 
     def refresh_window(self):
         """Refresh all elements of the game window."""
