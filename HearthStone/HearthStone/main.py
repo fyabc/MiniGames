@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import argparse
 import tkinter as tk
 
@@ -26,7 +27,7 @@ def main():
     root = tk.Tk(className='HearthStone')
     root.geometry("1050x600")
 
-    game = Game('C:/Users/v-yanfa/PycharmProjects/MiniGames/HearthStone/test/data/example_game.json',
+    game = Game('{}/PycharmProjects/MiniGames/HearthStone/test/data/example_game.json'.format(os.path.expanduser('~')),
                 logging_filename=None)
 
     app = GameWindow(game, root)
