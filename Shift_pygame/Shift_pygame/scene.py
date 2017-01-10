@@ -13,4 +13,4 @@ class Scene:
         while True:
             update()
 
-        return next_scene_id, *args
+        return next_scene_id

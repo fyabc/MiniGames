@@ -69,3 +69,6 @@ HearthStone/dist/
 
 # HearthStone event engine logging files
 HearthStone/test/logs/
+
+# Shift game series record files
+Shift_pygame/Shift_pygame/data/records/
