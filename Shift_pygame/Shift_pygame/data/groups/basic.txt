@@ -11,18 +11,39 @@
 # In 'S x y':
 # x is the width, and y is height.
 
+# Directions:
+# d is DOWN, r is RIGHT, u is UP, l is LEFT.
+
 # Samples:
 #
-# set key value                 # Set the variable key to value
+# set key value                 # Set the variable key to value. Default value data type is int.
 #
 # S 0 5                         # S = start
-# D 11 5 0                      # D = destination, the 3rd number is the direction, 0 is DOWN, 90 is RIGHT, 180 is UP, 270 is LEFT.
-# T 3 11 0                      # T = trap, if the direction is 180, it means the trap is like 'VVV'.
-# A 11 11 180                   # A = arrow.
-# K 0 6 0 1 2 3                 # K = key, the 3rd and more number is id of blocks.
-# B 8 11 1 0 0                  # B = block, the 1st & 2nd number is start location, the 3rd is length, the 4th is direction, the 5th is id.
-# L 6 5 0 1 2 3 4               # L = lamp, the 3rd and more number is id of mosaics.
-# M 6 6 0                       # M = mosaic, the 3rd number is id.
-# Text 3 5 180 Hello world!     # Text = text, the 1st & 2nd number is center location, the 3rd is angle, others are text.
+# D 11 5 d 0                    # D = destination, the 3rd is the direction, the 4th is target level id (default is 1 + current level id)
+# T 3 11 d                      # T = trap, if the direction is u, it means the trap is like 'VVV'.
+# A 11 11 u                     # A = arrow.
+# K 0 6 0 1 2 3                 # K = key, the 3rd and more is id of blocks.
+# B 8 11 1 d 0                  # B = block, the 1st & 2nd is start location, the 3rd is length, the 4th is direction, the 5th is id.
+# L 6 5 0 1 2 3 4               # L = lamp, the 3rd and more is id of mosaics.
+# M 6 6 0                       # M = mosaic, the 3rd is id.
+# Text 3 5 u "Hello world!"     # Text = text, the 1st & 2nd is center location, the 3rd is angle, others are text.
 
 ################# BEGIN #################
+
+set id 0    # Set the level ID
+
+map 12 12   # The map block, two arguments are x & y. Default are (12, 12).
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0
+
+endlevel    # This record the end of a level

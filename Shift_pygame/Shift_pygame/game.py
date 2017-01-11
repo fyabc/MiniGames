@@ -7,6 +7,7 @@ from contextlib import contextmanager
 import pygame
 
 from .config import *
+from .scene.basic_scenes import MainMenu
 
 __author__ = 'fyabc'
 
@@ -24,6 +25,8 @@ class Game:
         self.args_between_scenes = []
         self.scenes = {}
 
+        self.add_scene(0, MainMenu)
+
     @contextmanager
     def _game_manager(self):
         yield
@@ -35,8 +38,8 @@ class Game:
         print('The game is quited!')
         sys.exit(0)
 
-    def add_scene(self, scene_id, scene):
-        self.scenes[scene_id] = scene
+    def add_scene(self, scene_id, scene_type, *args, **kwargs):
+        self.scenes[scene_id] = scene_type(self, scene_id, *args, **kwargs)
 
     def run(self):
         with self._game_manager():

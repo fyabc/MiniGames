@@ -13,14 +13,14 @@ class Map:
     ValueWhite = True
 
     def __init__(self, array):
-        self.matrix = None
+        self.size = Vector2(len(array[0]), len(array))
+        self.matrix = array
         self.elements = defaultdict(list)
 
     def __getitem__(self, item):
-        if isinstance(item, (list, tuple)):
-            pass
-        elif isinstance(item, Vector2):
-            pass
+        if isinstance(item, (list, tuple, Vector2)):
+            x, y = item
+            return self.matrix[y][x]
         else:
             raise TypeError('Unsupported index type {}'.format(type(item).__name__))
 

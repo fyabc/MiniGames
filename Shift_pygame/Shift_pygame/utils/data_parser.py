@@ -50,10 +50,10 @@ def read_map(f_it, settings, map_args):
     array = []
 
     for i in range(cellY):
-        row = [int(cell) for cell in next_line(f_it).split()][:cellX]
+        row = [bool(cell) for cell in next_line(f_it).split()][:cellX]
 
         if len(row) < cellX:
-            row.extend(0 for _ in range(cellX - len(row)))
+            row.extend(False for _ in range(cellX - len(row)))
 
         array.append(row)
 

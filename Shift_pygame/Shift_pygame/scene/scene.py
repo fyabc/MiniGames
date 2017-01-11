@@ -7,14 +7,12 @@ __author__ = 'fyabc'
 
 
 class Scene:
-    def __init__(self, game, data=None):
+    def __init__(self, game, scene_id=None):
         self.game = game
-        self.data = data
+        self.scene_id = scene_id
 
     def register_to_game(self):
-        scene_id = self.data['id']
-
-        self.game.scenes[scene_id] = self
+        self.game.scenes[self.scene_id] = self
 
     def run(self, previous_scene_id, *args):
         next_scene_id = None
