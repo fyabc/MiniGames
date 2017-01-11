@@ -1,0 +1,28 @@
+# [NOTE] Format of game group file
+
+# The index of map starts with 0
+
+# Lines or part of lines start with '#' are comments.
+
+# 0 is black, 1 is white.
+
+# The common size of game map is 12.
+
+# In 'S x y':
+# x is the width, and y is height.
+
+# Samples:
+#
+# set key value                 # Set the variable key to value
+#
+# S 0 5                         # S = start
+# D 11 5 0                      # D = destination, the 3rd number is the direction, 0 is DOWN, 90 is RIGHT, 180 is UP, 270 is LEFT.
+# T 3 11 0                      # T = trap, if the direction is 180, it means the trap is like 'VVV'.
+# A 11 11 180                   # A = arrow.
+# K 0 6 0 1 2 3                 # K = key, the 3rd and more number is id of blocks.
+# B 8 11 1 0 0                  # B = block, the 1st & 2nd number is start location, the 3rd is length, the 4th is direction, the 5th is id.
+# L 6 5 0 1 2 3 4               # L = lamp, the 3rd and more number is id of mosaics.
+# M 6 6 0                       # M = mosaic, the 3rd number is id.
+# Text 3 5 180 Hello world!     # Text = text, the 1st & 2nd number is center location, the 3rd is angle, others are text.
+
+################# BEGIN #################

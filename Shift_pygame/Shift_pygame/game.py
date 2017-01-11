@@ -7,7 +7,6 @@ from contextlib import contextmanager
 import pygame
 
 from .config import *
-from .scene import Scene
 
 __author__ = 'fyabc'
 

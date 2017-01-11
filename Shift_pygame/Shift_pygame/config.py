@@ -12,6 +12,8 @@ DataPath = os.path.join(PackageRootPath, 'data')
 GameGroupPath = os.path.join(DataPath, 'groups')
 RecordPath = os.path.join(DataPath, 'records')
 
+GameGroupExtension = '.txt'
+
 # Display config.
 # [NOTE] X <=> row <=> width, Y <=> column <=> height
 WindowWidth = 600
