@@ -8,8 +8,8 @@ from ..config import *
 __author__ = 'fyabc'
 
 
-def update(rectangle=None):
-    pygame.display.update(rectangle)
+def update():
+    pygame.display.update()
 
 
 def get_font(font_size=FontSize, font_name=FontName):

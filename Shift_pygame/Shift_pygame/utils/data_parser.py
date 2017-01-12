@@ -3,9 +3,8 @@
 
 import re
 
-from ..config import *
 from .basic import error
-from ..scene.level_scene import LevelScene
+from ..config import *
 from ..map import Map
 
 __author__ = 'fyabc'
@@ -102,15 +101,11 @@ def iter_levels(game_group_file, settings=None):
         pass
 
 
-def load_game_group(game, game_group_name):
+def load_game_group(game_group_name):
     game_group_name += GameGroupExtension
     if game_group_name not in GameGroups:
         error('Cannot find game group file {}.'.format(game_group_name))
         return []
 
-    result = []
     with open(os.path.join(GameGroupPath, game_group_name), 'r') as game_group_file:
-        for level_data in iter_levels(game_group_file):
-            result.append(LevelScene(game, level_data))
-
-    return result
+        return list(iter_levels(game_group_file))

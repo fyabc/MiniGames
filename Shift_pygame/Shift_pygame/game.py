@@ -7,6 +7,7 @@ from contextlib import contextmanager
 import pygame
 
 from .config import *
+from .utils.display import get_font
 from .scene.basic_scenes import MainMenu
 
 __author__ = 'fyabc'
@@ -17,6 +18,9 @@ class Game:
         # Initialize pygame.
         pygame.init()
         self.main_window = pygame.display.set_mode(WindowSize)
+        self.timer = pygame.time.Clock()
+        self.gFont = get_font()
+
         pygame.display.set_caption(GameTitle)
 
         # Game initialize.
@@ -46,6 +50,16 @@ class Game:
             while True:
                 scene = self.scenes[self.current_scene_id]
 
-                next_scene_id, *self.args_between_scenes = scene.run(self.previous_scene_id, *self.args_between_scenes)
+                result = scene.run(
+                    self.previous_scene_id, *self.args_between_scenes)
+
+                if hasattr(result, '__len__'):
+                    next_scene_id, *self.args_between_scenes = result
+                else:
+                    next_scene_id = result
+                    self.args_between_scenes = []
+
+                if next_scene_id == MainMenu.QuitID:
+                    break
 
                 self.previous_scene_id, self.current_scene_id = self.current_scene_id, next_scene_id

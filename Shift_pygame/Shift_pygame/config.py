@@ -3,6 +3,9 @@
 
 import os
 
+from pygame.colordict import THECOLORS as Colors
+import pygame.locals
+
 __author__ = 'fyabc'
 
 # Paths.
@@ -11,6 +14,7 @@ ResourcePath = os.path.join(PackageRootPath, 'resource')
 DataPath = os.path.join(PackageRootPath, 'data')
 GameGroupPath = os.path.join(DataPath, 'groups')
 RecordPath = os.path.join(DataPath, 'records')
+KeymapPath = os.path.join(DataPath, 'keymap.txt')
 
 GameGroupExtension = '.txt'
 
@@ -34,13 +38,15 @@ DefaultCellHeight = ScreenHeight // DefaultCellNumberY
 
 GameTitle = 'Shift-pygame'
 
+# Fonts.
 FontSize = 40
 FontName = os.path.join(ResourcePath, 'fonts', 'consolas-yahei.ttf')
 
-# Keymap.
-KeyMap = {
+# FPS.
+MainFPS = 60
 
-}
+# Colors.
+BackgroundColor = Colors['white']
 
 # Game.
 DefaultGroup = 'basic.txt'
