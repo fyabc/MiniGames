@@ -25,6 +25,9 @@ class EventHandler:
 
         return event.type
 
+    def __contains__(self, item):
+        return False
+
     def process(self, event):
         action_func = self.actions.get(self.to_unique(event), None)
 

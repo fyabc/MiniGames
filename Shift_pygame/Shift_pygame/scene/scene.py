@@ -20,7 +20,8 @@ class Scene(EventHandler):
         self.surface = self.game.main_window
         self.scene_id = scene_id
 
-        self.elements = []
+        self.handlers = []
+        self.groups = []
 
         # The default exit action.
         self.add_action(pygame.locals.QUIT, lambda g, e: self.QuitID)
@@ -49,12 +50,12 @@ class Scene(EventHandler):
 
                 if pos is not None:
                     # Elements which contents
-                    for element in self.elements:
-                        if pos in element:
-                            result = element.process(element)
+                    for handler in self.handlers:
+                        if pos in handler:
+                            result = handler.process(event)
                             if result is not None:
                                 return result
-                            if element.override:
+                            if handler.override:
                                 overrided = True
                                 break
 
@@ -63,6 +64,7 @@ class Scene(EventHandler):
                     if result is not None:
                         return result
 
+            self.draw()
             update()
 
     def draw_background(self, bg_color=BackgroundColor):
@@ -70,4 +72,5 @@ class Scene(EventHandler):
         update()
 
     def draw(self):
-        pass
+        for group in self.groups:
+            group.draw()

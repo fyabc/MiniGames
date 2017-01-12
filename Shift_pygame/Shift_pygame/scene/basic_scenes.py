@@ -7,4 +7,5 @@ __author__ = 'fyabc'
 
 
 class MainMenu(Scene):
-    pass
+    def __init__(self, game, scene_id):
+        super().__init__(game, scene_id)

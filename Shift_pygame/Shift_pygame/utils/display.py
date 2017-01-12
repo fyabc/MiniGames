@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
+
 import pygame
 
 from ..config import *
@@ -16,5 +18,5 @@ def get_font(font_size=FontSize, font_name=FontName):
     return pygame.font.Font(font_name, font_size)
 
 
-def get_physic_loc(logic_loc, anchor='center'):
-    pass
+def get_image(image_name):
+    return pygame.image.load(os.path.join(ImagePath, image_name)).convert_alpha()

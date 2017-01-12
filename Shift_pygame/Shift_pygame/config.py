@@ -15,6 +15,7 @@ DataPath = os.path.join(PackageRootPath, 'data')
 GameGroupPath = os.path.join(DataPath, 'groups')
 RecordPath = os.path.join(DataPath, 'records')
 KeymapPath = os.path.join(DataPath, 'keymap.txt')
+ImagePath = os.path.join(ResourcePath, 'images')
 
 GameGroupExtension = '.txt'
 
