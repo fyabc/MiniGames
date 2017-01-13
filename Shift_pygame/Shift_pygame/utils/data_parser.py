@@ -37,6 +37,16 @@ def split_command(line):
     return _atom_pattern.findall(line)
 
 
+_str2bool = {
+    '0': False,
+    '1': True,
+    'F': False,
+    'T': True,
+    'N': False,
+    'Y': True,
+}
+
+
 def read_map(f_it, settings, map_args):
     cellX = settings['cellX']
     if map_args:
@@ -49,7 +59,7 @@ def read_map(f_it, settings, map_args):
     array = []
 
     for i in range(cellY):
-        row = [bool(cell) for cell in next_line(f_it).split()][:cellX]
+        row = [_str2bool[cell] for cell in next_line(f_it).split()][:cellX]
 
         if len(row) < cellX:
             row.extend(False for _ in range(cellX - len(row)))
@@ -71,8 +81,9 @@ def iter_levels(game_group_file, settings=None):
 
             while True:
                 command, *args = split_command(next_line(f_it))
+                command = command.lower()
 
-                if command.lower() == 'endlevel':
+                if command == 'endlevel':
                     game_map = level_data.get('map', None)
                     if game_map is None:
                         break
@@ -84,6 +95,9 @@ def iter_levels(game_group_file, settings=None):
                     break
                 elif command == 'map':
                     level_data['map'] = read_map(f_it, settings, args)
+                elif command == 'id':
+                    assert args, "'id' must have at least 1 arguments"
+                    level_data['id'] = int(args[0])
                 elif command == 'set':
                     assert len(args) >= 2, "'set' must have at least 2 arguments"
 

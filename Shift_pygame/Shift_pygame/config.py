@@ -48,6 +48,10 @@ MainFPS = 60
 
 # Colors.
 BackgroundColor = Colors['white']
+Bool2Color = {
+    False: Colors['black'],
+    True: Colors['white'],
+}
 
 # Game.
 DefaultGroup = 'basic.txt'

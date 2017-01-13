@@ -29,7 +29,12 @@ class Game:
         self.args_between_scenes = []
         self.scenes = {}
 
-        self.add_scene(0, MainMenu)
+        # For debug
+        from .scene.level_scene import LevelScene
+        self.scenes[0] = LevelScene.from_game_group(self, 'basic')[0]
+        # End debug
+
+        # self.add_scene(0, MainMenu)
 
     @contextmanager
     def _game_manager(self):

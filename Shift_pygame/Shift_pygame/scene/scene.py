@@ -22,6 +22,7 @@ class Scene(EventHandler):
 
         self.handlers = []
         self.groups = []
+        self.static_objects = set()
 
         # The default exit action.
         self.add_action(pygame.locals.QUIT, lambda g, e: self.QuitID)
@@ -67,8 +68,11 @@ class Scene(EventHandler):
             self.draw()
             update()
 
-    def draw_background(self, bg_color=BackgroundColor):
-        self.surface.fill(bg_color)
+    def draw_background(self):
+        self.surface.fill(BackgroundColor)
+        for s_obj in self.static_objects:
+            s_obj.draw()
+
         update()
 
     def draw(self):
