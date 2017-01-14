@@ -20,3 +20,7 @@ def get_font(font_size=FontSize, font_name=FontName):
 
 def get_image(image_name):
     return pygame.image.load(os.path.join(ImagePath, image_name)).convert_alpha()
+
+
+def get_text(text, foreground, background=None, font_size=FontSize, font_name=FontName):
+    return get_font(font_size, font_name).render(text, True, foreground, background)

@@ -55,8 +55,7 @@ class Game:
             while True:
                 scene = self.scenes[self.current_scene_id]
 
-                result = scene.run(
-                    self.previous_scene_id, *self.args_between_scenes)
+                result = scene.run(self.previous_scene_id, *self.args_between_scenes)
 
                 if hasattr(result, '__len__'):
                     next_scene_id, *self.args_between_scenes = result
