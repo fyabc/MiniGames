@@ -46,21 +46,20 @@ class Scene(EventHandler):
 
             for event in pygame.event.get():
                 pos = getattr(event, 'pos', None)
-
-                overrided = False
+                overridden = False
 
                 if pos is not None:
-                    # Elements which contents
+                    # Handlers which contains the position
                     for handler in self.handlers:
                         if pos in handler:
                             result = handler.process(event)
                             if result is not None:
                                 return result
                             if handler.override:
-                                overrided = True
+                                overridden = True
                                 break
 
-                if not overrided:
+                if not overridden:
                     result = self.process(event)
                     if result is not None:
                         return result

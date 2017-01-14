@@ -27,8 +27,8 @@ class Element:
             self.SharedImages[image_name] = get_image(image_name)
 
         self.image = self.SharedImages[image_name]
-        rect = self.image.get_rect()
-        rect.center = self.loc
+        # rect = self.image.get_rect()
+        # rect.center = self.loc
 
     @property
     def rect(self):
@@ -41,7 +41,9 @@ class Element:
         surface = self.game.main_window if surface is None else surface
 
         rotated_image = pygame.transform.rotate(self.image, self.angle)
-        surface.blit(rotated_image, rotated_image.get_rect())
+        rotated_image_rect = rotated_image.get_rect()
+        rotated_image_rect.center = self.loc
+        surface.blit(rotated_image, rotated_image_rect)
 
     def rotate(self, angle):
         self.angle += angle

@@ -4,7 +4,6 @@
 import pygame
 
 from .element import Element
-from ..utils.display import get_image
 
 __author__ = 'fyabc'
 
@@ -38,5 +37,9 @@ class Door(ShiftElement):
     def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True):
         super().__init__(game, scene, cell_loc, 'door{}.png'.format(int(bg)), angle, visible)
 
-    def draw(self, surface=None):
-        super().draw(surface)
+
+class Hero(ShiftElement):
+    SharedImages = {}
+    
+    def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True):
+        super().__init__(game, scene, cell_loc, 'character{}.png'.format(int(bg)), angle, visible)

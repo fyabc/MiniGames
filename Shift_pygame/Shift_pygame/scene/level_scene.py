@@ -3,6 +3,7 @@
 
 from ..config import *
 from ..element.group import Group
+from ..element.shift_elements import Hero
 from .scene import Scene
 from ..utils.display import update
 from ..utils.data_parser import load_game_group
@@ -20,7 +21,7 @@ class LevelScene(Scene):
         self.cell_width = ScreenWidth // size[0]
         self.cell_height = ScreenHeight // size[1]
 
-        self.hero = None
+        self.hero = Hero(self.game, self, (1, 1), True, 0)
         self.doors = Group(self.game)
         self.traps = Group(self.game)
         self.arrows = Group(self.game)
@@ -62,3 +63,6 @@ class LevelScene(Scene):
             s_obj.draw()
 
         update()
+
+    def run(self, previous_scene_id, *args):
+        return super().run(previous_scene_id, *args)
