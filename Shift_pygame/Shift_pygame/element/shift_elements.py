@@ -3,6 +3,8 @@
 
 import pygame
 
+from ..config import Bool2Color
+from ..utils.display import get_font
 from .element import Element
 
 __author__ = 'fyabc'
@@ -43,3 +45,17 @@ class Hero(ShiftElement):
     
     def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True):
         super().__init__(game, scene, cell_loc, 'character{}.png'.format(int(bg)), angle, visible)
+
+
+class Text(ShiftElement):
+    SharedImages = {}
+
+    DefaultFontSize = 19
+
+    def __init__(self, game, scene, text, cell_loc, bg=False, angle=0, visible=True):
+        super().__init__(game, scene, cell_loc, [bg, text], angle, visible)
+
+    def set_image(self, image_name):
+        bg, text = image_name
+
+        self.image = get_font(self.DefaultFontSize).render(text, True, Bool2Color[not bg], Bool2Color[bg])

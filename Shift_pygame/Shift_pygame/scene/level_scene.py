@@ -3,7 +3,7 @@
 
 from ..config import *
 from ..element.group import Group
-from ..element.shift_elements import Hero
+from ..element.shift_elements import Hero, Text
 from .scene import Scene
 from ..utils.display import update
 from ..utils.data_parser import load_game_group
@@ -29,11 +29,17 @@ class LevelScene(Scene):
         self.blocks = Group(self.game)
         self.lamps = Group(self.game)
         self.mosaics = Group(self.game)
+        self.texts = Group(self.game)
 
         self.groups = [
             self.hero, self.doors, self.traps, self.arrows,
             self.keys, self.blocks, self.lamps, self.mosaics,
+            self.texts,
         ]
+
+        # For debug
+        self.texts.add(Text(self.game, self, 'Hello world!', (5, 4), True, 90))
+        # End debug
 
     @classmethod
     def from_game_group(cls, game, game_group_name):
@@ -58,9 +64,6 @@ class LevelScene(Scene):
                     Bool2Color[self.map[i, j]],
                     pygame.Rect(i * self.cell_width, j * self.cell_height, self.cell_width, self.cell_height)
                 )
-
-        for s_obj in self.static_objects:
-            s_obj.draw()
 
         update()
 

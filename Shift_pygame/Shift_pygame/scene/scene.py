@@ -7,7 +7,8 @@ import pygame.locals
 from ..config import *
 from ..utils.keymap import get_keymap
 from ..utils.display import update
-from ..handler import EventHandler
+from ..handler.handler import EventHandler
+from ..element.group import Group
 
 __author__ = 'fyabc'
 
@@ -21,8 +22,9 @@ class Scene(EventHandler):
         self.scene_id = scene_id
 
         self.handlers = []
-        self.groups = []
-        self.static_objects = set()
+        self.background_group = Group(self.game)
+
+        self.groups = [self.background_group]
 
         # The default exit action.
         self.add_action(pygame.locals.QUIT, lambda g, e: self.QuitID)
@@ -37,6 +39,9 @@ class Scene(EventHandler):
 
     def register_to_game(self):
         self.game.scenes[self.scene_id] = self
+
+    def add_background(self, element):
+        self.background_group.add(element)
 
     def run(self, previous_scene_id, *args):
         self.draw_background()
@@ -65,15 +70,16 @@ class Scene(EventHandler):
                         return result
 
             self.draw()
-            update()
 
     def draw_background(self):
         self.surface.fill(BackgroundColor)
-        for s_obj in self.static_objects:
-            s_obj.draw()
 
-        update()
+    def draw(self, ud=True, bg=False):
+        if bg:
+            self.draw_background()
 
-    def draw(self):
         for group in self.groups:
             group.draw()
+
+        if ud:
+            update()

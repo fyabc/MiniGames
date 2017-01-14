@@ -23,3 +23,11 @@ class Group:
 
     def __iter__(self):
         return iter(self.elements)
+
+    def add(self, *elements):
+        if isinstance(self.elements, list):
+            for element in elements:
+                self.elements.append(element)
+        else:
+            for element in elements:
+                self.elements.add(element)
