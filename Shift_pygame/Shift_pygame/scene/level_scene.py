@@ -3,7 +3,7 @@
 
 from ..config import *
 from ..element.group import Group
-from ..element.shift_elements import Hero, Text
+from ..element.shift_elements import Hero, ShiftText
 from .scene import Scene
 from ..utils.display import update
 from ..utils.data_parser import load_game_group
@@ -38,7 +38,7 @@ class LevelScene(Scene):
         ]
 
         # For debug
-        self.texts.add(Text(self.game, self, 'Hello world!', (5, 4), True, 90))
+        self.texts.add(ShiftText(self.game, self, 'Hello world!', (5, 4), True, 90))
         # End debug
 
     @classmethod

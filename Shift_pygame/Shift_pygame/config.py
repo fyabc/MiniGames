@@ -56,3 +56,6 @@ Bool2Color = {
 # Game.
 DefaultGroup = 'basic.txt'
 GameGroups = os.listdir(GameGroupPath)
+
+# Scene.
+QuitID = -1

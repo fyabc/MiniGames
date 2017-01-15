@@ -47,7 +47,7 @@ class Hero(ShiftElement):
         super().__init__(game, scene, cell_loc, 'character{}.png'.format(int(bg)), angle, visible)
 
 
-class Text(ShiftElement):
+class ShiftText(ShiftElement):
     SharedImages = {}
 
     DefaultFontSize = 19

@@ -3,7 +3,7 @@
 
 import pygame
 
-from ..utils.display import get_image
+from ..utils.display import get_image, relative2physic
 
 __author__ = 'fyabc'
 
@@ -17,7 +17,7 @@ class Element:
         self.game = game
         self.scene = scene
         self.image = None
-        self.loc = loc
+        self.loc = relative2physic(loc)
         self.anchor = anchor        # todo: To be implemented
         self.angle = angle
         self.visible = visible

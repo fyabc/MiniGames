@@ -8,7 +8,7 @@ import pygame
 
 from .config import *
 from .utils.display import get_font
-from .scene.basic_scenes import MainMenu
+from .scene.basic_scenes import MainMenu, HelpMenu
 
 __author__ = 'fyabc'
 
@@ -29,12 +29,15 @@ class Game:
         self.args_between_scenes = []
         self.scenes = {}
 
-        # For debug
-        from .scene.level_scene import LevelScene
-        self.scenes[0] = LevelScene.from_game_group(self, 'basic')[0]
-        # End debug
+        # # For debug
+        # from .scene.level_scene import LevelScene
+        # self.scenes[0] = LevelScene.from_game_group(self, 'basic')[0]
+        # # End debug
 
-        # self.add_scene(0, MainMenu)
+        self.add_scene(0, MainMenu, {
+            'HelpMenu': 1,
+        })
+        self.add_scene(1, HelpMenu)
 
     @contextmanager
     def _game_manager(self):
