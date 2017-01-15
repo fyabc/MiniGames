@@ -46,7 +46,7 @@ class ActiveText(EventHandler, Text):
         self.font = font_size, font_name
 
         self.add_action((pygame.locals.MOUSEBUTTONDOWN, 1), self.on_mouse_down_1)
-        self.mouse_up_call = (lambda text_, game_, event_: None) if mouse_up_call is None else mouse_up_call
+        self.mouse_up_call = (lambda game_, event_, pre_sid, *args: None) if mouse_up_call is None else mouse_up_call
 
     def __contains__(self, item):
         rect = self.image.get_rect()

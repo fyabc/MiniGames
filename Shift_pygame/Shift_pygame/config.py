@@ -17,8 +17,6 @@ RecordPath = os.path.join(DataPath, 'records')
 KeymapPath = os.path.join(DataPath, 'keymap.txt')
 ImagePath = os.path.join(ResourcePath, 'images')
 
-GameGroupExtension = '.txt'
-
 # Display config.
 # [NOTE] X <=> row <=> width, Y <=> column <=> height
 WindowWidth = 600
@@ -40,7 +38,7 @@ DefaultCellHeight = ScreenHeight // DefaultCellNumberY
 GameTitle = 'Shift-pygame'
 
 # Fonts.
-FontSize = 40
+FontSize = 50
 FontName = os.path.join(ResourcePath, 'fonts', 'consolas-yahei.ttf')
 
 # FPS.
@@ -54,8 +52,9 @@ Bool2Color = {
 }
 
 # Game.
-DefaultGroup = 'basic.txt'
-GameGroups = os.listdir(GameGroupPath)
+GameGroupExtension = '.txt'
+DefaultGroup = 'basic'
+GameGroups = [filename[:-4] for filename in os.listdir(GameGroupPath) if filename.endswith(GameGroupExtension)]
 
 # Scene.
 QuitID = -1
