@@ -58,3 +58,6 @@ GameGroups = [filename[:-4] for filename in os.listdir(GameGroupPath) if filenam
 
 # Scene.
 QuitID = -1
+
+SceneTitleFontSize = FontSize
+SceneTitleLocation = (0.5, 0.15)

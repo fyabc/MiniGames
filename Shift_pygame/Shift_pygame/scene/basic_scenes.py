@@ -3,7 +3,7 @@
 
 import pygame.locals
 
-from ..config import GameGroups
+from ..config import GameGroups, SceneTitleLocation
 from .scene import Scene
 from ..element.text import Text
 from ..element.group import Group
@@ -80,7 +80,7 @@ class HelpMenu(MenuScene):
         super().__init__(game, scene_id, None)
 
         self.add_background(
-            Text(self.game, self, 'Help', (0.5, 0.15)),
+            Text(self.game, self, 'Help', SceneTitleLocation),
             Text(self.game, self, 'Left: Go left', (0.5, 0.29), font_size=27),
             Text(self.game, self, 'Right: Go right', (0.5, 0.37), font_size=27),
             Text(self.game, self, 'Up: To another level on the door', (0.5, 0.45), font_size=27),
@@ -110,7 +110,7 @@ class GameSelectMenu(MenuScene):
         super().__init__(game, scene_id, targets)
 
         self.add_background(
-            Text(self.game, self, 'Select Game', (0.5, 0.15)),
+            Text(self.game, self, 'Select Game', SceneTitleLocation),
         )
 
         game_group_number = len(GameGroups)
@@ -126,7 +126,7 @@ class LevelSelectMenu(MenuScene):
         super().__init__(game, scene_id, targets)
 
         self.add_background(
-            Text(self.game, self, 'Select Level', (0.5, 0.15)),
+            Text(self.game, self, 'Select Level', SceneTitleLocation),
         )
 
     def run(self, previous_scene_id, *args):
