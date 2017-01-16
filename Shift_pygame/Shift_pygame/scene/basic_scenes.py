@@ -3,7 +3,7 @@
 
 import pygame.locals
 
-from ..config import GameGroups, SceneTitleLocation
+from ..config import GameGroups, SceneTitleLocation, DefaultGroup
 from .scene import Scene
 from ..element.text import Text
 from ..element.group import Group
@@ -116,20 +116,31 @@ class GameSelectMenu(MenuScene):
         game_group_number = len(GameGroups)
         self.add_active_element(*[
             ActiveText(self.game, self, game_group_name, (0.5, 0.25 + 0.1 * i), font_size=27,
-                       mouse_up_call=(lambda t, g, e, pre_sid, *args: (targets['LevelSelectMenu'], game_group_name)))
+                       mouse_up_call=(lambda t, g, e, pre_sid, *args: (targets['GameMainMenu'], game_group_name)))
             for i, game_group_name in enumerate(GameGroups)
         ])
 
 
-class LevelSelectMenu(MenuScene):
+class GameMainMenu(MenuScene):
     def __init__(self, game, scene_id, targets):
         super().__init__(game, scene_id, targets)
 
+        self.game_group_name = DefaultGroup
+
         self.add_background(
-            Text(self.game, self, 'Select Level', SceneTitleLocation),
+            Text(self.game, self, 'Game Options', SceneTitleLocation),
         )
 
     def run(self, previous_scene_id, *args):
+        """
+
+        :param previous_scene_id:
+        :param args: args[0] = game_group_name
+        :return:
+        """
+
+        self.game_group_name = args[0]
+
         return super().run(previous_scene_id, *args)
 
     def draw_background(self):

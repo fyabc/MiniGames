@@ -8,6 +8,7 @@ import pygame
 
 from .config import *
 from .utils.display import get_font
+from .utils.data_parser import load_game_group, dump_game_group
 from .scene.basic_scenes import *
 
 __author__ = 'fyabc'
@@ -29,22 +30,24 @@ class Game:
         self.args_between_scenes = []
         self.scenes = {}
 
-        # # For debug
-        # from .scene.level_scene import LevelScene
-        # self.scenes[0] = LevelScene.from_game_group(self, 'basic')[0]
-        # # End debug
+        # Data initialize.
+        self.game_groups_data = {
+            game_group_name: load_game_group(game_group_name)
+            for game_group_name in GameGroups
+        }
 
         scene_map = {
             'MainMenu': 0,
             'HelpMenu': 1,
             'GameSelectMenu': 2,
-            'LevelSelectMenu': 3,
+            'GameMainMenu': 3,
+            # ('LevelScene', 'basic'): 'basic',
         }
 
         self.add_scene(0, MainMenu, scene_map)
         self.add_scene(1, HelpMenu)
         self.add_scene(2, GameSelectMenu, scene_map)
-        self.add_scene(3, LevelSelectMenu, scene_map)
+        self.add_scene(3, GameMainMenu, scene_map)
 
     @contextmanager
     def _game_manager(self):
@@ -53,6 +56,10 @@ class Game:
         pygame.quit()
 
         # Save some data of the game.
+        print('Saving game status... ', end='')
+        for game_group_data in self.game_groups_data.values():
+            dump_game_group(game_group_data)
+        print('done')
 
         print('The game is quited!')
         sys.exit(0)

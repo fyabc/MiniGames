@@ -5,7 +5,7 @@ import re
 
 from .basic import error
 from ..config import *
-from ..map import Map
+from ..group_data import LevelData, GameGroupData
 
 __author__ = 'fyabc'
 
@@ -66,7 +66,7 @@ def read_map(f_it, settings, map_args):
 
         array.append(row)
 
-    return Map(array)
+    return LevelData(array)
 
 
 def iter_levels(game_group_file, settings=None):
@@ -116,10 +116,20 @@ def iter_levels(game_group_file, settings=None):
 
 
 def load_game_group(game_group_name):
-    game_group_name += GameGroupExtension
     if game_group_name not in GameGroups:
-        error('Cannot find game group file {}.'.format(game_group_name))
+        error('Cannot find game group [{}].'.format(game_group_name))
         return []
 
-    with open(os.path.join(GameGroupPath, game_group_name), 'r') as game_group_file:
-        return list(iter_levels(game_group_file))
+    with open(os.path.join(GameGroupPath, game_group_name + GameGroupExtension), 'r') as game_group_file:
+        if os.path.exists(os.path.join(RecordPath, game_group_name + GameGroupExtension)):
+            with open(os.path.join(RecordPath, game_group_name + GameGroupExtension)) as record_file:
+                pass
+        else:
+            record_file = None
+        return GameGroupData(game_group_name, iter_levels(game_group_file), record_file)
+
+
+def dump_game_group(game_group_data):
+    game_group_name = game_group_data.game_group_name
+
+    pass

@@ -8,7 +8,7 @@ from .support.vector import Vector2
 __author__ = 'fyabc'
 
 
-class Map:
+class LevelData:
     ValueBlack = False
     ValueWhite = True
 
@@ -52,12 +52,41 @@ class Map:
         pass
 
     ElementTable = {
-        'D': add_door,
-        'T': add_trap,
-        'A': add_arrow,
-        'K': add_key,
-        'B': add_block,
-        'L': add_lamp,
-        'M': add_mosaic,
-        'Text': add_text,
+        'd': add_door,
+        't': add_trap,
+        'a': add_arrow,
+        'k': add_key,
+        'b': add_block,
+        'l': add_lamp,
+        'm': add_mosaic,
+        'text': add_text,
     }
+
+
+class GameGroupData:
+    def __init__(self, game_group_name, levels, record_file=None):
+        self.game_group_name = game_group_name
+        self.levels = list(levels)
+
+        if record_file is not None:
+            self.load_status(record_file)
+
+    def __getitem__(self, item):
+        return self.levels[item]
+
+    def dump_status(self, file):
+        """Dump the game group data into file.
+
+        It will save the status of the game group, such as:
+            reached_levels
+            current_level
+            keys/lamps status (hit or not)
+
+        :param file: the file to dump.
+        :return: None
+        """
+
+        pass
+
+    def load_status(self, file):
+        pass

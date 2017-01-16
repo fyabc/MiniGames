@@ -31,3 +31,6 @@ class Group:
         else:
             for element in elements:
                 self.elements.add(element)
+
+    def clear(self):
+        self.elements.clear()
