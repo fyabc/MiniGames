@@ -3,7 +3,7 @@
 
 import pygame
 
-from ..config import Bool2Color
+from ..config import Bool2Color, Anchor
 from ..utils.display import get_font
 from .element import Element
 
@@ -11,8 +11,8 @@ __author__ = 'fyabc'
 
 
 class ShiftElement(Element):
-    def __init__(self, game, scene, cell_loc, image_name, angle=0, visible=True):
-        super().__init__(game, scene, scene.physic_loc(cell_loc), angle, visible)
+    def __init__(self, game, scene, cell_loc, image_name, angle=0, visible=True, anchor=Anchor.center):
+        super().__init__(game, scene, scene.physic_loc(cell_loc, anchor), angle, visible, anchor)
         self._cell_loc = cell_loc
         self.set_image(image_name)
 

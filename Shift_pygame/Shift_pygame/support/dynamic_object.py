@@ -17,3 +17,6 @@ class DynamicObject:
 
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+    def __str__(self):
+        return '({})'.format(','.join('{}={}'.format(k, v) for k, v in self.__dict__.items()))

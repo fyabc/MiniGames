@@ -43,29 +43,38 @@ class LevelData:
         else:
             raise TypeError('Unsupported index type {}'.format(type(item).__name__))
 
+    @classmethod
+    def _get_basic(cls, args, get_direction=False):
+        x = int(lget(args, 0, 0))
+        y = int(lget(args, 1, 0))
+        if get_direction:
+            direction = cls.Directions[lget(args, 2, 'd').lower()]
+            return x, y, direction
+        return x, y
+
     def add_element(self, command, *args):
         self.ElementTable[command](self, *args)
 
     def add_start(self, *args):
         """[Command] s x y"""
 
-        x = int(lget(args, 0, 0))
-        y = int(lget(args, 1, 0))
+        x, y = self._get_basic(args)
 
         self.elements['start'].append(DynamicObject(x=x, y=y))
 
     def add_door(self, *args):
         """[Command] d x y direction target_id"""
 
-        x = int(lget(args, 0, 0))
-        y = int(lget(args, 1, 0))
-        direction = self.Directions[lget(args, 2, 'd').lower()]
-        target_id = int(lget(args, 3, 1))
+        x, y, direction = self._get_basic(args, True)
+        target_id = int(lget(args, 3, self.id + 1))
 
         self.elements['door'].append(DynamicObject(x=x, y=y, direction=direction, target_id=target_id))
 
     def add_trap(self, *args):
-        pass
+        """[Command] T x y direction"""
+
+        x, y, direction = self._get_basic(args, True)
+        self.elements['trap'].append(DynamicObject(x=x, y=y, direction=direction))
 
     def add_arrow(self, *args):
         pass
@@ -97,14 +106,43 @@ class LevelData:
         'text': add_text,
     }
 
+    def __str__(self):
+        return '#{}\n{}\n{}\n{}\n{}\n'.format(
+            self.id,
+
+            # Map
+            '|'.rjust(self.size[0] + 1, '-'),
+            '\n'.join(
+                ''.join(
+                    ' ' if elem else '*'
+                    for elem in row
+                ) + '|' for row in self.matrix
+            ),
+            '|'.rjust(self.size[0] + 1, '-'),
+
+            # Elements
+            '\n'.join(
+                '{}:\n    {}'.format(
+                    command,
+                    '\n    '.join(str(element) for element in elements)
+                )
+                for command, elements in self.elements.items()
+            ),
+        )
+
 
 class GameGroupData:
     def __init__(self, game_group_name, levels, record_file=None):
         self.game_group_name = game_group_name
-        self.levels = list(levels)
+        self.levels = {
+            level.id: level
+            for level in levels
+        }
 
         if record_file is not None:
             self.load_status(record_file)
+
+        print(self)
 
     def __getitem__(self, item):
         return self.levels[item]
@@ -125,3 +163,9 @@ class GameGroupData:
 
     def load_status(self, file):
         pass
+
+    def __str__(self):
+        return 'Group {}\nLevels:\n{}\n'.format(
+            self.game_group_name,
+            '\n'.join(str(level) for level in self.levels.values())
+        )

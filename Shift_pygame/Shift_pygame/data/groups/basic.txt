@@ -20,7 +20,7 @@
 #
 # S 0 5                         # S = start
 # D 11 5 d 0                    # D = destination, the 3rd is the direction, the 4th is target level id (default is 1 + current level id)
-# T 3 11 d                      # T = trap, if the direction is u, it means the trap is like 'VVV'.
+# T 3 11 d                      # T = trap, if the direction is u, it means the trap is like 'VVV'. (default direction is d)
 # A 11 11 u                     # A = arrow.
 # K 0 6 0 1 2 3                 # K = key, the 3rd and more is id of blocks.
 # B 8 11 1 d 0                  # B = block, the 1st & 2nd is start location, the 3rd is length, the 4th is direction, the 5th is id.
@@ -49,4 +49,32 @@ map 12 12   # The map block, two arguments are x & y. Default are (12, 12).
 0 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0 0 0 0 0
 
+S 0 5
+D 11 5 d
+
 endlevel    # This record the end of a level
+
+id 2
+
+map
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1
+0 0 0 1 1 0 0 1 1 0 0 0
+0 0 0 1 1 0 0 1 1 0 0 0
+0 0 0 1 1 0 0 1 1 0 0 0
+0 0 0 1 1 0 0 1 1 0 0 0
+0 0 0 1 1 0 0 1 1 0 0 0
+0 0 0 1 1 0 0 1 1 0 0 0
+
+S 0 5
+D 11 5 d
+T 3 11 d
+T 4 11 d
+T 7 11 d
+T 8 11 d
+
+endLevel    # ignore case

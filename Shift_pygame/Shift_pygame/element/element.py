@@ -3,6 +3,7 @@
 
 import pygame
 
+from ..config import Anchor
 from ..utils.display import get_image, relative2physic
 
 __author__ = 'fyabc'
@@ -13,7 +14,7 @@ class Element:
 
     SharedImages = {}
 
-    def __init__(self, game, scene, loc, angle=0, visible=True, anchor='center'):
+    def __init__(self, game, scene, loc, angle=0, visible=True, anchor=Anchor.center):
         self.game = game
         self.scene = scene
         self.image = None

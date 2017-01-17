@@ -53,13 +53,16 @@ class LevelScene(Scene):
 
         self.load_elements()
 
-    def physic_loc(self, logic_loc, anchor='center'):
+    def physic_loc(self, logic_loc, anchor=Anchor.center):
         lx, ly = logic_loc
 
-        if anchor == 'center':
+        if isinstance(anchor, str):
+            anchor = eval('Anchor.' + anchor)
+
+        if anchor == Anchor.center:
             return self._cell_width * lx + self._cell_width // 2, self._cell_height * ly + self._cell_height // 2
         else:
-            raise ValueError('Does not support anchor "{}"'.format(anchor))
+            raise ValueError('Does not support anchor {}'.format(anchor))
 
     def clear_all(self):
         for group in self.groups:
