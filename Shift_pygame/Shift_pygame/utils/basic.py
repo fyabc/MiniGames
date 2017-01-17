@@ -20,3 +20,10 @@ _comment_pattern = re.compile(r'#.*?\n')
 
 def strip_line(line):
     return _comment_pattern.sub('', line).strip()
+
+
+def lget(l, i, default=None):
+    try:
+        return l[i]
+    except IndexError:
+        return default

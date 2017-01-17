@@ -66,7 +66,7 @@ def read_map(f_it, settings, map_args):
 
         array.append(row)
 
-    return LevelData(array)
+    return array
 
 
 def iter_levels(game_group_file, settings=None):
@@ -76,22 +76,16 @@ def iter_levels(game_group_file, settings=None):
 
     try:
         while True:
-            level_data = {}
-            map_commands = []
+            level_data = {
+                'commands': []
+            }
 
             while True:
                 command, *args = split_command(next_line(f_it))
                 command = command.lower()
 
                 if command == 'endlevel':
-                    game_map = level_data.get('map', None)
-                    if game_map is None:
-                        break
-
-                    for command, args in map_commands:
-                        game_map.add_element(command, *args)
-
-                    yield level_data
+                    yield LevelData(level_data)
                     break
                 elif command == 'map':
                     level_data['map'] = read_map(f_it, settings, args)
@@ -109,7 +103,7 @@ def iter_levels(game_group_file, settings=None):
                             value_type = args[2]
                     settings[args[0]] = eval('{}({})'.format(value_type, args[1]))
                 else:
-                    map_commands.append([command, args])
+                    level_data['commands'].append([command, args])
 
     except StopIteration:
         pass

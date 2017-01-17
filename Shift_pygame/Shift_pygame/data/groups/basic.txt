@@ -28,6 +28,9 @@
 # M 6 6 0                       # M = mosaic, the 3rd is id.
 # Text 3 5 u "Hello world!"     # Text = text, the 1st & 2nd is center location, the 3rd is angle, others are text.
 
+# element id format:
+# K 0 6 3 4.3                   # '3' means the block 3 of current level, '4.3' means the block 3 of level 4.
+
 ################# BEGIN #################
 
 id 1    # Set the level ID
