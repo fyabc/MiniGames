@@ -9,7 +9,7 @@ import pygame.locals
 __author__ = 'fyabc'
 
 # Paths.
-PackageRootPath = os.path.dirname(os.path.abspath(__file__))
+PackageRootPath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ResourcePath = os.path.join(PackageRootPath, 'resource')
 DataPath = os.path.join(PackageRootPath, 'data')
 GameGroupPath = os.path.join(DataPath, 'groups')

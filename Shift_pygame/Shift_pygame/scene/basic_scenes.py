@@ -115,10 +115,18 @@ class GameSelectMenu(MenuScene):
 
         game_group_number = len(GameGroups)
         self.add_active_element(*[
-            ActiveText(self.game, self, game_group_name, (0.5, 0.25 + 0.1 * i), font_size=27,
+            ActiveText(self.game, self, game_group_name, (0.2, 0.3 + 0.07 * i), font_size=27,
                        mouse_up_call=(lambda t, g, e, pre_sid, *args: (targets['GameMainMenu'], game_group_name)))
             for i, game_group_name in enumerate(GameGroups)
         ])
+
+    def _add_keys(self):
+        super()._add_keys()
+
+        km = get_keymap()
+
+        for key in km['quit']:
+            self.add_jump_action(get_unique_key_event(key), self.targets['MainMenu'])
 
 
 class GameMainMenu(MenuScene):
@@ -130,6 +138,14 @@ class GameMainMenu(MenuScene):
         self.add_background(
             Text(self.game, self, 'Game Options', SceneTitleLocation),
         )
+
+    def _add_keys(self):
+        super()._add_keys()
+
+        km = get_keymap()
+
+        for key in km['quit']:
+            self.add_jump_action(get_unique_key_event(key), self.targets['GameSelectMenu'])
 
     def run(self, previous_scene_id, *args):
         """
