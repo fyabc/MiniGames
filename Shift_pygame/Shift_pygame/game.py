@@ -36,18 +36,20 @@ class Game:
             for game_group_name in GameGroups
         }
 
-        scene_map = {
+        self.scene_map = {
             'MainMenu': 0,
             'HelpMenu': 1,
             'GameSelectMenu': 2,
             'GameMainMenu': 3,
             # ('LevelScene', 'basic'): 'basic',
+            'LevelSelectMenu': 4,
         }
 
-        self.add_scene(0, MainMenu, scene_map)
-        self.add_scene(1, HelpMenu)
-        self.add_scene(2, GameSelectMenu, scene_map)
-        self.add_scene(3, GameMainMenu, scene_map)
+        self.add_scene(MainMenu, self.scene_map)
+        self.add_scene(HelpMenu, self.scene_map)
+        self.add_scene(GameSelectMenu, self.scene_map)
+        self.add_scene(GameMainMenu, self.scene_map)
+        self.add_scene(LevelSelectMenu, self.scene_map)
 
     @contextmanager
     def _game_manager(self):
@@ -64,7 +66,8 @@ class Game:
         print('The game is quited!')
         sys.exit(0)
 
-    def add_scene(self, scene_id, scene_type, *args, **kwargs):
+    def add_scene(self, scene_type, *args, **kwargs):
+        scene_id = self.scene_map[scene_type.__name__]
         self.scenes[scene_id] = scene_type(self, scene_id, *args, **kwargs)
 
     def run(self):

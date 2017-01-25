@@ -134,15 +134,14 @@ class LevelData:
 class GameGroupData:
     def __init__(self, game_group_name, levels, record_file=None):
         self.game_group_name = game_group_name
-        self.levels = {
-            level.id: level
-            for level in levels
-        }
+        self.levels = {level.id: level for level in levels}
 
         if record_file is not None:
             self.load_status(record_file)
 
+        # For debug
         print(self)
+        # End debug
 
     def __getitem__(self, item):
         return self.levels[item]

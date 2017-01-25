@@ -14,4 +14,13 @@ class Text(Element):
                  visible=True, angle=0):
         super().__init__(game, scene, loc, angle, visible, 'center')
 
+        self.text = text
+        self.fg_bg = fg_bg
+        self.font_size = font_size
+        self.font_name = font_name
+
         self.image = get_text(text, *fg_bg, font_size, font_name)
+
+    def set_text(self, text):
+        self.text = text
+        self.image = get_text(self.text, *self.fg_bg, self.font_size, self.font_name)

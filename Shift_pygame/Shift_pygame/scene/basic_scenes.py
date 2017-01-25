@@ -3,7 +3,7 @@
 
 import pygame.locals
 
-from ..config import GameGroups, SceneTitleLocation, DefaultGroup
+from ..config import GameGroups, SceneTitleLocation, DefaultGroup, FontMedium
 from .scene import Scene
 from ..element.text import Text
 from ..element.group import Group
@@ -34,6 +34,12 @@ class MenuScene(Scene):
 
         self.add_action((pygame.locals.MOUSEBUTTONUP, 1), self.on_mouse_up_1)
 
+        self._add_elements()
+
+    def _add_elements(self):
+        """Subclasses override this method to add elements."""
+        pass
+
     def add_active_element(self, *elements):
         self.handlers.extend(elements)
         self.active_group.add(*elements)
@@ -47,9 +53,7 @@ class MenuScene(Scene):
 
 
 class MainMenu(MenuScene):
-    def __init__(self, game, scene_id, targets):
-        super().__init__(game, scene_id, targets)
-
+    def _add_elements(self):
         self.add_background(
             Text(self.game, self, 'Sh', (0.449, 0.15)),
             Text(self.game, self, 'ift', (0.561, 0.15), fg_bg=(True, False), font_size=50),
@@ -57,9 +61,9 @@ class MainMenu(MenuScene):
 
         self.add_active_element(
             ActiveText(self.game, self, 'Select Game', (0.25, 0.4),
-                       mouse_up_call=(lambda *args: targets['GameSelectMenu'])),
+                       mouse_up_call=(lambda *args: self.targets['GameSelectMenu'])),
             ActiveText(self.game, self, 'Help(H)', (0.25, 0.7),
-                       mouse_up_call=(lambda *args: targets['HelpMenu'])),
+                       mouse_up_call=(lambda *args: self.targets['HelpMenu'])),
             ActiveText(self.game, self, 'Quit(Q)', (0.75, 0.7),
                        mouse_up_call=(lambda *args: self.QuitID)),
         )
@@ -76,24 +80,19 @@ class MainMenu(MenuScene):
 
 
 class HelpMenu(MenuScene):
-    def __init__(self, game, scene_id):
-        super().__init__(game, scene_id, None)
-
+    def _add_elements(self):
         self.add_background(
             Text(self.game, self, 'Help', SceneTitleLocation),
-            Text(self.game, self, 'Left: Go left', (0.5, 0.29), font_size=27),
-            Text(self.game, self, 'Right: Go right', (0.5, 0.37), font_size=27),
-            Text(self.game, self, 'Up: To another level on the door', (0.5, 0.45), font_size=27),
-            Text(self.game, self, 'Space: Jump', (0.5, 0.53), font_size=27),
-            Text(self.game, self, 'Shift: Shift to another world', (0.5, 0.61), font_size=27),
+            Text(self.game, self, 'Left: Go left', (0.5, 0.29), font_size=FontMedium),
+            Text(self.game, self, 'Right: Go right', (0.5, 0.37), font_size=FontMedium),
+            Text(self.game, self, 'Up: To another level on the door', (0.5, 0.45), font_size=FontMedium),
+            Text(self.game, self, 'Space: Jump', (0.5, 0.53), font_size=FontMedium),
+            Text(self.game, self, 'Shift: Shift to another world', (0.5, 0.61), font_size=FontMedium),
         )
 
         self.add_active_element(
-            ActiveText(
-                self.game, self,
-                'Return(Q)', (0.5, 0.8),
-                mouse_up_call=(lambda t, g, e, pre_sid, *args: pre_sid)
-            )
+            ActiveText(self.game, self, 'Return(Q)', (0.5, 0.8),
+                       mouse_up_call=(lambda t, g, e, pre_sid, *args: pre_sid))
         )
 
     def _add_keys(self):
@@ -106,17 +105,15 @@ class HelpMenu(MenuScene):
 
 
 class GameSelectMenu(MenuScene):
-    def __init__(self, game, scene_id, targets):
-        super().__init__(game, scene_id, targets)
-
+    def _add_elements(self):
         self.add_background(
             Text(self.game, self, 'Select Game', SceneTitleLocation),
         )
 
         game_group_number = len(GameGroups)
         self.add_active_element(*[
-            ActiveText(self.game, self, game_group_name, (0.2, 0.3 + 0.07 * i), font_size=27,
-                       mouse_up_call=(lambda t, g, e, pre_sid, *args: (targets['GameMainMenu'], game_group_name)))
+            ActiveText(self.game, self, game_group_name, (0.2, 0.3 + 0.07 * i), font_size=FontMedium,
+                       mouse_up_call=(lambda t, g, e, pre_sid, *args: (self.targets['GameMainMenu'], game_group_name)))
             for i, game_group_name in enumerate(GameGroups)
         ])
 
@@ -135,8 +132,20 @@ class GameMainMenu(MenuScene):
 
         self.game_group_name = DefaultGroup
 
+    def _add_elements(self):
+        self.title = Text(self.game, self, 'Game Options', SceneTitleLocation)
+
         self.add_background(
-            Text(self.game, self, 'Game Options', SceneTitleLocation),
+            self.title,
+        )
+
+        self.add_active_element(
+            ActiveText(self.game, self, 'New Game', (0.5, 0.3), font_size=FontMedium,
+                       mouse_up_call=lambda *args: (self.targets['LevelSelectMenu'], self.game_group_name)),
+            ActiveText(self.game, self, 'Continue', (0.5, 0.5), font_size=FontMedium,
+                       mouse_up_call=lambda *args: (self.targets['LevelSelectMenu'], self.game_group_name)),
+            ActiveText(self.game, self, 'Return(Q)', (0.5, 0.7), font_size=FontMedium,
+                       mouse_up_call=lambda *args: self.targets['GameSelectMenu']),
         )
 
     def _add_keys(self):
@@ -150,12 +159,15 @@ class GameMainMenu(MenuScene):
     def run(self, previous_scene_id, *args):
         """
 
-        :param previous_scene_id:
-        :param args: args[0] = game_group_name
+        :param previous_scene_id: as default
+        :param args:
+            args[0] = game_group_name
         :return:
         """
 
+        # Load game group name, do some works.
         self.game_group_name = args[0]
+        self.title.set_text('Game Options: {}'.format(self.game_group_name))
 
         return super().run(previous_scene_id, *args)
 
@@ -163,3 +175,30 @@ class GameMainMenu(MenuScene):
         super().draw_background()
 
         # todo: Add level buttons (even link graph) into the scene
+
+
+class LevelSelectMenu(MenuScene):
+    """The menu for level selection.
+
+    It contains level numbers (maybe also contains their connections).
+
+    Click the levels will go to level scene (game scene).
+    """
+
+    def __init__(self, game, scene_id, targets):
+        super().__init__(game, scene_id, targets)
+
+        self.game_group_name = DefaultGroup
+
+    def run(self, previous_scene_id, *args):
+        """
+
+        :param previous_scene_id: as default
+        :param args:
+            args[0] = game_group_name
+        :return:
+        """
+
+        self.game_group_name = args[0]
+
+        return super().run(previous_scene_id, *args)
