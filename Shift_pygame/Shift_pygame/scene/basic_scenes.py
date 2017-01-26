@@ -44,11 +44,11 @@ class MenuScene(Scene):
         self.handlers.extend(elements)
         self.active_group.add(*elements)
 
-    def on_mouse_up_1(self, game, event, pre_sid, *args):
+    def on_mouse_up_1(self, scene, event, pre_sid, *args):
         # Find clicked button.
         for handler in self.handlers:
             if getattr(handler, 'clicked', None) is True:
-                return handler.on_mouse_up_1(game, event, pre_sid, *args)
+                return handler.on_mouse_up_1(scene, event, pre_sid, *args)
         return None
 
 
@@ -61,11 +61,11 @@ class MainMenu(MenuScene):
 
         self.add_active_element(
             ActiveText(self.game, self, 'Select Game', (0.25, 0.4),
-                       mouse_up_call=(lambda *args: self.targets['GameSelectMenu'])),
+                       on_mouse_up=(lambda *args: self.targets['GameSelectMenu'])),
             ActiveText(self.game, self, 'Help(H)', (0.25, 0.7),
-                       mouse_up_call=(lambda *args: self.targets['HelpMenu'])),
+                       on_mouse_up=(lambda *args: self.targets['HelpMenu'])),
             ActiveText(self.game, self, 'Quit(Q)', (0.75, 0.7),
-                       mouse_up_call=(lambda *args: self.QuitID)),
+                       on_mouse_up=(lambda *args: self.QuitID)),
         )
 
     def _add_keys(self):
@@ -92,7 +92,7 @@ class HelpMenu(MenuScene):
 
         self.add_active_element(
             ActiveText(self.game, self, 'Return(Q)', (0.5, 0.8),
-                       mouse_up_call=(lambda t, g, e, pre_sid, *args: pre_sid))
+                       on_mouse_up=(lambda t, s, e, pre_sid, *args: pre_sid))
         )
 
     def _add_keys(self):
@@ -101,7 +101,7 @@ class HelpMenu(MenuScene):
         km = get_keymap()
 
         for key in km['quit']:
-            self.add_action(get_unique_key_event(key), lambda g, e, pre_sid, *args: pre_sid)
+            self.add_action(get_unique_key_event(key), lambda s, e, pre_sid, *args: pre_sid)
 
 
 class GameSelectMenu(MenuScene):
@@ -113,7 +113,7 @@ class GameSelectMenu(MenuScene):
         game_group_number = len(GameGroups)
         self.add_active_element(*[
             ActiveText(self.game, self, game_group_name, (0.2, 0.3 + 0.07 * i), font_size=FontMedium,
-                       mouse_up_call=(lambda t, g, e, pre_sid, *args: (self.targets['GameMainMenu'], game_group_name)))
+                       on_mouse_up=(lambda *args: (self.targets['GameMainMenu'], game_group_name)))
             for i, game_group_name in enumerate(GameGroups)
         ])
 
@@ -141,11 +141,11 @@ class GameMainMenu(MenuScene):
 
         self.add_active_element(
             ActiveText(self.game, self, 'New Game', (0.5, 0.3), font_size=FontMedium,
-                       mouse_up_call=lambda *args: (self.targets['LevelSelectMenu'], self.game_group_name)),
+                       on_mouse_up=lambda *args: (self.targets['LevelSelectMenu'], self.game_group_name)),
             ActiveText(self.game, self, 'Continue', (0.5, 0.5), font_size=FontMedium,
-                       mouse_up_call=lambda *args: (self.targets['LevelSelectMenu'], self.game_group_name)),
+                       on_mouse_up=lambda *args: (self.targets['LevelSelectMenu'], self.game_group_name)),
             ActiveText(self.game, self, 'Return(Q)', (0.5, 0.7), font_size=FontMedium,
-                       mouse_up_call=lambda *args: self.targets['GameSelectMenu']),
+                       on_mouse_up=lambda *args: self.targets['GameSelectMenu']),
         )
 
     def _add_keys(self):
@@ -189,6 +189,15 @@ class LevelSelectMenu(MenuScene):
         super().__init__(game, scene_id, targets)
 
         self.game_group_name = DefaultGroup
+
+    def _add_keys(self):
+        super()._add_keys()
+
+        km = get_keymap()
+
+        for key in km['quit']:
+            self.add_action(get_unique_key_event(key),
+                            lambda s, *args: (self.targets['GameSelectMenu'], s.game_group_name))
 
     def run(self, previous_scene_id, *args):
         """

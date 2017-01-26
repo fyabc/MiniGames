@@ -17,24 +17,17 @@ class EventHandler:
 
         :param event_unique_type: unique event type.
         :param action: callable.
-            parameters: game, event, previous_scene_id, *args
+            parameters: scene, event, previous_scene_id, *args
             return: next_scene_id, *next_args
         :return: None
         """
         self.actions[event_unique_type] = action
 
     def add_jump_action(self, event_unique_type, target_scene_id):
-        self.actions[event_unique_type] = lambda game, event, pre_sid, *args: target_scene_id
+        self.actions[event_unique_type] = lambda scene, event, pre_sid, *args: target_scene_id
 
     def override(self, event):
         return self.to_unique(event) in self.override_set
-
-    # def auto_add_actions(self):
-    #     for func_name, action_func in (func_name, getattr(self, func_name)
-    #                                    for func_name in dir(self)
-    #                                    if func_name.startswith('on_')):
-    #         if callable(action_func):
-    #             self.actions[func_name] = action_func
 
     @staticmethod
     def to_unique(event):
@@ -55,4 +48,4 @@ class EventHandler:
         if action_func is None:
             return
 
-        return action_func(self.game, event, previous_scene_id, *args)
+        return action_func(self, event, previous_scene_id, *args)

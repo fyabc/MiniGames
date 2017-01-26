@@ -15,7 +15,7 @@ class ActiveText(EventHandler, Text):
     def __init__(self, game, scene,
                  text, loc, fg_bg=(False, True), font_size=FontSize, font_name=FontName,
                  visible=True,
-                 mouse_up_call=None):
+                 on_mouse_up=None):
         """
 
         :param game:
@@ -26,9 +26,9 @@ class ActiveText(EventHandler, Text):
         :param font_size:
         :param font_name:
         :param visible:
-        :param mouse_up_call: callable or None.
+        :param on_mouse_up: callable or None.
             Call it on mouse up event.
-            parameters: text(self), game, event, previous_scene_id, *args
+            [NOTE] parameters: text(self), scene, event, previous_scene_id, *args
             return: next_scene_id, *next_args
         """
 
@@ -46,7 +46,7 @@ class ActiveText(EventHandler, Text):
         self.font = font_size, font_name
 
         self.add_action((pygame.locals.MOUSEBUTTONDOWN, 1), self.on_mouse_down_1)
-        self.mouse_up_call = (lambda game_, event_, pre_sid, *args: None) if mouse_up_call is None else mouse_up_call
+        self.on_mouse_up = (lambda text_, scene_, event_, pre_sid, *args: None) if on_mouse_up is None else on_mouse_up
 
     def __contains__(self, item):
         rect = self.image.get_rect()
@@ -58,9 +58,9 @@ class ActiveText(EventHandler, Text):
         self.fg_bg = [not c for c in self.fg_bg]
         self.image = get_text(self.text, *self.fg_bg, *self.font)
 
-    def on_mouse_down_1(self, game, event, pre_sid, *args):
+    def on_mouse_down_1(self, scene, event, pre_sid, *args):
         self.invert()
 
-    def on_mouse_up_1(self, game, event, pre_sid, *args):
+    def on_mouse_up_1(self, scene, event, pre_sid, *args):
         self.invert()
-        return self.mouse_up_call(self, game, event, pre_sid, *args)
+        return self.on_mouse_up(self, scene, event, pre_sid, *args)
