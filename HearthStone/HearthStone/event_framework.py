@@ -73,8 +73,8 @@ class Handler:
 
     def disable(self):
         """disable the handler.
-        [NOTE]: This method just set the alive bit to False, do not destroy it.
-        It will be removed by the event engine soon.
+        [NOTE]: This method just set the alive flag to False, do not destroy it.
+        It will be automatically removed by the event engine soon.
         """
 
         self.alive = False
@@ -108,17 +108,13 @@ class EventEngine:
         self.terminate_event_types = set()
 
         # Logging （for debug)
-        import time
-        import os
-        logging_filename = kwargs.pop(
-            'logging_file',
-            '{}/PycharmProjects/MiniGames/HearthStone/test/logs/log_engine_{}.txt'.format(
-                os.path.expanduser('~'),
-                time.strftime('%y_%m_%d_%H_%M_%S')))
-        # logging_filename = None
+        logging_filename = kwargs.pop('logging_file', None)
 
         if logging_filename is not None:
-            self.logging_file = open(logging_filename, 'w', encoding='utf-8')
+            try:
+                self.logging_file = open(logging_filename, 'w', encoding='utf-8')
+            except FileNotFoundError:
+                self.logging_file = None
         else:
             self.logging_file = None
 
@@ -251,9 +247,7 @@ class EventEngine:
                         for handler in handlers:
                             handler.process(event)
 
-            if self.logging_file is not None:
-                self.logging_file.write('{}{}\n'.format(event, '' if event.alive else '(X)'))
-                self.logging_file.flush()
+            self._logging_event(event)
 
             # [NOTE] After iteration, remove all dead handlers related to this event.
             self.remove_dead_handlers(event)
@@ -268,3 +262,8 @@ class EventEngine:
         # todo: run cartoon after all events?
 
         return terminate_event
+
+    def _logging_event(self, event):
+        if self.logging_file is not None:
+            self.logging_file.write('{}{}\n'.format(event, '' if event.alive else '(X)'))
+            self.logging_file.flush()
