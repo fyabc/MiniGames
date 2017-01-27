@@ -19,10 +19,14 @@ _comment_pattern = re.compile(r'#.*?\n')
 
 
 def strip_line(line):
+    """Remove comments (Start with '#') from the line."""
+
     return _comment_pattern.sub('', line).strip()
 
 
 def lget(l, i, default=None):
+    """Get the i-th element of the list l. If not exist, return the default value."""
+
     try:
         return l[i]
     except IndexError:
