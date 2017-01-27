@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 from random import randint
 
 import pygame
@@ -10,6 +8,8 @@ import pygame.locals
 from Utils.vector2 import Vector2
 from AntsSpiders.config import *
 from AntsSpiders.entities import AntsSpidersWorld, Leaf, Spider, Ant
+
+__author__ = 'fyabc'
 
 MainWindow = None
 Timer = None

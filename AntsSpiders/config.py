@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 from pygame.colordict import THECOLORS as AllColors
+
+__author__ = 'fyabc'
 
 SCREEN_SIZE = (840, 540)
 BG_COLOR = AllColors['white']

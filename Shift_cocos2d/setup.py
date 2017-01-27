@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 from setuptools import setup, find_packages
+
+__author__ = 'fyabc'
 
 setup(
     name='Shift_cocos2d',

@@ -7,9 +7,9 @@
 # The brain call `think` method to change the state in a step,
 # so the user should call it in every step.
 
-__author__ = 'fyabc'
-
 from abc import ABCMeta, abstractmethod
+
+__author__ = 'fyabc'
 
 
 class State(metaclass=ABCMeta):

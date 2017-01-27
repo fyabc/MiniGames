@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'fyabc'
-
 import os
 from random import randint
 
@@ -11,6 +9,8 @@ from Utils.vector2 import Vector2
 from StateMachine.simpleBrain import Brain
 from AntsSpiders.config import *
 from AntsSpiders.states import AntExploring, AntSeeking, AntDelivering, AntHunting
+
+__author__ = 'fyabc'
 
 
 def getPath(*paths):
