@@ -6,7 +6,7 @@ from collections import defaultdict
 import pygame.locals
 
 from ..config import KeymapPath
-from ..utils.basic import strip_line
+from .text_parsing import strip_line
 
 __author__ = 'fyabc'
 

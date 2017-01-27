@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from sys import platform
 import os
 
 from pygame.colordict import THECOLORS as Colors
@@ -38,11 +39,20 @@ DefaultCellHeight = ScreenHeight // DefaultCellNumberY
 GameTitle = 'Shift-pygame'
 
 # Fonts.
-FontSize = 50
 FontName = os.path.join(ResourcePath, 'fonts', 'consolas-yahei.ttf')
 
-FontSmall = 27
-FontMedium = 35
+if platform == 'win32':
+    FontSize = 50
+    FontSmall = 27
+    FontMedium = 35
+elif platform == 'linux':
+    FontSize = 47
+    FontSmall = 24
+    FontMedium = 32
+else:
+    FontSize = 50
+    FontSmall = 27
+    FontMedium = 35
 
 # FPS.
 MainFPS = 60

@@ -5,6 +5,8 @@ __author__ = 'fyabc'
 
 
 class Vector2:
+    """A simple 2-D vector."""
+
     __slots__ = ('x', 'y')
 
     origin = None

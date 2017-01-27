@@ -8,8 +8,9 @@ import pygame
 
 from .config import *
 from .utils.display import get_font
-from .utils.data_parser import load_game_group, dump_game_group
+from .group_data import GameGroupData
 from .scene.basic_scenes import *
+from .scene.level_scene import LevelScene
 
 __author__ = 'fyabc'
 
@@ -31,25 +32,25 @@ class Game:
         self.scenes = {}
 
         # Data initialize.
-        self.game_groups_data = {
-            game_group_name: load_game_group(game_group_name)
-            for game_group_name in GameGroups
-        }
+        self.game_groups_data = GameGroupData.load_game_groups()
 
-        self.scene_map = {
-            'MainMenu': 0,
-            'HelpMenu': 1,
-            'GameSelectMenu': 2,
-            'GameMainMenu': 3,
-            # ('LevelScene', 'basic'): 'basic',
-            'LevelSelectMenu': 4,
-        }
+        self.scene_map = {}
 
-        self.add_scene(MainMenu, self.scene_map)
-        self.add_scene(HelpMenu, self.scene_map)
-        self.add_scene(GameSelectMenu, self.scene_map)
-        self.add_scene(GameMainMenu, self.scene_map)
-        self.add_scene(LevelSelectMenu, self.scene_map)
+        self._register_scene(
+            MainMenu,
+            HelpMenu,
+            GameSelectMenu,
+            GameMainMenu,
+            LevelSelectMenu,
+            LevelScene,
+        )
+
+        self._construct_scene(MainMenu, self.scene_map)
+        self._construct_scene(HelpMenu, self.scene_map)
+        self._construct_scene(GameSelectMenu, self.scene_map)
+        self._construct_scene(GameMainMenu, self.scene_map)
+        self._construct_scene(LevelSelectMenu, self.scene_map)
+        self._construct_scene(LevelScene, self.scene_map)
 
     @contextmanager
     def _game_manager(self):
@@ -60,13 +61,18 @@ class Game:
         # Save some data of the game.
         print('Saving game status... ', end='')
         for game_group_data in self.game_groups_data.values():
-            dump_game_group(game_group_data)
+            game_group_data.dump_game_group()
         print('done')
 
         print('The game is quited!')
         sys.exit(0)
 
-    def add_scene(self, scene_type, *args, **kwargs):
+    def _register_scene(self, *scene_types):
+        self.scene_map = {}
+        for i, scene_type in enumerate(scene_types):
+            self.scene_map[scene_type.__name__] = i
+
+    def _construct_scene(self, scene_type, *args, **kwargs):
         scene_id = self.scene_map[scene_type.__name__]
         self.scenes[scene_id] = scene_type(self, scene_id, *args, **kwargs)
 

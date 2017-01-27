@@ -7,6 +7,8 @@ __author__ = 'fyabc'
 
 
 class DynamicObject:
+    """A simple dynamic object to store attributes."""
+
     def __init__(self, *args, **kwargs):
         for arg in args:
             if isinstance(arg, Mapping):

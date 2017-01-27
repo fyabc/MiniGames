@@ -14,6 +14,12 @@ __author__ = 'fyabc'
 
 
 class MenuScene(Scene):
+    """The base class of menu scenes.
+
+    Menu scene contains some background text, some active text (button), etc.
+    Menu scene is a handler for mouse button 1 (left) click events and key events in keymap.
+    """
+
     def __init__(self, game, scene_id, targets):
         """
 
@@ -24,10 +30,7 @@ class MenuScene(Scene):
             values: target scenes id.
         """
 
-        # [NOTE] This must before the _add_key() call.
-        self.targets = targets
-
-        super().__init__(game, scene_id)
+        super().__init__(game, scene_id, targets)
 
         self.active_group = Group(self.game)
         self.groups.append(self.active_group)
@@ -53,11 +56,18 @@ class MenuScene(Scene):
 
 
 class MainMenu(MenuScene):
+    """The main menu after start the game."""
+
     def _add_elements(self):
         self.add_background(
             Text(self.game, self, 'Sh', (0.449, 0.15)),
             Text(self.game, self, 'ift', (0.561, 0.15), fg_bg=(True, False), font_size=50),
         )
+
+        def _open_github(*args):
+            import webbrowser
+            webbrowser.open('http://github.com/fyabc/MiniGames/tree/master/Shift_pygame')
+            return self.targets['MainMenu']
 
         self.add_active_element(
             ActiveText(self.game, self, 'Select Game', (0.25, 0.4),
@@ -66,6 +76,8 @@ class MainMenu(MenuScene):
                        on_mouse_up=(lambda *args: self.targets['HelpMenu'])),
             ActiveText(self.game, self, 'Quit(Q)', (0.75, 0.7),
                        on_mouse_up=(lambda *args: self.QuitID)),
+            ActiveText(self.game, self, 'Author: fyabc<www.github.com/fyabc>', (0.5, 0.9), font_size=20,
+                       on_mouse_up=_open_github),
         )
 
     def _add_keys(self):
@@ -80,6 +92,8 @@ class MainMenu(MenuScene):
 
 
 class HelpMenu(MenuScene):
+    """The help menu. This menu may also be used as pause menu."""
+
     def _add_elements(self):
         self.add_background(
             Text(self.game, self, 'Help', SceneTitleLocation),
@@ -105,17 +119,23 @@ class HelpMenu(MenuScene):
 
 
 class GameSelectMenu(MenuScene):
+    """The game group select scene. Open from 'Select Game' in main menu."""
+
     def _add_elements(self):
         self.add_background(
             Text(self.game, self, 'Select Game', SceneTitleLocation),
         )
 
         game_group_number = len(GameGroups)
-        self.add_active_element(*[
-            ActiveText(self.game, self, game_group_name, (0.2, 0.3 + 0.07 * i), font_size=FontMedium,
-                       on_mouse_up=(lambda *args: (self.targets['GameMainMenu'], game_group_name)))
-            for i, game_group_name in enumerate(GameGroups)
-        ])
+
+        for i, game_group_name in enumerate(GameGroups):
+            def _on_mouse_up(*args, game_group_name_=game_group_name):
+                return self.targets['GameMainMenu'], game_group_name_
+
+            self.add_active_element(
+                ActiveText(self.game, self, game_group_name, (0.2, 0.3 + 0.07 * i), font_size=FontMedium,
+                           on_mouse_up=_on_mouse_up)
+            )
 
     def _add_keys(self):
         super()._add_keys()
@@ -127,6 +147,8 @@ class GameSelectMenu(MenuScene):
 
 
 class GameMainMenu(MenuScene):
+    """The main menu of the game. After the game select menu."""
+
     def __init__(self, game, scene_id, targets):
         super().__init__(game, scene_id, targets)
 
@@ -199,6 +221,19 @@ class LevelSelectMenu(MenuScene):
             self.add_action(get_unique_key_event(key),
                             lambda s, *args: (self.targets['GameSelectMenu'], s.game_group_name))
 
+    def _add_level_buttons(self):
+        game_group_data = self.game.game_groups_data[self.game_group_name]
+        for i in range(1, 1 + game_group_data.level_num):
+            y, x = divmod(i - 1, 5)
+
+            def _on_mouse_up(*args, i_=i):
+                return self.targets['LevelScene'], self.game_group_name, i_
+
+            self.add_active_element(
+                ActiveText(self.game, self, str(i), (0.1 + 0.2 * x, 0.2 + 0.1 * y), font_size=FontMedium,
+                           on_mouse_up=_on_mouse_up)
+            )
+
     def run(self, previous_scene_id, *args):
         """
 
@@ -209,5 +244,7 @@ class LevelSelectMenu(MenuScene):
         """
 
         self.game_group_name = args[0]
+
+        self._add_level_buttons()
 
         return super().run(previous_scene_id, *args)

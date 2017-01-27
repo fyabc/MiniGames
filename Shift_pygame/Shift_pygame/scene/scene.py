@@ -16,10 +16,11 @@ __author__ = 'fyabc'
 class Scene(EventHandler):
     QuitID = QuitID
 
-    def __init__(self, game, scene_id=None):
+    def __init__(self, game, scene_id=None, targets=None):
         super().__init__(game)
         self.surface = self.game.main_window
         self.scene_id = scene_id
+        self.targets = targets
 
         self.handlers = []
         self.background_group = Group(self.game)

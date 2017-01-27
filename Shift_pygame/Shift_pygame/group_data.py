@@ -1,14 +1,93 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
-
+import os
 from collections import defaultdict
 
-from .support.vector import Vector2
-from .support.dynamic_object import DynamicObject
+from .config import DefaultCellNumberX, DefaultCellNumberY, GameGroups, GameGroupPath, GameGroupExtension, RecordPath
+from .utils.basic import error, lget
+from .utils.text_parsing import next_line, split_command
 
-from .utils.basic import lget
+from .support import Vector2, DynamicObject
 
 __author__ = 'fyabc'
+
+
+DefaultSettings = {
+    'cellX': DefaultCellNumberX,
+    'cellY': DefaultCellNumberY,
+    'default_type': 'int',
+}
+
+_str2bool = {
+    '0': False,
+    '1': True,
+    'F': False,
+    'T': True,
+    'N': False,
+    'Y': True,
+}
+
+
+def read_map(f_it, settings, map_args):
+    cellX = settings['cellX']
+    if map_args:
+        cellX = int(map_args[0])
+
+    cellY = settings['cellY']
+    if len(map_args) >= 2:
+        cellY = int(map_args[1])
+
+    array = []
+
+    for i in range(cellY):
+        row = [_str2bool[cell] for cell in next_line(f_it).split()][:cellX]
+
+        if len(row) < cellX:
+            row.extend(False for _ in range(cellX - len(row)))
+
+        array.append(row)
+
+    return array
+
+
+def iter_levels(game_group_file, settings=None):
+    f_it = iter(game_group_file)
+
+    settings = DefaultSettings if settings is None else settings
+
+    try:
+        while True:
+            level_data = {
+                'commands': []
+            }
+
+            while True:
+                command, *args = split_command(next_line(f_it))
+                command = command.lower()
+
+                if command == 'endlevel':
+                    yield LevelData(level_data)
+                    break
+                elif command == 'map':
+                    level_data['map'] = read_map(f_it, settings, args)
+                elif command == 'id':
+                    assert args, "'id' must have at least 1 arguments"
+                    level_data['id'] = int(args[0])
+                elif command == 'set':
+                    assert len(args) >= 2, "'set' must have at least 2 arguments"
+
+                    if args[0] == 'default_type':
+                        value_type = 'str'
+                    else:
+                        value_type = settings['default_type']
+                        if len(args) >= 3:
+                            value_type = args[2]
+                    settings[args[0]] = eval('{}({})'.format(value_type, args[1]))
+                else:
+                    level_data['commands'].append([command, args])
+
+    except StopIteration:
+        pass
 
 
 class LevelData:
@@ -52,6 +131,9 @@ class LevelData:
             return x, y, direction
         return x, y
 
+    def _insert_element(self, name, **kwargs):
+        self.elements[name].append(DynamicObject(**kwargs))
+
     def add_element(self, command, *args):
         self.ElementTable[command](self, *args)
 
@@ -60,7 +142,7 @@ class LevelData:
 
         x, y = self._get_basic(args)
 
-        self.elements['start'].append(DynamicObject(x=x, y=y))
+        self._insert_element('start', x=x, y=y)
 
     def add_door(self, *args):
         """[Command] d x y direction target_id"""
@@ -68,13 +150,13 @@ class LevelData:
         x, y, direction = self._get_basic(args, True)
         target_id = int(lget(args, 3, self.id + 1))
 
-        self.elements['door'].append(DynamicObject(x=x, y=y, direction=direction, target_id=target_id))
+        self._insert_element('door', x=x, y=y, direction=direction, target_id=target_id)
 
     def add_trap(self, *args):
         """[Command] T x y direction"""
 
         x, y, direction = self._get_basic(args, True)
-        self.elements['trap'].append(DynamicObject(x=x, y=y, direction=direction))
+        self._insert_element('trap', x=x, y=y, direction=direction)
 
     def add_arrow(self, *args):
         pass
@@ -146,6 +228,10 @@ class GameGroupData:
     def __getitem__(self, item):
         return self.levels[item]
 
+    @property
+    def level_num(self):
+        return len(self.levels)
+
     def dump_status(self, file):
         """Dump the game group data into file.
 
@@ -161,6 +247,7 @@ class GameGroupData:
         pass
 
     def load_status(self, file):
+        # todo: load record files.
         pass
 
     def __str__(self):
@@ -168,3 +255,27 @@ class GameGroupData:
             self.game_group_name,
             '\n'.join(str(level) for level in self.levels.values())
         )
+
+    @classmethod
+    def _load_game_group(cls, game_group_name):
+        if game_group_name not in GameGroups:
+            error('Cannot find game group [{}].'.format(game_group_name))
+            return []
+
+        with open(os.path.join(GameGroupPath, game_group_name + GameGroupExtension), 'r') as game_group_file:
+            if os.path.exists(os.path.join(RecordPath, game_group_name + GameGroupExtension)):
+                with open(os.path.join(RecordPath, game_group_name + GameGroupExtension)) as record_file:
+                    pass
+            else:
+                record_file = None
+            return cls(game_group_name, iter_levels(game_group_file), record_file)
+
+    @classmethod
+    def load_game_groups(cls):
+        return {
+            game_group_name: cls._load_game_group(game_group_name)
+            for game_group_name in GameGroups
+        }
+
+    def dump_game_group(self):
+        pass

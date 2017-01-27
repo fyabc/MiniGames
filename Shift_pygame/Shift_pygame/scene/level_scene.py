@@ -6,18 +6,19 @@ from ..element.group import Group
 from ..element.shift_elements import Hero, ShiftText
 from .scene import Scene
 from ..utils.display import update
+from ..utils.keymap import get_keymap, get_unique_key_event
 
 __author__ = 'fyabc'
 
 
 class LevelScene(Scene):
-    def __init__(self, game, scene_id):
-        super().__init__(game, scene_id)
+    def __init__(self, game, scene_id, targets):
+        super().__init__(game, scene_id, targets)
 
-        self._game_group_name = DefaultGroup
-        self._current_level_id = 1
+        self.game_group_name = DefaultGroup
+        self.current_level_id = 1
 
-        self._game_group_data = None
+        self.game_group_data = None
         self._level_data = None
         self._size = None
         self._cell_width = None
@@ -41,17 +42,31 @@ class LevelScene(Scene):
             ordered=True,
         )
 
-    def _set_group_and_level(self, game_group_name, level_id):
-        self._game_group_name = game_group_name
-        self._game_group_data = self.game.game_groups_data[game_group_name]
+    def _add_keys(self):
+        super()._add_keys()
 
-        self._current_level_id = level_id
-        self._level_data = self._game_group_data[level_id]
+        km = get_keymap()
+
+        for key in km['quit']:
+            self.add_action(get_unique_key_event(key),
+                            lambda s, *args: (self.targets['LevelSelectMenu'], s.game_group_name))
+
+    def _set_group_and_level(self, game_group_name, level_id):
+        """Set the game according to the group and level.
+
+        Also set elements.
+        """
+
+        self.game_group_name = game_group_name
+        self.game_group_data = self.game.game_groups_data[game_group_name]
+
+        self.current_level_id = level_id
+        self._level_data = self.game_group_data[level_id]
         self._size = self._level_data.size
         self._cell_width = ScreenWidth // self._size[0]
         self._cell_height = ScreenHeight // self._size[1]
 
-        self.load_elements()
+        self._load_elements()
 
     def physic_loc(self, logic_loc, anchor=Anchor.center):
         lx, ly = logic_loc
@@ -69,7 +84,7 @@ class LevelScene(Scene):
             if hasattr(group, 'clear'):
                 group.clear()
 
-    def load_elements(self, reload=True):
+    def _load_elements(self, reload=True):
         if reload:
             self.clear_all()
 
@@ -99,5 +114,7 @@ class LevelScene(Scene):
 
         # Set the group and level before running.
         self._set_group_and_level(args[0], args[1])
+
+        print('Args @ level scene:', *args)
 
         return super().run(previous_scene_id, *args)
