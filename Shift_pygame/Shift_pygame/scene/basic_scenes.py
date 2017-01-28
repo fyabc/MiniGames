@@ -223,16 +223,24 @@ class LevelSelectMenu(MenuScene):
 
     def _add_level_buttons(self):
         game_group_data = self.game.game_groups_data[self.game_group_name]
-        for i in range(1, 1 + game_group_data.level_num):
+        for i, level_data in game_group_data.levels.items():
             y, x = divmod(i - 1, 5)
 
             def _on_mouse_up(*args, i_=i):
                 return self.targets['LevelScene'], self.game_group_name, i_
 
-            self.add_active_element(
-                ActiveText(self.game, self, str(i), (0.1 + 0.2 * x, 0.2 + 0.1 * y), font_size=FontMedium,
-                           on_mouse_up=_on_mouse_up)
-            )
+            text = str(i)
+            loc = (0.1 + 0.2 * x, 0.2 + 0.1 * y)
+
+            if level_data.reached:
+                self.add_active_element(
+                    ActiveText(self.game, self, text, loc, font_size=FontMedium,
+                               on_mouse_up=_on_mouse_up)
+                )
+            else:
+                self.add_background(
+                    Text(self.game, self, text, loc, fg_bg=(True, False), font_size=FontMedium)
+                )
 
     def run(self, previous_scene_id, *args):
         """

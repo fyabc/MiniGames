@@ -50,46 +50,6 @@ def read_map(f_it, settings, map_args):
     return array
 
 
-def iter_levels(game_group_file, settings=None):
-    f_it = iter(game_group_file)
-
-    settings = DefaultSettings if settings is None else settings
-
-    try:
-        while True:
-            level_data = {
-                'commands': []
-            }
-
-            while True:
-                command, *args = split_command(next_line(f_it))
-                command = command.lower()
-
-                if command == 'endlevel':
-                    yield LevelData(level_data)
-                    break
-                elif command == 'map':
-                    level_data['map'] = read_map(f_it, settings, args)
-                elif command == 'id':
-                    assert args, "'id' must have at least 1 arguments"
-                    level_data['id'] = int(args[0])
-                elif command == 'set':
-                    assert len(args) >= 2, "'set' must have at least 2 arguments"
-
-                    if args[0] == 'default_type':
-                        value_type = 'str'
-                    else:
-                        value_type = settings['default_type']
-                        if len(args) >= 3:
-                            value_type = args[2]
-                    settings[args[0]] = eval('{}({})'.format(value_type, args[1]))
-                else:
-                    level_data['commands'].append([command, args])
-
-    except StopIteration:
-        pass
-
-
 class LevelData:
     ValueBlack = False
     ValueWhite = True
@@ -115,6 +75,11 @@ class LevelData:
         for command, args in data_dict['commands']:
             self.add_element(command, *args)
 
+        # Record data, will be affected by load_status
+
+        # Is the level have been reached? If True, it can be accessed in level select menu.
+        self.reached = False
+
     def __getitem__(self, item):
         if isinstance(item, (list, tuple, Vector2)):
             x, y = item
@@ -132,6 +97,10 @@ class LevelData:
         return x, y
 
     def _insert_element(self, name, **kwargs):
+        if name in ('key', 'lamp'):
+            if 'hit' not in kwargs:
+                kwargs['hit'] = False
+
         self.elements[name].append(DynamicObject(**kwargs))
 
     def add_element(self, command, *args):
@@ -214,16 +183,20 @@ class LevelData:
 
 
 class GameGroupData:
-    def __init__(self, game_group_name, levels, record_file=None):
+    def __init__(self, game_group_name, game_group_file, record_file):
         self.game_group_name = game_group_name
-        self.levels = {level.id: level for level in levels}
 
-        if record_file is not None:
-            self.load_status(record_file)
+        # To be filled by iter_levels
+        self.levels = {}
 
-        # For debug
-        print(self)
-        # End debug
+        self._iter_levels(game_group_file)
+        self.load_status(record_file)
+
+        # The start level default to the level with minimum id.
+        self.start_level = min(self.levels.keys())
+
+        # The start level is always reached.
+        self.levels[self.start_level].reached = True
 
     def __getitem__(self, item):
         return self.levels[item]
@@ -231,6 +204,17 @@ class GameGroupData:
     @property
     def level_num(self):
         return len(self.levels)
+
+    def __len__(self):
+        return len(self.levels)
+
+    def __str__(self):
+        return 'Group {}\nLevels:\n{}\n'.format(
+            self.game_group_name,
+            '\n'.join(str(level) for level in self.levels.values())
+        )
+
+    # IO methods.
 
     def dump_status(self, file):
         """Dump the game group data into file.
@@ -247,14 +231,51 @@ class GameGroupData:
         pass
 
     def load_status(self, file):
-        # todo: load record files.
-        pass
+        if file is None:
+            return
 
-    def __str__(self):
-        return 'Group {}\nLevels:\n{}\n'.format(
-            self.game_group_name,
-            '\n'.join(str(level) for level in self.levels.values())
-        )
+        # todo: load record files.
+
+    def _iter_levels(self, game_group_file, settings=None):
+        f_it = iter(game_group_file)
+
+        settings = DefaultSettings if settings is None else settings
+
+        try:
+            while True:
+                level_data = {
+                    'commands': []
+                }
+
+                while True:
+                    command, *args = split_command(next_line(f_it))
+                    command = command.lower()
+
+                    if command == 'endlevel':
+                        level = LevelData(level_data)
+                        self.levels[level.id] = level
+
+                        break
+                    elif command == 'map':
+                        level_data['map'] = read_map(f_it, settings, args)
+                    elif command == 'id':
+                        assert args, "'id' must have at least 1 arguments"
+                        level_data['id'] = int(args[0])
+                    elif command == 'set':
+                        assert len(args) >= 2, "'set' must have at least 2 arguments"
+
+                        if args[0] == 'default_type':
+                            value_type = 'str'
+                        else:
+                            value_type = settings['default_type']
+                            if len(args) >= 3:
+                                value_type = args[2]
+                        settings[args[0]] = eval('{}({})'.format(value_type, args[1]))
+                    else:
+                        level_data['commands'].append([command, args])
+
+        except StopIteration:
+            pass
 
     @classmethod
     def _load_game_group(cls, game_group_name):
@@ -264,11 +285,11 @@ class GameGroupData:
 
         with open(os.path.join(GameGroupPath, game_group_name + GameGroupExtension), 'r') as game_group_file:
             if os.path.exists(os.path.join(RecordPath, game_group_name + GameGroupExtension)):
-                with open(os.path.join(RecordPath, game_group_name + GameGroupExtension)) as record_file:
-                    pass
+                record_file = open(os.path.join(RecordPath, game_group_name + GameGroupExtension))
             else:
                 record_file = None
-            return cls(game_group_name, iter_levels(game_group_file), record_file)
+
+            return cls(game_group_name, game_group_file, record_file)
 
     @classmethod
     def load_game_groups(cls):
@@ -278,4 +299,10 @@ class GameGroupData:
         }
 
     def dump_game_group(self):
-        pass
+        try:
+            record_file = open(os.path.join(RecordPath, self.game_group_name + GameGroupExtension), 'w')
+        except FileNotFoundError:
+            os.makedirs(RecordPath)
+            record_file = open(os.path.join(RecordPath, self.game_group_name + GameGroupExtension), 'w')
+
+        self.dump_status(record_file)
