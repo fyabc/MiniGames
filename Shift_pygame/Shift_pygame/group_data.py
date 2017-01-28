@@ -92,7 +92,13 @@ class LevelData:
 
         self.size = Vector2(len(array[0]), len(array))
         self.matrix = array
-        self.elements = defaultdict(list)
+
+        # [NOTE] All elements.
+        # Key is element type name,
+        # Value is another dict:
+        #     Key is element id,
+        #     Value is element dynamic object.
+        self.elements = defaultdict(dict)
 
         for command, args in data_dict['commands']:
             self.add_element(command, *args)
@@ -109,6 +115,30 @@ class LevelData:
         else:
             raise TypeError('Unsupported index type {}'.format(type(item).__name__))
 
+    def __str__(self):
+        return '#{}\n{}\n{}\n{}\n{}\n'.format(
+            self.id,
+
+            # Map
+            '|'.rjust(self.size[0] + 1, '-'),
+            '\n'.join(
+                ''.join(
+                    ' ' if elem else '*'
+                    for elem in row
+                ) + '|' for row in self.matrix
+            ),
+            '|'.rjust(self.size[0] + 1, '-'),
+
+            # Elements
+            '\n'.join(
+                '{}:\n    {}'.format(
+                    command,
+                    '\n    '.join(str(element) for element in elements.values())
+                )
+                for command, elements in self.elements.items()
+            ),
+        )
+
     @classmethod
     def _get_basic(cls, args, get_direction=False):
         x = int(lget(args, 0, 0))
@@ -123,7 +153,18 @@ class LevelData:
             if 'hit' not in kwargs:
                 kwargs['hit'] = False
 
-        self.elements[name].append(DynamicObject(**kwargs))
+        element_dict = self.elements[name]
+        element_id = kwargs.pop('id', None)
+
+        # [NOTE] Set default element id, the default element id is (1 + max of current ids).
+        if element_id is None:
+            if not element_dict:
+                element_id = 0
+            else:
+                element_id = max(element_dict.keys()) + 1
+            kwargs['id'] = element_id
+
+        element_dict[element_id] = DynamicObject(**kwargs)
 
     def add_element(self, command, *args):
         """Add a element into the level data according to the command and args.
@@ -193,29 +234,12 @@ class LevelData:
         'text': add_text,
     }
 
-    def __str__(self):
-        return '#{}\n{}\n{}\n{}\n{}\n'.format(
-            self.id,
+    # Some utilities of elements.
+    def hit_key(self, key):
+        pass
 
-            # Map
-            '|'.rjust(self.size[0] + 1, '-'),
-            '\n'.join(
-                ''.join(
-                    ' ' if elem else '*'
-                    for elem in row
-                ) + '|' for row in self.matrix
-            ),
-            '|'.rjust(self.size[0] + 1, '-'),
-
-            # Elements
-            '\n'.join(
-                '{}:\n    {}'.format(
-                    command,
-                    '\n    '.join(str(element) for element in elements)
-                )
-                for command, elements in self.elements.items()
-            ),
-        )
+    def hit_lamp(self, lamp):
+        pass
 
 
 class GameGroupData:
@@ -272,18 +296,20 @@ class GameGroupData:
 
         data = {
             'reached_levels': [],
-            'reached_keys': defaultdict(list),
-            'reached_lamps': defaultdict(list),
+            'hit_keys': defaultdict(list),
+            'hit_lamps': defaultdict(list),
         }
 
-        for level in self.levels.values():
+        for level_id, level in self.levels.items():
             if level.reached:
-                data['reached_levels'].append(level.id)
+                data['reached_levels'].append(level_id)
 
-            for key in level.elements['key']:
-                pass
-            for lamp in level.elements['lamp']:
-                pass
+            for key_id, key in level.elements['key'].items():
+                if key.hit:
+                    data['hit_keys'][level_id].append(key_id)
+            for lamp_id, lamp in level.elements['lamp'].items():
+                if lamp.hit:
+                    data['hit_lamps'][level_id].append(lamp_id)
 
         json.dump(data, file)
 
@@ -297,6 +323,18 @@ class GameGroupData:
 
         for level_id in data['reached_levels']:
             self.levels[level_id].reached = True
+
+        for level_id, key_ids in data['hit_keys'].items():
+            keys = self.levels[level_id].elements['key']
+
+            for key_id in key_ids:
+                keys[key_id].hit = True
+
+        for level_id, lamp_ids in data['hit_lamps'].items():
+            lamps = self.levels[level_id].elements['lamp']
+
+            for lamp_id in lamp_ids:
+                lamps[lamp_id].hit = True
 
     def _iter_levels(self, game_group_file, settings=None):
         f_it = iter(game_group_file)
