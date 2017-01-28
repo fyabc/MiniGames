@@ -11,6 +11,9 @@
 # In 'S x y':
 # x is the width, and y is height.
 
+# In 'B$0':
+# $0 means the id of this block is 0. [NOTE]: you must NOT add any space between 'B', '$' and '0'!
+
 # Directions:
 # d is DOWN, r is RIGHT, u is UP, l is LEFT.
 
@@ -18,14 +21,14 @@
 #
 # set key value                 # Set the variable key to value. Default value data type is int.
 #
-# S 0 5                         # S = start
+# S 0 5                         # S = start.
 # D 11 5 d 0                    # D = destination, the 3rd is the direction, the 4th is target level id (default is 1 + current level id)
 # T 3 11 d                      # T = trap, if the direction is u, it means the trap is like 'VVV'. (default direction is d)
 # A 11 11 u                     # A = arrow.
 # K 0 6 0 1 2 3                 # K = key, the 3rd and more is id of blocks.
-# B 8 11 1 d 0                  # B = block, the 1st & 2nd is start location, the 3rd is length, the 4th is direction, the 5th is id.
+# B$0 8 11 1 d                  # B = block, the 1st & 2nd is start location, the 3rd is length, the 4th is direction.
 # L 6 5 0 1 2 3 4               # L = lamp, the 3rd and more is id of mosaics.
-# M 6 6 0                       # M = mosaic, the 3rd is id.
+# M$0 6 6 0                     # M = mosaic.
 # Text 3 5 u "Hello world!"     # Text = text, the 1st & 2nd is center location, the 3rd is angle, others are text.
 
 # element id format:

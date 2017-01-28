@@ -1,9 +1,11 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
+
 import os
 from collections import defaultdict
+import json
 
-from .config import DefaultCellNumberX, DefaultCellNumberY, GameGroups, GameGroupPath, GameGroupExtension, RecordPath
+from .config import *
 from .utils.basic import error, lget
 from .utils.text_parsing import next_line, split_command
 
@@ -51,6 +53,24 @@ def read_map(f_it, settings, map_args):
 
 
 class LevelData:
+    """
+
+    Elements:
+
+    Basic attributes are: x, y.
+
+    Type name (in level data)   In group file   Extra attributes
+    start                       s               /
+    door                        d               direction, target_id
+    trap                        t               direction
+    arrow                       a               direction
+    key                         k               direction, id, *target_id
+    block                       b               length, direction, id
+    lamp                        l               *target_id
+    mosaic                      m               /
+    text                        text            direction, text_value
+    """
+
     ValueBlack = False
     ValueWhite = True
 
@@ -60,6 +80,8 @@ class LevelData:
         'u': 180,
         'r': 270,
     }
+
+    IdPrefix = '$'
 
     def __init__(self, data_dict):
         self.id = data_dict.get('id', 1)
@@ -104,45 +126,59 @@ class LevelData:
         self.elements[name].append(DynamicObject(**kwargs))
 
     def add_element(self, command, *args):
-        self.ElementTable[command](self, *args)
+        """Add a element into the level data according to the command and args.
 
-    def add_start(self, *args):
+        :param command: The command string, in lower case.
+        :param args: Arguments of this command.
+        :return: None
+        """
+
+        tmp = command.split(self.IdPrefix)
+
+        command_type = tmp[0]
+
+        if len(tmp) >= 2:
+            self.ElementTable[command_type](self, *args, id=int(tmp[1]))
+        else:
+            self.ElementTable[command_type](self, *args)
+
+    def add_start(self, *args, **kwargs):
         """[Command] s x y"""
 
         x, y = self._get_basic(args)
 
-        self._insert_element('start', x=x, y=y)
+        self._insert_element('start', x=x, y=y, **kwargs)
 
-    def add_door(self, *args):
+    def add_door(self, *args, **kwargs):
         """[Command] d x y direction target_id"""
 
         x, y, direction = self._get_basic(args, True)
         target_id = int(lget(args, 3, self.id + 1))
 
-        self._insert_element('door', x=x, y=y, direction=direction, target_id=target_id)
+        self._insert_element('door', x=x, y=y, direction=direction, target_id=target_id, **kwargs)
 
-    def add_trap(self, *args):
+    def add_trap(self, *args, **kwargs):
         """[Command] T x y direction"""
 
         x, y, direction = self._get_basic(args, True)
-        self._insert_element('trap', x=x, y=y, direction=direction)
+        self._insert_element('trap', x=x, y=y, direction=direction, **kwargs)
 
-    def add_arrow(self, *args):
+    def add_arrow(self, *args, **kwargs):
         pass
 
-    def add_key(self, *args):
+    def add_key(self, *args, **kwargs):
         pass
 
-    def add_block(self, *args):
+    def add_block(self, *args, **kwargs):
         pass
 
-    def add_lamp(self, *args):
+    def add_lamp(self, *args, **kwargs):
         pass
 
-    def add_mosaic(self, *args):
+    def add_mosaic(self, *args, **kwargs):
         pass
 
-    def add_text(self, *args):
+    def add_text(self, *args, **kwargs):
         pass
 
     ElementTable = {
@@ -190,7 +226,7 @@ class GameGroupData:
         self.levels = {}
 
         self._iter_levels(game_group_file)
-        self.load_status(record_file)
+        self._load_status(record_file)
 
         # The start level default to the level with minimum id.
         self.start_level = min(self.levels.keys())
@@ -198,8 +234,15 @@ class GameGroupData:
         # The start level is always reached.
         self.levels[self.start_level].reached = True
 
+        # For debug
+        print(self)
+        # End debug
+
     def __getitem__(self, item):
         return self.levels[item]
+
+    def __iter__(self):
+        return iter(self.levels)
 
     @property
     def level_num(self):
@@ -214,27 +257,46 @@ class GameGroupData:
             '\n'.join(str(level) for level in self.levels.values())
         )
 
-    # IO methods.
+    # I/O methods.
 
-    def dump_status(self, file):
+    def _dump_status(self, file):
         """Dump the game group data into file.
 
         It will save the status of the game group, such as:
             reached_levels
-            current_level
             keys/lamps status (hit or not)
 
         :param file: the file to dump.
         :return: None
         """
 
-        pass
+        data = {
+            'reached_levels': [],
+            'reached_keys': defaultdict(list),
+            'reached_lamps': defaultdict(list),
+        }
 
-    def load_status(self, file):
+        for level in self.levels.values():
+            if level.reached:
+                data['reached_levels'].append(level.id)
+
+            for key in level.elements['key']:
+                pass
+            for lamp in level.elements['lamp']:
+                pass
+
+        json.dump(data, file)
+
+    def _load_status(self, file):
         if file is None:
             return
 
         # todo: load record files.
+
+        data = json.load(file)
+
+        for level_id in data['reached_levels']:
+            self.levels[level_id].reached = True
 
     def _iter_levels(self, game_group_file, settings=None):
         f_it = iter(game_group_file)
@@ -284,8 +346,8 @@ class GameGroupData:
             return []
 
         with open(os.path.join(GameGroupPath, game_group_name + GameGroupExtension), 'r') as game_group_file:
-            if os.path.exists(os.path.join(RecordPath, game_group_name + GameGroupExtension)):
-                record_file = open(os.path.join(RecordPath, game_group_name + GameGroupExtension))
+            if os.path.exists(os.path.join(RecordPath, game_group_name + RecordExtension)):
+                record_file = open(os.path.join(RecordPath, game_group_name + RecordExtension))
             else:
                 record_file = None
 
@@ -300,9 +362,9 @@ class GameGroupData:
 
     def dump_game_group(self):
         try:
-            record_file = open(os.path.join(RecordPath, self.game_group_name + GameGroupExtension), 'w')
+            record_file = open(os.path.join(RecordPath, self.game_group_name + RecordExtension), 'w')
         except FileNotFoundError:
             os.makedirs(RecordPath)
-            record_file = open(os.path.join(RecordPath, self.game_group_name + GameGroupExtension), 'w')
+            record_file = open(os.path.join(RecordPath, self.game_group_name + RecordExtension), 'w')
 
-        self.dump_status(record_file)
+        self._dump_status(record_file)

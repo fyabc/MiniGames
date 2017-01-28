@@ -66,6 +66,7 @@ Bool2Color = {
 
 # Game.
 GameGroupExtension = '.txt'
+RecordExtension = '.json'
 DefaultGroup = 'basic'
 GameGroups = [filename[:-4] for filename in os.listdir(GameGroupPath) if filename.endswith(GameGroupExtension)]
 
