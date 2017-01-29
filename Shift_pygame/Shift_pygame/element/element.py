@@ -19,7 +19,7 @@ class Element:
         self.scene = scene
         self.image = None
         self.loc = relative2physic(loc)
-        self.anchor = anchor        # todo: To be implemented
+        self.anchor = Anchor.str2anchor(anchor)
         self.angle = angle
         self.visible = visible
 
@@ -43,7 +43,10 @@ class Element:
 
         rotated_image = pygame.transform.rotate(self.image, self.angle)
         rotated_image_rect = rotated_image.get_rect()
-        rotated_image_rect.center = self.loc
+
+        # [NOTE] Use `exec` to apply the anchor.
+        exec('rotated_image_rect.{} = self.loc'.format(self.anchor))
+
         surface.blit(rotated_image, rotated_image_rect)
 
     def rotate(self, angle):

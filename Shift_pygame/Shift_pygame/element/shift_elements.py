@@ -32,12 +32,25 @@ class ShiftElement(Element):
         """
         pass
 
+    @classmethod
+    def from_attributes(cls, dynamic_object):
+        """Create the element from the dynamic object.
+
+        Must be implemented by subclasses.
+        """
+
+        raise NotImplementedError()
+
 
 class Door(ShiftElement):
     SharedImages = {}
 
-    def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True):
-        super().__init__(game, scene, cell_loc, 'door{}.png'.format(int(bg)), angle, visible)
+    def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True, anchor=Anchor.bottom):
+        super().__init__(game, scene, cell_loc, 'door{}.png'.format(int(bg)), angle, visible, anchor)
+
+    @classmethod
+    def from_attributes(cls, dynamic_object):
+        pass
 
 
 class Hero(ShiftElement):

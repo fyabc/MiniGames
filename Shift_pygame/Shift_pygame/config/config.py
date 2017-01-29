@@ -42,17 +42,17 @@ GameTitle = 'Shift-pygame'
 FontName = os.path.join(ResourcePath, 'fonts', 'consolas-yahei.ttf')
 
 if platform == 'win32':
-    FontSize = 50
-    FontSmall = 27
-    FontMedium = 35
+    FontSize = 45
+    FontSmall = 23
+    FontMedium = 30
 elif platform == 'linux':
     FontSize = 47
     FontSmall = 24
     FontMedium = 32
 else:
-    FontSize = 50
-    FontSmall = 27
-    FontMedium = 35
+    FontSize = 47
+    FontSmall = 24
+    FontMedium = 32
 
 # FPS.
 MainFPS = 60
