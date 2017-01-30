@@ -41,7 +41,8 @@ class Element:
 
         surface = self.game.main_window if surface is None else surface
 
-        rotated_image = pygame.transform.rotate(self.image, self.angle)
+        # FIXME: The pygame rotate is counterclockwise, so set the negative value!!!
+        rotated_image = pygame.transform.rotate(self.image, -self.angle)
         rotated_image_rect = rotated_image.get_rect()
 
         # [NOTE] Use `exec` to apply the anchor.

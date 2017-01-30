@@ -33,7 +33,7 @@ class ShiftElement(Element):
         pass
 
     @classmethod
-    def from_attributes(cls, dynamic_object):
+    def from_attributes(cls, game, scene, dynamic_object):
         """Create the element from the dynamic object.
 
         Must be implemented by subclasses.
@@ -49,8 +49,17 @@ class Door(ShiftElement):
         super().__init__(game, scene, cell_loc, 'door{}.png'.format(int(bg)), angle, visible, anchor)
 
     @classmethod
-    def from_attributes(cls, dynamic_object):
-        pass
+    def from_attributes(cls, game, scene, dynamic_object):
+        # The anchor of door is bottom.
+        cell_loc = dynamic_object.x, dynamic_object.y
+
+        return cls(
+            game, scene,
+            cell_loc,
+            bg=scene.level_data[cell_loc],
+            angle=dynamic_object.direction,
+            anchor=Anchor.rotate(Anchor.bottom, dynamic_object.direction),
+        )
 
 
 class Hero(ShiftElement):

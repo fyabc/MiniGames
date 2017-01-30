@@ -5,6 +5,7 @@ import sys
 from contextlib import contextmanager
 
 import pygame
+import pygame.locals
 
 from .config import *
 from .utils.display import get_font
@@ -54,6 +55,14 @@ class Game:
 
     @contextmanager
     def _game_manager(self):
+        # This may be speed up the game or not?
+        pygame.event.set_allowed([
+            pygame.locals.KEYDOWN,
+            pygame.locals.KEYUP,
+            pygame.locals.MOUSEBUTTONDOWN,
+            pygame.locals.MOUSEBUTTONUP,
+        ])
+
         yield
 
         pygame.quit()

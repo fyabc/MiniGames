@@ -24,8 +24,12 @@ class Group:
     def __iter__(self):
         return iter(self.elements)
 
+    @property
+    def ordered(self):
+        return isinstance(self.elements, list)
+
     def add(self, *elements):
-        if isinstance(self.elements, list):
+        if self.ordered:
             for element in elements:
                 self.elements.append(element)
         else:

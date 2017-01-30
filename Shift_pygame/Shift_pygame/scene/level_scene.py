@@ -6,7 +6,7 @@ import pygame.locals
 
 from ..config import *
 from ..element.group import Group
-from ..element.shift_elements import Hero, ShiftText
+from ..element.shift_elements import Hero, Door, ShiftText
 from .scene import Scene
 from ..utils.display import update
 from ..utils.keymap import get_keymap, get_unique_key_event
@@ -66,6 +66,24 @@ class LevelScene(Scene):
                 if real_key in ('left', 'right'):
                     self.add_action(get_unique_key_event(key, is_down=False), self._update_command)
 
+    # Some utilities for elements.
+
+    def physic_loc(self, logic_loc, anchor=Anchor.center):
+        """Get physic location with given logic location and anchor."""
+
+        lx, ly = logic_loc
+
+        anchor = Anchor.str2anchor(anchor)
+
+        dx, dy = Anchor.LocationMap[anchor]
+
+        return int(self._cell_width * (lx + dx)), int(self._cell_height * (ly + dy))
+
+    def get_bg(self, logic_loc):
+        return self.level_data[logic_loc]
+
+    # Methods for setting data, loading elements or others.
+
     def _set_group_and_level(self, game_group_name, level_id):
         """Set the game according to the group and level.
 
@@ -83,15 +101,6 @@ class LevelScene(Scene):
 
         self._load_elements()
 
-    def physic_loc(self, logic_loc, anchor=Anchor.center):
-        lx, ly = logic_loc
-
-        anchor = Anchor.str2anchor(anchor)
-
-        dx, dy = Anchor.LocationMap[anchor]
-
-        return int(self._cell_width * (lx + dx)), int(self._cell_height * (ly + dy))
-
     def clear_all(self):
         for group in self.groups:
             if hasattr(group, 'clear'):
@@ -101,12 +110,17 @@ class LevelScene(Scene):
         if reload:
             self.clear_all()
 
-        # For debug
-        print('Level data:')
-        print(self.level_data)
-        # End debug
+        # # For debug
+        # print('Level data:')
+        # print(self.level_data)
+        # # End debug
 
-        pass
+        elements = self.level_data.elements
+
+        self.doors.add(*(
+            Door.from_attributes(self.game, self, attributes)
+            for attributes in elements['door'].values()
+        ))
 
     def draw_background(self):
         lx, ly = self._size
@@ -118,7 +132,8 @@ class LevelScene(Scene):
                     pygame.Rect(i * self._cell_width, j * self._cell_height, self._cell_width, self._cell_height)
                 )
 
-        update()
+    def draw(self, ud=True, bg=True):
+        super().draw(ud=ud, bg=bg)
 
     def run(self, previous_scene_id, *args):
         """

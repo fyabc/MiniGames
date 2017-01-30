@@ -31,6 +31,12 @@ class Anchor:
         bottom_right:   (1, 1),
     }
 
+    _RotateChain = [
+        [center],
+        [bottom, left, top, right],
+        [top_left, top_right, bottom_right, bottom_left],
+    ]
+
     @staticmethod
     def str2anchor(anchor_name):
         """Change anchor name string to anchor value string.
@@ -41,3 +47,27 @@ class Anchor:
         if anchor_name not in Anchor.LocationMap:
             return eval('Anchor.' + anchor_name)
         return anchor_name
+
+    @classmethod
+    def rotate(cls, anchor, angle):
+        """Rotate the anchor with the angle, return a new anchor.
+
+        :param anchor: The original anchor.
+        :param angle: The angle to rotate (clockwise)
+        :return: The rotated anchor.
+        """
+
+        rotate_num = angle // 90
+
+        if anchor == cls.center:
+            return anchor
+
+        r1, r2 = cls._RotateChain[1], cls._RotateChain[2]
+
+        if anchor in r1:
+            return r1[(rotate_num + r1.index(anchor)) % 4]
+
+        if anchor in r2:
+            return r2[(rotate_num + r2.index(anchor)) % 4]
+
+        return anchor
