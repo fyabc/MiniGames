@@ -23,7 +23,7 @@ class ShiftElement(Element):
     @cell_loc.setter
     def cell_loc(self, new_loc):
         self._cell_loc = new_loc
-        self.loc = self.scene.physic_loc(new_loc)
+        self.loc = self.scene.physic_loc(new_loc, self.anchor)
 
     def rotate_window(self, angle):
         """When the window is rotated, call this method to change the element.
@@ -77,7 +77,8 @@ class ShiftText(ShiftElement):
     def __init__(self, game, scene, text, cell_loc, bg=False, angle=0, visible=True):
         super().__init__(game, scene, cell_loc, [bg, text], angle, visible)
 
-    def set_image(self, image_name):
-        bg, text = image_name
+    def set_image(self, image_attr):
+        bg, text = image_attr
 
         self.image = get_font(self.DefaultFontSize).render(text, True, Bool2Color[not bg], Bool2Color[bg])
+        self._set_rotated_image()

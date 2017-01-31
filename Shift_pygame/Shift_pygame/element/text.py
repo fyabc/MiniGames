@@ -19,8 +19,13 @@ class Text(Element):
         self.font_size = font_size
         self.font_name = font_name
 
-        self.image = get_text(text, *fg_bg, font_size, font_name)
+        self.set_image([text, *fg_bg, font_size, font_name])
 
     def set_text(self, text):
         self.text = text
         self.image = get_text(self.text, *self.fg_bg, self.font_size, self.font_name)
+
+    def set_image(self, image_attr):
+        text, fg, bg, font_size, font_name = image_attr
+        self.image = get_text(text, fg, bg, font_size, font_name)
+        self._set_rotated_image()

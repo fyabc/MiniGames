@@ -49,18 +49,23 @@ class ActiveText(EventHandler, Text):
         self.on_mouse_up = (lambda text_, scene_, event_, pre_sid, *args: None) if on_mouse_up is None else on_mouse_up
 
     def __contains__(self, item):
+        """Test if the point `item` is in the text area. Used for mouse click."""
+
         rect = self.image.get_rect()
         rect.center = self.loc
         return rect.collidepoint(item)
 
-    def invert(self):
+    def _invert(self):
+        """Invert the foreground and background color of the text."""
+
         self.clicked = not self.clicked
         self.fg_bg = [not c for c in self.fg_bg]
-        self.image = get_text(self.text, *self.fg_bg, *self.font)
+
+        self.set_image([self.text, *self.fg_bg, *self.font])
 
     def on_mouse_down_1(self, scene, event, pre_sid, *args):
-        self.invert()
+        self._invert()
 
     def on_mouse_up_1(self, scene, event, pre_sid, *args):
-        self.invert()
+        self._invert()
         return self.on_mouse_up(self, scene, event, pre_sid, *args)
