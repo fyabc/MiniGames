@@ -6,9 +6,8 @@ import pygame.locals
 
 from ..config import *
 from ..element.group import Group
-from ..element.shift_elements import Hero, Door, ShiftText
+from ..element.shift_elements import Hero, Door, Trap, ShiftText
 from .scene import Scene
-from ..utils.display import update
 from ..utils.keymap import get_keymap, get_unique_key_event
 
 __author__ = 'fyabc'
@@ -79,9 +78,6 @@ class LevelScene(Scene):
 
         return int(self._cell_width * (lx + dx)), int(self._cell_height * (ly + dy))
 
-    def get_bg(self, logic_loc):
-        return self.level_data[logic_loc]
-
     # Methods for setting data, loading elements or others.
 
     def _set_group_and_level(self, game_group_name, level_id):
@@ -120,6 +116,11 @@ class LevelScene(Scene):
         self.doors.add(*(
             Door.from_attributes(self.game, self, attributes)
             for attributes in elements['door'].values()
+        ))
+
+        self.traps.add(*(
+            Trap.from_attributes(self.game, self, attributes)
+            for attributes in elements['trap'].values()
         ))
 
     def draw_background(self):

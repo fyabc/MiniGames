@@ -33,23 +33,12 @@ class ShiftElement(Element):
         pass
 
     @classmethod
-    def from_attributes(cls, game, scene, dynamic_object):
+    def from_attributes(cls, game, scene, dynamic_object, default_anchor=Anchor.bottom):
         """Create the element from the dynamic object.
 
-        Must be implemented by subclasses.
+        Here is the default implementation.
         """
 
-        raise NotImplementedError()
-
-
-class Door(ShiftElement):
-    SharedImages = {}
-
-    def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True, anchor=Anchor.bottom):
-        super().__init__(game, scene, cell_loc, 'door{}.png'.format(int(bg)), angle, visible, anchor)
-
-    @classmethod
-    def from_attributes(cls, game, scene, dynamic_object):
         # The anchor of door is bottom.
         cell_loc = dynamic_object.x, dynamic_object.y
 
@@ -58,8 +47,22 @@ class Door(ShiftElement):
             cell_loc,
             bg=scene.level_data[cell_loc],
             angle=dynamic_object.direction,
-            anchor=Anchor.rotate(Anchor.bottom, dynamic_object.direction),
+            anchor=Anchor.rotate(default_anchor, dynamic_object.direction),
         )
+
+
+class Door(ShiftElement):
+    SharedImages = {}
+
+    def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True, anchor=Anchor.bottom):
+        super().__init__(game, scene, cell_loc, 'door{}.png'.format(int(bg)), angle, visible, anchor)
+
+
+class Trap(ShiftElement):
+    SharedImages = {}
+
+    def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True, anchor=Anchor.bottom):
+        super().__init__(game, scene, cell_loc, 'trap{}.png'.format(int(bg)), angle, visible, anchor)
 
 
 class Hero(ShiftElement):

@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-import os
 from collections import defaultdict
 import json
 
@@ -103,7 +102,7 @@ class LevelData:
         for command, args in data_dict['commands']:
             self.add_element(command, *args)
 
-        # Record data, will be affected by load_status
+        # Record data below, will be affected by load_status
 
         # Is the level have been reached? If True, it can be accessed in level select menu.
         self.reached = False

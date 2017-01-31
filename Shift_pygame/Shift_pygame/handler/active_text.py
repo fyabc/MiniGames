@@ -4,7 +4,6 @@
 import pygame.locals
 
 from ..config import *
-from ..utils.display import get_text, relative2physic
 from .handler import EventHandler
 from ..element.text import Text
 
