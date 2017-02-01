@@ -3,6 +3,7 @@
 
 import json
 
+from .constants import game_constants as gc
 from .game_data.card_data import get_all_cards
 from .event_framework import EventEngine
 from .game_entities.player import Player
@@ -50,11 +51,11 @@ class Game:
     """
 
     # Constants.
-    TotalPlayerNumber = 2
-    MaxDeckNumber = 50
-    MaxHandNumber = 10
-    MaxDeskNumber = 7
-    MaxCrystal = 10
+    TotalPlayerNumber = gc.TotalPlayerNumber
+    MaxDeckNumber = gc.MaxDeckNumber
+    MaxHandNumber = gc.MaxHandNumber
+    MaxDeskNumber = gc.MaxDeskNumber
+    MaxCrystal = gc.MaxCrystal
 
     def __init__(self, game_filename=None, **kwargs):
         # Event engine.
@@ -133,7 +134,7 @@ class Game:
     # Game operations.
     def load_game(self, game_filename=None):
         if game_filename is None:
-            return [Player(self, player_id=i) for i in range(self.TotalPlayerNumber)]
+            return [Player(self, player_id=i) for i in range(gc.TotalPlayerNumber)]
         with open(game_filename, 'r') as f:
             return [Player.load_from_dict(self, data, player_id=i) for i, data in enumerate(json.load(f))]
 
@@ -162,7 +163,7 @@ class Game:
             print('Game end at P{}!'.format(e.current_player_id))
 
     def next_turn(self):
-        self.current_player_id = (self.current_player_id + 1) % self.TotalPlayerNumber
+        self.current_player_id = (self.current_player_id + 1) % gc.TotalPlayerNumber
         self.turn_number += 1
 
     # Other utilities.

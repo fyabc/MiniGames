@@ -1,5 +1,6 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
+
 import random
 
 from .entity import GameEntity

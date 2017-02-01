@@ -3,7 +3,7 @@
 
 import pygame
 
-from ..config import Bool2Color, Anchor
+from ..config import *
 from ..utils.display import get_font
 from .element import Element
 
@@ -69,7 +69,34 @@ class Hero(ShiftElement):
     SharedImages = {}
     
     def __init__(self, game, scene, cell_loc, bg=False, angle=0, visible=True):
-        super().__init__(game, scene, cell_loc, 'character{}.png'.format(int(bg)), angle, visible)
+        # [NOTE] The anchor of the hero is always bottom.
+        super().__init__(game, scene, cell_loc, 'hero{}.png'.format(int(bg)), angle, visible, Anchor.bottom)
+
+        # [NOTE] The state of the hero that determines the image of hero and the horizontal speed of hero.
+        # self.state in {
+        #     -2 : left running,
+        #     -1 : left stopping,
+        #     +1 : right stopping,
+        #     +2 : right running,
+        # }
+        self.state = 0
+
+        self.vertical_speed = 0.0
+        self.bg = bg
+
+    @classmethod
+    def from_attributes(cls, game, scene, dynamic_object, default_anchor=Anchor.bottom):
+        cell_loc = dynamic_object.x, dynamic_object.y
+
+        return cls(
+            game, scene,
+            cell_loc,
+            bg=scene.level_data[cell_loc],
+        )
+
+    # todo: some methods for running commands from the level scene.
+    def run_command(self, command):
+        print('%command =', command)
 
 
 class ShiftText(ShiftElement):
@@ -77,8 +104,8 @@ class ShiftText(ShiftElement):
 
     DefaultFontSize = 19
 
-    def __init__(self, game, scene, text, cell_loc, bg=False, angle=0, visible=True):
-        super().__init__(game, scene, cell_loc, [bg, text], angle, visible)
+    def __init__(self, game, scene, text, cell_loc, bg=False, angle=0, visible=True, anchor=Anchor.center):
+        super().__init__(game, scene, cell_loc, [bg, text], angle, visible, anchor)
 
     def set_image(self, image_attr):
         bg, text = image_attr

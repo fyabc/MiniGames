@@ -24,6 +24,11 @@ class Group:
     def __iter__(self):
         return iter(self.elements)
 
+    def __getitem__(self, item):
+        if not self.ordered:
+            raise TypeError('unordered group does not support indexing')
+        return self.elements[item]
+
     @property
     def ordered(self):
         return isinstance(self.elements, list)

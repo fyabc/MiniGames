@@ -71,3 +71,15 @@ class Anchor:
             return r2[(rotate_num + r2.index(anchor)) % 4]
 
         return anchor
+
+
+# Constants for the hero.
+
+HorizontalSpeed = 0.118
+
+# [NOTE]:
+# These speeds have been set carefully.
+# Do NOT change it unless you have test it many times.
+InitJumpSpeed = -0.24
+MaxDownSpeed = +0.2
+G = +0.027  # gravity

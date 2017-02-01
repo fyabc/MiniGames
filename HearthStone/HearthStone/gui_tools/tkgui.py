@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
 from collections import namedtuple
 import tkinter as tk
 import tkinter.ttk as ttk

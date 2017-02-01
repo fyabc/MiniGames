@@ -26,7 +26,8 @@ class LevelScene(Scene):
         self._cell_width = None
         self._cell_height = None
 
-        self.hero = Group(self.game)
+        # [NOTE] The heroes will only contains a single hero (`self.hero`).
+        self.heroes = Group(self.game, ordered=True)
         self.doors = Group(self.game)
         self.traps = Group(self.game)
         self.arrows = Group(self.game)
@@ -36,11 +37,13 @@ class LevelScene(Scene):
         self.mosaics = Group(self.game)
         self.texts = Group(self.game)
 
+        self.hero = None
+
         self.groups = Group(
             self.game,
 
             # Elements
-            self.hero, self.doors, self.traps, self.arrows,
+            self.heroes, self.doors, self.traps, self.arrows,
             self.keys, self.lamps, self.blocks, self.mosaics,
             self.texts,
 
@@ -123,6 +126,14 @@ class LevelScene(Scene):
             for attributes in elements['trap'].values()
         ))
 
+        self.heroes.add(*(
+            Hero.from_attributes(self.game, self, attributes)
+            for attributes in elements['start'].values()
+        ))
+
+        # Set the hero (the first hero of heroes)
+        self.hero = self.heroes[0]
+
     def draw_background(self):
         lx, ly = self._size
 
@@ -189,6 +200,5 @@ class LevelScene(Scene):
         if command == 'no_op':
             return
 
-        print('%command =', command)
-
         # Update the scene by the command.
+        self.hero.run_command(command)
