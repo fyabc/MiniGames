@@ -5,6 +5,11 @@ __author__ = 'fyabc'
 
 
 class IMinion:
+    """[NO_DESCRIPTION]
+
+    The minion interface, used for Minion and Hero.
+    """
+
     @property
     def max_health(self):
         raise NotImplementedError()
