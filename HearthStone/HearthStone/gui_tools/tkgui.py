@@ -37,6 +37,8 @@ class SelectionStateMachine:
         3: 'To play spell',
     }
 
+    SelectionType = namedtuple('Selection', ['player_id', 'location', 'index'])
+
     def __init__(self, window):
         self.state = tk.IntVar(None, 0, 'state')
         self.window = window
@@ -91,6 +93,8 @@ class SelectionStateMachine:
         desk_numbers = self.game.players[0].desk_number, self.game.players[1].desk_number
 
         if state == 0:
+            # No selection
+
             for player_id in (0, 1):
                 self.disable(hero_buttons[player_id])
 
@@ -113,6 +117,8 @@ class SelectionStateMachine:
                 self.disable(desk_button)
             
         elif state == 1:
+            # To summon
+
             for player_id in (0, 1):
                 self.disable(hero_buttons[player_id])
 
@@ -129,6 +135,8 @@ class SelectionStateMachine:
                 self.disable(desk_button)
                 
         elif state == 2:
+            # To attack
+
             self.enable(hero_buttons[opp_id])
             self.disable(hero_buttons[cur_id])
 
@@ -146,6 +154,8 @@ class SelectionStateMachine:
                 self.disable(desk_button)
         
         elif state == 3:
+            # To play spell
+
             for player_id in (0, 1):
                 self.enable(hero_buttons[player_id])
                 
@@ -188,6 +198,8 @@ class SelectionStateMachine:
         button = self.window.find_button(selection)
         
         if state == 0:
+            # No selection
+
             self.add_selection(selection, button)
             if location == 'desk':
                 self.state.set(2)
@@ -208,6 +220,8 @@ class SelectionStateMachine:
                         self.clear_selection()
                 
         elif state == 1:
+            # To summon
+
             player = self.game.current_player
             minion = self.find_entity(self.selections[0])
             index_ = min(index // 2, player.desk_number)
@@ -222,6 +236,8 @@ class SelectionStateMachine:
                 self.state.set(0)
                 
         elif state == 2:
+            # To attack
+
             source = self.find_entity(self.selections[0])
             target = self.find_entity(selection)
 
@@ -239,6 +255,8 @@ class SelectionStateMachine:
                 self.state.set(0)
         
         elif state == 3:
+            # To play spell
+
             spell = self.find_entity(self.selections[0])
             target = self.find_entity(selection)
             result = spell.validate_target(target)
@@ -261,8 +279,6 @@ class GameWindow(ttk.Frame):
 
     # Some constants.
     ShowCardWidth = 11
-
-    SelectionType = namedtuple('Selection', ['player_id', 'location', 'index'])
 
     def __init__(self, game, master=None):
         super(GameWindow, self).__init__(master=master, borderwidth=30)
