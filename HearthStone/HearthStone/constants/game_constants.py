@@ -10,3 +10,7 @@ MaxDeckNumber = 50
 MaxHandNumber = 10
 MaxDeskNumber = 7
 MaxCrystal = 10
+
+# Insert the new minion to the left or the right of the desk.
+DeskLocationLeft = 0
+DeskLocationRight = max(MaxDeckNumber, MaxDeskNumber, MaxHandNumber) + 10

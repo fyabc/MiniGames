@@ -21,7 +21,7 @@ def main():
         nonlocal i
 
         i += 1
-        return '(id={}'.format(package_id * 1000 + i)
+        return '(id={}'.format(i)
 
     pattern = re.compile(r'\(id=\d+')
 

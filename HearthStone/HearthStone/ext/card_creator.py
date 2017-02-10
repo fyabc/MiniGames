@@ -60,6 +60,18 @@ w_blank = partial(create_blank, card_type=Weapon)
 
 
 def m_summon(name, data, bc_or_dr=True, **kwargs):
+    """
+
+    :param name:
+    :param data:
+    :param bc_or_dr: bool
+        If True, summon on battle cry, else summon on death rattle.
+    :param kwargs: Other keyword arguments.
+        conditions: list of string
+            Condition must be a SQL condition expression.
+    :return: Minion class.
+    """
+
     random_summon = False
     card_id = kwargs.pop('card_id', None)
 

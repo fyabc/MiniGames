@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, set_description
-from HearthStone.ext import MinionDeath, DrawCard
+from HearthStone.ext import MinionDeath, DrawCard, AddMinionToDesk
 from HearthStone.ext import DeskHandler
 from HearthStone.ext.card_creator import m_blank
 from HearthStone.utils.debug_utils import verbose
+from HearthStone.ext import constants
 
 __author__ = 'fyabc'
 
@@ -46,11 +47,25 @@ class 诅咒教派领袖(Minion):
         self.add_handler_quick(self.MinionDeathHandler)
 
 
+class 比斯巨兽(Minion):
+    _data = dict(id=1001, name='比斯巨兽', CAH=[6, 9, 7], race=['Beast'], rarity=4)
+
+    def run_death_rattle(self, player_id, index):
+        self.game.add_event_quick(
+            AddMinionToDesk,
+            1002,
+            constants.DeskLocationRight,
+            1 - player_id,
+        )
+
+比斯巨兽_d = m_blank('比斯巨兽_d', dict(id=1002, name='芬克·恩霍尔', CAH=[2, 3, 3], rarity=-1))
+
+
 ##########
 # Shaman #
 ##########
 
-土元素 = m_blank('土元素', dict(id=1001, name='土元素', CAH=[5, 7, 8], rarity=3, taunt=True, overload=3))
+土元素 = m_blank('土元素', dict(id=1003, name='土元素', CAH=[5, 7, 8], rarity=3, taunt=True, overload=3))
 
 
 set_description({
