@@ -108,6 +108,19 @@ def get_cards_db():
     return AllCardsDB
 
 
+def get_card_type(id_or_name):
+    if isinstance(id_or_name, int):
+        return get_all_cards()[id_or_name]
+    elif isinstance(id_or_name, str):
+        cursor = get_cards_db().cursor()
+        cursor.execute('''SELECT id FROM AllCards WHERE (name = ?)''', (id_or_name,))
+        result = cursor.fetchall()
+        result_id = result[0][0]
+        return get_all_cards()[result_id]
+    else:
+        raise TypeError('id_or_name must be int or string')
+
+
 __all__ = [
     'get_all_cards',
     'get_cards_db',

@@ -4,7 +4,7 @@
 import json
 
 from .constants import game_constants as gc
-from .game_data.card_data import get_all_cards
+from .game_data.card_data import get_card_type
 from .event_framework import EventEngine
 from .game_entities.player import Player
 from .game_events.basic_events import GameEnd
@@ -135,7 +135,7 @@ class Game:
     def load_game(self, game_filename=None):
         if game_filename is None:
             return [Player(self, player_id=i) for i in range(gc.TotalPlayerNumber)]
-        with open(game_filename, 'r') as f:
+        with open(game_filename, 'r', encoding='utf-8') as f:
             return [Player.load_from_dict(self, data, player_id=i) for i, data in enumerate(json.load(f))]
 
     def init_handlers(self):
@@ -167,8 +167,8 @@ class Game:
         self.turn_number += 1
 
     # Other utilities.
-    def create_card(self, card_id, player_id=None):
-        return get_all_cards()[card_id](self, player_id=player_id)
+    def create_card(self, card_id_or_name, player_id=None):
+        return get_card_type(card_id_or_name)(self, player_id=player_id)
 
     def log(self, *args, **kwargs):
         """Logging something (maybe events?) into the history manager."""

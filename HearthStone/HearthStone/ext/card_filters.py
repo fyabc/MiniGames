@@ -49,6 +49,7 @@ def filter_cards(*condition_strings):
     """Filter, cache and return the set of cards id that satisfy the conditions.
 
     :param condition_strings: strings of conditions, must be SQL statements.
+        Example: rarity <> -1; type = 0; ...
     :return: A set of cards that satisfy these conditions.
     """
 

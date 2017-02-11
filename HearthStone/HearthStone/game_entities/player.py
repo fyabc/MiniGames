@@ -100,11 +100,12 @@ class Player(GameEntity, IMinion):
 
         # result.hero = Hero(allHeroes[data['hero_id']])
         for record in data['deck']:
-            if isinstance(record, int):
-                result.deck.append(game.create_card(record, player_id))
+            if isinstance(record, (list, tuple)):
+                card_id_or_name, number = record
             else:
-                card_id, number = record
-                result.deck.extend(game.create_card(card_id, player_id) for _ in range(number))
+                card_id_or_name, number = record, 1
+
+            result.deck.extend(game.create_card(card_id_or_name, player_id) for _ in range(number))
 
         random.shuffle(result.deck)
 
