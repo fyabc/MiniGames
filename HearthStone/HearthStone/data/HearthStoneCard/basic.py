@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, Spell, Weapon, set_description
-from HearthStone.ext.card_creator import m_blank, w_blank, m_summon
-from HearthStone.ext.card_creator import validator_minion, validator_enemy_minion
-from HearthStone.ext.card_creator import action_damage, action_destroy
+from HearthStone.ext.card_creator import *
 from HearthStone.ext import DrawCard, AddCardToHand
 from HearthStone.ext import Damage, SpellDamage, RestoreHealth, GetArmor
 from HearthStone.ext import RandomTargetDamage
@@ -154,7 +152,7 @@ class 寒冰箭(Spell):
     _data = dict(id=51, name='寒冰箭', type=1, CAH=[2], klass=1)
 
     def play(self, player_id, target):
-        pass
+        self.game.add_event_quick(SpellDamage, self, target, 3, freeze=True)
 
 
 class 奥术智慧(Spell):
@@ -169,7 +167,8 @@ class 冰霜新星(Spell):
     _data = dict(id=53, name='冰霜新星', type=1, CAH=[3], klass=1)
 
     def play(self, player_id, target):
-        pass
+        for minion in self.game.players[1 - self.player_id].iter_desk():
+            minion.freeze()
 
 
 class 变形术(Spell):
@@ -617,7 +616,14 @@ class 图腾之力(Spell):
 
 
 class 冰霜震击(Spell):
+    have_target = True
+
     _data = dict(id=113, name='冰霜震击', type=1, CAH=[1], klass=7)
+
+    validate_target = validator_enemy
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(SpellDamage, self, target, 1, freeze=True)
 
 
 class 风怒(Spell):
@@ -764,6 +770,8 @@ class 野蛮咆哮(Spell):
 
 class 横扫(Spell):
     _data = dict(id=139, name='横扫', type=1, CAH=[4], klass=9)
+
+    have_target = True
 
 
 class 星火术(Spell):

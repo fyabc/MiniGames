@@ -9,8 +9,8 @@ __author__ = 'fyabc'
 
 
 def main():
-    filename = '../HearthStone/data/HearthStoneCard/basic.py'
-    package_id = 0
+    filename = '../HearthStone/data/HearthStoneCard/classic.py'
+    package_id = 1
 
     with open(filename, 'r', encoding='utf-8') as f:
         s = f.read()

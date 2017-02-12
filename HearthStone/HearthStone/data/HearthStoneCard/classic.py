@@ -21,8 +21,11 @@ Package = {
 # Neutral #
 ###########
 
+血色十字军战士 = m_blank('血色十字军战士', dict(id=1000, name='血色十字军战士', CAH=[3, 3, 1], rarity=1, divine_shield=True))
+
+
 class 诅咒教派领袖(Minion):
-    _data = dict(id=1000, name='诅咒教派领袖', CAH=[4, 4, 2], rarity=1)
+    _data = dict(id=1001, name='诅咒教派领袖', CAH=[4, 4, 2], rarity=1)
 
     class MinionDeathHandler(DeskHandler):
         event_types = [MinionDeath]
@@ -48,7 +51,7 @@ class 诅咒教派领袖(Minion):
 
 
 class 火车王里诺艾(Minion):
-    _data = dict(id=1001, name='火车王里诺艾', CAH=[5, 6, 2], rarity=4, charge=True)
+    _data = dict(id=1002, name='火车王里诺艾', CAH=[5, 6, 2], rarity=4, charge=True)
 
     def run_battle_cry(self, player_id, index):
         for _ in range(2):
@@ -59,11 +62,11 @@ class 火车王里诺艾(Minion):
                 1 - player_id,
             )
 
-火车王里诺艾_d = m_blank('火车王里诺艾_d', dict(id=1002, name='雏龙', CAH=[1, 1, 1], race=['Dragon'], rarity=-1))
+火车王里诺艾_d = m_blank('火车王里诺艾_d', dict(id=1003, name='雏龙', CAH=[1, 1, 1], race=['Dragon'], rarity=-1))
 
 
 class 比斯巨兽(Minion):
-    _data = dict(id=1003, name='比斯巨兽', CAH=[6, 9, 7], race=['Beast'], rarity=4)
+    _data = dict(id=1004, name='比斯巨兽', CAH=[6, 9, 7], race=['Beast'], rarity=4)
 
     def run_death_rattle(self, player_id, index):
         self.game.add_event_quick(
@@ -73,14 +76,14 @@ class 比斯巨兽(Minion):
             1 - player_id,
         )
 
-比斯巨兽_d = m_blank('比斯巨兽_d', dict(id=1004, name='芬克·恩霍尔', CAH=[2, 3, 3], rarity=-1))
+比斯巨兽_d = m_blank('比斯巨兽_d', dict(id=1005, name='芬克·恩霍尔', CAH=[2, 3, 3], rarity=-1))
 
 
 ##########
 # Shaman #
 ##########
 
-土元素 = m_blank('土元素', dict(id=1005, name='土元素', CAH=[5, 7, 8], rarity=3, taunt=True, overload=3))
+土元素 = m_blank('土元素', dict(id=1006, name='土元素', CAH=[5, 7, 8], rarity=3, taunt=True, overload=3))
 
 
 set_description({

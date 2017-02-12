@@ -99,6 +99,17 @@ def m_summon(name, data, bc_or_dr=True, **kwargs):
 
 
 # Common target validators.
+def validator_enemy(self, target):
+    result = super(self.__class__, self).validate_target(target)
+    if result is not True:
+        return result
+
+    if target.player_id == self.player_id:
+        return 'Must choose an enemy minion!'
+
+    return True
+
+
 def validator_minion(self, target):
     result = super(self.__class__, self).validate_target(target)
     if result is not True:
@@ -141,6 +152,7 @@ __all__ = [
     'w_blank',
     'm_summon',
 
+    'validator_enemy',
     'validator_minion',
     'validator_enemy_minion',
 
