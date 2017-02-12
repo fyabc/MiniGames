@@ -47,25 +47,40 @@ class 诅咒教派领袖(Minion):
         self.add_handler_quick(self.MinionDeathHandler)
 
 
+class 火车王里诺艾(Minion):
+    _data = dict(id=1001, name='火车王里诺艾', CAH=[5, 6, 2], rarity=4, charge=True)
+
+    def run_battle_cry(self, player_id, index):
+        for _ in range(2):
+            self.game.add_event_quick(
+                AddMinionToDesk,
+                '雏龙',
+                constants.DeskLocationRight,
+                1 - player_id,
+            )
+
+火车王里诺艾_d = m_blank('火车王里诺艾_d', dict(id=1002, name='雏龙', CAH=[1, 1, 1], race=['Dragon'], rarity=-1))
+
+
 class 比斯巨兽(Minion):
-    _data = dict(id=1001, name='比斯巨兽', CAH=[6, 9, 7], race=['Beast'], rarity=4)
+    _data = dict(id=1003, name='比斯巨兽', CAH=[6, 9, 7], race=['Beast'], rarity=4)
 
     def run_death_rattle(self, player_id, index):
         self.game.add_event_quick(
             AddMinionToDesk,
-            1002,
+            '芬克·恩霍尔',
             constants.DeskLocationRight,
             1 - player_id,
         )
 
-比斯巨兽_d = m_blank('比斯巨兽_d', dict(id=1002, name='芬克·恩霍尔', CAH=[2, 3, 3], rarity=-1))
+比斯巨兽_d = m_blank('比斯巨兽_d', dict(id=1004, name='芬克·恩霍尔', CAH=[2, 3, 3], rarity=-1))
 
 
 ##########
 # Shaman #
 ##########
 
-土元素 = m_blank('土元素', dict(id=1003, name='土元素', CAH=[5, 7, 8], rarity=3, taunt=True, overload=3))
+土元素 = m_blank('土元素', dict(id=1005, name='土元素', CAH=[5, 7, 8], rarity=3, taunt=True, overload=3))
 
 
 set_description({
