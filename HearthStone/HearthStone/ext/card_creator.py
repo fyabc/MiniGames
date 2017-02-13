@@ -15,6 +15,8 @@ __author__ = 'fyabc'
 
 
 def gen_basic_description(data):
+    """Generate basic description for blank cards."""
+
     descriptions = []
 
     attack_number = data.get('attack_number')
@@ -81,15 +83,28 @@ def m_summon(name, data, bc_or_dr=True, **kwargs):
 
     relative_location = kwargs.pop('relative_location', +1 if bc_or_dr else 0)
 
-    def summon(self, player_id, index):
-        self.game.add_event_quick(
-            AddMinionToDesk,
-            card_id if not random_summon else random_card(*conditions),
-            index + relative_location,
-            player_id,
-        )
+    cls_dict = {'_data': data}
 
-    cls_dict = {'_data': data, 'run_battle_cry' if bc_or_dr else 'run_death_rattle': summon}
+    if bc_or_dr:
+        def run_battle_cry(self, player_id, index, target=None):
+            self.game.add_event_quick(
+                AddMinionToDesk,
+                card_id if not random_summon else random_card(*conditions),
+                index + relative_location,
+                player_id,
+            )
+
+        cls_dict['run_battle_cry'] = run_battle_cry
+    else:
+        def run_death_rattle(self, player_id, index):
+            self.game.add_event_quick(
+                AddMinionToDesk,
+                card_id if not random_summon else random_card(*conditions),
+                index + relative_location,
+                player_id,
+            )
+
+        cls_dict['run_death_rattle'] = run_death_rattle
 
     result = new_class(name, (Minion,), {}, lambda ns: ns.update(cls_dict))
 

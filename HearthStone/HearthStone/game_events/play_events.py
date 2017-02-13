@@ -75,9 +75,10 @@ class AddMinionToDesk(GameEvent):
 
 
 class SummonMinion(PlayCard):
-    def __init__(self, game, card, index, player_id=None):
+    def __init__(self, game, card, index, player_id=None, target=None):
         super(SummonMinion, self).__init__(game, card, player_id)
         self.index = index
+        self.target = target
 
     @property
     def minion(self):
@@ -93,7 +94,7 @@ class SummonMinion(PlayCard):
         # [WARNING] todo: here must be test carefully.
         self.game.add_event_quick(AddMinionToDesk, self.minion, self.index, self.player_id)
 
-        self.minion.run_battle_cry(self.player_id, self.index)
+        self.minion.run_battle_cry(self.player_id, self.index, self.target)
 
     def _message(self):
         verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.minion, self.index))

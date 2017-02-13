@@ -191,6 +191,20 @@ class Card(GameEntity, metaclass=SetDataMeta):
         result.__module__ = sys._getframe(1).f_globals['__name__']
         return result
 
+    def validate_target(self, target):
+        """Test the legitimacy of the target.
+
+        :param target: The target of the spell. None if there is not any target.
+        :return: True if the target is valid. String of message if invalid.
+        """
+
+        player = self.game.players[self.player_id]
+
+        if player.remain_crystal >= self.cost:
+            return True
+        else:
+            return 'I don\'t have enough mana crystals!'
+
 
 class Minion(Card, IMinion):
     """[NO_DESCRIPTION]
@@ -326,11 +340,13 @@ class Minion(Card, IMinion):
             pass
 
     # Operations.
-    def run_battle_cry(self, player_id, index):
-        """Override by subclasses.
+    def run_battle_cry(self, player_id, index, target=None):
+        """Override by subclasses. Default is do nothing.
 
         :param player_id: the player id.
         :param index: The location of the minion to be placed.
+        :param target: Optional, the target of battle cry.
+            Example: If the battle cry is deal 1 damage to the target, this parameter is needed.
         """
         pass
 
@@ -415,20 +431,6 @@ class Spell(Card):
         """
 
         pass
-
-    def validate_target(self, target):
-        """Test the legitimacy of the target.
-
-        :param target: The target of the spell. None if there is not any target.
-        :return: True if the target is valid. String of message if invalid.
-        """
-
-        player = self.game.players[self.player_id]
-
-        if player.remain_crystal >= self.cost:
-            return True
-        else:
-            return 'I don\'t have enough mana crystals!'
 
 
 class Weapon(Card):

@@ -53,7 +53,7 @@ class 幸运币(Spell):
 class 工程师学徒(Minion):
     _data = dict(id=15, name='工程师学徒', CAH=[2, 1, 1])
 
-    def run_battle_cry(self, player_id, index):
+    def run_battle_cry(self, player_id, index, target=None):
         self.game.add_event_quick(DrawCard)
 
 达拉然法师 = m_blank('达拉然法师', dict(id=16, name='达拉然法师', CAH=[3, 1, 4], spell_power=1))
@@ -79,7 +79,7 @@ class 工程师学徒(Minion):
 class 侏儒发明家(Minion):
     _data = dict(id=31, name='侏儒发明家', CAH=[4, 2, 4])
 
-    def run_battle_cry(self, player_id, index):
+    def run_battle_cry(self, player_id, index, target=None):
         self.game.add_event_quick(DrawCard)
 
 绿洲钳嘴龟 = m_blank('绿洲钳嘴龟', dict(id=32, name='绿洲钳嘴龟', race=['Beast'], CAH=[4, 2, 7]))
@@ -93,7 +93,7 @@ class 侏儒发明家(Minion):
 class 夜刃刺客(Minion):
     _data = dict(id=38, name='夜刃刺客', CAH=[5, 4, 4])
 
-    def run_battle_cry(self, player_id, index):
+    def run_battle_cry(self, player_id, index, target=None):
         self.game.add_event_quick(Damage, self, self.game.players[1 - player_id], 3)
 
 雷矛特种兵 = m_blank('雷矛特种兵', dict(id=39, name='雷矛特种兵', CAH=[5, 4, 2]))
@@ -707,7 +707,7 @@ class 奉献(Spell):
 class 列王守卫(Minion):
     _data = dict(id=130, name='列王守卫', CAH=[7, 5, 6], klass=8)
 
-    def run_battle_cry(self, player_id, index):
+    def run_battle_cry(self, player_id, index, target=None):
         self.game.add_event_quick(RestoreHealth, self, self.game.players[self.player_id], 6)
 
 

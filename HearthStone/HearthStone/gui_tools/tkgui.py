@@ -231,9 +231,13 @@ class SelectionStateMachine:
             elif player.desk_full:
                 error('The desk of P{} is full!'.format(player.player_id))
             else:
-                self.window.try_summon_minion(minion, index_)
-                self.clear_selection()
-                self.state.set(0)
+                if minion.have_target:
+                    # todo: add minion target selection (e.g. "BattleCry: deal 1 damage") here.
+                    pass
+                else:
+                    self.window.try_summon_minion(minion, index_, None)
+                    self.clear_selection()
+                    self.state.set(0)
                 
         elif state == 2:
             # To attack
@@ -729,8 +733,8 @@ Restart or Quit?
         self.ssm.state.set(0)
         self.refresh_window()
 
-    def try_summon_minion(self, minion, index):
-        self._checked_dispatch(SummonMinion, minion, index)
+    def try_summon_minion(self, minion, index, target=None):
+        self._checked_dispatch(SummonMinion, minion, index, target)
         self.refresh_window()
 
     def try_attack(self, source, target):

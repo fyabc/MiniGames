@@ -53,7 +53,7 @@ class 诅咒教派领袖(Minion):
 class 火车王里诺艾(Minion):
     _data = dict(id=1002, name='火车王里诺艾', CAH=[5, 6, 2], rarity=4, charge=True)
 
-    def run_battle_cry(self, player_id, index):
+    def run_battle_cry(self, player_id, index, target=None):
         for _ in range(2):
             self.game.add_event_quick(
                 AddMinionToDesk,
@@ -85,9 +85,12 @@ class 比斯巨兽(Minion):
 
 土元素 = m_blank('土元素', dict(id=1006, name='土元素', CAH=[5, 7, 8], rarity=3, taunt=True, overload=3))
 
+风领主奥拉基尔 = m_blank('风领主奥拉基尔', dict(id=1007, name='风领主奥拉基尔', CAH=[8, 3, 5], rarity=4, attack_number=2, charge=True, divine_shield=True, taunt=True))
+
 
 set_description({
     诅咒教派领袖: '每当你的其他随从死亡时，抽一张牌。',
+    火车王里诺艾: '冲锋，战吼：为你的对手召唤两个1/1的雏龙。',
     比斯巨兽: '亡语：为你的对手召唤一个3/3的芬克·恩霍尔。',
     土元素: '嘲讽，过载：(3)',
 })
