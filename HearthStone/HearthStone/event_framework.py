@@ -19,6 +19,7 @@ Here are the elements of the engine:
 """
 
 from collections import deque, defaultdict
+from warnings import warn
 
 __author__ = 'fyabc'
 
@@ -180,13 +181,14 @@ class EventEngine:
         self.terminate_event_types = set()
 
         # Logging （for debug)
-        logging_filename = kwargs.pop('logging_file', None)
+        logging_filename = kwargs.pop('logging_filename', None)
 
         if logging_filename is not None:
             try:
                 self.logging_file = open(logging_filename, 'w', encoding='utf-8')
             except FileNotFoundError:
                 self.logging_file = None
+                warn('Cannot create the logging file.')
         else:
             self.logging_file = None
 

@@ -13,11 +13,14 @@ PackageRootPath = os.path.dirname(os.path.dirname(__file__))
 # Package names.
 CardPackageName = 'HearthStoneCard'
 HeroPackageName = 'HearthStoneHero'
+ExampleGamePackageName = 'ExampleGames'
 
 # Data path.
 DataPath = os.path.join(PackageRootPath, 'data')
 CardDataPath = os.path.join(DataPath, CardPackageName)
 HeroDataPath = os.path.join(DataPath, HeroPackageName)
+ExampleGamePath = os.path.join(DataPath, ExampleGamePackageName)
+DefaultGameFile = os.path.join(ExampleGamePath, 'example_game.json')
 
 # Config path.
 ConfigPath = os.path.join(PackageRootPath, 'config')
