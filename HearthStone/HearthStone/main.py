@@ -6,9 +6,9 @@ import time
 import argparse
 import tkinter as tk
 
-from .gui_tools.tkgui import GameWindow
+from .gui_tools.tkgui.game_window import GameWindow
 from .core import Game
-from .utils.path_utils import DefaultGameFile
+from .utils.path import DefaultGameFile
 
 __author__ = 'fyabc'
 

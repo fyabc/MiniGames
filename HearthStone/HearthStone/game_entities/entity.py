@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..utils.debug_utils import verbose
+from ..utils.debug import verbose
 
 __author__ = 'fyabc'
 

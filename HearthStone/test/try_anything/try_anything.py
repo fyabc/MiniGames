@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from collections import ChainMap
+"""This file is used to try or test some small things."""
 
 __author__ = 'fyabc'
 

@@ -7,8 +7,8 @@ from types import new_class
 
 from .entity import GameEntity
 from .minion_like import IMinion
-from ..game_handlers.damage_handlers import SpellPowerHandler
-from ..utils.basic_utils import find_index
+from ..game_handlers.damage import SpellPowerHandler
+from ..utils.basic import find_index
 
 __author__ = 'fyabc'
 

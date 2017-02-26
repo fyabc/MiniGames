@@ -9,7 +9,7 @@ from functools import partial
 
 from .ext import *
 from .card_filters import *
-from ..constants import card_constants as cc
+from ..constants import card as cc
 
 __author__ = 'fyabc'
 

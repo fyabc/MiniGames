@@ -5,7 +5,7 @@ import os
 import json
 import re
 
-from .path_utils import ConfigPath
+from .path import ConfigPath
 
 __author__ = 'fyabc'
 

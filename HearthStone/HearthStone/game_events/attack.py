@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-from .game_event import GameEvent
-from .health_events import Damage
-from ..utils.debug_utils import verbose
+from .base import GameEvent
+from .health import Damage
+from ..utils.debug import verbose
 
 __author__ = 'fyabc'
 

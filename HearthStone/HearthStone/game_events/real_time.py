@@ -27,10 +27,10 @@ Note:
 
 from random import sample
 
-from .game_event import GameEvent
-from .health_events import Damage, SpellDamage
-from ..constants.card_constants import Type_spell
-from ..utils.debug_utils import verbose
+from .base import GameEvent
+from .health import Damage, SpellDamage
+from ..constants.card import Type_spell
+from ..utils.debug import verbose
 
 __author__ = 'fyabc'
 

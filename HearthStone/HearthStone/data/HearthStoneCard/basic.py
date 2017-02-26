@@ -11,7 +11,7 @@ from HearthStone.ext import AddMinionToDesk
 from HearthStone.ext import TurnBegin
 from HearthStone.ext import MinionDeath
 from HearthStone.ext import constants
-from HearthStone.utils.debug_utils import verbose
+from HearthStone.ext import verbose
 
 __author__ = 'fyabc'
 

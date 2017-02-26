@@ -4,7 +4,7 @@
 from HearthStone.core import Game
 from HearthStone.user_interface import GameUserInterface
 from HearthStone.game_exception import GameEndException
-from HearthStone.utils import set_debug_level, LEVEL_DEBUG, error
+from HearthStone.utils.debug import set_debug_level, LEVEL_DEBUG, error
 
 __author__ = 'fyabc'
 

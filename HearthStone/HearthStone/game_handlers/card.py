@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from ..constants import Location_DESK
-from .game_handler import GameHandler
+from .base import GameHandler
 
 __author__ = 'fyabc'
 

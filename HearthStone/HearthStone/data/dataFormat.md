@@ -1,38 +1,8 @@
 # Data Format
 
-## Package Data Format
-
-```json
-{
-    "id": 0,
-    "name": "xxx",
-    "cards": [
-    ]
-}
-```
-
-## Card Data Format
-
-Cards are in packages.
-
-```json
-{
-    "id": 0,
-    "name": "xxx",
-    "package": 0,
-    "rarity": 0,
-    "klass": 0,
-    "type": 0,                  // 0: minion, 1: spell, 2: weapon
-    "CAH": [4, 4, 5],
-    "skills": [
-    ]
-}
-```
-
-
 ## Hero Data Format
 
-Heroes are in packages.
+Heroes are in [HearthStoneHero](./HearthStoneHero/basic.json).
 
 ```json
 {
@@ -62,6 +32,8 @@ Heroes are in packages.
 
 ## Game Data Format (More for debug and test)
 
+Games are in [ExampleGames](./ExampleGames/example_game.json) .
+
 ```json
 [
     {
@@ -84,11 +56,17 @@ Heroes are in packages.
             [7, 4],         // [x, y] means card x number y
             [5, 5],
             6,              // x means card x number 1
-            [3, 7],
+            ["CardXxx", 7], // You can use card name (must be unique)
             [4, 3],
             [0, 5],
-            [4, 5]          // card id can be duplicated
+            [4, 5]          // Card id can be duplicated
         ]
     }
 ]
 ```
+
+
+## Card Data Format
+
+Cards are Python classes.
+See the docstring of class [`Card`](../game_entities/card.py)

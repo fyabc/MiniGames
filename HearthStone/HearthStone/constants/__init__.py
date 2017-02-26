@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-from .card_constants import *
-from .game_constants import *
+from .card import *
+from .game import *
 
 __author__ = 'fyabc'

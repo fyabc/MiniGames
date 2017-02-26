@@ -1,8 +1,13 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-from .game_event import GameEvent
-from ..utils.debug_utils import verbose
+"""Events of playing cards.
+
+Contains play minions, spells and weapons.
+"""
+
+from .base import GameEvent
+from ..utils.debug import verbose
 
 __author__ = 'fyabc'
 

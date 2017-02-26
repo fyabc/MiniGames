@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .card_handlers import DeskHandler
-from ..game_events.health_events import Damage, SpellDamage
-from ..utils.debug_utils import verbose
+from .card import DeskHandler
+from ..game_events.health import Damage, SpellDamage
+from ..utils.debug import verbose
 
 __author__ = 'fyabc'
 

@@ -5,9 +5,9 @@ import os
 import time
 import tkinter as tk
 
-from HearthStone.gui_tools import GameWindow
+from HearthStone.gui_tools.tkgui.game_window import GameWindow
 from HearthStone.core import Game
-from HearthStone.utils.debug_utils import set_debug_level, LEVEL_DEBUG
+from HearthStone.utils.debug import set_debug_level, LEVEL_DEBUG
 
 __author__ = 'fyabc'
 

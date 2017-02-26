@@ -3,13 +3,13 @@
 
 import json
 
-from .constants import game_constants as gc
+from .constants import game as gc
 from .game_data.card_data import get_card_type
 from .event_framework import EventEngine
 from .game_entities.player import Player
-from .game_events.basic_events import GameEnd
+from .game_events.basic import GameEnd
 from .game_exception import GameEndException
-from .game_handlers.basic_handlers import CreateCoinHandler, TurnBeginDrawCardHandler, ComboHandler
+from .game_handlers.basic import CreateCoinHandler, TurnBeginDrawCardHandler, ComboHandler
 
 __author__ = 'fyabc'
 

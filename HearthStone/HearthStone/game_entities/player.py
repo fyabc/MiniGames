@@ -5,7 +5,7 @@ import random
 
 from .entity import GameEntity
 from .minion_like import IMinion
-from ..constants.card_constants import Type_player
+from ..constants.card import Type_player
 
 __author__ = 'fyabc'
 

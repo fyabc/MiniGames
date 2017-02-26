@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .game_event import GameEvent
-from .death_events import MinionDeath, HeroDeath
-from ..utils.debug_utils import verbose
+from .base import GameEvent
+from .death import MinionDeath, HeroDeath
+from ..utils.debug import verbose
 
 __author__ = 'fyabc'
 

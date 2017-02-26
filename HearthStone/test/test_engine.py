@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.core import Game
-from HearthStone.game_events import *
-from HearthStone.utils import set_debug_level, LEVEL_DEBUG
+from HearthStone.game_events.basic import GameBegin, TurnEnd
+from HearthStone.game_events.play import SummonMinion
+from HearthStone.utils.debug import set_debug_level, LEVEL_DEBUG
 from HearthStone.game_exception import GameEndException
 
 __author__ = 'fyabc'

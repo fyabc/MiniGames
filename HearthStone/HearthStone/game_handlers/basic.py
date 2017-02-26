@@ -1,12 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .game_handler import GameHandler
-from ..game_events.basic_events import GameBegin, TurnBegin
-from ..game_events.card_events import DrawCard, AddCardToHand
-from ..game_events.health_events import Damage
-from ..game_events.play_events import PlayCard
-from ..utils.debug_utils import verbose
+from .base import GameHandler
+from ..game_events.basic import GameBegin, TurnBegin
+from ..game_events.card import DrawCard, AddCardToHand
+from ..game_events.health import Damage
+from ..game_events.play import PlayCard
+from ..utils.debug import verbose
 
 __author__ = 'fyabc'
 

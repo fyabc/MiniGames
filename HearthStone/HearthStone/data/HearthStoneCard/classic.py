@@ -5,7 +5,7 @@ from HearthStone.ext import Minion, set_description
 from HearthStone.ext import MinionDeath, DrawCard, AddMinionToDesk
 from HearthStone.ext import DeskHandler
 from HearthStone.ext.card_creator import m_blank
-from HearthStone.utils.debug_utils import verbose
+from HearthStone.ext import verbose
 from HearthStone.ext import constants
 
 __author__ = 'fyabc'

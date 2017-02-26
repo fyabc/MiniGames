@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .game_event import GameEvent
+from .base import GameEvent
 
 __author__ = 'fyabc'
 

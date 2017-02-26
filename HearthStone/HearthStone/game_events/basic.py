@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .game_event import GameEvent
-from ..utils.debug_utils import verbose
+from .base import GameEvent
+from ..utils.debug import verbose
 from ..utils.config import Config
 
 __author__ = 'fyabc'

@@ -47,19 +47,19 @@ Docstring for users
 
 from ..game_entities.card import Minion, Spell, Weapon
 
-from ..game_events.basic_events import *
-from ..game_events.card_events import *
-from ..game_events.attack_events import *
-from ..game_events.health_events import *
-from ..game_events.real_time_events import *
-from ..game_events.game_event import *
-from ..game_events.play_events import *
-from ..game_events.death_events import *
+from ..game_events.basic import *
+from ..game_events.card import *
+from ..game_events.attack import *
+from ..game_events.health import *
+from ..game_events.real_time import *
+from ..game_events.base import *
+from ..game_events.play import *
+from ..game_events.death import *
 
-from ..game_handlers.game_handler import *
-from ..game_handlers.basic_handlers import *
-from ..game_handlers.damage_handlers import *
-from ..game_handlers.card_handlers import *
+from ..game_handlers.base import *
+from ..game_handlers.basic import *
+from ..game_handlers.damage import *
+from ..game_handlers.card import *
 
 __author__ = 'fyabc'
 
