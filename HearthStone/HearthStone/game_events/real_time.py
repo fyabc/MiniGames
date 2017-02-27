@@ -28,7 +28,7 @@ Note:
 from random import sample
 
 from .base import GameEvent
-from .health import Damage, SpellDamage
+from .damage import Damage, SpellDamage
 from ..constants.card import Type_spell
 from ..utils.debug import verbose
 

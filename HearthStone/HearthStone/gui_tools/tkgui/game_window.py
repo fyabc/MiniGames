@@ -8,9 +8,7 @@ from tkinter import messagebox
 from .selection_manager import SelectionStateMachine
 from .tk_ext import ToolTip
 from ...cli_tool import show_card, show_minion
-from ...game_events.attack import Attack
-from ...game_events.basic import GameBegin, TurnEnd
-from ...game_events.play import SummonMinion, PlaySpell
+from ...game_events import Attack, GameBegin, TurnEnd, SummonMinion, PlaySpell
 from ...utils.basic import WINDOWS
 
 __author__ = 'fyabc'

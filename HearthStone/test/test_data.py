@@ -32,24 +32,26 @@ def _test_sql():
 
     print_id(cur, '''\
     SELECT id FROM AllCards
-    WHERE ((cost % 2 = 1) AND (rarity <> -1))
+    WHERE ((cost % 2 = 1) AND (rarity >= 2))
     ''')
 
 
 def _test_filters():
     all_cards = get_all_cards()
 
-    pprint.pprint(filter_cards('cost = 7'))
-    pprint.pprint(random_card('rarity = -1'))
+    pprint.pprint(filter_cards('cost = 5'))
+    pprint.pprint(filter_cards('rarity = 4'))
+    pprint.pprint(random_card('rarity = 3'))
 
     card0 = all_cards[0]
-    print(card0.run_death_rattle)
+    print(card0.play)
 
     card4001 = all_cards[4001]
     print(card4001.run_death_rattle)
 
 
 def _test():
+    _test_sql()
     _test_filters()
 
 

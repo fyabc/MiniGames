@@ -1,6 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Some basic events.
+
+[Dependency] .base, {utils.(debug, config)}
+"""
+
 from .base import GameEvent
 from ..utils.debug import verbose
 from ..utils.config import Config

@@ -1,6 +1,11 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
+"""Events about death of minion and hero.
+
+[Dependency] .(base, basic), {utils.debug, constants}
+"""
+
 from .base import GameEvent
 from .basic import GameEnd
 from ..utils.debug import verbose
@@ -26,7 +31,7 @@ class Death(GameEvent):
 
 class MinionDeath(Death):
     def __init__(self, game, minion):
-        super(MinionDeath, self).__init__(game, minion)
+        super().__init__(game, minion)
 
         # [NOTE] Get player id now, because the minion may be removed and cannot find its player.
         self.player_id = self.minion.player_id
@@ -56,7 +61,7 @@ class MinionDeath(Death):
 
 class HeroDeath(Death):
     def __init__(self, game, player):
-        super(HeroDeath, self).__init__(game, player)
+        super().__init__(game, player)
         self.player_id = player.player_id
 
     @property

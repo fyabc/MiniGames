@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .base import GameHandler
-from ..game_events.basic import GameBegin, TurnBegin
-from ..game_events.card import DrawCard, AddCardToHand
-from ..game_events.health import Damage
-from ..game_events.play import PlayCard
+from ..game_events import GameBegin, TurnBegin, DrawCard, AddCardToHand, Damage, PlayCard
 from ..utils.debug import verbose
 
 __author__ = 'fyabc'

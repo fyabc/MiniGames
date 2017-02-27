@@ -17,6 +17,62 @@
             "skill": {
                 "cost": 2
             }
+        },
+        {
+            "id": 3,
+            "klass": "Priest",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        },
+                {
+            "id": 4,
+            "klass": "Druid",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        },
+                {
+            "id": 5,
+            "klass": "Rogue",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        },
+        {
+            "id": 6,
+            "klass": "Warrior",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        },
+        {
+            "id": 7,
+            "klass": "Shaman",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        },
+        {
+            "id": 8,
+            "klass": "Hunter",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
+        },
+        {
+            "id": 9,
+            "klass": "Warlock",
+            "health": 30,
+            "skill": {
+                "cost": 2
+            }
         }
     ]
 }
