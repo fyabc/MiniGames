@@ -26,6 +26,10 @@ class SelectionStateMachine:
         # To play a spell (have target). After selecting a spell in hand.
         # Enable all buttons ([NOTE] enable specific buttons in future).
         3: 'To play spell',
+
+        # To select a target when summon a minion with battlecry that will select a target.
+        # Enable all buttons ([NOTE] enable specific buttons in future).
+        4: 'To select summon target',
     }
 
     SelectionType = namedtuple('Selection', ['player_id', 'location', 'index'])
