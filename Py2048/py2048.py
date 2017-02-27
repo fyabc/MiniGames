@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import random
 import json
 
 import pygame
 import pygame.locals
 from pygame.color import THECOLORS as AllColors
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from Py2048.autoGenerators import *
 from Utils.basicUtils import getKeyName

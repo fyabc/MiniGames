@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import sys
+import os
 from random import randint
 
 import pygame
 import pygame.locals
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from Utils.vector2 import Vector2
 from AntsSpiders.config import *

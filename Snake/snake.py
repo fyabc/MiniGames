@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import random
 
 import pygame
 import pygame.locals
 from pygame.colordict import THECOLORS as AllColors
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from Utils.basicUtils import getKeyName
 

@@ -9,6 +9,8 @@ import pygame
 import pygame.locals
 from pygame.color import THECOLORS as AllColors
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from Utils.basicUtils import getKeyName
 
 __author__ = 'fyabc'
