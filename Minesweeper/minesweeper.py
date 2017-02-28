@@ -7,7 +7,7 @@ import queue
 
 import pygame
 import pygame.locals
-from pygame.color import THECOLORS as AllColors
+from pygame.colordict import THECOLORS as AllColors
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

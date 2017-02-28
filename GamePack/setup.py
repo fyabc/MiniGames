@@ -3,28 +3,27 @@
 
 from setuptools import setup, find_packages
 
-__author__ = 'fyabc'
-
 setup(
-    name='HearthStone',
+    name='FyGamePack',
     version='1.0',
-    keywords=('HearthStone', 'game'),
-    description='A Python implementation of HearthStone.',
+    keywords=('mini', 'game', 'pygame'),
+    description='A package of some mini games.',
     license='MIT',
 
-    url='https://github.com/fyabc/MiniGames/tree/master/HearthStone',
+    url='https://github.com/fyabc/MiniGames/tree/master/GamePack',
     author='fyabc',
     author_email='fyabc@mail.ustc.edu.cn',
 
     packages=find_packages(),
     include_package_data=True,
     platforms='any',
-    install_requires=[],
+    install_requires=['pygame'],
 
     scripts=[],
     entry_points={
         'console_scripts': [
-            'hearthstone = HearthStone.main:main',
+            'fgp = GamePack.main:main',
+            'minesweeper = GamePack.Minesweeper.minesweeper:main',
         ]
     },
 )

@@ -1,6 +1,38 @@
 # MiniGames
 
-Some MiniGames written in **Python**, using *pygame* and *cocos2d* library.
+Some MiniGames written in **Python 3**, using *pygame* and *cocos2d* library.
+
+### Installation
+
+1. Requirements
+
+    - [Python 3](https://www.python.org)
+    - [pygame](http://www.pygame.org/download.shtml)
+    - [cocos2d](http://python.cocos2d.org)
+
+    pygame and cocos2d can also be installed from **pip**:
+
+    ```bash
+    pip install pygame
+    pip install cocos2d
+    ```
+
+    Or you can search them in [PyPI](https://pypi.python.org/pypi)
+
+2. Installation
+
+    At first, `cd /path/to/repository/root`
+
+    ```bash
+    cd GameName     # GameName is HearthStone, Shift_pygame, ...
+    pip install .
+    ```
+
+3. Run
+
+    ```bash
+    hearthstone     # Example: run hearthstone, add -h for help
+    ```
 
 -------
 
@@ -47,3 +79,8 @@ Some MiniGames written in **Python**, using *pygame* and *cocos2d* library.
 - MTFramework
 
     A Cocos2d framework of the game **Magic Tower**.
+
+
+- GamePack
+
+    A package of some small games.

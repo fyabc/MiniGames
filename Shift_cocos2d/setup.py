@@ -8,7 +8,7 @@ __author__ = 'fyabc'
 setup(
     name='Shift_cocos2d',
     version='1.0',
-    keywords=('Shift',),
+    keywords=('Shift', 'cocos2d'),
     description='A Python implementation of Shift, using cocos2d library.',
     license='MIT',
 
