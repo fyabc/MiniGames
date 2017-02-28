@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 import pygame
 
-from ..utils.constant import ScreenSize
+from ..utils.constant import ScreenSize, FontName
 from ..utils.basic import load_image
 from ..utils.path import get_data_path
 
@@ -19,20 +19,24 @@ class PygameRunner:
     This class should be inherited and be used as a singleton.
     """
 
-    def __init__(self, screen_size=ScreenSize, allow_events=(), name='Game'):
-        self.screen_size = screen_size
-        self.allow_events = allow_events
-        self.name = name
+    def __init__(self, **kwargs):
+        self.screen_size = kwargs.pop('screen_size', ScreenSize)
+        self.allow_events = kwargs.pop('allow_events', ())
+        self.name = kwargs.pop('name', 'Game')
 
         self.main_window = None
         self.timer = None
 
-        # The dict of all used images, keys are image names.
+        # The dict of all used images, keys are image name and size.
         self.images = {}
+        # The dict of all used fonts, keys are font size and image.
+        self.fonts = {}
 
     def init(self):
         if self.main_window is not None:
             return
+
+        pygame.init()
 
         self.main_window = pygame.display.set_mode(self.screen_size)
         self.timer = pygame.time.Clock()
@@ -42,6 +46,7 @@ class PygameRunner:
         pygame.event.set_allowed(self.allow_events)
 
         self.images.clear()
+        self.fonts.clear()
 
     @contextmanager
     def _game_manager(self):
@@ -76,3 +81,14 @@ class PygameRunner:
         image = load_image([get_data_path(self.name), name], size)
         self.images[name, size] = image
         return image
+
+    def get_font(self, name, size):
+        """Get font by the name and size, such as get_image."""
+
+        if (name, size) in self.fonts:
+            return self.fonts[name, size]
+
+        font = pygame.font.Font(name, size)
+        self.fonts[name, size] = font
+
+        return font
