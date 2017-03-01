@@ -9,9 +9,8 @@ import pygame
 import pygame.locals
 
 from ..basic.runner import PygameRunner
-from ..utils.basic import parse_size, get_key_name, load_image
+from ..utils.basic import parse_size, get_key_name
 from ..utils.constant import Colors, FPS
-from ..utils.path import get_data_path
 
 __author__ = 'fyabc'
 
