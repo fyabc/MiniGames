@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
+import random
+from collections import deque
 import argparse
 
 import pygame
@@ -43,6 +45,10 @@ Direction8 = (
 
 
 class GameState:
+    Lose = -1
+    Win = 1
+    Common = 0
+
     class Cell:
         Nothing = 0
         Flag = 1
@@ -81,6 +87,16 @@ class GameState:
             if self.tag == self.Flag:
                 self.owner.flagged_mine_num += 1
 
+    def split_loc(self, *location):
+        if len(location) >= 2:
+            return location[0], location[1]
+        else:
+            location = location[0]
+            if hasattr(location, '__len__'):
+                return location
+            else:
+                return location % self.column, location // self.column
+
     def __init__(self, row, column, mine_num, todo_tag=False):
         self.row = row
         self.column = column
@@ -93,17 +109,149 @@ class GameState:
         self.lose = False
 
     def __getitem__(self, item):
-        if hasattr(item, '__len__'):
-            x, y = item
-        else:
-            x, y = item % self.column, item // self.column
+        x, y = self.split_loc(item)
         return self.matrix[y][x]
+
+    def __len__(self):
+        return self.row * self.column
 
     def win(self):
         return self.swept_num + self.mine_num == self.row * self.column
 
     def sweep(self, location):
-        pass
+        cell = self[location]
+
+        have_mine = cell.sweep()
+
+        # If this is the first sweep, generate mines after this, so you will not sweep any mines at the first sweep.
+        if self.swept_num == 1:
+            self.generate_mines()
+
+        # Lose
+        if have_mine:
+            return self.Lose
+
+        # If sweep a safe cell, expand it.
+        if cell.adj_mine_num == 0:
+            self.expand(location)
+
+        # Win
+        if self.win():
+            return self.Win
+
+        # Common
+        return self.Common
+
+    def expand(self, location):
+        """Explore the map, expand your selection and sweep all safe cells.
+
+        Use BFS.
+        """
+
+        visited = [[False for _ in range(self.column)] for _ in range(self.row)]
+        q = deque()
+        q.append(location)
+        visited[location[1]][location[0]] = True
+
+        while q:
+            loc = q.popleft()
+
+            for direction in Direction8:
+                new_loc = loc[0] + direction[0], loc[1] + direction[1]
+
+                if not self.valid_loc(new_loc):
+                    continue
+                if visited[new_loc[1]][new_loc[0]]:
+                    continue
+
+                visited[new_loc[1]][new_loc[0]] = True
+                new_cell = self[new_loc]
+
+                new_cell.sweep()
+                if new_cell.adj_mine_num == 0:
+                    q.append(new_loc)
+
+    def quick_sweep(self, location):
+        """Sweep adjust cells quickly. If all mines around this cell are tagged, it will sweep other cells."""
+
+        cell = self[location]
+
+        if not cell.swept or cell.adj_mine_num == 0:
+            return
+
+        adj_no_flag_loc = []
+        adj_flag_num = 0
+        for direction in Direction8:
+            new_loc = location[0] + direction[0], location[1] + direction[1]
+            if not self.valid_loc(new_loc):
+                continue
+            if self[new_loc].tag != self.Cell.Flag:
+                adj_no_flag_loc.append(new_loc)
+            else:
+                adj_flag_num += 1
+
+        # If there are any untagged mines, do nothing.
+        if adj_flag_num != cell.adj_mine_num:
+            return self.Common
+
+        # Sweep other cells.
+        # If you mark wrong mines, you will lose.
+        have_mine = False
+        for adj_loc in adj_no_flag_loc:
+            adj_cell = self[adj_loc]
+            have_mine |= adj_cell.sweep()
+            if not adj_cell.have_mine and adj_cell.adj_mine_num == 0:
+                self.expand(adj_loc)
+
+        if have_mine:
+            return self.Lose
+        if self.win():
+            return self.Win
+        return self.Common
+
+    def change_tag(self, location):
+        cell = self[location]
+        if cell.swept:
+            return
+        cell.next_tag()
+
+    def reset(self):
+        for x in range(self.column):
+            for y in range(self.row):
+                self[x, y].__init__(self)
+        self.swept_num = 0
+        self.lose = False
+
+    def generate_mines(self):
+        """Generate mines randomly."""
+
+        mine_indices = random.sample([index for index in range(len(self)) if not self[index].swept], self.mine_num)
+
+        for index in mine_indices:
+            x, y = index % self.column, index // self.column
+            self[x, y].have_mine = True
+
+            # increment adjust cells.
+            if x > 0:
+                self[x - 1, y].adj_mine_num += 1
+                if y > 0:
+                    self[x - 1, y - 1].adj_mine_num += 1
+                if y < self.row - 1:
+                    self[x - 1, y + 1].adj_mine_num += 1
+            if x < self.column - 1:
+                self[x + 1, y].adj_mine_num += 1
+                if y > 0:
+                    self[x + 1, y - 1].adj_mine_num += 1
+                if y < self.row - 1:
+                    self[x + 1, y + 1].adj_mine_num += 1
+            if y > 0:
+                self[x, y - 1].adj_mine_num += 1
+            if y < self.row - 1:
+                self[x, y + 1].adj_mine_num += 1
+
+    def valid_loc(self, location):
+        x, y = self.split_loc(location)
+        return 0 <= x < self.column and 0 <= y < self.row
 
 
 class Minesweeper(PygameRunner):
@@ -156,14 +304,69 @@ class Minesweeper(PygameRunner):
         self.draw()
 
         while running:
+            result = self.state.Common
             events = pygame.event.get()
 
             for event in events:
                 if event.type == pygame.locals.QUIT:
                     running = False
+                elif event.type == pygame.locals.KEYDOWN:
+                    key_name = get_key_name(event.key, Keymap)
+
+                    if key_name == 'exit':
+                        running = False
+                    elif key_name == 'restart':
+                        self.state.reset()
+                        pygame.event.clear()
+                    elif key_name == 'sweep':
+                        location = self.cell_loc(pygame.mouse.get_pos())
+                        if self.state.valid_loc(location):
+                            result = self.state.sweep(location)
+                    elif key_name == 'quick':
+                        location = self.cell_loc(pygame.mouse.get_pos())
+                        if self.state.valid_loc(location):
+                            result = self.state.quick_sweep(location)
+                    elif key_name == 'flag':
+                        location = self.cell_loc(pygame.mouse.get_pos())
+                        if self.state.valid_loc(location):
+                            self.state.change_tag(location)
+
+                elif event.type == pygame.locals.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Left key down
+                        location = self.cell_loc(event.pos)
+                        if self.state.valid_loc(location):
+                            result = self.state.sweep(location)
+                    elif event.button == 3:  # Right key down
+                        location = self.cell_loc(event.pos)
+                        if self.state.valid_loc(location):
+                            self.state.change_tag(location)
+                    elif event.button == 2:  # Middle key down
+                        location = self.cell_loc(event.pos)
+                        if self.state.valid_loc(location):
+                            result = self.state.quick_sweep(location)
 
             if events:
                 self.draw()
+
+            # Test result.
+            if result == self.state.Win:
+                # Win
+                print('You win!')
+                pygame.time.delay(1500)
+                self.state.reset()
+                pygame.event.clear()
+            elif result == self.state.Lose:
+                # Lose
+                print('You lose!')
+                self.state.lose = True
+                self.draw()
+                pygame.time.delay(1500)
+                self.state.reset()
+                pygame.event.clear()
+
+    def cell_loc(self, physic_loc):
+        return (physic_loc[0] - self.top_left_loc[0]) // self.cell_size,\
+               (physic_loc[1] - self.top_left_loc[1]) // self.cell_size
 
     def draw(self):
         self.draw_background()
