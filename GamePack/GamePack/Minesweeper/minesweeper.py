@@ -9,7 +9,7 @@ import pygame
 import pygame.locals
 
 from ..basic.runner import PygameRunner
-from ..utils.basic import parse_size, get_key_name
+from ..utils.basic import parse_size, get_key_name, iter_matrix
 from ..utils.constant import Colors, FPS
 from ..utils.arguments import arg_size
 
@@ -374,51 +374,50 @@ class Minesweeper(PygameRunner):
         # Draw labels.
 
         # Draw cells.
-        for x in range(self.column):
-            for y in range(self.row):
-                cell = self.state[x, y]
+        for x, y in iter_matrix(self.row, self.column):
+            cell = self.state[x, y]
 
-                center_position = (int(self.top_left_loc[0] + (x + 0.5) * self.cell_size),
-                                   int(self.top_left_loc[1] + (y + 0.5) * self.cell_size))
+            center_position = (int(self.top_left_loc[0] + (x + 0.5) * self.cell_size),
+                               int(self.top_left_loc[1] + (y + 0.5) * self.cell_size))
 
-                swept_rect = pygame.Rect(
-                    self.top_left_loc[0] + x * self.cell_size + self.LineWidth,
-                    self.top_left_loc[1] + y * self.cell_size + self.LineWidth,
-                    self.cell_size - 2 * self.LineWidth,
-                    self.cell_size - 2 * self.LineWidth,
-                )
+            swept_rect = pygame.Rect(
+                self.top_left_loc[0] + x * self.cell_size + self.LineWidth,
+                self.top_left_loc[1] + y * self.cell_size + self.LineWidth,
+                self.cell_size - 2 * self.LineWidth,
+                self.cell_size - 2 * self.LineWidth,
+            )
 
-                font = self.get_font(self.FontName, self.cell_size // 2)
+            font = self.get_font(self.FontName, self.cell_size // 2)
 
-                if cell.swept:
-                    pygame.draw.rect(self.main_window, self.SweptColor, swept_rect)
+            if cell.swept:
+                pygame.draw.rect(self.main_window, self.SweptColor, swept_rect)
 
-                    if cell.have_mine:
-                        pygame.draw.circle(self.main_window, self.NumberColors[0],
-                                           center_position, int(self.cell_size * 0.4), 0)
-                    elif cell.adj_mine_num > 0:
-                        text = font.render(str(cell.adj_mine_num), True, self.NumberColors[cell.adj_mine_num], None)
-                        text_rect = text.get_rect()
-                        text_rect.center = center_position
+                if cell.have_mine:
+                    pygame.draw.circle(self.main_window, self.NumberColors[0],
+                                       center_position, int(self.cell_size * 0.4), 0)
+                elif cell.adj_mine_num > 0:
+                    text = font.render(str(cell.adj_mine_num), True, self.NumberColors[cell.adj_mine_num], None)
+                    text_rect = text.get_rect()
+                    text_rect.center = center_position
 
-                        self.main_window.blit(text, text_rect)
+                    self.main_window.blit(text, text_rect)
+            else:
+                pygame.draw.rect(self.main_window, self.UnsweptColor, swept_rect)
+                if self.state.lose and cell.have_mine:
+                    pygame.draw.circle(self.main_window, self.NumberColors[0],
+                                       center_position, int(self.cell_size * 0.4), 0)
                 else:
-                    pygame.draw.rect(self.main_window, self.UnsweptColor, swept_rect)
-                    if self.state.lose and cell.have_mine:
-                        pygame.draw.circle(self.main_window, self.NumberColors[0],
-                                           center_position, int(self.cell_size * 0.4), 0)
-                    else:
-                        image_name = None
-                        if cell.tag == cell.Flag:
-                            image_name = 'flag.png'
-                        elif cell.tag == cell.Todo:
-                            image_name = 'todo.png'
+                    image_name = None
+                    if cell.tag == cell.Flag:
+                        image_name = 'flag.png'
+                    elif cell.tag == cell.Todo:
+                        image_name = 'todo.png'
 
-                        if image_name is not None:
-                            image = self.get_image(image_name, (self.cell_size, self.cell_size))
-                            image_rect = image.get_rect()
-                            image_rect.center = center_position
-                            self.main_window.blit(image, image_rect)
+                    if image_name is not None:
+                        image = self.get_image(image_name, (self.cell_size, self.cell_size))
+                        image_rect = image.get_rect()
+                        image_rect.center = center_position
+                        self.main_window.blit(image, image_rect)
 
         pygame.display.update()
 

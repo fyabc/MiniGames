@@ -25,6 +25,7 @@ setup(
             'fgp = GamePack.main:main',
             'minesweeper = GamePack.Minesweeper.minesweeper:main',
             'snake = GamePack.Snake.snake:main',
+            'py2048 = GamePack.Py2048.py2048:main',
         ]
     },
 )

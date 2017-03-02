@@ -48,3 +48,9 @@ def load_image(path_list, size=None):
         image = pygame.transform.scale(image, size)
 
     return image
+
+
+def iter_matrix(row, column):
+    for x in range(column):
+        for y in range(row):
+            yield x, y
