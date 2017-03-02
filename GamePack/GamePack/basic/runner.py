@@ -92,3 +92,9 @@ class PygameRunner:
         self.fonts[name, size] = font
 
         return font
+
+    def draw(self):
+        pass
+
+    def draw_background(self):
+        pass

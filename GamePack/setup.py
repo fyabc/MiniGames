@@ -24,6 +24,7 @@ setup(
         'console_scripts': [
             'fgp = GamePack.main:main',
             'minesweeper = GamePack.Minesweeper.minesweeper:main',
+            'snake = GamePack.Snake.snake:main',
         ]
     },
 )

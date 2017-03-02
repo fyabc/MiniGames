@@ -11,6 +11,7 @@ import pygame.locals
 from ..basic.runner import PygameRunner
 from ..utils.basic import parse_size, get_key_name
 from ..utils.constant import Colors, FPS
+from ..utils.arguments import arg_size
 
 __author__ = 'fyabc'
 
@@ -450,13 +451,12 @@ def real_main(options):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description='A simple implementation of minesweeper game.')
-    parser.add_argument('-s', '--size', metavar='axb', dest='size', default='15x30', type=str,
-                        help='The size of the map, format is "axb", default is "15x30" '
-                             '(a must >= {}, b must >= {}).'.format(MinRow, MinColumn))
-    parser.add_argument('-n', '--number', metavar='N', dest='mine_number', default=99, type=int,
-                        help='The number of mines, default is 99 '
-                             '(N must >= {}, must <= a * b - {}).'.format(MinMineNumber, MinRemainSpaceNumber))
+    parser = argparse.ArgumentParser(prog='minesweeper', description='A simple implementation of minesweeper game.')
+    arg_size(parser, default='15x30', help='The size of the map, format is "axb", default is "15x30" '
+                                           '(a must >= {}, b must >= {}).'.format(MinRow, MinColumn))
+    parser.add_argument('-n', '--number', metavar='N', dest='mine_number', default=DefaultMineNumber, type=int,
+                        help='The number of mines, default is {} (N must >= {}, '
+                             'must <= a * b - {}).'.format(DefaultMineNumber, MinMineNumber, MinRemainSpaceNumber))
     parser.add_argument('-t', '--todo', action='store_true', dest='todo_tag', default=False,
                         help='Add todo tag, default is False.')
 
