@@ -50,7 +50,12 @@ def load_image(path_list, size=None):
     return image
 
 
-def iter_matrix(row, column):
-    for x in range(column):
+def iter_matrix(row, column, vertical=True):
+    if vertical:
+        for x in range(column):
+            for y in range(row):
+                yield x, y
+    else:
         for y in range(row):
-            yield x, y
+            for x in range(column):
+                yield x, y

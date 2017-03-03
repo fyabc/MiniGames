@@ -16,12 +16,12 @@ def rotate_auto(state):
 
 def DRDL_auto(state):
     while True:
-        prev1 = (yield state.down)
-        prev2 = (yield state.right)
-        prev3 = (yield state.down)
-        prev4 = (yield state.left)
+        prev1 = yield state.down
+        prev2 = yield state.right
+        prev3 = yield state.down
+        prev4 = yield state.left
 
-        if prev1 == 0 and prev2 == 0 and prev3 == 0 and prev4 == 0:
+        if not (prev1 or prev2 or prev3 or prev4):
             yield state.up
 
 
@@ -30,13 +30,13 @@ def corner_auto(state):
         down_moved = yield state.down
         left_moved = yield state.left
 
-        if down_moved == 0 and left_moved == 0:
+        if not (down_moved or left_moved):
             yield state.right
             down_moved, left_moved = 1, 1
 
-        while down_moved > 0:
+        while down_moved:
             down_moved = yield state.down
-        while left_moved > 0:
+        while left_moved:
             left_moved = yield state.left
 
 

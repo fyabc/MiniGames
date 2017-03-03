@@ -15,6 +15,7 @@ from ..utils.constant import Colors
 from ..utils.arguments import arg_size
 from ..utils.path import get_data_path
 from .auto_generators import get_auto_iter
+from .utils import fill_list
 
 __author__ = 'fyabc'
 
@@ -107,6 +108,18 @@ class GameState:
         x, y = self.split_loc(key)
         self.matrix[y][x] = value
 
+    def _get_row(self, row, no_empty=False):
+        if no_empty:
+            return [v for v in self.matrix[row] if v != self.Empty]
+        return self.matrix[row][:]
+
+    def _get_column(self, column, no_empty=False):
+        result = [self.matrix[i][column] for i in range(self.row)]
+
+        if no_empty:
+            return [v for v in result if v != self.Empty]
+        return result
+
     def empty(self, x, y):
         return self[x, y] == self.Empty
 
@@ -152,120 +165,121 @@ class GameState:
     def up(self):
         """Execute the command 'up'.
 
-        :return: Number of moved cells.
+        :return: Boolean if any cells moved.
         """
-        moved = 0
 
-        for x, y in iter_matrix(self.row, self.column):
-            value = self[x, y]
+        moved = False
 
-            if value == self.Empty:
-                continue
+        for x in range(self.column):
+            column_unfiltered = self._get_column(x)
 
-            new_y = y
-            while new_y > 0 and self.empty(x, new_y - 1):
-                new_y -= 1
+            column = [v for v in column_unfiltered if v != self.Empty]
 
-            self[x, y] = self.Empty
+            new_column = []
 
-            if new_y > 0 and self[x, new_y - 1] == value:
-                # merge
-                self[x, new_y - 1] = value + 1
-                self.score += (4 << value)
-                new_y -= 1
-            else:
-                # not merge
-                self[x, new_y] = value
+            i = len(column) - 1
+            while i >= 0:
+                if i > 0 and column[i] == column[i - 1]:
+                    new_column.append(column[i] + 1)
+                    i -= 2
+                else:
+                    new_column.append(column[i])
+                    i -= 1
 
-            if new_y != y:
-                moved += 1
+            new_column.reverse()
+
+            new_column = fill_list(new_column, self.row, self.Empty, left=True)
+            for y in range(self.row):
+                self[x, y] = new_column[y]
+
+            if not moved and new_column != column_unfiltered:
+                moved = True
 
         return moved
 
     def down(self):
-        moved = 0
+        moved = False
 
-        for x, y in iter_matrix(self.row, self.column):
-            value = self[x, y]
+        for x in range(self.column):
+            column_unfiltered = self._get_column(x)
 
-            if value == self.Empty:
-                continue
+            column = [v for v in column_unfiltered if v != self.Empty]
 
-            new_y = y
-            while new_y < self.row - 1 and self.empty(x, new_y + 1):
-                new_y += 1
+            new_column = []
 
-            self[x, y] = self.Empty
+            i = 0
+            while i < len(column):
+                if i < len(column) - 1 and column[i] == column[i + 1]:
+                    new_column.append(column[i] + 1)
+                    i += 2
+                else:
+                    new_column.append(column[i])
+                    i += 1
 
-            if new_y < self.row - 1 and self[x, new_y + 1] == value:
-                # merge
-                self[x, new_y + 1] = value + 1
-                self.score += (4 << value)
-                new_y += 1
-            else:
-                # not merge
-                self[x, new_y] = value
+            new_column = fill_list(new_column, self.row, self.Empty, left=False)
+            for y in range(self.row):
+                self[x, y] = new_column[y]
 
-            if new_y != y:
-                moved += 1
+            if not moved and new_column != column_unfiltered:
+                moved = True
 
         return moved
 
     def left(self):
-        moved = 0
+        moved = False
 
-        for x, y in iter_matrix(self.row, self.column):
-            value = self[x, y]
+        for y in range(self.row):
+            row_unfiltered = self._get_row(y)
 
-            if value == self.Empty:
-                continue
+            row = [v for v in row_unfiltered if v != self.Empty]
 
-            new_x = x
-            while new_x > 0 and self.empty(new_x - 1, y):
-                new_x -= 1
+            new_row = []
 
-            self[x, y] = self.Empty
+            i = len(row) - 1
+            while i >= 0:
+                if i > 0 and row[i] == row[i - 1]:
+                    new_row.append(row[i] + 1)
+                    i -= 2
+                else:
+                    new_row.append(row[i])
+                    i -= 1
 
-            if new_x > 0 and self[new_x - 1, y] == value:
-                # merge
-                self[new_x - 1, y] = value + 1
-                self.score += (4 << value)
-                new_x -= 1
-            else:
-                # not merge
-                self[new_x, y] = value
+            new_row.reverse()
 
-            if new_x != x:
-                moved += 1
+            new_row = fill_list(new_row, self.column, self.Empty, left=True)
+            for x in range(self.column):
+                self[x, y] = new_row[x]
+
+            if not moved and new_row != row_unfiltered:
+                moved = True
 
         return moved
 
     def right(self):
-        moved = 0
+        moved = False
 
-        for x, y in iter_matrix(self.row, self.column):
-            value = self[x, y]
+        for y in range(self.row):
+            row_unfiltered = self._get_row(y)
 
-            if value == self.Empty:
-                continue
+            row = [v for v in row_unfiltered if v != self.Empty]
 
-            new_x = x
-            while new_x < self.column - 1 and self.empty(new_x + 1, y):
-                new_x += 1
+            new_row = []
 
-            self[x, y] = self.Empty
+            i = 0
+            while i < len(row):
+                if i < len(row) - 1 and row[i] == row[i + 1]:
+                    new_row.append(row[i] + 1)
+                    i += 2
+                else:
+                    new_row.append(row[i])
+                    i += 1
 
-            if new_x < self.column - 1 and self[new_x + 1, y] == value:
-                # merge
-                self[new_x - 1, y] = value + 1
-                self.score += (4 << value)
-                new_x += 1
-            else:
-                # not merge
-                self[new_x, y] = value
+            new_row = fill_list(new_row, self.column, self.Empty, left=False)
+            for x in range(self.column):
+                self[x, y] = new_row[x]
 
-            if new_x != x:
-                moved += 1
+            if not moved and new_row != row_unfiltered:
+                moved = True
 
         return moved
 
@@ -291,10 +305,10 @@ class Py2048(PygameRunner):
         self.row = max(kwargs.pop('row', DefaultRow), MinRow)
         self.column = max(kwargs.pop('column', DefaultColumn), MinColumn)
 
-        self.CellSize = 300 // max(self.row, self.column) + 25
+        self.CellSize = 300 // max(self.row, self.column) + 40
 
         super().__init__(
-            screen_size=(self.CellSize * self.column + 250, self.CellSize * self.row + 200),
+            screen_size=(self.CellSize * self.column + 180, self.CellSize * self.row + 180),
             name=GameName,
             allow_events=AllowEvents,
         )
@@ -394,6 +408,8 @@ class Py2048(PygameRunner):
         for x, y in iter_matrix(self.row, self.column):
             value = self.state[x, y]
 
+            font = self.get_font(self.FontName, self._get_font_size(value))
+
             if value != self.state.Empty:
                 cell_rect = pygame.Rect(0, 0, int(self.CellSize * 0.8), int(self.CellSize * 0.8))
                 cell_rect.center = (self.top_left_loc[0] + (x + 0.5) * self.CellSize,
@@ -425,6 +441,14 @@ class Py2048(PygameRunner):
                 (self.top_left_loc[0] + self.column * self.CellSize, self.top_left_loc[1] + y * self.CellSize),
                 self.LineWidth,
             )
+
+    def _get_font_size(self, value):
+        size = len(self.AllNames[value])
+
+        if size <= 2:
+            return self.CellSize // 2
+        else:
+            return int(self.CellSize * 1.4 // size)
 
 
 def real_main(options):
