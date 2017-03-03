@@ -40,7 +40,6 @@ Some MiniGames written in **Python 3**, using *pygame* and *cocos2d* library.
 
 |Name           |Create     |First Playable |Game Library   |
 |:-------------:|:---------:|:-------------:|:-------------:|
-|Py2048         |2016.05.15 |2016.05.15     |pygame         |
 |Tetris         |2016.06.07 |               |cocos2d        |
 |Flappy Bird    |2016.06.08 |               |cocos2d        |
 |AntsSpiders    |2016.06.19 |2016.06.27     |pygame         |
@@ -90,3 +89,4 @@ Some MiniGames written in **Python 3**, using *pygame* and *cocos2d* library.
 |:-------------:|:---------:|:-------------:|:-----------------:|:-------------:|
 |MineSweeper    |2016.05.24 |2016.06.06     |2017.03.01         |pygame         |
 |Snake          |2016.06.06 |2016.06.07     |2017.03.02         |pygame         |
+|Py2048         |2016.05.15 |2016.05.15     |2017.03.03         |pygame         |
