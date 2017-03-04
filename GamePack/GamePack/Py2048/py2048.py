@@ -460,7 +460,7 @@ def real_main(options):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(prog='pyrm2048', description='A simple implementation of 2048.')
+    parser = argparse.ArgumentParser(prog='py2048', description='A simple implementation of 2048.')
 
     arg_size(parser, default='4x4', help='The size of the map, format is "axb", default is "4x4" '
                                          '(a must >= {}, b must >= {}).'.format(MinRow, MinColumn))
