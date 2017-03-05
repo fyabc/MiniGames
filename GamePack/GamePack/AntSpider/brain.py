@@ -18,6 +18,13 @@ class State:
         pass
 
 
+class BrainState(State):
+    """State that with an owner."""
+
+    def __init__(self, owner):
+        self.owner = owner
+
+
 class Brain:
     def __init__(self, states, init_state=None):
         self.states = {
