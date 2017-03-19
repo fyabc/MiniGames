@@ -49,13 +49,22 @@ class World:
         for entity_id in lost_entities:
             del self_entities[entity_id]
 
-    def get_close_entity(self, entity_type, location, see_range=100.0, get_all=False):
+    def get_close_entity(self, entity_type_name, location, see_range=100.0, get_all=False):
+        """Get the closest entity of given type near the given location.
+
+        :param entity_type_name: str, The type name of entity or None. If it is None, receive any type of entities.
+        :param location: The see location.
+        :param see_range: The see range.
+        :param get_all: If True, return all seen entities, or only return the first.
+        :return: entity or None (not seen any entities) or list of entities.
+        """
+
         location = Vector2(*location)
 
         result = []
 
         for entity in self.entities.values():
-            if entity.valid and isinstance(entity, entity_type):
+            if entity.valid and (entity_type_name is None or type(entity).__name__ == entity_type_name):
                 distance = location.distance(entity.location)
 
                 if distance < see_range:

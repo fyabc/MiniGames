@@ -9,6 +9,11 @@ class State:
         pass
 
     def check_conditions(self):
+        """Check the world to select the next state.
+
+        :return: New state type or None.
+        """
+
         raise NotImplementedError()
 
     def entry_actions(self):
