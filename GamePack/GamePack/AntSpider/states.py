@@ -33,7 +33,8 @@ class AntExploring(BrainState):
 
         # If the ant sees a spider attacking the base, go to hunting state
         # todo
-        pass
+
+        return None
 
 
 class AntSeeking(BrainState):
