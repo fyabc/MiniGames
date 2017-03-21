@@ -4,6 +4,7 @@
 import random
 
 from ..utils.vector2 import Vector2
+from .constants import *
 
 __author__ = 'fyabc'
 
@@ -85,4 +86,11 @@ class World:
 
 
 class AntSpiderWorld(World):
-    pass
+    def __init__(self, size, **kwargs):
+        super().__init__(size)
+
+        self.nest_size = kwargs.pop('nest_size', NestSize)
+        self.nest_location = Vector2(*kwargs.pop('nest_location', NestLocation))
+
+    def inside_nest(self, location):
+        return self.nest_location.distance(location) < self.nest_size
