@@ -173,3 +173,18 @@ class Game:
     def log(self, *args, **kwargs):
         """Logging something (maybe events?) into the history manager."""
         pass
+
+    def run_tk(self, **kwargs):
+        """Run tkinter game."""
+
+        size = kwargs.pop('size', '1500x600')
+
+        import tkinter as tk
+        from .gui_tools.tkgui.game_window import GameWindow
+
+        root = tk.Tk(className='HearthStone')
+        root.geometry(size)
+
+        app = GameWindow(self, root)
+
+        app.mainloop()
