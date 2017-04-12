@@ -39,7 +39,7 @@ def run_game(game_filename):
 
 
 if __name__ == '__main__':
-    run_game('../../test/data/example_game.json')
+    run_game('../../test/data/test_basic_mage.json')
 
 
 __all__ = [
