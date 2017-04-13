@@ -3,9 +3,9 @@
 
 import pyglet
 import cocos
-from cocos import layer, text, director, scene, menu
+from cocos import layer, text, director, scene, menu, actions
 
-from HearthStone.core import Game
+from ...core import Game
 
 __author__ = 'fyabc'
 
@@ -28,19 +28,24 @@ class MainMenu(menu.Menu):
         # Menu items
         items = [
             menu.MenuItem('New Game', self.on_new_game),
-            menu.MenuItem('Exit', self.on_quit)
+            menu.MenuItem('Exit', self.on_quit),
+            menu.MenuItem('Deck', self.on_deck),
         ]
 
         self.create_menu(
             items,
-            selected_effect=menu.zoom_in(),
-            unselected_effect=menu.zoom_out(),
+            selected_effect=menu.shake(),
+            unselected_effect=menu.shake_back(),
+            activated_effect=actions.ScaleTo(1.15, duration=0.2),
         )
 
     def on_new_game(self):
         print('New game!')
 
         # todo start a new game.
+
+    def on_deck(self):
+        print('Decks!')
 
     @staticmethod
     def on_quit():
@@ -51,8 +56,8 @@ def run_game(game_filename):
     director.director.init(
         caption='HearthStone',
         resizable=True,
-        width=640,
-        height=480,
+        width=800,
+        height=600,
     )
 
     game = Game(game_filename)
@@ -66,11 +71,6 @@ def run_game(game_filename):
     director.director.run(main_scene)
 
 
-if __name__ == '__main__':
-    run_game('../../test/data/test_basic_mage.json')
-
-
 __all__ = [
-    'BackgroundLayer',
     'run_game',
 ]
