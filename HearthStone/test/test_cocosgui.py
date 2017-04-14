@@ -7,7 +7,7 @@ __author__ = 'fyabc'
 
 
 def _test():
-    run_game('./data/test_basic_mage.json')
+    run_game()
 
 
 if __name__ == '__main__':

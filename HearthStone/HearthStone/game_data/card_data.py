@@ -4,7 +4,7 @@
 import sqlite3
 
 from ..game_entities.card import Card, SetDataMeta
-from ..utils.path import LoadDataPath, CardPackageName
+from ..utils.config import LoadDataPath, CardPackageName
 from ..utils.basic import get_module_vars
 from ..constants import race2str, str2race
 

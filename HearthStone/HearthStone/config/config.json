@@ -1,5 +1,8 @@
 {
     "name": "HearthStone",
+    "author": "fyabc",
+    "version": "1.0",
+
     "CLI": {
         "windowWidth": 120,
         "charGameBegin": "*",

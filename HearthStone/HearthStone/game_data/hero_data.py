@@ -1,7 +1,8 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
+
 from .data_class import DataClass
-from ..utils.path import HeroDataPath
+from ..utils.config import HeroDataPath
 
 __author__ = 'fyabc'
 

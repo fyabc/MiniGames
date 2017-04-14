@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     platforms='any',
-    install_requires=[],
+    install_requires=['appdirs>=1.0', 'cocos2d>=0.6'],
 
     scripts=[],
     entry_points={

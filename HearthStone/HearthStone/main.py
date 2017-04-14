@@ -8,7 +8,7 @@ import tkinter as tk
 
 from .gui_tools.tkgui.game_window import GameWindow
 from .core import Game
-from .utils.path import DefaultGameFile
+from .utils.config import DefaultGameFile
 
 __author__ = 'fyabc'
 
