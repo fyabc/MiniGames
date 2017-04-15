@@ -10,7 +10,7 @@ from cocos.scenes import transitions
 from cocos.director import director
 
 from ..constants import Colors, DefaultFont
-from ..utils import set_menu_style
+from ..utils import set_menu_style, abs_pos
 
 __author__ = 'fyabc'
 
@@ -20,42 +20,6 @@ class BackgroundLayer(layer.Layer):
         super(BackgroundLayer, self).__init__()
 
         # Add more other things here
-
-
-# todo: OptionsMenu
-
-
-class OptionsMenu(menu.Menu):
-    """Options menu. Index in parent: 1"""
-
-    def __init__(self, controller):
-        super().__init__('Options')
-        self.ctrl = controller
-
-        set_menu_style(self)
-
-        items = [
-            menu.ToggleMenuItem('Show FPS:', self.on_show_fps, director.show_FPS),
-            menu.MenuItem('FullScreen', self.on_full_screen),
-            menu.MenuItem('Back', self.on_quit)
-        ]
-
-        self.create_menu(
-            items,
-            selected_effect=menu.shake(),
-            unselected_effect=menu.shake_back(),
-        )
-
-    @staticmethod
-    def on_show_fps(value):
-        director.show_FPS = value
-
-    @staticmethod
-    def on_full_screen():
-        director.window.set_fullscreen(not director.window.fullscreen)
-
-    def on_quit(self):
-        self.parent.switch_to(0)
 
 
 class MainMenu(menu.Menu):
@@ -89,9 +53,7 @@ class MainMenu(menu.Menu):
         # todo start a new game.
 
     def on_deck(self):
-        print('Deck!')
-
-        director.push(transitions.FlipAngular3DTransition(self.ctrl.deck_scene, duration=1.5))
+        director.replace(transitions.SlideInLTransition(self.ctrl.deck_scene, duration=1.2))
 
     def on_options(self):
         self.parent.switch_to(1)
@@ -100,6 +62,39 @@ class MainMenu(menu.Menu):
         """On key ESCAPE."""
 
         self.ctrl.on_quit()
+
+
+class OptionsMenu(menu.Menu):
+    """Options menu. Index in parent: 1"""
+
+    def __init__(self, controller):
+        super().__init__('Options')
+        self.ctrl = controller
+
+        set_menu_style(self)
+
+        items = [
+            menu.ToggleMenuItem('Show FPS:', self.on_show_fps, director.show_FPS),
+            menu.MenuItem('FullScreen', self.on_full_screen),
+            menu.MenuItem('Back', self.on_quit)
+        ]
+
+        self.create_menu(
+            items,
+            selected_effect=menu.shake(),
+            unselected_effect=menu.shake_back(),
+        )
+
+    @staticmethod
+    def on_show_fps(value):
+        director.show_FPS = value
+
+    @staticmethod
+    def on_full_screen():
+        director.window.set_fullscreen(not director.window.fullscreen)
+
+    def on_quit(self):
+        self.parent.switch_to(0)
 
 
 def get_main_scene(controller):

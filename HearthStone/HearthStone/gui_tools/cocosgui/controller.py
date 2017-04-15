@@ -10,12 +10,16 @@ from ...core import Game
 from .views.main_scene import get_main_scene
 from .views.deck_scene import get_deck_scene
 from ...utils.io_utils import make_directories, load_decks, save_decks
+from .constants import WindowSize
 
 __author__ = 'fyabc'
 
 
-class Controller:
-    """The controller of the game, include all."""
+class Controller(pyglet.event.EventDispatcher):
+    """The controller of the game, include all.
+    
+    The controller is an event dispatcher, so we can send events to it.
+    """
 
     def __init__(self):
         self.running = True
@@ -36,8 +40,8 @@ class Controller:
         director.director.init(
             caption='HearthStone',
             resizable=True,
-            width=800,
-            height=600,
+            width=WindowSize[0],
+            height=WindowSize[1],
         )
 
         make_directories()

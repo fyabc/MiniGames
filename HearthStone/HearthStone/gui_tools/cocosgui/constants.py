@@ -664,4 +664,5 @@ Colors = {
 }
 
 
+WindowSize = (800, 600)
 DefaultFont = 'Arial'
