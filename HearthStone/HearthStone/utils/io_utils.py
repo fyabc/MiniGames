@@ -2,8 +2,9 @@
 # -*- encoding: utf-8 -*-
 
 import os
+import json
 
-from .config import AppDataPath
+from .config import AppDataPath, UserDeckFile
 
 __author__ = 'fyabc'
 
@@ -24,9 +25,17 @@ def load_decks():
     :return: List of dict, each dict is a deck.
     """
 
-    decks = []
+    if not os.path.exists(UserDeckFile):
+        return []
 
-    return decks
+    with open(UserDeckFile, 'r', encoding='utf-8') as f:
+        decks = json.load(f)
+
+        for deck in decks:
+            # todo: format the deck
+            pass
+
+        return decks
 
 
 def save_decks(decks):
@@ -34,6 +43,9 @@ def save_decks(decks):
     
     :param decks: List of dict, each dict is a deck.
     """
+
+    with open(UserDeckFile, 'w', encoding='utf-8') as f:
+        json.dump(decks, f)
 
 
 __all__ = [
