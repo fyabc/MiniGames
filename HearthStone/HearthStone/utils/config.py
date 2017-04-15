@@ -58,3 +58,4 @@ C = Config
 
 # AppData path.
 AppDataPath = _Appdirs(C['name'], appauthor=C['author'], version=C['version'])
+UserDeckFile = _os.path.join(AppDataPath.user_data_dir, 'user_decks.json')

@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-import sys
 import os
+import sys
 from importlib import import_module
 
 __author__ = 'fyabc'

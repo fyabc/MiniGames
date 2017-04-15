@@ -664,6 +664,4 @@ Colors = {
 }
 
 
-__all__ = [
-    'Colors',
-]
+DefaultFont = 'Arial'
