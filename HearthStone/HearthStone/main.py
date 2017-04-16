@@ -8,7 +8,9 @@ import tkinter as tk
 
 from .gui_tools.tkgui.game_window import GameWindow
 from .core import Game
-from .utils.config import DefaultGameFile
+from .utils.debug import *
+from .utils.config import DefaultGameFile, AppDataPath
+from .utils.io_utils import make_directories
 
 __author__ = 'fyabc'
 
@@ -24,19 +26,26 @@ def get_parser():
         help='The game file to be load (default is an example game file)')
     parser.add_argument(
         '-l', '--log', nargs='?', metavar='log_filename', dest='log', type=str, default=None,
-        const=os.path.join(os.path.expanduser('~'), 'HS_log_{}.txt'.format(time.strftime('%y_%m_%d_%H_%M_%S'))),
+        const=os.path.join(AppDataPath.user_log_dir, 'HS_log_{}.txt'.format(time.strftime('%y_%m_%d_%H_%M_%S'))),
         help='The logging filename (default is do not logging, if filename of -l not given, '
-             'it will be put in your home directory.)')
+             'it will be put in the log directory of AppData)')
+    parser.add_argument(
+        '-d', '--debug', metavar='level', dest='debug_level', type=str,
+        choices=['debug', 'verbose', 'info', 'common', 'warning', 'error'], default='common',
+        help='The debug level, default is "common"')
 
     return parser
 
 
 def main():
+    make_directories()
+
     parser = get_parser()
+    options = parser.parse_args()
+
+    set_debug_level(eval('LEVEL_{}'.format(options.debug_level.upper())))
 
     print('This is the GUI main script of the package HearthStone!')
-
-    options = parser.parse_args()
 
     root = tk.Tk(className='HearthStone')
     root.geometry(options.size)

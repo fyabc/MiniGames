@@ -3,6 +3,7 @@
 
 from sys import platform
 from functools import partial
+from contextlib import contextmanager
 
 __author__ = 'fyabc'
 
@@ -77,6 +78,13 @@ info = partial(message, level=LEVEL_INFO)
 warning = partial(message, level=LEVEL_WARNING)
 error = partial(message, level=LEVEL_ERROR)
 
+
+@contextmanager
+def msg_block(msg, level=LEVEL_INFO):
+    message('{}... '.format(msg), end='', level=level)
+    yield
+    message('Done', level=level)
+
 __all__ = [
     'ConsoleColors',
     'set_color',
@@ -95,4 +103,5 @@ __all__ = [
     'info',
     'warning',
     'error',
+    'msg_block',
 ]

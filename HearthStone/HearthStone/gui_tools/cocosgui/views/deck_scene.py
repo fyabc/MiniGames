@@ -18,6 +18,14 @@ class CardsLayer(layer.Layer):
         self.ctrl = controller
 
 
+class DecksLayer(layer.Layer):
+    """Layer that show decks."""
+
+    def __init__(self, controller):
+        super().__init__()
+        self.ctrl = controller
+
+
 class DeckMenu(menu.Menu):
     """Deck menu."""
 

@@ -6,6 +6,7 @@ import sqlite3
 from ..game_entities.card import Card, SetDataMeta
 from ..utils.config import LoadDataPath, CardPackageName
 from ..utils.basic import get_module_vars
+from ..utils.debug import msg_block
 from ..constants import race2str, str2race
 
 __author__ = 'fyabc'
@@ -78,23 +79,25 @@ def get_all_cards():
     if AllCards is not None:
         return AllCards
 
-    AllCards = {}
+    with msg_block('Loading cards'):
+        AllCards = {}
 
-    for module_vars in get_module_vars(LoadDataPath, CardPackageName):
-        for card_typename, card_type in module_vars.items():
-            if type(card_type) == SetDataMeta and issubclass(card_type, Card):
-                data = card_type.data
+        for module_vars in get_module_vars(LoadDataPath, CardPackageName):
+            for card_typename, card_type in module_vars.items():
+                if type(card_type) == SetDataMeta and issubclass(card_type, Card):
+                    data = card_type.data
 
-                card_id = data.get('id', None)
-                if card_id is None:
-                    continue
+                    card_id = data.get('id', None)
+                    if card_id is None:
+                        continue
 
-                if card_id in AllCards:
-                    raise KeyError('The card id {} already exists'.format(card_id))
+                    if card_id in AllCards:
+                        raise KeyError('The card id {} already exists'.format(card_id))
 
-                AllCards[card_id] = card_type
+                    AllCards[card_id] = card_type
 
-    _create_cards_db()
+    with msg_block('Creating cards database'):
+        _create_cards_db()
 
     return AllCards
 
@@ -108,20 +111,27 @@ def get_cards_db():
     return AllCardsDB
 
 
-def get_card_type(id_or_name):
+def get_card_id(id_or_name):
     if isinstance(id_or_name, int):
-        return get_all_cards()[id_or_name]
+        return id_or_name
     elif isinstance(id_or_name, str):
         cursor = get_cards_db().cursor()
         cursor.execute('''SELECT id FROM AllCards WHERE (name = ?)''', (id_or_name,))
         result = cursor.fetchall()
         result_id = result[0][0]
-        return get_all_cards()[result_id]
+
+        return result_id
     else:
         raise TypeError('id_or_name must be int or string')
+
+
+def get_card_type(id_or_name):
+    return get_all_cards()[get_card_id(id_or_name)]
 
 
 __all__ = [
     'get_all_cards',
     'get_cards_db',
+    'get_card_id',
+    'get_card_type',
 ]
