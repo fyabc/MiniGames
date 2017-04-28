@@ -213,6 +213,7 @@ class SelectionStateMachine:
                         else:
                             error(result)
                         self.clear_selection()
+                        self.state.set(0)
 
         elif state == 1:
             # To summon

@@ -616,6 +616,8 @@ class 图腾之力(Spell):
 
 
 class 冰霜震击(Spell):
+    """对一个敌人造成1点伤害，并使其冻结。"""
+
     have_target = True
 
     _data = dict(id=113, name='冰霜震击', type=1, CAH=[1], klass=7)

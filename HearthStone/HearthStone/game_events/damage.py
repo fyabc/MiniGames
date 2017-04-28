@@ -23,6 +23,7 @@ class Damage(GameEvent):
     def _happen(self):
         died = self.target.take_damage(self.source, self.value, self)
         if self.freeze:
+            # todo: add `Freeze` event
             self.target.freeze()
 
         if self.alive:
