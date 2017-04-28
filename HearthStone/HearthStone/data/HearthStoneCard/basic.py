@@ -32,7 +32,15 @@ class 幸运币(Spell):
     def play(self, player_id, target):
         self.game.players[player_id].add_crystal(1)
 
-精灵弓箭手 = m_blank('精灵弓箭手', dict(id=1, name='精灵弓箭手', CAH=[1, 1, 1]))
+
+class 精灵弓箭手(Minion):
+    """战吼：造成1点伤害。"""
+    have_target = True
+    _data = dict(id=1, name='精灵弓箭手', CAH=[1, 1, 1])
+
+    def run_battle_cry(self, player_id, index, target=None):
+        self.game.add_event_quick(Damage, self, target, 1)
+
 闪金镇步兵 = m_blank('闪金镇步兵', dict(id=2, name='闪金镇步兵', CAH=[1, 1, 2], taunt=True))
 石牙野猪 = m_blank('石牙野猪', dict(id=3, name='石牙野猪', race=['Beast'], CAH=[1, 1, 1], charge=True))
 暗鳞先知 = m_blank('暗鳞先知', dict(id=4, name='暗鳞先知', race=['Murloc'], CAH=[1, 1, 1]))
@@ -51,6 +59,7 @@ class 幸运币(Spell):
 
 
 class 工程师学徒(Minion):
+    """战吼：抽一张牌。"""
     _data = dict(id=15, name='工程师学徒', CAH=[2, 1, 1])
 
     def run_battle_cry(self, player_id, index, target=None):
@@ -77,6 +86,7 @@ class 工程师学徒(Minion):
 
 
 class 侏儒发明家(Minion):
+    """战吼：抽一张牌。"""
     _data = dict(id=31, name='侏儒发明家', CAH=[4, 2, 4])
 
     def run_battle_cry(self, player_id, index, target=None):
@@ -294,6 +304,7 @@ class 消失(Spell):
 
 
 class 疾跑(Spell):
+    """抽四张牌。"""
     _data = dict(id=67, name='疾跑', type=1, CAH=[7], klass=2)
 
     def play(self, player_id, target):
@@ -790,18 +801,15 @@ class 星火术(Spell):
 
 
 set_description({
-    精灵弓箭手: '战吼：造成1点伤害。',
     暗鳞先知: '所有其他鱼人获得+1攻击力。',
     巫医: '战吼：恢复2点生命值。',
     酸性沼泽软泥怪: '战吼：摧毁你的对手的武器。',
     鱼人猎潮者: '战吼：召唤一个1/1的鱼人斥候。',
-    工程师学徒: '战吼：抽一张牌。',
     铁炉堡火枪手: '战吼：造成1点伤害。',
     团队领袖: '你的其他随从获得+1攻击力。',
     剃刀猎手: '战吼：召唤一个1/1的野猪。',
     破碎残阳祭司: '战吼：使一个友方随从获得+1/+1。',
     机械幼龙技工: '战吼：召唤一个2/1的机械幼龙。',
-    侏儒发明家: '战吼：抽一张牌。',
     暗鳞治愈者: '战吼：为所有友方角色恢复2点生命值。',
     霜狼督军: '战吼：战场上每有一个其他友方随从，便获得+1/+1。',
     古拉巴什狂暴者: '每当该随从收到伤害时，获得+3攻击力。',
@@ -830,7 +838,6 @@ set_description({
     刺杀: '消灭一个敌方随从。',
     刺客之刃: '',
     消失: '将所有随从移回其拥有者的手牌。',
-    疾跑: '抽四张牌。',
 
     北郡牧师: '每当一个随从获得治疗时，抽一张牌。',
 })

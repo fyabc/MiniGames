@@ -475,7 +475,7 @@ Restart or Quit?
         self.refresh_window()
 
     def try_summon_minion(self, minion, index, target=None):
-        self._checked_dispatch(SummonMinion, minion, index, target)
+        self._checked_dispatch(SummonMinion, minion, index, target=target)
         self.refresh_window()
 
     def try_attack(self, source, target):

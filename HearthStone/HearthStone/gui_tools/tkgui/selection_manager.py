@@ -78,6 +78,11 @@ class SelectionStateMachine:
         self.selected_buttons.clear()
 
     def set_window_buttons(self, *args):
+        """Enable and disable window buttons for each state.
+        
+        Be called when the state was written.
+        """
+
         state = self.state.get()
 
         hero_buttons = self.window.player_buttons[0][2], self.window.player_buttons[1][2]
@@ -163,6 +168,21 @@ class SelectionStateMachine:
                     else:
                         self.disable(desk_button)
 
+        elif state == 4:
+            # To select summon target
+
+            for player_id in (0, 1):
+                self.enable(hero_buttons[player_id])
+
+                for hand_button in self.window.hand_card_buttons[player_id]:
+                    self.disable(hand_button)
+
+                for index, desk_button in enumerate(self.window.desk_card_buttons[player_id]):
+                    if index < 2 * desk_numbers[player_id] and index % 2 == 1:
+                        self.enable(desk_button)
+                    else:
+                        self.disable(desk_button)
+
         # Enable all selected buttons, so that user can deselect it.
         for button in self.selected_buttons:
             self.enable(button)
@@ -228,8 +248,8 @@ class SelectionStateMachine:
                 error('The desk of P{} is full!'.format(player.player_id))
             else:
                 if minion.have_target:
-                    # todo: add minion target selection (e.g. "BattleCry: deal 1 damage") here.
-                    pass
+                    self.add_selection(selection, button)
+                    self.state.set(4)
                 else:
                     self.window.try_summon_minion(minion, index_, None)
                     self.clear_selection()
@@ -263,6 +283,25 @@ class SelectionStateMachine:
 
             if result is True:
                 self.window.try_play_spell(spell, target)
+                self.clear_selection()
+                self.state.set(0)
+            else:
+                error(result)
+
+        elif state == 4:
+            # To select summon target
+
+            player = self.game.current_player
+            minion = self.find_entity(self.selections[0])
+            target = self.find_entity(selection)
+            result = minion.validate_target(target)
+
+            _, _, minion_index = self.selections[1]
+            index_ = min(minion_index // 2, player.desk_number)
+
+            if result is True:
+                self.window.try_summon_minion(minion, index_, target)
+
                 self.clear_selection()
                 self.state.set(0)
             else:

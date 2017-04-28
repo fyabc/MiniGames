@@ -69,7 +69,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
         'description': '',
     }
 
-    # Is this spell have target?
+    # Is this card have target?
     have_target = False
 
     def __init__(self, game, **kwargs):
