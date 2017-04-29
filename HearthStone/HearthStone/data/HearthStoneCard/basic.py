@@ -32,14 +32,7 @@ class 幸运币(Spell):
     def play(self, player_id, target):
         self.game.players[player_id].add_crystal(1)
 
-
-class 精灵弓箭手(Minion):
-    """战吼：造成1点伤害。"""
-    have_target = True
-    _data = dict(id=1, name='精灵弓箭手', CAH=[1, 1, 1])
-
-    def run_battle_cry(self, player_id, index, target=None):
-        self.game.add_event_quick(Damage, self, target, 1)
+精灵弓箭手 = m_damage('精灵弓箭手', dict(id=1, name='精灵弓箭手', CAH=[1, 1, 1]), 1)
 
 闪金镇步兵 = m_blank('闪金镇步兵', dict(id=2, name='闪金镇步兵', CAH=[1, 1, 2], taunt=True))
 石牙野猪 = m_blank('石牙野猪', dict(id=3, name='石牙野猪', race=['Beast'], CAH=[1, 1, 1], charge=True))
@@ -66,7 +59,7 @@ class 工程师学徒(Minion):
         self.game.add_event_quick(DrawCard)
 
 达拉然法师 = m_blank('达拉然法师', dict(id=16, name='达拉然法师', CAH=[3, 1, 4], spell_power=1))
-铁炉堡火枪手 = m_blank('铁炉堡火枪手', dict(id=17, name='铁炉堡火枪手', CAH=[3, 2, 2]))
+铁炉堡火枪手 = m_damage('铁炉堡火枪手', dict(id=17, name='铁炉堡火枪手', CAH=[3, 2, 2]), 1)
 铁鬃灰熊 = m_blank('铁鬃灰熊', dict(id=18, name='铁鬃灰熊', race=['Beast'], CAH=[3, 3, 3], taunt=True))
 岩浆暴怒者 = m_blank('岩浆暴怒者', dict(id=19, name='岩浆暴怒者', CAH=[3, 5, 1]))
 团队领袖 = m_blank('团队领袖', dict(id=20, name='团队领袖', CAH=[3, 2, 2]))
@@ -106,7 +99,7 @@ class 夜刃刺客(Minion):
     def run_battle_cry(self, player_id, index, target=None):
         self.game.add_event_quick(Damage, self, self.game.players[1 - player_id], 3)
 
-雷矛特种兵 = m_blank('雷矛特种兵', dict(id=39, name='雷矛特种兵', CAH=[5, 4, 2]))
+雷矛特种兵 = m_damage('雷矛特种兵', dict(id=39, name='雷矛特种兵', CAH=[5, 4, 2]), 2)
 大法师 = m_blank('大法师', dict(id=40, name='大法师', CAH=[6, 4, 7], spell_power=1))
 石拳食人魔 = m_blank('石拳食人魔', dict(id=41, name='石拳食人魔', CAH=[6, 6, 7]))
 竞技场主宰 = m_blank('竞技场主宰', dict(id=42, name='竞技场主宰', CAH=[6, 6, 5], taunt=True))
@@ -663,8 +656,7 @@ class 嗜血(Spell):
     _data = dict(id=119, name='嗜血', type=1, CAH=[5], klass=7)
 
 
-class 火元素(Minion):
-    _data = dict(id=120, name='火元素', CAH=[6, 6, 5], klass=7)
+火元素 = m_damage('火元素', dict(id=120, name='火元素', CAH=[6, 6, 5], race=['Elemental'], klass=7), 3)
 
 
 ###########
@@ -801,6 +793,7 @@ class 星火术(Spell):
 
 
 set_description({
+    精灵弓箭手: '战吼：造成1点伤害。',
     暗鳞先知: '所有其他鱼人获得+1攻击力。',
     巫医: '战吼：恢复2点生命值。',
     酸性沼泽软泥怪: '战吼：摧毁你的对手的武器。',

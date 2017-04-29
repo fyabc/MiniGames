@@ -44,6 +44,50 @@ def gen_basic_description(data):
     return '，'.join(descriptions)
 
 
+# Common target validators.
+def validator_enemy(self, target):
+    result = super(self.__class__, self).validate_target(target)
+    if result is not True:
+        return result
+
+    if target.player_id == self.player_id:
+        return 'Must choose an enemy minion!'
+
+    return True
+
+
+def validator_minion(self, target):
+    result = super(self.__class__, self).validate_target(target)
+    if result is not True:
+        return result
+
+    if target.type != cc.Type_minion:
+        return 'The target must be a minion!'
+
+    return True
+
+
+def validator_enemy_minion(self, target):
+    result = super(self.__class__, self).validate_target(target)
+    if result is not True:
+        return result
+
+    if target.type != cc.Type_minion:
+        return 'The target must be a minion!'
+
+    if target.player_id == self.player_id:
+        return 'Must choose an enemy minion!'
+
+    return True
+
+
+_ValidatorTable = {
+    'E': validator_enemy,
+    'M': validator_enemy_minion,
+    'EM': validator_enemy_minion,
+}
+
+
 def create_blank(name, data, card_type=Minion):
     if 'description' not in data:
         data['description'] = gen_basic_description(data)
@@ -62,15 +106,21 @@ w_blank = partial(create_blank, card_type=Weapon)
 
 
 def m_summon(name, data, bc_or_dr=True, **kwargs):
-    """
+    """An utility function to create a minion that summon other minions.
 
     :param name:
     :param data:
     :param bc_or_dr: bool
         If True, summon on battle cry, else summon on death rattle.
     :param kwargs: Other keyword arguments.
+        card_id: int
+            If given, will summon the minion of this id.
+            If not given, will summon a random minion.
         conditions: list of string
             Condition must be a SQL condition expression.
+        relative_location: int
+            The location of summoned minion relative to this minion.
+            Default is +1 if `bc_or_dr` is True, else 0.
     :return: Minion class.
     """
 
@@ -113,41 +163,39 @@ def m_summon(name, data, bc_or_dr=True, **kwargs):
     return result
 
 
-# Common target validators.
-def validator_enemy(self, target):
-    result = super(self.__class__, self).validate_target(target)
-    if result is not True:
-        return result
+def m_damage(name, data, value, target_range=None):
+    """An utility function to create a minion that deal damage.
+    
+    :param name: 
+    :param data: 
+    :param value: damage value.
+    :param target_range: The range of the target.
+        None (default): no limit.
+        'E': enemy.
+        'M': minion.
+        'EM': enemy minion.
+        'F': (other) friendly character.
+        'FM': (other) friendly minion.
+    :return: Minion class.
+    """
 
-    if target.player_id == self.player_id:
-        return 'Must choose an enemy minion!'
+    def run_battle_cry(self, player_id, index, target=None):
+        self.game.add_event_quick(Damage, self, target, value)
 
-    return True
+    cls_dict = {
+        'have_target': True,
+        '_data': data,
+        'run_battle_cry': run_battle_cry,
+    }
 
+    if target_range is not None:
+        cls_dict['validate_target'] = _ValidatorTable[target_range]
 
-def validator_minion(self, target):
-    result = super(self.__class__, self).validate_target(target)
-    if result is not True:
-        return result
+    result = new_class(name, (Minion,), {}, lambda ns: ns.update(cls_dict))
 
-    if target.type != cc.Type_minion:
-        return 'The target must be a minion!'
-
-    return True
-
-
-def validator_enemy_minion(self, target):
-    result = super(self.__class__, self).validate_target(target)
-    if result is not True:
-        return result
-
-    if target.type != cc.Type_minion:
-        return 'The target must be a minion!'
-
-    if target.player_id == self.player_id:
-        return 'Must choose an enemy minion!'
-
-    return True
+    # Get the module name of caller.
+    result.__module__ = sys._getframe(1).f_globals['__name__']
+    return result
 
 
 # Common spell actions.
@@ -166,6 +214,7 @@ __all__ = [
     'm_blank',
     'w_blank',
     'm_summon',
+    'm_damage',
 
     'validator_enemy',
     'validator_minion',

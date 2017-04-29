@@ -41,6 +41,7 @@ Races = {
     'Dragon': '4',
     'Devil': '5',
     'Totem': '6',
+    'Elemental': '7',
 }
 
 ReversedRaces = {v: k for k, v in Races.items()}

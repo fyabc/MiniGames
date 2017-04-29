@@ -263,16 +263,21 @@ def get_skill_locals():
         from HearthStone.ext import TurnBegin
         from HearthStone.ext import MinionDeath
         from HearthStone.ext import constants
-        from HearthStone.utils.debug_utils import verbose
+        from HearthStone.utils.debug import verbose
 
         _default_locals = locals()
     return _default_locals
 
 
 # Build the parser
-parser = yacc()
+_build = False
 
-parse_card = parser.parse
+if _build:
+    parser = yacc()
+
+    parse_card = parser.parse
+else:
+    parser, parse_card = None, None
 
 
 __all__ = [
