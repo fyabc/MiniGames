@@ -75,6 +75,10 @@ class AddMinionToDesk(GameEvent):
         self.minion.change_location(self.minion.DESK)
         player.desk.insert(self.index, self.minion)
 
+        # Set timestamp of summon.
+        self.minion.timestamp = self.game.summon_number
+        self.game.summon_number += 1
+
     def _message(self):
         pass
 

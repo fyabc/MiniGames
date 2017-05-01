@@ -235,6 +235,8 @@ class Minion(Card, IMinion):
         self._frozen = 0                            # Is this minion frozen?
         self._silent = False                        # Is this minion silent?
 
+        self.timestamp = None                       # The timestamp of the minion to summon to the desk.
+
         # Set spell power handlers.
         if self.data['spell_power'] > 0:
             self.handlers.add(SpellPowerHandler(self.game, self))

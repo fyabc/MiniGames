@@ -4,7 +4,6 @@ import tkinter as tk
 from collections import namedtuple
 
 from ...game_entities.card import Minion, Spell
-from ...utils.debug import error
 
 __author__ = 'fyabc'
 
@@ -231,7 +230,7 @@ class SelectionStateMachine:
                         if result is True:
                             self.window.try_play_spell(card, None)
                         else:
-                            error(result)
+                            self.window.gui_error(result)
                         self.clear_selection()
                         self.state.set(0)
 
@@ -243,9 +242,9 @@ class SelectionStateMachine:
             index_ = min(index // 2, player.desk_number)
 
             if player.remain_crystal < minion.cost:
-                error('I don\'t have enough mana crystals!')
+                self.window.gui_error('I don\'t have enough mana crystals!')
             elif player.desk_full:
-                error('The desk of P{} is full!'.format(player.player_id))
+                self.window.gui_error('The desk of P{} is full!'.format(player.player_id))
             else:
                 if minion.have_target:
                     self.add_selection(selection, button)
@@ -262,13 +261,13 @@ class SelectionStateMachine:
             target = self.find_entity(selection)
 
             if source.attack <= 0:
-                error('Role who don\'t have positive attack cannot attack!')
+                self.window.gui_error('Role who don\'t have positive attack cannot attack!')
             elif source.remain_attack_number <= 0:
-                error('{} cannot attack!'.format(source))
+                self.window.gui_error('{} cannot attack!'.format(source))
             elif target.stealth:
-                error('{} is stealth, cannot be target!'.format(target))
+                self.window.gui_error('{} is stealth, cannot be target!'.format(target))
             elif (not target.taunt) and any(minion.taunt for minion in self.game.opponent_player.desk):
-                error('I must attack the minion who have taunt!')
+                self.window.gui_error('I must attack the minion who have taunt!')
             else:
                 self.window.try_attack(source, target)
                 self.clear_selection()
@@ -286,7 +285,7 @@ class SelectionStateMachine:
                 self.clear_selection()
                 self.state.set(0)
             else:
-                error(result)
+                self.window.gui_error(result)
 
         elif state == 4:
             # To select summon target
@@ -305,4 +304,4 @@ class SelectionStateMachine:
                 self.clear_selection()
                 self.state.set(0)
             else:
-                error(result)
+                self.window.gui_error(result)

@@ -69,9 +69,11 @@ class Game:
         # Game data.
         self.game_filename = game_filename
         self.players = self.load_game(game_filename)
-
         self.current_player_id = 0
+
+        # Some counters.
         self.turn_number = 0
+        self.summon_number = 0
 
         # Aura manager.
         self.aura_manager = AuraManager(self)

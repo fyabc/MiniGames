@@ -51,7 +51,7 @@ def validator_enemy(self, target):
         return result
 
     if target.player_id == self.player_id:
-        return 'Must choose an enemy minion!'
+        return 'Must choose an enemy!'
 
     return True
 

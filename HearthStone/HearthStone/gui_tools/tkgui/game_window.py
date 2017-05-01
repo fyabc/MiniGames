@@ -10,6 +10,7 @@ from .tk_ext import ToolTip
 from ...cli_tool import show_card, show_minion
 from ...game_events import Attack, GameBegin, TurnEnd, SummonMinion, PlaySpell
 from ...utils.basic import WINDOWS
+from ...utils.debug import error
 
 __author__ = 'fyabc'
 
@@ -212,7 +213,7 @@ class GameWindow(ttk.Frame):
             deck_number_label.grid(row=1, column=1, stick=tk.W)
             crystal_label.grid(row=2, column=1, stick=tk.W)
 
-        # Turn end button.
+        # Player button.
         self.player_button_frame = ttk.Frame(self, borderwidth=frame_bw)
         self.player_button_frame.grid(row=1, column=2)
 
@@ -243,6 +244,10 @@ class GameWindow(ttk.Frame):
                 else:
                     _row = _n_button - 1 - n
                 button.grid(row=_row, column=0, pady=3)
+
+        # Information.
+        self.info_label = ttk.Label(self, text='')
+        self.info_label.grid(row=3, column=1)
                 
         # All tooltips.
         self.all_tooltips = {}
@@ -437,6 +442,11 @@ class GameWindow(ttk.Frame):
             for player_buttons in self.desk_card_buttons:
                 for button in player_buttons:
                     button.config(state=tk.DISABLED)
+
+    def gui_error(self, msg):
+        """Print error message on information label."""
+        self.info_label.config(text=msg)
+        error(msg)
 
     # Some user operations.
     def _checked_dispatch(self, event_type, *args, **kwargs):

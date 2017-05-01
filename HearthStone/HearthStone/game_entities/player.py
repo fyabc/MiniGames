@@ -150,12 +150,10 @@ class Player(GameEntity, IMinion):
         self.remain_crystal = min(self.remain_crystal + value, self.game.MaxCrystal - self.locked_crystal)
 
     # Other utils.
-    def iter_desk(self):
-        """Iterator on desk.
+    def summon_order(self):
+        """Return a list of minions on the desk in the order of summon."""
 
-        To be sorted in order of summon.
-        """
-        return self.desk
+        return sorted(self.desk, key=lambda minion: minion.timestamp)
 
 
 __all__ = [

@@ -212,7 +212,7 @@ class 魔爆术(Spell):   #
     _data = dict(id=50, name='魔爆术', type=1, CAH=[2], klass=1)
 
     def play(self, player_id, target):
-        for minion in self.game.players[1 - self.player_id].iter_desk():
+        for minion in self.game.players[1 - self.player_id].summon_order():
             self.game.add_event_quick(SpellDamage, self, minion, 1)
 
 
@@ -240,7 +240,7 @@ class 冰霜新星(Spell):      #
     _data = dict(id=53, name='冰霜新星', type=1, CAH=[3], klass=1)
 
     def play(self, player_id, target):
-        for minion in self.game.players[1 - self.player_id].iter_desk():
+        for minion in self.game.players[1 - self.player_id].summon_order():
             minion.freeze()
 
 
@@ -280,7 +280,7 @@ class 烈焰风暴(Spell):      #
     _data = dict(id=57, name='烈焰风暴', type=1, CAH=[7], klass=1)
 
     def play(self, player_id, target):
-        for minion in self.game.players[1 - self.player_id].iter_desk():
+        for minion in self.game.players[1 - self.player_id].summon_order():
             self.game.add_event_quick(SpellDamage, self, minion, 4)
 
 
@@ -352,7 +352,7 @@ class 刀扇(Spell):    #
     _data = dict(id=63, name='刀扇', type=1, CAH=[3], klass=2)
 
     def play(self, player_id, target):
-        for minion in self.game.players[1 - self.player_id].iter_desk():
+        for minion in self.game.players[1 - self.player_id].summon_order():
             self.game.add_event_quick(SpellDamage, self, minion, 1)
         self.game.add_event_quick(DrawCard, self.player_id, self.player_id)
 
