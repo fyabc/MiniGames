@@ -4,12 +4,13 @@
 """Change the card data file, so that all cards will have auto increment id."""
 
 import re
+import sys
 
 __author__ = 'fyabc'
 
 
 def main():
-    filename = '../HearthStone/data/HearthStoneCard/classic.py'
+    filename = 'HearthStone/data/HearthStoneCard/{}.py'.format(sys.argv[1])
     package_id = 1
 
     with open(filename, 'r', encoding='utf-8') as f:

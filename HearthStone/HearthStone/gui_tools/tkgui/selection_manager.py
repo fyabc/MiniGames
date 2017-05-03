@@ -85,6 +85,7 @@ class SelectionStateMachine:
         state = self.state.get()
 
         hero_buttons = self.window.player_buttons[0][2], self.window.player_buttons[1][2]
+        turn_end_buttons = self.window.player_buttons[0][0], self.window.player_buttons[1][0]
 
         cur_id = self.game.current_player_id
         opp_id = 1 - cur_id
@@ -96,6 +97,9 @@ class SelectionStateMachine:
 
             for player_id in (0, 1):
                 self.disable(hero_buttons[player_id])
+
+            self.enable(turn_end_buttons[cur_id])
+            self.disable(turn_end_buttons[opp_id])
 
             for index, hand_button in enumerate(self.window.hand_card_buttons[cur_id]):
                 if index < hand_numbers[cur_id]:
@@ -120,6 +124,7 @@ class SelectionStateMachine:
 
             for player_id in (0, 1):
                 self.disable(hero_buttons[player_id])
+                self.disable(turn_end_buttons[player_id])
 
                 for hand_button in self.window.hand_card_buttons[player_id]:
                     self.disable(hand_button)
@@ -140,6 +145,8 @@ class SelectionStateMachine:
             self.disable(hero_buttons[cur_id])
 
             for player_id in (0, 1):
+                self.disable(turn_end_buttons[player_id])
+
                 for hand_button in self.window.hand_card_buttons[player_id]:
                     self.disable(hand_button)
 
@@ -157,6 +164,7 @@ class SelectionStateMachine:
 
             for player_id in (0, 1):
                 self.enable(hero_buttons[player_id])
+                self.disable(turn_end_buttons[player_id])
 
                 for hand_button in self.window.hand_card_buttons[player_id]:
                     self.disable(hand_button)
@@ -172,6 +180,7 @@ class SelectionStateMachine:
 
             for player_id in (0, 1):
                 self.enable(hero_buttons[player_id])
+                self.disable(turn_end_buttons[player_id])
 
                 for hand_button in self.window.hand_card_buttons[player_id]:
                     self.disable(hand_button)
