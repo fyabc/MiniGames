@@ -13,9 +13,9 @@ Package = {
 }
 
 
-###################
-# Neutral Minions #
-###################
+###########
+# Neutral #
+###########
 
 随机1 = m_summon('随机1', dict(id=101000, name='随机1', CAH=[4, 2, 2], rarity=4), conditions=['type = 0'])
 随机2 = m_summon('随机2', dict(id=101001, name='随机2', CAH=[6, 4, 2], rarity=4), conditions=['type = 0', 'rarity = 4'])
