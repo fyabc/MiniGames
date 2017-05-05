@@ -3,6 +3,7 @@
 
 from .card import DeskHandler
 from ..game_events.damage import Damage, SpellDamage
+from ..game_events.real_time import ArcaneMissilesDamage
 from ..utils.debug import verbose
 
 __author__ = 'fyabc'
@@ -28,12 +29,16 @@ class SpellPowerHandler(DeskHandler):
 
     BeforeOrAfter = True
 
-    event_types = [SpellDamage]
+    event_types = [SpellDamage, ArcaneMissilesDamage]
+
+    def __init__(self, game, owner, value=None):
+        super().__init__(game, owner)
+        self.value = value if value is not None else owner.spell_power
 
     def _process(self, event):
-        if event.spell.player_id != self.owner.player_id:
+        if event.source.player_id != self.owner.player_id:
             return
-        event.value += self.owner.spell_power
+        event.value += self.value
         self._message(event)
 
     def _message(self, event):

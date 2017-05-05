@@ -168,6 +168,25 @@ class Game:
         self.current_player_id = (self.current_player_id + 1) % gc.TotalPlayerNumber
         self.turn_number += 1
 
+    # Methods to get 'where' functions, which return a list of entities, used in random target events, etc.
+    def role(self, player_id=None):
+        """Minions and hero.
+        
+        :param player_id: 0, 1 or None (default), None means both
+        :return: A function that return
+        """
+
+        if player_id is None:
+            candidates = self.players[0].desk + self.players[1].desk + [self.players]
+        else:
+            player = self.players[player_id]
+            candidates = player.desk + [player]
+
+        def where():
+            return candidates
+
+        return where
+
     # Other utilities.
     def create_card(self, card_id_or_name, player_id=None):
         return get_card_type(card_id_or_name)(self, player_id=player_id)

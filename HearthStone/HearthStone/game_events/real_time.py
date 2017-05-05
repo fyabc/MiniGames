@@ -77,19 +77,21 @@ class RandomTargetEvent(RealTimeEvent):
 
 
 class RandomTargetDamage(RandomTargetEvent):
-    def __init__(self, game, source, value, where, target_number=1):
+    def __init__(self, game, source, value, where, target_number=1, damage_type=None):
         super().__init__(game, where, target_number)
         self.source = source
         self.value = value
+        if damage_type is None:
+            if self.source.type == Type_spell:
+                self.damage_type = SpellDamage
+            else:
+                self.damage_type = Damage
+        else:
+            self.damage_type = damage_type
 
     def _apply_to_targets(self, targets):
-        if self.source.type == Type_spell:
-            damage_type = Damage
-        else:
-            damage_type = SpellDamage
-
         for target in targets:
-            self.game.add_event_quick(damage_type, self.source, target, self.value)
+            self.game.add_event_quick(self.damage_type, self.source, target, self.value)
 
     def __str__(self):
         return '{}({}=>random, value={})'.format(super().__str__(), self.source, self.value)
@@ -98,7 +100,39 @@ class RandomTargetDamage(RandomTargetEvent):
         verbose('{} take {} damage to random target!'.format(self.source, self.value))
 
 
+class ArcaneMissilesDamage(GameEvent):
+    """This is special spell damage of 'Arcane Missiles' and 'Avenging Wrath'.
+
+    The effect of Spell Power on it is different from common spell damage.
+    
+    [NOTE] This is NOT a subclass of Damage or SpellDamage!
+    """
+
+    def __init__(self, game, spell, value):
+        super().__init__(game)
+        self.source = spell
+        self.value = value
+
+    def __str__(self):
+        return '{}({}=>random, value={})'.format(super().__str__(), self.source, self.value)
+
+    @property
+    def spell(self):
+        return self.source
+
+    def _happen(self):
+        for _ in range(self.value):
+            self.game.add_event_quick(RandomTargetDamage, self.source, 1,
+                                      self.game.role(1 - self.source.player_id), damage_type=Damage)
+
+        self._message()
+
+    def _message(self):
+        verbose('{} take Arcane Missiles Damage of value {}!'.format(self.source, self.value))
+
+
 __all__ = [
     'RandomTargetEvent',
     'RandomTargetDamage',
+    'ArcaneMissilesDamage',
 ]

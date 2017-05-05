@@ -52,6 +52,9 @@ class SpellDamage(Damage):
     def __init__(self, game, spell, target, value, **kwargs):
         super(SpellDamage, self).__init__(game, spell, target, value, **kwargs)
 
+    def _message(self):
+        verbose('{} take {} spell damage to {}!'.format(self.source, self.value, self.target))
+
     @property
     def spell(self):
         return self.source

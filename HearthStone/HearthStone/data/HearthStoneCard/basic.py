@@ -4,7 +4,7 @@
 from HearthStone.ext import Minion, Spell, Weapon, set_description
 from HearthStone.ext.card_creator import *
 from HearthStone.ext import DrawCard, AddCardToHand
-from HearthStone.ext import Damage, SpellDamage, RestoreHealth, GetArmor
+from HearthStone.ext import Damage, SpellDamage, ArcaneMissilesDamage, RestoreHealth, GetArmor
 from HearthStone.ext import RandomTargetDamage
 from HearthStone.ext import GameHandler, DeskHandler, FreezeOnDamage
 from HearthStone.ext import AddMinionToDesk
@@ -186,14 +186,8 @@ class 奥术飞弹(Spell):      #
     """造成3点伤害，随机分配到所有敌人身上。"""
     _data = dict(id=47, name='奥术飞弹', type=1, CAH=[1], klass=1)
 
-    def where(self):
-        opp = self.game.players[1 - self.player_id]
-
-        return opp.desk + [opp]
-
     def play(self, player_id, target):
-        for i in range(3):
-            self.game.add_event_quick(RandomTargetDamage, self, 1, self.where)
+        self.game.add_event_quick(ArcaneMissilesDamage, self, 3)
 
 
 class 镜像(Spell):    #
@@ -394,7 +388,7 @@ class 疾跑(Spell):    #
 
 class 北郡牧师(Minion):     #
     """每当一个随从获得治疗时，抽一张牌。"""
-    _data = dict(id=68, name='北郡牧师', type=0, CAH=[1, 1, 3], klass=3)
+    _data = dict(id=68, name='北郡牧师', CAH=[1, 1, 3], klass=3)
 
     class RestoreHealthDrawCardHandler(GameHandler):
         event_types = [RestoreHealth]
