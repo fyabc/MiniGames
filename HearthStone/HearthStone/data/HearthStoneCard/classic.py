@@ -43,7 +43,7 @@ class 飞刀杂耍者(Minion):
                 return
 
             self._message(event)
-            self.game.add_event_quick(RandomTargetDamage, self.owner, 1, self.where)
+            self.game.insert_event_quick(RandomTargetDamage, self.owner, 1, self.where)
 
         def _message(self, event):
             verbose('{} skill: deal 1 random damage!'.format(self.owner))
@@ -73,7 +73,7 @@ class 诅咒教派领袖(Minion):   #
                 return
 
             self._message(event)
-            self.game.add_event_quick(DrawCard, owner_id, owner_id)
+            self.game.insert_event_quick(DrawCard, owner_id, owner_id)
 
         def _message(self, event):
             verbose('{} skill: draw a card!'.format(self.owner))

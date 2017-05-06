@@ -247,6 +247,10 @@ class Minion(Card, IMinion):
     # Properties.
 
     @property
+    def alive(self):
+        return self.health > 0
+
+    @property
     def attack(self):
         result = self.data['CAH'][1]
 

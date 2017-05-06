@@ -54,8 +54,10 @@ class AddMinionToDesk(GameEvent):
         super(AddMinionToDesk, self).__init__(game)
 
         if isinstance(minion, (int, str)):
+            # Create a new card
             self.minion = self.game.create_card(minion, player_id)
         else:
+            # Move an exist card
             self.minion = minion
         self.index = index
         self.player_id = player_id if player_id is not None else game.current_player_id
@@ -84,6 +86,8 @@ class AddMinionToDesk(GameEvent):
 
 
 class SummonMinion(PlayCard):
+    """Summon a minion from hand. This is a user operation."""
+
     def __init__(self, game, card, index, player_id=None, target=None):
         super(SummonMinion, self).__init__(game, card, player_id)
         self.index = index
@@ -131,7 +135,7 @@ class RunSpell(GameEvent):
 
 
 class PlaySpell(PlayCard):
-    """Play a spell from the hand."""
+    """Play a spell from the hand. This is a user operation."""
 
     def __init__(self, game, spell, target=None, player_id=None):
         super(PlaySpell, self).__init__(game, spell, player_id)

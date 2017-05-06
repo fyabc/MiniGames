@@ -71,6 +71,7 @@ class HeroDeath(Death):
     def _happen(self):
         self._message()
 
+        # [NOTE] Should this change to insert?
         self.game.add_event_quick(GameEnd, self.player_id)
 
     def __str__(self):

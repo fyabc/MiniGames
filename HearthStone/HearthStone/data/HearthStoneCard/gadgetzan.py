@@ -39,7 +39,7 @@ class 热心的酒保(Minion):    #
                 return
 
             self._message(event)
-            self.game.add_event_quick(RestoreHealth, self.owner, self.game.players[owner_id], 1)
+            self.game.insert_event_quick(RestoreHealth, self.owner, self.game.players[owner_id], 1)
 
         def _message(self, event):
             verbose('{} skill: restore 1 health!'.format(self.owner))

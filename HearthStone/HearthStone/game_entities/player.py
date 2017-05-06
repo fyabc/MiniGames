@@ -41,11 +41,17 @@ class Player(GameEntity, IMinion):
     def __str__(self):
         return 'P{}'.format(self.player_id)
 
+    # Properties.
+
     @property
     def player_id(self):
         if self._player_id is None:
             self._player_id = self.game.players.index(self)
         return self._player_id
+
+    @property
+    def alive(self):
+        return self.health > 0
 
     @property
     def type(self):

@@ -34,10 +34,10 @@ class Damage(GameEvent):
             # todo: add `MinionDeath` event
             if self.target in self.game.players:
                 # Target is hero: hero death
-                self.game.add_event_quick(HeroDeath, self.target)
+                self.game.insert_event_quick(HeroDeath, self.target)
             else:
                 # Target is minion: minion death
-                self.game.add_event_quick(MinionDeath, self.target)
+                self.game.insert_event_quick(MinionDeath, self.target)
 
     def _message(self):
         verbose('{} take {} damage to {}!'.format(self.source, self.value, self.target))

@@ -6,7 +6,7 @@ from HearthStone.ext.card_creator import *
 from HearthStone.ext import DrawCard, AddCardToHand
 from HearthStone.ext import Damage, SpellDamage, ArcaneMissilesDamage, RestoreHealth, GetArmor
 from HearthStone.ext import RandomTargetDamage
-from HearthStone.ext import GameHandler, DeskHandler, FreezeOnDamage
+from HearthStone.ext import DeskHandler, FreezeOnDamage
 from HearthStone.ext import AddMinionToDesk
 from HearthStone.ext import TurnBegin
 from HearthStone.ext import MinionDeath
@@ -390,7 +390,7 @@ class 北郡牧师(Minion):     #
     """每当一个随从获得治疗时，抽一张牌。"""
     _data = dict(id=68, name='北郡牧师', CAH=[1, 1, 3], klass=3)
 
-    class RestoreHealthDrawCardHandler(GameHandler):
+    class RestoreHealthDrawCardHandler(DeskHandler):
         event_types = [RestoreHealth]
 
         def _process(self, event):
@@ -400,7 +400,7 @@ class 北郡牧师(Minion):     #
             self._message(event)
 
             owner_id = self.owner.player_id
-            self.game.add_event_quick(DrawCard, owner_id, owner_id)
+            self.game.insert_event_quick(DrawCard, owner_id, owner_id)
 
         def _message(self, event):
             verbose('{} skill: draw a card due to {}!'.format(self.owner, event.target))
@@ -526,7 +526,7 @@ class 腐蚀术(Spell):       #
             if event.player_id != self.player_id:
                 return
 
-            self.game.add_event_quick(MinionDeath, self.owner)
+            self.game.insert_event_quick(MinionDeath, self.owner)
             self._message(event)
 
             # This handler will be used only once.
@@ -702,8 +702,7 @@ class 饥饿的秃鹫(Minion):        #
                 return
 
             self._message(event)
-
-            self.game.add_event_quick(DrawCard, self.owner.player_id, self.owner.player_id)
+            self.game.insert_event_quick(DrawCard, self.owner.player_id, self.owner.player_id)
 
         def _message(self, event):
             verbose('A beast {} add to desk, {} draw a card!'.format(event.minion, self.owner))

@@ -55,11 +55,13 @@ class DrawCard(GameEvent):
             verbose('Deck of P{} is empty, take {} damage!'.format(self.source_player_id, source_player.fatigue_damage))
 
             target_player = self.game.players[self.target_player_id]
-            self.game.add_event_quick(Damage, None, target_player, source_player.fatigue_damage)
+            self.game.prepend_event_quick(Damage, None, target_player, source_player.fatigue_damage)
             return
 
         # todo: change it to `RemoveCardFromDeck` event
         card = source_player.remove_from_deck()
+
+        # [NOTE] Should this change to insert?
         self.game.add_event_quick(AddCardToHand, card, self.target_player_id)
 
     def _message(self):

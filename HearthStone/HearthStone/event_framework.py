@@ -180,6 +180,9 @@ class EventEngine:
         # Event types that will terminate the engine.
         self.terminate_event_types = set()
 
+        # The buffer for insert events (usually events created by other events or handlers)
+        self.insert_event_buffer = deque()
+
         # Logging （for debug)
         logging_filename = kwargs.pop('logging_filename', None)
 
@@ -290,6 +293,9 @@ class EventEngine:
     def prepend_events(self, *events):
         self.events.extendleft(events)
 
+    def insert_event(self, event):
+        self.insert_event_buffer.append(event)
+
     # Run
     def dispatch_event(self, event=None):
         """Dispatch a user event to handlers.
@@ -322,7 +328,11 @@ class EventEngine:
 
         terminate_event = None
 
-        while self.events:
+        while self.events or self.insert_event_buffer:
+            # Prepend all insert events.
+            self.events.extendleft(self.insert_event_buffer)
+            self.insert_event_buffer.clear()
+
             event = self.events.popleft()
 
             # [NOTE] When a event happens, the handler of this event type and it's base types

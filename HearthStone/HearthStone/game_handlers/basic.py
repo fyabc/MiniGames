@@ -13,8 +13,7 @@ class CreateCoinHandler(GameHandler):
 
     def _process(self, event):
         self._message(event)
-        self.game.add_event_quick(AddCardToHand, 0, self.game.opponent_player_id)
-        pass
+        self.game.insert_event_quick(AddCardToHand, 0, self.game.opponent_player_id)
 
     def _message(self, event):
         verbose('Add a coin into P{}\'s hand (not implemented)!'.format(self.game.opponent_player_id))
@@ -35,7 +34,7 @@ class TurnBeginDrawCardHandler(GameHandler):
     event_types = [TurnBegin]
 
     def _process(self, event):
-        self.game.add_event_quick(DrawCard)
+        self.game.insert_event_quick(DrawCard)
 
 
 class ComboHandler(GameHandler):

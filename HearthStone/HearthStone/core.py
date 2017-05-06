@@ -103,20 +103,20 @@ class Game:
     def add_event(self, event):
         self.engine.add_event(event)
 
-    def add_events(self, *events):
-        self.engine.add_events(*events)
-
     def add_event_quick(self, event_type, *args, **kwargs):
         self.engine.add_event(event_type(self, *args, **kwargs))
 
     def prepend_event(self, event):
         self.engine.prepend_event(event)
 
-    def prepend_events(self, *events):
-        self.engine.prepend_events(*events)
-
     def prepend_event_quick(self, event_type, *args, **kwargs):
         self.engine.prepend_event(event_type(self, *args, **kwargs))
+
+    def insert_event(self, event):
+        self.engine.insert_event(event)
+
+    def insert_event_quick(self, event_type, *args, **kwargs):
+        self.engine.insert_event(event_type(self, *args, **kwargs))
 
     def dispatch_event(self, event):
         return self.engine.dispatch_event(event)
@@ -169,20 +169,34 @@ class Game:
         self.turn_number += 1
 
     # Methods to get 'where' functions, which return a list of entities, used in random target events, etc.
-    def role(self, player_id=None):
+    def role(self, player_id=None, **kwargs):
         """Minions and hero.
         
         :param player_id: 0, 1 or None (default), None means both
+        :param kwargs:
+            exclude_minion: Minion
+                The minion that to be excluded (usually the source)
+            exclude_dead: Bool, default is False
+                Exclude dead minions
         :return: A function that return
         """
 
-        if player_id is None:
-            candidates = self.players[0].desk + self.players[1].desk + [self.players]
-        else:
-            player = self.players[player_id]
-            candidates = player.desk + [player]
+        exclude_minion = kwargs.pop('exclude_minion', None)
+        exclude_dead = kwargs.pop('exclude_dead', False)
 
         def where():
+            if player_id is None:
+                candidates = self.players[0].desk + self.players[1].desk + [self.players]
+            else:
+                player = self.players[player_id]
+                candidates = player.desk + [player]
+
+            if exclude_minion is not None:
+                candidates.remove(exclude_minion)
+
+            if exclude_dead:
+                candidates = [entity for entity in candidates if entity.alive]
+
             return candidates
 
         return where

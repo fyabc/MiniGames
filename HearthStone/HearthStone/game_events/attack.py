@@ -24,6 +24,8 @@ class Attack(GameEvent):
         if self.source.stealth:
             self.source.stealth = False
 
+        # [NOTE] Should this change to insert?
+
         src_atk = self.source.attack
         if src_atk > 0:
             self.game.add_event_quick(Damage, self.source, self.target, src_atk)
