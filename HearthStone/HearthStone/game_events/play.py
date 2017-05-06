@@ -85,6 +85,23 @@ class AddMinionToDesk(GameEvent):
         pass
 
 
+class CompleteMinionToDesk(GameEvent):
+    """The event that complete minion to desk.
+    
+    [NOTE] This is different from `AddMinionToDesk`.    
+    This is just a stub event.
+    """
+
+    def __init__(self, game, minion, index, player_id=None):
+        super().__init__(game)
+        self.minion = minion
+        self.index = index
+        self.player_id = player_id if player_id is not None else game.current_player_id
+
+    def __str__(self):
+        return '{}(P{}, {}=>Loc{})'.format(super().__str__(), self.player_id, self.minion, self.index)
+
+
 class SummonMinion(PlayCard):
     """Summon a minion from hand. This is a user operation."""
 
@@ -101,6 +118,15 @@ class SummonMinion(PlayCard):
         return '{}(P{}, {}=>Loc{})'.format(GameEvent.__str__(self), self.player_id, self.minion, self.index)
 
     def _happen(self):
+        """The resolve order of summon a minion:
+    
+        0. SummonMinion -> Cause other events
+        1. AddMinionToDesk
+        2. run_battle_cry
+        3. CompleteMinionToDesk (Trigger handlers like Knife Juggler (飞刀杂耍者))
+        TODO: 4. TriggerSecret
+        """
+
         super(SummonMinion, self)._happen()
 
         # [NOTE] Add minion to desk **BEFORE** battle cry.
@@ -108,6 +134,8 @@ class SummonMinion(PlayCard):
         self.game.add_event_quick(AddMinionToDesk, self.minion, self.index, self.player_id)
 
         self.minion.run_battle_cry(self.player_id, self.index, self.target)
+
+        self.game.add_event_quick(CompleteMinionToDesk, self.minion, self.index, self.player_id)
 
     def _message(self):
         verbose('P{} summon a minion {} to location {}!'.format(self.player_id, self.minion, self.index))
@@ -160,6 +188,7 @@ class PlaySpell(PlayCard):
 __all__ = [
     'PlayCard',
     'AddMinionToDesk',
+    'CompleteMinionToDesk',
     'SummonMinion',
     'RunSpell',
     'PlaySpell',

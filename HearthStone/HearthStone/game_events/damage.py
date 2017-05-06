@@ -21,17 +21,17 @@ class Damage(GameEvent):
         return '{}({}=>{}, value={})'.format(super().__str__(), self.source, self.target, self.value)
 
     def _happen(self):
+        # Really take damage here
         died = self.target.take_damage(self.source, self.value, self)
+
         if self.freeze:
             # todo: add `Freeze` event
             self.target.freeze()
-
         if self.alive:
             self._message()
 
         if died:
             verbose('{} kill {}!'.format(self.source, self.target))
-            # todo: add `MinionDeath` event
             if self.target in self.game.players:
                 # Target is hero: hero death
                 self.game.insert_event_quick(HeroDeath, self.target)
@@ -40,20 +40,22 @@ class Damage(GameEvent):
                 self.game.insert_event_quick(MinionDeath, self.target)
 
     def _message(self):
-        verbose('{} take {} damage to {}!'.format(self.source, self.value, self.target))
+        verbose('{} deal {} damage to {}!'.format(self.source, self.value, self.target))
 
 
 class SpellDamage(Damage):
     """This class represents damage from spell.
 
     Used to all 'Spell power +X' handlers.
+    
+    This is just a stub event.
     """
 
     def __init__(self, game, spell, target, value, **kwargs):
         super(SpellDamage, self).__init__(game, spell, target, value, **kwargs)
 
     def _message(self):
-        verbose('{} take {} spell damage to {}!'.format(self.source, self.value, self.target))
+        verbose('{} deal {} spell damage to {}!'.format(self.source, self.value, self.target))
 
     @property
     def spell(self):

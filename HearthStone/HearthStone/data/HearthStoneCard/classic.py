@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, set_description
-from HearthStone.ext import MinionDeath, DrawCard, AddMinionToDesk, RandomTargetDamage
+from HearthStone.ext import MinionDeath, DrawCard, CompleteMinionToDesk, AddMinionToDesk, RandomTargetDamage
 from HearthStone.ext import DeskHandler
 from HearthStone.ext.card_creator import m_blank
 from HearthStone.ext import verbose
@@ -27,7 +27,7 @@ class 飞刀杂耍者(Minion):
     _data = dict(id=1000, name='飞刀杂耍者', CAH=[2, 2, 2], rarity=2)
 
     class AddMinionHandler(DeskHandler):
-        event_types = [AddMinionToDesk]
+        event_types = [CompleteMinionToDesk]
 
         def where(self):
             opp = self.game.players[1 - self.owner.player_id]
@@ -43,7 +43,8 @@ class 飞刀杂耍者(Minion):
                 return
 
             self._message(event)
-            self.game.insert_event_quick(RandomTargetDamage, self.owner, 1, self.where)
+            self.game.insert_event_quick(RandomTargetDamage, self.owner, 1,
+                                         self.game.role(1 - self.owner.player_id, exclude_dead=True))
 
         def _message(self, event):
             verbose('{} skill: deal 1 random damage!'.format(self.owner))
