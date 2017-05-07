@@ -123,7 +123,7 @@ class ArcaneMissilesDamage(GameEvent):
     def _happen(self):
         for _ in range(self.value):
             self.game.add_event_quick(RandomTargetDamage, self.source, 1,
-                                      self.game.role(1 - self.source.player_id, exclude_dead=True),
+                                      self.game.range(1 - self.source.player_id, exclude_dead=True),
                                       damage_type=Damage)
 
         self._message()

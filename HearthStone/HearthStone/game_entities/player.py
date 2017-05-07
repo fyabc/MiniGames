@@ -50,10 +50,6 @@ class Player(GameEntity, IMinion):
         return self._player_id
 
     @property
-    def alive(self):
-        return self.health > 0
-
-    @property
     def type(self):
         """The same interface as card."""
         return Type_player

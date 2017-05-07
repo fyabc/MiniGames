@@ -19,6 +19,10 @@ class IMinion:
         return self.health > 0
 
     @property
+    def injured(self):
+        return self.health < self.max_health
+
+    @property
     def attack(self):
         raise NotImplementedError()
 

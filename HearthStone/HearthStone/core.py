@@ -168,9 +168,8 @@ class Game:
         self.current_player_id = (self.current_player_id + 1) % gc.TotalPlayerNumber
         self.turn_number += 1
 
-    # Methods to get 'where' functions, which return a list of entities, used in random target events, etc.
-    def role(self, player_id=None, **kwargs):
-        """Minions and hero.
+    def range(self, player_id=None, **kwargs):
+        """Method to get 'where' functions, which return a list of entities, used in random target events, etc.
         
         :param player_id: 0, 1 or None (default), None means both
         :param kwargs:
@@ -178,18 +177,25 @@ class Game:
                 The minion that to be excluded (usually the source)
             exclude_dead: Bool, default is False
                 Exclude dead minions
+            exclude_hero: Bool, default is False
+                Exclude hero
         :return: A function that return
         """
 
         exclude_minion = kwargs.pop('exclude_minion', None)
         exclude_dead = kwargs.pop('exclude_dead', False)
+        exclude_hero = kwargs.pop('exclude_hero', False)
 
         def where():
             if player_id is None:
-                candidates = self.players[0].desk + self.players[1].desk + [self.players]
+                candidates = self.players[0].desk + self.players[1].desk
+                if not exclude_hero:
+                    candidates += self.players
             else:
                 player = self.players[player_id]
-                candidates = player.desk + [player]
+                candidates = player.desk.copy()
+                if not exclude_hero:
+                    candidates += [player]
 
             if exclude_minion is not None:
                 candidates.remove(exclude_minion)

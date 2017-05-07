@@ -7,7 +7,7 @@ from HearthStone.ext import DrawCard, AddCardToHand
 from HearthStone.ext import Damage, SpellDamage, ArcaneMissilesDamage, RestoreHealth, GetArmor
 from HearthStone.ext import RandomTargetDamage
 from HearthStone.ext import DeskHandler, FreezeOnDamage
-from HearthStone.ext import AddMinionToDesk
+from HearthStone.ext import add_minion_to_desk, CompleteMinionToDesk
 from HearthStone.ext import TurnBegin
 from HearthStone.ext import MinionDeath
 from HearthStone.ext import constants
@@ -69,7 +69,7 @@ class 酸性沼泽软泥怪(Minion):
 霜狼步兵 = m_blank('霜狼步兵', dict(id=11, name='霜狼步兵', CAH=[2, 2, 2], taunt=True))     #
 狗头人地卜师 = m_blank('狗头人地卜师', dict(id=12, name='狗头人地卜师', CAH=[2, 2, 2], spell_power=1))        #
 
-鱼人猎潮者 = m_summon('鱼人猎潮者', dict(id=13, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1]), card_id=13)    #
+鱼人猎潮者 = m_summon('鱼人猎潮者', dict(id=13, name='鱼人猎潮者', race=['Murloc'], CAH=[2, 2, 1]), card_id=14)    #
 # This is a typical derivative card.
 鱼人猎潮者_d = m_blank('鱼人猎潮者_d', dict(id=14, name='鱼人斥候', race=['Murloc'], CAH=[1, 1, 1], rarity=-1))
 
@@ -93,7 +93,7 @@ class 团队领袖(Minion):
 
     pass
 
-剃刀猎手 = m_summon('剃刀猎手', dict(id=21, name='剃刀猎手', CAH=[3, 2, 3]), card_id=21)   #
+剃刀猎手 = m_summon('剃刀猎手', dict(id=21, name='剃刀猎手', CAH=[3, 2, 3]), card_id=22)   #
 剃刀猎手_d = m_blank('剃刀猎手_d', dict(id=22, name='野猪', race=['Beast'], CAH=[1, 1, 1], rarity=-1))
 
 
@@ -110,7 +110,7 @@ class 破碎残阳祭司(Minion):
 暴风城骑士 = m_blank('暴风城骑士', dict(id=27, name='暴风城骑士', CAH=[4, 2, 5], charge=True))     #
 冰风雪人 = m_blank('冰风雪人', dict(id=28, name='冰风雪人', CAH=[4, 4, 5]))     #
 
-机械幼龙技工 = m_summon('机械幼龙技工', dict(id=29, name='机械幼龙技工', CAH=[4, 2, 4]), card_id=29)      #
+机械幼龙技工 = m_summon('机械幼龙技工', dict(id=29, name='机械幼龙技工', CAH=[4, 2, 4]), card_id=30)      #
 机械幼龙技工_d = m_blank('机械幼龙技工_d', dict(id=30, name='机械幼龙', race=['Mech'], CAH=[1, 2, 1], rarity=-1))
 
 
@@ -196,7 +196,7 @@ class 镜像(Spell):    #
 
     def play(self, player_id, target):
         for i in range(2):
-            self.game.add_event_quick(AddMinionToDesk, 48, self.game.MaxDeskNumber + 1)
+            add_minion_to_desk(self.game, 49, self.game.MaxDeskNumber + 1)
 
 镜像_d = m_blank('镜像_d', dict(id=49, name='镜像', CAH=[1, 0, 2], klass=1, taunt=True, rarity=-1))
 
@@ -297,7 +297,7 @@ class 背刺(Spell):    #
         if target.type != constants.Type_minion:
             return 'The target must be a minion!'
 
-        if target.health < target.max_health:
+        if target.injured:
             return 'The target must be uninjured!'
 
         return True
@@ -602,18 +602,51 @@ class 英勇打击(Spell):
     _data = dict(id=90, name='英勇打击', type=1, CAH=[2], klass=5)
 
 
-class 斩杀(Spell):
+class 斩杀(Spell):    #
     """消灭一个受伤的敌方随从。"""
     _data = dict(id=91, name='斩杀', type=1, CAH=[2], klass=5)
 
+    have_target = True
+
+    def validate_target(self, target):
+        result = super().validate_target(target)
+        if result is not True:
+            return result
+
+        if target.type != constants.Type_minion:
+            return 'The target must be a minion!'
+
+        if target.player_id == self.player_id:
+            return 'Must choose an enemy minion!'
+
+        if not target.injured:
+            return 'The target must be injured!'
+
+        return True
+
     play = action_destroy
 
-炽炎战斧 = w_blank('炽炎战斧', dict(id=92, name='炽炎战斧', type=2, CAH=[2, 3, 2], klass=5))
+炽炎战斧 = w_blank('炽炎战斧', dict(id=92, name='炽炎战斧', type=2, CAH=[2, 3, 2], klass=5))    #
 
 
-class 顺劈斩(Spell):
+class 顺劈斩(Spell):   #
     """对两个随机敌方随从造成2点伤害。"""
     _data = dict(id=93, name='顺劈斩', type=1, CAH=[2], klass=5)
+
+    def validate_target(self, target):
+        result = super().validate_target(target)
+        if result is not True:
+            return result
+
+        if self.game.players[1 - self.player_id].desk_number < 2:
+            return 'Enemy must have at least 2 minions!'
+
+        return True
+
+    def play(self, player_id, target):
+        self.game.add_event_quick(RandomTargetDamage, self, 2,
+                                  self.game.range(1 - self.player_id, exclude_hero=True, exclude_dead=True),
+                                  target_number=2)
 
 
 class 战歌指挥官(Minion):
@@ -693,7 +726,7 @@ class 饥饿的秃鹫(Minion):        #
     _data = dict(id=109, name='饥饿的秃鹫', CAH=[5, 3, 2], race=['Beast'], klass=6)
 
     class DrawCardOnAddBeast(DeskHandler):
-        event_types = [AddMinionToDesk]
+        event_types = [CompleteMinionToDesk]
 
         def _process(self, event):
             if event.player_id != self.owner.player_id or \

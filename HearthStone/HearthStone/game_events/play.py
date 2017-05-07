@@ -102,6 +102,24 @@ class CompleteMinionToDesk(GameEvent):
         return '{}(P{}, {}=>Loc{})'.format(super().__str__(), self.player_id, self.minion, self.index)
 
 
+def add_minion_to_desk(game, minion, index, player_id=None):
+    """The whole process to add minion to desk.
+
+    Include AddMinionToDesk and CompleteMinionToDesk.
+    If a card want to add a minion to desk, it should use this instead of AddMinionToDesk and CompleteMinionToDesk.
+    """
+
+    if isinstance(minion, (int, str)):
+        # Create a new card
+        minion = game.create_card(minion, player_id)
+
+    if player_id is None:
+        player_id = game.current_player_id
+
+    game.add_event_quick(AddMinionToDesk, minion, index, player_id)
+    game.add_event_quick(CompleteMinionToDesk, minion, index, player_id)
+
+
 class SummonMinion(PlayCard):
     """Summon a minion from hand. This is a user operation."""
 
@@ -189,6 +207,7 @@ __all__ = [
     'PlayCard',
     'AddMinionToDesk',
     'CompleteMinionToDesk',
+    'add_minion_to_desk',
     'SummonMinion',
     'RunSpell',
     'PlaySpell',

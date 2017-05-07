@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from HearthStone.ext import Minion, set_description
-from HearthStone.ext import MinionDeath, DrawCard, CompleteMinionToDesk, AddMinionToDesk, RandomTargetDamage
+from HearthStone.ext import MinionDeath, DrawCard, CompleteMinionToDesk, RandomTargetDamage
+from HearthStone.ext import add_minion_to_desk
 from HearthStone.ext import DeskHandler
 from HearthStone.ext.card_creator import m_blank
 from HearthStone.ext import verbose
@@ -29,11 +30,6 @@ class 飞刀杂耍者(Minion):
     class AddMinionHandler(DeskHandler):
         event_types = [CompleteMinionToDesk]
 
-        def where(self):
-            opp = self.game.players[1 - self.owner.player_id]
-
-            return opp.desk + [opp]
-
         def _process(self, event):
             if event.minion == self.owner:
                 return
@@ -44,7 +40,7 @@ class 飞刀杂耍者(Minion):
 
             self._message(event)
             self.game.insert_event_quick(RandomTargetDamage, self.owner, 1,
-                                         self.game.role(1 - self.owner.player_id, exclude_dead=True))
+                                         self.game.range(1 - self.owner.player_id, exclude_dead=True))
 
         def _message(self, event):
             verbose('{} skill: deal 1 random damage!'.format(self.owner))
@@ -90,8 +86,8 @@ class 火车王里诺艾(Minion):   #
 
     def run_battle_cry(self, player_id, index, target=None):
         for _ in range(2):
-            self.game.add_event_quick(
-                AddMinionToDesk,
+            add_minion_to_desk(
+                self.game,
                 '雏龙',
                 constants.DeskLocationRight,
                 1 - player_id,
@@ -105,8 +101,8 @@ class 比斯巨兽(Minion):     #
     _data = dict(id=1005, name='比斯巨兽', CAH=[6, 9, 7], race=['Beast'], rarity=4)
 
     def run_death_rattle(self, player_id, index):
-        self.game.add_event_quick(
-            AddMinionToDesk,
+        add_minion_to_desk(
+            self.game,
             '芬克·恩霍尔',
             constants.DeskLocationRight,
             1 - player_id,

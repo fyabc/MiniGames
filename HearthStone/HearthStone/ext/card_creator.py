@@ -137,8 +137,8 @@ def m_summon(name, data, bc_or_dr=True, **kwargs):
 
     if bc_or_dr:
         def run_battle_cry(self, player_id, index, target=None):
-            self.game.add_event_quick(
-                AddMinionToDesk,
+            add_minion_to_desk(
+                self.game,
                 card_id if not random_summon else random_card(*conditions),
                 index + relative_location,
                 player_id,
@@ -147,8 +147,8 @@ def m_summon(name, data, bc_or_dr=True, **kwargs):
         cls_dict['run_battle_cry'] = run_battle_cry
     else:
         def run_death_rattle(self, player_id, index):
-            self.game.add_event_quick(
-                AddMinionToDesk,
+            add_minion_to_desk(
+                self.game,
                 card_id if not random_summon else random_card(*conditions),
                 index + relative_location,
                 player_id,
