@@ -21,6 +21,10 @@ class Damage(GameEvent):
         return '{}({}=>{}, value={})'.format(super().__str__(), self.source, self.target, self.value)
 
     def _happen(self):
+        if self.target.location != self.target.DESK:
+            verbose('The target is not on the desk, damage canceled!')
+            return
+
         # Really take damage here
         died = self.target.take_damage(self.source, self.value, self)
 

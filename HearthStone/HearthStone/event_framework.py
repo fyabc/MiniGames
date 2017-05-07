@@ -161,6 +161,9 @@ class EventEngine:
         See docstring of `dispatch_event`.
     """
 
+    # TODO: This event engine may need to be changed.
+    # See http://www.289.com/inews/145040/ to get more information.
+
     def __init__(self, maxsize=None, **kwargs):
         self._running = True
 
