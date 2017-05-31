@@ -257,7 +257,7 @@ class GameGroupData:
         # The start level is always reached.
         self.levels[self.start_level].reached = True
 
-        # For debug
+        # [NOTE] For debug
         print(self)
         # End debug
 

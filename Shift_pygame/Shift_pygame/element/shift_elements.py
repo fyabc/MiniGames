@@ -94,8 +94,11 @@ class Hero(ShiftElement):
             bg=scene.level_data[cell_loc],
         )
 
-    # todo: some methods for running commands from the level scene.
     def run_command(self, command):
+        """Run command from level scene."""
+
+        # todo: some methods for running commands from the level scene.
+
         print('%command =', command)
 
 
