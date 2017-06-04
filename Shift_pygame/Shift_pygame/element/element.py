@@ -59,14 +59,19 @@ class Element:
         rotated_image_rect = self._rotated_image.get_rect()
 
         # [NOTE] Use `exec` to apply the anchor.
-        exec('rotated_image_rect.{} = self.loc'.format(self.anchor))
+        exec('rotated_image_rect.{} = self.loc.to_tuple()'.format(self.anchor))
 
         return rotated_image_rect
 
-    def _set_rotated_image(self):
+    def _set_rotated_image(self, flip=False):
+        if flip:
+            tmp_image = pygame.transform.flip(self.image, True, False)
+        else:
+            tmp_image = self.image
+
         if self.image is not None:
             # FIXME: The pygame rotate is counterclockwise, so set the negative value!!!
-            self._rotated_image = pygame.transform.rotate(self.image, -self.angle)
+            self._rotated_image = pygame.transform.rotate(tmp_image, -self.angle)
 
     @property
     def angle(self):

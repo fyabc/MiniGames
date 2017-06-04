@@ -41,4 +41,4 @@ def relative2physic(loc):
     if x > 1 or y > 1:
         return loc
 
-    return int(x * ScreenWidth), int(y * ScreenHeight)
+    return Vector2(x * ScreenWidth, y * ScreenHeight)

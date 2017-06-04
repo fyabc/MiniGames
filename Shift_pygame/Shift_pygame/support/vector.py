@@ -19,6 +19,11 @@ class Vector2:
         else:
             raise TypeError('unexpected type of Vector2 initializer')
 
+    def __str__(self):
+        return 'Vector2({}, {})'.format(self.x, self.y)
+
+    __repr__ = __str__
+
     def __iter__(self):
         yield self.x
         yield self.y
@@ -51,5 +56,8 @@ class Vector2:
     def __sub__(self, other):
         _x, _y = other
         return Vector2(self.x - _x, self.y - _y)
+
+    def to_tuple(self):
+        return self.x, self.y
 
 Vector2.origin = Vector2(0., 0.)

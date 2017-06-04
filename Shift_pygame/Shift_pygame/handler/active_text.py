@@ -51,7 +51,7 @@ class ActiveText(EventHandler, Text):
         """Test if the point `item` is in the text area. Used for mouse click."""
 
         rect = self.image.get_rect()
-        rect.center = self.loc
+        rect.center = self.loc.to_tuple()
         return rect.collidepoint(item)
 
     def _invert(self):

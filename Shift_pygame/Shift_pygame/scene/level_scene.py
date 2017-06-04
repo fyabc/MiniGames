@@ -9,6 +9,7 @@ from ..element.group import Group
 from ..element.shift_elements import Hero, Door, Trap, ShiftText
 from .scene import Scene
 from ..utils.keymap import get_keymap, get_unique_key_event
+from ..support import Vector2
 
 __author__ = 'fyabc'
 
@@ -23,8 +24,9 @@ class LevelScene(Scene):
         self.game_group_data = None
         self.level_data = None
         self._size = None
-        self._cell_width = None
-        self._cell_height = None
+        self.cell_width = None
+        self.cell_height = None
+        self._angle = 0
 
         # [NOTE] The heroes will only contains a single hero (`self.hero`).
         self.heroes = Group(self.game, ordered=True)
@@ -79,7 +81,24 @@ class LevelScene(Scene):
 
         dx, dy = Anchor.LocationMap[anchor]
 
-        return int(self._cell_width * (lx + dx)), int(self._cell_height * (ly + dy))
+        return Vector2(self.cell_width * (lx + dx), self.cell_height * (ly + dy))
+
+    def logic_loc(self, loc, strict=True):
+        result = loc[0] // self.cell_width, loc[1] // self.cell_height
+
+        if not strict:
+            return result
+
+        if not (0 <= result[0] < self._size[0] and 0 <= result[1] < self._size[1]):
+            return None
+
+        # Add check for blocks and mosaics
+
+        return result
+
+    def get_color(self, x, y):
+        """Get boolean color."""
+        return self.level_data[self.rotated_location(x, y)]
 
     # Methods for setting data, loading elements or others.
 
@@ -95,8 +114,8 @@ class LevelScene(Scene):
         self.current_level_id = level_id
         self.level_data = self.game_group_data[level_id]
         self._size = self.level_data.size
-        self._cell_width = ScreenWidth // self._size[0]
-        self._cell_height = ScreenHeight // self._size[1]
+        self.cell_width = ScreenWidth // self._size[0]
+        self.cell_height = ScreenHeight // self._size[1]
 
         self._load_elements()
 
@@ -140,8 +159,8 @@ class LevelScene(Scene):
         for i in range(lx):
             for j in range(ly):
                 self.surface.fill(
-                    Bool2Color[self.level_data[i, j]],
-                    pygame.Rect(i * self._cell_width, j * self._cell_height, self._cell_width, self._cell_height)
+                    Bool2Color[self.get_color(i, j)],
+                    pygame.Rect(i * self.cell_width, j * self.cell_height, self.cell_width, self.cell_height)
                 )
 
     def draw(self, ud=True, bg=True):
@@ -164,7 +183,48 @@ class LevelScene(Scene):
         # Set the group and level before running.
         self._set_group_and_level(args[0], args[1])
 
-        return super().run(previous_scene_id, *args)
+        self.draw_background()
+
+        while True:
+            self.game.timer.tick(MainFPS)
+
+            for event in pygame.event.get():
+                pos = getattr(event, 'pos', None)
+                overridden = False
+
+                if pos is not None:
+                    # Handlers which contains the position
+                    for handler in self.handlers:
+                        if pos in handler:
+                            result = handler.process(event, previous_scene_id, *args)
+                            if result is not None:
+                                return result
+                            if handler.override(event):
+                                overridden = True
+                                break
+
+                if not overridden:
+                    result = self.process(event, previous_scene_id, *args)
+                    if result is not None:
+                        return result
+
+            result = self.update(MainFPS)
+
+            self.draw()
+
+            # Test result.
+            if result is not None:
+                if result >= 0:
+                    # Win, result is next level ID
+                    pass
+                else:
+                    # Lose
+                    pass
+
+    def update(self, fps):
+        self.hero.update(fps)
+
+        return None
 
     # Methods of running command from the user key input.
 
@@ -202,3 +262,32 @@ class LevelScene(Scene):
 
         # Update the scene by the command.
         self.hero.run_command(command)
+
+    def rotated_location(self, x, y, angle=None):
+        if angle is None:
+            angle = self._angle
+
+        if angle == 0:
+            return x, y
+        elif angle == 90:
+            return self._size[1] - 1 - y, x
+        elif angle == 180:
+            return self._size[0] - 1 - x, self._size[1] - 1 - y
+        elif angle == 270:
+            return y, self._size[0] - 1 - x
+
+    def _do_rotate(self, angle):
+        self._angle = (self._angle + angle + 360) % 360
+
+        # Change angles of group elements.
+        for group in self.groups:
+            for element in group:
+                element.rotate_window(angle)
+
+    def rotate_map(self, angle):
+        # todo: add rotate animation here
+        self._do_rotate(angle)
+
+    def shift_map(self):
+        # todo: add shift animation and hero change here
+        self._do_rotate(180)
