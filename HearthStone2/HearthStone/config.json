@@ -1,1 +1,9 @@
-{}
+{
+    "ProjectName": "HearthStone",
+
+    /// User extension
+    "EnableUserExtension": true,
+
+    // User extension path list, should be overwrite in user config file.
+    "UserExtensionPaths": []
+}

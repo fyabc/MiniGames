@@ -21,15 +21,28 @@ ConfigFilename = 'config.json'
 # Project root path.
 ProjectRootPath = _os.path.dirname(_os.path.dirname(__file__))
 
-# System data and config directory.
+# System data and config.
 SystemDataPath = _os.path.join(ProjectRootPath, 'data')
 SystemConfigFilename = _os.path.join(ProjectRootPath, ConfigFilename)
 
-# User data and config directory.
+SystemPackageDataPath = _os.path.join(SystemDataPath, 'packages')
+
+# User data and config.
 UserDirectory = _AppDirs(appname=ProjectName, appauthor=ProjectAuthor, version=ProjectVersion)
 
 UserDataPath = UserDirectory.user_data_dir
 UserConfigFilename = _os.path.join(UserDirectory.user_config_dir, ConfigFilename)
+
+
+class _Config(dict):
+    def __getattr__(self, item):
+        return self[item]
+
+    def __setattr__(self, key, value):
+        raise Exception('Cannot change the value of configuration')
+
+    def __setitem__(self, key, value):
+        raise Exception('Cannot change the value of configuration')
 
 
 def _load_project_config():
@@ -58,9 +71,14 @@ def _load_project_config():
     config = _load_config(SystemConfigFilename)
     config.update(_load_config(UserConfigFilename))
 
-    return config
+    return _Config(config)
 
 
 # Project config.
 Config = _load_project_config()
 C = Config
+
+# Package data path list
+PackagePaths = [SystemPackageDataPath]
+if C.EnableUserExtension:
+    PackagePaths += C.UserExtensionPaths
