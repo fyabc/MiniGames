@@ -101,6 +101,8 @@ def _load_packages():
                             continue
 
                         if card_id in AllCards:
+                            if AllCards[card_id] == var:
+                                continue
                             warning('The card id {} already exists, overwrite it'.format(card_id))
 
                         AllCards[card_id] = var
@@ -112,7 +114,9 @@ def _load_packages():
                             continue
 
                         if hero_id in AllCards:
-                            warning('The hero id {} already exists, overwrite it'.format(card_id))
+                            if AllHeroes[hero_id] == var:
+                                continue
+                            warning('The hero id {} already exists, overwrite it'.format(hero_id))
 
                         AllHeroes[hero_id] = var
 
