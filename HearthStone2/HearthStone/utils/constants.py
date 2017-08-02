@@ -36,6 +36,9 @@ UserConfigFilename = _os.path.join(UserDirectory.user_config_dir, ConfigFilename
 
 class _Config(dict):
     def __getattr__(self, item):
+        value = self[item]
+        if isinstance(value, dict):
+            return _Config(value)
         return self[item]
 
     def __setattr__(self, key, value):

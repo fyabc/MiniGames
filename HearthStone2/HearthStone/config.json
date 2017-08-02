@@ -5,5 +5,10 @@
     "EnableUserExtension": true,
 
     // User extension path list, should be overwrite in user config file.
-    "UserExtensionPaths": []
+    "UserExtensionPaths": [],
+
+    "Game": {
+        // Write description in docstring of card code.
+        "DocDescription": true
+    }
 }

@@ -3,6 +3,8 @@
 
 from collections import ChainMap
 
+from ..utils.constants import C
+
 __author__ = 'fyabc'
 
 
@@ -34,9 +36,10 @@ class SetDataMeta(type):
         base_data = getattr(bases[0], 'data', ChainMap()) if bases else ChainMap()
         ns['data'] = base_data.new_child(ns.get('_data', {}))
 
-        doc = ns.get('__doc__', None)
-        if doc is not None and not doc.startswith('[NO_DESCRIPTION]'):
-            ns['data']['description'] = doc
+        if C.Game.DocDescription:
+            doc = ns.get('__doc__', None)
+            if doc is not None and not doc.startswith('[NO_DESCRIPTION]'):
+                ns['data']['description'] = doc
 
         return type.__new__(mcs, name, bases, ns)
 
