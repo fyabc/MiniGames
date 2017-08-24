@@ -124,6 +124,13 @@ def _load_packages():
 
 
 def all_cards():
+    """Get dict of all cards.
+
+    If cards not loaded, it will load cards automatically.
+
+    :return: Dict of all cards.
+    """
+
     global _AllCards, _AllHeroes, _AllGameData
     if _AllCards is None:
         _AllCards, _AllHeroes, _AllGameData = _load_packages()
@@ -131,6 +138,13 @@ def all_cards():
 
 
 def all_heroes():
+    """Get dict of all heroes.
+
+    If heroes not loaded, it will load heroes automatically.
+
+    :return: Dict of all heroes.
+    """
+
     global _AllCards, _AllHeroes, _AllGameData
     if _AllHeroes is None:
         _AllCards, _AllHeroes, _AllGameData = _load_packages()

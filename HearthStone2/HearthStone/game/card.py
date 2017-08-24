@@ -7,7 +7,10 @@ __author__ = 'fyabc'
 
 
 class Card(GameEntity, metaclass=SetDataMeta):
-    """[NO_DESCRIPTION]"""
+    """[NO_DESCRIPTION]
+
+    The class of card.
+    """
 
     _data = {
         'id': None,

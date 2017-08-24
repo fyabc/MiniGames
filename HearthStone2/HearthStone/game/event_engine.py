@@ -84,5 +84,11 @@ class EventEngine:
 
         # TODO: When to run the event?
 
+        # Refresh auras.
+        self._refresh_auras()
+
         # Remove dead triggers.
         self._remove_dead_triggers()
+
+    def _refresh_auras(self):
+        pass

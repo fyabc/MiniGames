@@ -9,6 +9,12 @@
 
     "Game": {
         // Write description in docstring of card code.
-        "DocDescription": true
+        "DocDescription": true,
+
+        // Some constants of game.
+        "DeckMax": 60,
+        "HandMax": 10,
+        "DeskMax": 7,
+        "CrystalMax": 10
     }
 }
