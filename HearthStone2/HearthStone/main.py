@@ -12,6 +12,10 @@ def main():
 
     game = Game()
 
+    from .game.player_action import TurnEnd
+
+    game.run_player_action(TurnEnd(game, 0))
+
     print(AllCards)
 
 

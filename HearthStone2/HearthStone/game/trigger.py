@@ -39,4 +39,5 @@ class Trigger:
         return True
 
     def process(self, event):
-        pass
+        """Process the event, return a queue of events."""
+        return []

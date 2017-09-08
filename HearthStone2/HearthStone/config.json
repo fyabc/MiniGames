@@ -15,6 +15,9 @@
         "DeckMax": 60,
         "HandMax": 10,
         "DeskMax": 7,
-        "CrystalMax": 10
+        "CrystalMax": 10,
+
+        // If turn number larger than TurnMax, it will be a draw.
+        "TurnMax": 89
     }
 }

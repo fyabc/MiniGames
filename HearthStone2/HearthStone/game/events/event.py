@@ -7,6 +7,9 @@ __author__ = 'fyabc'
 class Event:
     """"""
 
+    # Check for win/lose/draw after this event?
+    check_win_after = False
+
     def __init__(self, game, owner):
         """
 
@@ -34,3 +37,11 @@ class Event:
             # [:-1] means remove the base class "object"
             setattr(cls, '_ancestors', cls.__mro__[:-1])
         return getattr(cls, '_ancestors')
+
+    def run(self):
+        """Run the event."""
+
+        self.message()
+
+    def message(self):
+        pass
