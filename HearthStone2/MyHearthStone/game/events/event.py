@@ -7,9 +7,6 @@ __author__ = 'fyabc'
 class Event:
     """"""
 
-    # Check for win/lose/draw after this event?
-    check_win_after = False
-
     def __init__(self, game, owner):
         """
 
@@ -28,10 +25,10 @@ class Event:
     def ancestors(cls):
         """Get the ancestor list of this event class.
 
-                It is a lazy evaluated property.
+        It is a lazy evaluated property.
 
-                :return: The ancestor list, from the class of self to `Event`.
-                """
+        :return: The ancestor list, from the class of self to `Event`.
+        """
 
         if '_ancestors' not in cls.__dict__:
             # [:-1] means remove the base class "object"

@@ -25,18 +25,23 @@ class Trigger:
     def oop(self):
         return self.owner.oop
 
-    def check_condition(self, event):
-        """Check if this event can activate this trigger."""
+    def queue_condition(self, event):
+        """Check if this trigger can be queued."""
 
         if not self.enable:
             return False
 
-        return self._check_condition(event)
+        return self._queue_condition(event)
 
-    def _check_condition(self, event):
+    def _queue_condition(self, event):
         """Implemented in subclasses."""
 
         return True
+
+    def trigger_condition(self, event):
+        """Check if this trigger can be triggered."""
+
+        pass
 
     def process(self, event):
         """Process the event, return a queue of events."""

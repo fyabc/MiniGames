@@ -8,8 +8,8 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from HearthStone.main import main
-from HearthStone.utils.message import set_debug_level, LEVEL_INFO, LEVEL_DEBUG
+from MyHearthStone.main import main
+from MyHearthStone.utils.message import set_debug_level, LEVEL_INFO, LEVEL_DEBUG
 
 
 __author__ = 'fyabc'

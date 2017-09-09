@@ -8,20 +8,26 @@ __author__ = 'fyabc'
 
 
 class BeginOfTurn(Event):
-    check_win_after = True
-
     def __init__(self, game):
         super().__init__(game, None)
+        self._oop = game.inc_oop()
+
+    @property
+    def oop(self):
+        return self._oop
 
     def message(self):
         message('Turn {} begin, player = {}'.format(self.game.n_turns, self.game.current_player))
 
 
 class EndOfTurn(Event):
-    check_win_after = True
-
     def __init__(self, game):
         super().__init__(game, None)
+        self._oop = game.inc_oop()
+
+    @property
+    def oop(self):
+        return self._oop
 
     def message(self):
         message('Turn {} end, player = {}'.format(self.game.n_turns, self.game.current_player))

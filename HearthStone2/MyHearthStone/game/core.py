@@ -43,13 +43,13 @@ class Game:
         # Event engine #
         ################
 
-        # Stack of events.
-        self.events = deque()
-
         # Dict of all triggers.
         # Dict keys are the event that the trigger respond.
         # Dict values are sets of triggers.
         self.triggers = {}
+
+        # Current order of play id
+        self.current_oop = 0
 
     ########################
     # Event engine methods #
@@ -69,13 +69,6 @@ class Game:
     def _remove_dead_triggers(self):
         for event_type, triggers in self.triggers.items():
             self.triggers[event_type] = {trigger for trigger in triggers if trigger.enable}
-
-    def add_events(self, events):
-        """Add an event or a list of events. Events will be inserted into stack in reversed order."""
-        if isinstance(events, Iterable):
-            self.events.extend(reversed(events))
-        else:
-            self.events.append(events)
 
     def run_player_action(self, player_action):
         self.resolve_queue(player_action.phases(), None, 0)
@@ -106,11 +99,14 @@ class Game:
                 for event_type in e.ancestors():
                     related_triggers.union(self.triggers.get(event_type, set()))
 
-                related_triggers = {trigger for trigger in related_triggers if trigger.check_condition(e)}
+                related_triggers = {trigger for trigger in related_triggers if trigger.queue_condition(e)}
                 triggers_queue = order_of_play(related_triggers)
 
                 self.resolve_queue(triggers_queue, e, depth=depth + 1)
 
+                # todo: when to run the event?
+                # 1.    run TurnEnd after turn end triggers
+                # 2.    run DrawCard before draw card triggers (hand not full)
                 e.run()
 
                 # Only the outermost Phase ending begins the Aura Update and Death Creation Step.
@@ -145,6 +141,7 @@ class Game:
     def start_game(self):
         # todo
         self.current_player = 0
+        self.current_oop = 0
 
     def death_creation(self):
         """"""
@@ -191,6 +188,10 @@ class Game:
         # todo
 
         pass
+
+    def inc_oop(self):
+        self.current_oop += 1
+        return self.current_oop
 
     #####################
     # Game data methods #

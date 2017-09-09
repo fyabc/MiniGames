@@ -3,7 +3,7 @@
 
 """Basic package, include basic cards and heroes."""
 
-from HearthStone.ext import Spell
+from MyHearthStone.ext import Spell
 
 __author__ = 'fyabc'
 

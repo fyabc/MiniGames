@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 __author__ = 'fyabc'
 
 setup(
-    name='HearthStone',
+    name='MyHearthStone',
     version='1.0',
     keywords=('HearthStone', 'game'),
     description='A Python implementation of HearthStone.',
@@ -24,7 +24,7 @@ setup(
     scripts=[],
     entry_points={
         'console_scripts': [
-            'hearthstone = HearthStone.main:main',
+            'myhearthstone = HearthStone.main:main',
         ]
     },
 )
