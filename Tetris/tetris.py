@@ -14,7 +14,7 @@ class MainLayer(Layer):
 
 def main():
     director.init()
-    director.run(Scene(MainLayer()))
+    director.run_after(Scene(MainLayer()))
 
 
 if __name__ == '__main__':

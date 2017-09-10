@@ -37,7 +37,14 @@ class Game:
         #    0: draw
         self.game_result = None
 
+        # Current player id.
         self.current_player = 0
+
+        # Decks.
+        self.deck = [
+            []
+            for _ in range(2)
+        ]
 
         ################
         # Event engine #
@@ -50,6 +57,8 @@ class Game:
 
         # Current order of play id
         self.current_oop = 0
+
+        # todo: game counters (for tasks)
 
     ########################
     # Event engine methods #
@@ -94,6 +103,12 @@ class Game:
                 new_queue = e.process(current_event)
                 self.resolve_queue(new_queue, None, depth + 1)
             elif isinstance(e, Event):
+                e.run_before()
+
+                # todo: need test here
+                if not e.enable:
+                    continue
+
                 # Get all related triggers, then check their conditions and sort them in order of play.
                 related_triggers = set()
                 for event_type in e.ancestors():
@@ -107,7 +122,7 @@ class Game:
                 # todo: when to run the event?
                 # 1.    run TurnEnd after turn end triggers
                 # 2.    run DrawCard before draw card triggers (hand not full)
-                e.run()
+                e.run_after()
 
                 # Only the outermost Phase ending begins the Aura Update and Death Creation Step.
                 if depth == 0:
@@ -139,9 +154,13 @@ class Game:
     #######################
 
     def start_game(self):
-        # todo
+        # todo: load deck
+
         self.current_player = 0
         self.current_oop = 0
+
+        # todo: fill deck
+        # todo: choose start hand
 
     def death_creation(self):
         """"""
@@ -165,7 +184,7 @@ class Game:
     def check_win(self):
         """Check for win/lose/draw, and set the result to self."""
 
-        # If turn number larger than TurnMax, it will be a draw.
+        # If turn number larger than TurnMax, the game will be a draw.
         if self.n_turns > self.TurnMax:
             self.game_result = 0
 

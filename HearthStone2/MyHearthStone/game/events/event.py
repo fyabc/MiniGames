@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from ...utils.message import message
+
 __author__ = 'fyabc'
 
 
@@ -16,6 +18,7 @@ class Event:
 
         self.game = game
         self.owner = owner
+        self.enable = True
 
     @property
     def oop(self):
@@ -35,10 +38,21 @@ class Event:
             setattr(cls, '_ancestors', cls.__mro__[:-1])
         return getattr(cls, '_ancestors')
 
-    def run(self):
-        """Run the event."""
+    def run_before(self):
+        """Run the event before all triggers."""
+
+        pass
+
+    def run_after(self):
+        """Run the event after all triggers."""
 
         self.message()
 
-    def message(self):
-        pass
+    def message(self, **kwargs):
+        message('{}({})'.format(
+            self.__class__.__name__,
+            ', '.join(
+                '{}={}'.format(k, v)
+                for k, v in kwargs.items()
+            )
+        ))

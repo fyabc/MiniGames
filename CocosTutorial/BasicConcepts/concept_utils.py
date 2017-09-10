@@ -25,6 +25,6 @@ def runner(*args, **kwargs):
         def wrapper():
             director.director.init(*args, **kwargs)
             main_scene = test_func()
-            director.director.run(main_scene)
+            director.director.run_after(main_scene)
         return wrapper
     return decorate

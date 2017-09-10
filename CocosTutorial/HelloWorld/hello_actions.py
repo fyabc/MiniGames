@@ -60,7 +60,7 @@ def main():
     hello_layer.do(actions.RotateBy(360, duration=10))
     main_scene = scene.Scene(hello_layer)
 
-    director.director.run(main_scene)
+    director.director.run_after(main_scene)
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ class BeginOfTurn(Event):
         return self._oop
 
     def message(self):
-        message('Turn {} begin, player = {}'.format(self.game.n_turns, self.game.current_player))
+        super().message(n=self.game.n_turns, player=self.game.current_player)
 
 
 class EndOfTurn(Event):
@@ -30,13 +30,23 @@ class EndOfTurn(Event):
         return self._oop
 
     def message(self):
-        message('Turn {} end, player = {}'.format(self.game.n_turns, self.game.current_player))
+        super().message(n=self.game.n_turns, player=self.game.current_player)
 
-    def run(self):
-        super().run()
+    def run_after(self):
+        super().run_after()
 
         self.game.end_turn()
 
 
 class DrawCard(Event):
-    pass
+    def __init__(self, game, owner, player_id):
+        super().__init__(game, owner)
+        self.player_id = player_id
+        self.card = None
+
+    def message(self):
+        super().message(player=self.game.current_player, card=self.card)
+
+    def run_before(self):
+        # todo
+        pass

@@ -67,7 +67,7 @@ def _test():
 
     main_scene = scene.Scene(main_layer)
 
-    director.director.run(main_scene)
+    director.director.run_after(main_scene)
 
 
 if __name__ == '__main__':
