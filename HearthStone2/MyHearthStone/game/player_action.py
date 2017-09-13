@@ -21,9 +21,9 @@ class PlayerAction:
 class TurnEnd(PlayerAction):
     """"""
 
-    def __init__(self, game, player_id):
+    def __init__(self, game, player_id=None):
         super().__init__(game)
-        self.player_id = player_id
+        self.player_id = game.current_player if player_id is None else player_id
 
     def phases(self):
         return [

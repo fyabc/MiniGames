@@ -11,7 +11,9 @@ __author__ = 'fyabc'
 class GameEntity:
     """The base class of all game entities."""
 
-    def __init__(self):
+    def __init__(self, game):
+        self.game = game
+
         # oop(Order Of Play).
         # All game entities have this attribute, and share the same oop list.
         self.oop = None

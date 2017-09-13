@@ -113,7 +113,7 @@ def _load_packages():
                         if hero_id is None:
                             continue
 
-                        if hero_id in AllCards:
+                        if hero_id in AllHeroes:
                             if AllHeroes[hero_id] == var:
                                 continue
                             warning('The hero id {} already exists, overwrite it'.format(hero_id))

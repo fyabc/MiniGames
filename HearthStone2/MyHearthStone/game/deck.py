@@ -12,20 +12,28 @@ class Deck:
     This class is usually used for deck I/O.
     """
 
-    def __init__(self, data):
-        self.is_standard = True
-        self.hero_id = None
-        self.card_id_list = []
-
-        # todo
+    def __init__(self, hero_id, card_id_list, mode='standard', **kwargs):
+        self.mode = mode
+        self.hero_id = hero_id
+        self.card_id_list = card_id_list
 
     def to_code(self, comment=True):
         """Convert deck to code.
 
         :param comment: Add comment into generated code.
-        :return: code: a string of deck.
+        :return: code: A string of deck.
         """
 
         # todo
 
         return ''
+
+    @classmethod
+    def from_code(cls, code):
+        """Convert deck from code.
+
+        :param code: A string of deck.
+        :return: A ``Deck`` instance.
+        """
+
+        # todo

@@ -9,5 +9,6 @@ Document for DIY and extensions can be seen in doc.
 """
 
 from ..game.card import Minion, Spell, Weapon, HeroCard
+from ..game.hero import Hero
 
 __author__ = 'fyabc'

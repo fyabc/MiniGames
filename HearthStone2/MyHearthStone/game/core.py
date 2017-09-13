@@ -1,15 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from collections import deque, Iterable
-
 from ..utils.package_io import all_cards, all_heroes
 from ..utils.game import order_of_play
 from ..utils.constants import C
-from ..utils.message import debug
+from ..utils.message import debug, message
 
 from .trigger import Trigger
 from .events.event import Event
+from .events.basic import BeginOfGame, BeginOfTurn
 
 __author__ = 'fyabc'
 
@@ -28,6 +27,9 @@ class Game:
         # Game data #
         #############
 
+        # Game mode: 'standard', 'wild', 'arena', '乱斗'
+        self.mode = None
+
         self.n_turns = 0
 
         # Game status.
@@ -40,8 +42,11 @@ class Game:
         # Current player id.
         self.current_player = 0
 
+        # Heroes.
+        self.heroes = [None for _ in range(2)]
+
         # Decks.
-        self.deck = [
+        self.decks = [
             []
             for _ in range(2)
         ]
@@ -153,14 +158,31 @@ class Game:
     # Game system methods #
     #######################
 
-    def start_game(self):
-        # todo: load deck
+    def start_game(self, decks, mode='standard'):
+        """Start the game.
+
+        :param decks: List of 2 players' decks.
+        :param mode: Game mode, default is 'standard'.
+        :return: None
+        """
+
+        self.mode = mode
+
+        cards = all_cards()
+        heroes = all_heroes()
+        for i, deck in enumerate(decks):
+            self.heroes[i] = heroes[deck.hero_id](self)
+            self.decks[i] = [cards[card_id](self) for card_id in deck.card_id_list]
 
         self.current_player = 0
         self.current_oop = 0
 
-        # todo: fill deck
         # todo: choose start hand
+
+        message('Game Start!'.center(80, '='))
+
+        # todo: need test
+        self.resolve_queue([BeginOfGame(self), BeginOfTurn(self)])
 
     def death_creation(self):
         """"""
@@ -215,9 +237,3 @@ class Game:
     #####################
     # Game data methods #
     #####################
-
-    def load_deck(self, deck):
-        # todo: add check for standard and wild
-        cards = all_cards()
-        heroes = all_heroes()
-        return heroes[deck.hero_id], [cards[i] for i in deck.card_id_list]
