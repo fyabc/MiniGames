@@ -4,6 +4,7 @@
 from collections import ChainMap
 
 from ..utils.constants import C
+from ..utils.message import entity_message
 
 __author__ = 'fyabc'
 
@@ -11,12 +12,20 @@ __author__ = 'fyabc'
 class GameEntity:
     """The base class of all game entities."""
 
+    data = ChainMap()
+
     def __init__(self, game):
         self.game = game
 
         # oop(Order Of Play).
         # All game entities have this attribute, and share the same oop list.
         self.oop = None
+
+    def _repr(self, **kwargs):
+        return entity_message(self, kwargs, indent=False, prefix='#')
+
+    def __repr__(self):
+        return self._repr()
 
 
 class SetDataMeta(type):

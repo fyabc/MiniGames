@@ -26,6 +26,8 @@ def main():
 
     actions = [
         TurnEnd(game),
+        TurnEnd(game),
+        TurnEnd(game),
     ]
 
     for action in actions:

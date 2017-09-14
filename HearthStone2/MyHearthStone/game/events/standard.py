@@ -1,7 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ...utils.message import message
+"""Standard events."""
+
 from .event import Event
 
 __author__ = 'fyabc'
@@ -45,21 +46,33 @@ class EndOfTurn(Event):
     def message(self):
         super().message(n=self.game.n_turns, player=self.game.current_player)
 
-    def run_after(self):
-        super().run_after()
-
-        self.game.end_turn()
-
 
 class DrawCard(Event):
-    def __init__(self, game, owner, player_id):
+    def __init__(self, game, owner, player_id=None):
         super().__init__(game, owner)
-        self.player_id = player_id
+        self.player_id = player_id if player_id is not None else self.game.current_player
         self.card = None
 
     def message(self):
         super().message(player=self.game.current_player, card=self.card)
 
-    def run_before(self):
-        # todo
-        pass
+
+class PreDamage(Event):
+    def __init__(self, game, owner, target, value):
+        super().__init__(game, owner)
+        self.target = target
+        self.value = value
+
+    def message(self, **kwargs):
+        super().message(source=self.owner, target=self.target, value=self.value)
+
+
+class Damage(Event):
+    def __init__(self, game, owner, target, value):
+        super().__init__(game, owner)
+        self.target = target
+        self.value = value
+
+
+def game_begin_standard_events(game):
+    return [BeginOfGame(game), BeginOfTurn(game), DrawCard(game, None)]

@@ -7,6 +7,10 @@
     // User extension path list, should be overwrite in user config file.
     "UserExtensionPaths": [],
 
+    "Logging": {
+        "Width": 80
+    },
+
     "Game": {
         // Write description in docstring of card code.
         "DocDescription": true,
@@ -18,8 +22,9 @@
         // Some constants of game.
         "DeckMax": 60,
         "HandMax": 10,
-        "DeskMax": 7,
-        "CrystalMax": 10,
+        "PlayMax": 7,
+        "SecretMax": 5,
+        "ManaMax": 10,
 
         // If turn number larger than TurnMax, it will be a draw.
         "TurnMax": 89

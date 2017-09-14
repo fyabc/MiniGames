@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .events.basic import BeginOfTurn, EndOfTurn
+from .events.standard import BeginOfTurn, EndOfTurn, DrawCard
 
 __author__ = 'fyabc'
 
@@ -29,5 +29,5 @@ class TurnEnd(PlayerAction):
         return [
             EndOfTurn(self.game), 'check_win',
             BeginOfTurn(self.game), 'check_win',
-            # todo: draw card phase
+            DrawCard(self.game, None), 'check_win',
         ]

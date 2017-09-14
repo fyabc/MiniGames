@@ -46,3 +46,6 @@ class Trigger:
     def process(self, event):
         """Process the event, return a queue of events."""
         return []
+
+    def message(self, event):
+        pass

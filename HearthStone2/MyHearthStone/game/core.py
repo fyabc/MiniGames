@@ -1,14 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..utils.package_io import all_cards, all_heroes
-from ..utils.game import order_of_play
-from ..utils.constants import C
-from ..utils.message import debug, message
-
-from .trigger import Trigger
+from .triggers.trigger import Trigger
+from .triggers.standard import add_standard_triggers
+from .events.standard import game_begin_standard_events
 from .events.event import Event
-from .events.basic import BeginOfGame, BeginOfTurn
+from ..utils.constants import C
+from ..utils.game import order_of_play, Zone
+from ..utils.message import debug
+from ..utils.package_io import all_cards, all_heroes
 
 __author__ = 'fyabc'
 
@@ -18,8 +18,9 @@ class Game:
 
     DeckMax = C.Game.DeckMax
     HandMax = C.Game.HandMax
-    DeskMax = C.Game.DeskMax
-    CrystalMax = C.Game.CrystalMax
+    PlayMax = C.Game.PlayMax
+    SecretMax = C.Game.SecretMax
+    ManaMax = C.Game.ManaMax
     TurnMax = C.Game.TurnMax
 
     def __init__(self):
@@ -45,23 +46,36 @@ class Game:
         # Heroes.
         self.heroes = [None for _ in range(2)]
 
-        # Decks.
-        self.decks = [
-            []
-            for _ in range(2)
-        ]
+        # Decks, hands, plays, secrets and graveyards.
+        self.decks = [[] for _ in range(2)]
+        self.hands = [[] for _ in range(2)]
+        self.plays = [[] for _ in range(2)]
+        self.secrets = [[] for _ in range(2)]
+        self.graveyards = [[] for _ in range(2)]
+
+        # Tire counters.
+        self.tire_counters = [0 for _ in range(2)]
 
         ################
         # Event engine #
         ################
+
+        # Events to be resolved.
+        self.events = []
 
         # Dict of all triggers.
         # Dict keys are the event that the trigger respond.
         # Dict values are sets of triggers.
         self.triggers = {}
 
+        # Record the depth for debug printing.
+        self.depth = 0
+
         # Current order of play id
-        self.current_oop = 0
+        self.current_oop = 1
+
+        # The game itself have the lowest oop.
+        self.oop = 0
 
         # todo: game counters (for tasks)
 
@@ -103,31 +117,26 @@ class Game:
         if self.game_result is not None:
             return
 
+        self.depth = depth
+
         for e in queue:
             if isinstance(e, Trigger):
+                if not current_event.enable:
+                    return
                 new_queue = e.process(current_event)
-                self.resolve_queue(new_queue, None, depth + 1)
+                if new_queue:
+                    self.resolve_queue(new_queue, None, depth + 1)
             elif isinstance(e, Event):
-                e.run_before()
-
-                # todo: need test here
-                if not e.enable:
-                    continue
-
                 # Get all related triggers, then check their conditions and sort them in order of play.
                 related_triggers = set()
                 for event_type in e.ancestors():
-                    related_triggers.union(self.triggers.get(event_type, set()))
+                    related_triggers.update(self.triggers.get(event_type, set()))
 
                 related_triggers = {trigger for trigger in related_triggers if trigger.queue_condition(e)}
                 triggers_queue = order_of_play(related_triggers)
 
-                self.resolve_queue(triggers_queue, e, depth=depth + 1)
-
-                # todo: when to run the event?
-                # 1.    run TurnEnd after turn end triggers
-                # 2.    run DrawCard before draw card triggers (hand not full)
-                e.run_after()
+                if triggers_queue:
+                    self.resolve_queue(triggers_queue, e, depth=depth + 1)
 
                 # Only the outermost Phase ending begins the Aura Update and Death Creation Step.
                 if depth == 0:
@@ -174,15 +183,20 @@ class Game:
             self.heroes[i] = heroes[deck.hero_id](self)
             self.decks[i] = [cards[card_id](self) for card_id in deck.card_id_list]
 
+        # todo: choose who start
+
+        # Refresh some counters.
         self.current_player = 0
-        self.current_oop = 0
+        self.current_oop = 1
+        self.depth = 0
+        self.tire_counters = [0 for _ in range(2)]
 
         # todo: choose start hand
 
-        message('Game Start!'.center(80, '='))
+        add_standard_triggers(self)
 
         # todo: need test
-        self.resolve_queue([BeginOfGame(self), BeginOfTurn(self)])
+        self.resolve_queue(game_begin_standard_events(self))
 
     def death_creation(self):
         """"""
@@ -213,7 +227,7 @@ class Game:
         debug('No one wins')
         self.game_result = None
 
-    def end_turn(self):
+    def new_turn(self):
         """TODO:
             Do the real work of changing the current player.
             wears off expired enchantments
@@ -234,6 +248,29 @@ class Game:
         self.current_oop += 1
         return self.current_oop
 
-    #####################
-    # Game data methods #
-    #####################
+        #####################
+        # Game data methods #
+        #####################
+
+    ###############################################
+    # Game attributes methods and other utilities #
+    ###############################################
+
+    def __repr__(self):
+        return 'Game(mode={})'.format(self.mode)
+
+    def full(self, zone, player_id):
+        if isinstance(zone, str):
+            zone = Zone.Str2Idx.get(zone, None)
+        if zone == Zone.Deck:
+            return len(self.decks[player_id]) >= self.DeckMax
+        if zone == Zone.Hand:
+            return len(self.decks[player_id]) >= self.HandMax
+        if zone == Zone.Secret:
+            return len(self.secrets[player_id]) >= self.SecretMax
+        if zone == Zone.Play:
+            return len(self.plays[player_id]) >= self.PlayMax
+        if zone == Zone.Graveyard:
+            return True
+        # todo: add warning here?
+        return False

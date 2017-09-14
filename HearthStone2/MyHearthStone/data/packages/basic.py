@@ -11,6 +11,7 @@ __author__ = 'fyabc'
 class 幸运币(Spell):
     _data = {
         'id': 0,
+        'name': '幸运币',
     }
     pass
 

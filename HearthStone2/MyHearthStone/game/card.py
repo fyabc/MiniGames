@@ -12,13 +12,6 @@ class Card(GameEntity, metaclass=SetDataMeta):
     The class of card.
     """
 
-    # Locations of the card.
-    NULL = 0
-    DECK = 1
-    HAND = 2
-    DESK = 3
-    CEMETERY = 4  # This location may useless: cards in cemetery are only stored as card_id (?).
-
     _data = {
         'id': None,
         'type': 0,
@@ -36,8 +29,11 @@ class Card(GameEntity, metaclass=SetDataMeta):
     # Does this card have a target?
     have_target = False
 
-    def __init__(self, game, **kwargs):
+    def __init__(self, game):
         super().__init__(game)
+
+    def __repr__(self):
+        return super()._repr(id=self.data['id'], name=self.data['name'])
 
 
 class Minion(Card):
