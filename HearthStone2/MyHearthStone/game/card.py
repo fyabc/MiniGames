@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from .game_entity import GameEntity, SetDataMeta
+from ..utils.message import message
+from ..utils.game import Zone
 
 __author__ = 'fyabc'
 
@@ -29,11 +31,16 @@ class Card(GameEntity, metaclass=SetDataMeta):
     # Does this card have a target?
     have_target = False
 
-    def __init__(self, game):
+    def __init__(self, game, player_id):
         super().__init__(game)
 
+        self.zone = 0
+        self.player_id = player_id
+        self.cost = self.data['CAH'][0]
+        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
+
     def __repr__(self):
-        return super()._repr(id=self.data['id'], name=self.data['name'])
+        return super()._repr(id=self.data['id'], P=self.player_id)
 
 
 class Minion(Card):
@@ -51,6 +58,13 @@ class Minion(Card):
         'poisonous': False,
         'lifesteal': False,
     }
+
+    def __init__(self, game):
+        super().__init__(game)
+
+        self.attack = self.data['CAH'][1]
+        self.health = self.data['CAH'][2]
+        self.max_health = self.health
 
 
 class Spell(Card):

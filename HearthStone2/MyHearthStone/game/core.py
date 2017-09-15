@@ -7,7 +7,7 @@ from .events.standard import game_begin_standard_events
 from .events.event import Event
 from ..utils.constants import C
 from ..utils.game import order_of_play, Zone
-from ..utils.message import debug
+from ..utils.message import debug, message
 from ..utils.package_io import all_cards, all_heroes
 
 __author__ = 'fyabc'
@@ -46,12 +46,16 @@ class Game:
         # Heroes.
         self.heroes = [None for _ in range(2)]
 
-        # Decks, hands, plays, secrets and graveyards.
+        # Decks, hands, plays, secrets, weapons and graveyards.
         self.decks = [[] for _ in range(2)]
         self.hands = [[] for _ in range(2)]
         self.plays = [[] for _ in range(2)]
         self.secrets = [[] for _ in range(2)]
+        self.weapons = [None for _ in range(2)]
         self.graveyards = [[] for _ in range(2)]
+
+        # Death event cache.
+        self.death_cache = []
 
         # Tire counters.
         self.tire_counters = [0 for _ in range(2)]
@@ -179,9 +183,9 @@ class Game:
 
         cards = all_cards()
         heroes = all_heroes()
-        for i, deck in enumerate(decks):
-            self.heroes[i] = heroes[deck.hero_id](self)
-            self.decks[i] = [cards[card_id](self) for card_id in deck.card_id_list]
+        for player_id, deck in enumerate(decks):
+            self.heroes[player_id] = heroes[deck.hero_id](self, player_id)
+            self.decks[player_id] = [cards[card_id](self, player_id) for card_id in deck.card_id_list]
 
         # todo: choose who start
 
@@ -244,6 +248,53 @@ class Game:
 
         pass
 
+    def move(self, from_player, from_zone, from_index, to_player, to_zone, to_index):
+        """Move an entity from one zone to another.
+
+        :param from_player: The source player id.
+        :param from_zone: The source zone.
+        :param from_index: The source index of the entity.
+        :param to_player: The target player id.
+        :param to_zone: The target zone.
+        :param to_index: The target index of the entity.
+            if it is 'last', means append.
+        :return: a tuple of (entity, bool, list)
+            The moved entity (even when failed).
+            The bool indicate success or not.
+            The list contains consequence events.
+        """
+
+        fz = self.get_zone(from_zone, from_player)
+
+        entity = fz[from_index]
+        del fz[from_index]
+
+        if from_zone != to_zone and self.full(to_zone, to_player):
+            message('{} full!'.format(Zone.Idx2Str(to_zone)))
+
+            if from_zone == Zone.Play:
+                # todo: trigger some events, such as minion death, etc.
+                pass
+
+            # Move it to graveyard.
+            entity.zone = Zone.Graveyard
+            self.graveyards[from_player].append(entity)
+
+            return entity, False, []
+
+        tz = self.get_zone(to_zone, to_player)
+
+        # todo: set oop when moving to play zone.
+        # todo: set other things
+
+        if to_index == 'last':
+            tz.append(entity)
+        else:
+            tz.insert(to_index, entity)
+        entity.zone = to_zone
+
+        return entity, True, []
+
     def inc_oop(self):
         self.current_oop += 1
         return self.current_oop
@@ -260,8 +311,6 @@ class Game:
         return 'Game(mode={})'.format(self.mode)
 
     def full(self, zone, player_id):
-        if isinstance(zone, str):
-            zone = Zone.Str2Idx.get(zone, None)
         if zone == Zone.Deck:
             return len(self.decks[player_id]) >= self.DeckMax
         if zone == Zone.Hand:
@@ -274,3 +323,16 @@ class Game:
             return True
         # todo: add warning here?
         return False
+
+    def get_zone(self, zone, player_id):
+        if zone == Zone.Deck:
+            return self.decks[player_id]
+        if zone == Zone.Hand:
+            return self.decks[player_id]
+        if zone == Zone.Secret:
+            return self.secrets[player_id]
+        if zone == Zone.Play:
+            return self.plays[player_id]
+        if zone == Zone.Graveyard:
+            return self.graveyards[player_id]
+        raise ValueError('Does not have zone {}'.format(zone))

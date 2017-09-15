@@ -65,7 +65,7 @@ class StdTurnBegin(StandardBeforeTrigger):
 
     respond = [standard.BeginOfTurn]
 
-    def process(self, event):
+    def process(self, event: respond[0]):
         message('Turn Begin!'.center(C.Logging.Width, '-'))
         self.game.new_turn()
         event.message()
@@ -84,7 +84,7 @@ class StdDrawCard(StandardBeforeTrigger):
 
     respond = [standard.DrawCard]
 
-    def process(self, event: standard.DrawCard):
+    def process(self, event: respond[0]):
         player_id = event.player_id
 
         # Tire damage
@@ -96,31 +96,43 @@ class StdDrawCard(StandardBeforeTrigger):
             return [standard.PreDamage(self.game, self.owner, self.game.heroes[player_id],
                                        self.game.tire_counters[player_id])]
 
-        # Get a card from the top of the deck
-        card = self.game.decks[player_id][0]
-        del self.game.decks[player_id][0]
+        card, success, new_events = self.game.move(player_id, Zone.Deck, 0, player_id, Zone.Hand, 'last')
 
-        # Hand full
-        if self.game.full(Zone.Hand, player_id):
+        if success:
+            event.card = card
             event.message()
-            message('Hand full!')
+        else:
+            event.message()
             event.disable()
-            # todo: move the card to the zone "removed from play"?
-            return []
 
-        # Add card into hand
-        self.game.hands[player_id].append(card)
-        event.card = card
-        # todo: move the card to the zone "Hand"
-        event.message()
-
-        return []
+        return new_events
 
 
 class StdPreDamage(StandardBeforeTrigger):
-    """Standard trigger of pre-damage (may useless)."""
+    """Standard trigger of pre-damage."""
 
     respond = [standard.PreDamage]
+
+    def process(self, event: respond[0]):
+        event.message()
+
+        if event.value <= 0:
+            return []
+
+        # todo
+
+        return [standard.Damage(event.game, event.owner, event.target, event.value)]
+
+
+class StdDamage(StandardBeforeTrigger):
+    """Standard trigger of damage."""
+
+    respond = [standard.Damage]
+
+    def process(self, event: respond[0]):
+        event.message()
+
+        return []
 
 
 def add_standard_triggers(game):
@@ -129,3 +141,4 @@ def add_standard_triggers(game):
     game.register_trigger(StdTurnEnd(game))
     game.register_trigger(StdDrawCard(game))
     game.register_trigger(StdPreDamage(game))
+    game.register_trigger(StdDamage(game))

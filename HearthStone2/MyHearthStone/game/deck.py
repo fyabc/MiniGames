@@ -6,7 +6,6 @@
 import base64
 import binascii
 
-from ..utils.package_io import all_cards, all_heroes
 from ..utils.message import error
 
 __author__ = 'fyabc'

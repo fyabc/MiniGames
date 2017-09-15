@@ -24,6 +24,7 @@ class Zone:
     Secret = 4
     Graveyard = 5
     SetAside = 6
+    Weapon = 7
 
     Str2Idx = {
         'Invalid': Invalid,
@@ -33,7 +34,10 @@ class Zone:
         'Secret': Secret,
         'Graveyard': Graveyard,
         'SetAside': SetAside,
+        'Weapon': Weapon,
     }
+
+    Idx2Str = {v: k for k, v in Str2Idx.items()}
 
 
 __all__ = [

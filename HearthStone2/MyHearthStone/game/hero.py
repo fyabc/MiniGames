@@ -18,5 +18,9 @@ class Hero(GameEntity, metaclass=SetDataMeta):
         'description': '',
     }
 
+    def __init__(self, game, player_id):
+        super().__init__(game)
+        self.player_id = player_id
+
     def __repr__(self):
-        return super()._repr(klass_=self.data['klass'], name=self.data['name'])
+        return super()._repr(klass_=self.data['klass'], P=self.player_id)

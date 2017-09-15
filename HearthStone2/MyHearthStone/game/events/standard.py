@@ -63,7 +63,7 @@ class PreDamage(Event):
         self.target = target
         self.value = value
 
-    def message(self, **kwargs):
+    def message(self):
         super().message(source=self.owner, target=self.target, value=self.value)
 
 
@@ -72,6 +72,17 @@ class Damage(Event):
         super().__init__(game, owner)
         self.target = target
         self.value = value
+
+    def message(self):
+        super().message(source=self.owner, target=self.target, value=self.value)
+
+
+class MinionDeath(Event):
+    def __init__(self, game, owner):
+        super().__init__(game, owner)
+
+    def message(self):
+        super().message(minion=self.owner)
 
 
 def game_begin_standard_events(game):
