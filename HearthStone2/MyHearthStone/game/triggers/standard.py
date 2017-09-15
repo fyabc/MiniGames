@@ -10,6 +10,8 @@ These triggers usually have the smallest oop (StandardBeforeTrigger) or largest 
 
 from .trigger import Trigger
 from ..events import standard
+from ..card import Minion, Weapon
+from ..hero import Hero
 from ...utils.game import Zone
 from ...utils.message import message
 from ...utils.constants import C
@@ -108,6 +110,73 @@ class StdDrawCard(StandardBeforeTrigger):
         return new_events
 
 
+class StdOnPlaySpell(StandardBeforeTrigger):
+    """Standard trigger of OnPlaySpell."""
+
+    respond = [standard.OnPlaySpell]
+
+    def process(self, event: respond[0]):
+        """Process the OnPlaySpell event.
+
+        The card is removed from your hand and enters Play and its Mana cost is paid.
+        If it targets, the target is remembered (and its validity is not checked again).
+        (If Bloodbloom or Cho'Gall is out, you take damage instead.
+        This damage is resolved immediately, e.g. for Floating Watcher.)
+
+        :param event: The event to be processed.
+        :return: new event list.
+        """
+
+        player_id = event.player_id
+
+        # todo: Add effect of Cho'gall
+        if self.game.mana[player_id] < event.spell.cost:
+            self.game.error_stub('You do not have enough mana!')
+            event.disable()
+            self.game.stop_subsequent_phases()
+            return []
+
+        if not event.spell.check_target(event.target):
+            self.game.error_stub('This is not a valid target!')
+            event.disable()
+            self.game.stop_subsequent_phases()
+            return []
+
+        event.message()
+
+        return []
+
+
+class StdSpellBlenderPhase(StandardBeforeTrigger):
+    """Standard trigger of SpellBlenderPhase (may be useless?)."""
+
+    respond = [standard.SpellBenderPhase]
+
+    def process(self, event: respond[0]):
+        event.message()
+        return []
+
+
+class StdSpellText(StandardBeforeTrigger):
+    """Standard trigger of SpellText."""
+
+    respond = [standard.SpellText]
+
+    def process(self, event: respond[0]):
+        event.message()
+        return event.spell.run(event.target)
+
+
+class StdAfterSpell(StandardBeforeTrigger):
+    """Standard trigger of AfterSpell (may be useless?)."""
+
+    respond = [standard.AfterSpell]
+
+    def process(self, event: respond[0]):
+        event.message()
+        return []
+
+
 class StdPreDamage(StandardBeforeTrigger):
     """Standard trigger of pre-damage."""
 
@@ -135,10 +204,32 @@ class StdDamage(StandardBeforeTrigger):
         return []
 
 
+class StdDeathPhase(StandardBeforeTrigger):
+    """Standard trigger of death phase."""
+
+    respond = [standard.DeathPhase]
+
+    def process(self, event: respond[0]):
+        result = []
+        for death in event.deaths:
+            if isinstance(death, Hero):
+                result.append(standard.HeroDeath(self.game, death))
+            elif isinstance(death, Minion):
+                result.append(standard.MinionDeath(self.game, death))
+            elif isinstance(death, Weapon):
+                result.append(standard.WeaponDeath(self.game, death))
+        return result
+
+
 def add_standard_triggers(game):
     game.register_trigger(StdGameBegin(game))
     game.register_trigger(StdTurnBegin(game))
     game.register_trigger(StdTurnEnd(game))
     game.register_trigger(StdDrawCard(game))
+    game.register_trigger(StdOnPlaySpell(game))
+    game.register_trigger(StdSpellBlenderPhase(game))
+    game.register_trigger(StdSpellText(game))
+    game.register_trigger(StdAfterSpell(game))
     game.register_trigger(StdPreDamage(game))
     game.register_trigger(StdDamage(game))
+    game.register_trigger(StdDeathPhase(game))

@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from .game_entity import GameEntity, SetDataMeta
-from ..utils.message import message
-from ..utils.game import Zone
 
 __author__ = 'fyabc'
 
@@ -42,6 +40,11 @@ class Card(GameEntity, metaclass=SetDataMeta):
     def __repr__(self):
         return super()._repr(id=self.data['id'], P=self.player_id)
 
+    def check_target(self, target):
+        """Check the validity of the target."""
+
+        return True
+
 
 class Minion(Card):
     """[NO_DESCRIPTION]
@@ -59,20 +62,47 @@ class Minion(Card):
         'lifesteal': False,
     }
 
-    def __init__(self, game):
-        super().__init__(game)
+    def __init__(self, game, player_id):
+        super().__init__(game, player_id)
 
         self.attack = self.data['CAH'][1]
         self.health = self.data['CAH'][2]
         self.max_health = self.health
+        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
 
 class Spell(Card):
-    pass
+    """[NO_DESCRIPTION]
+
+    The class of spell.
+    """
+
+    _data = {
+        'secret': False,
+    }
+
+    def run(self, target):
+        """Run the spell.
+
+        :param target:
+        :return: list of events.
+        """
+
+        return []
 
 
 class Weapon(Card):
-    pass
+    """[NO_DESCRIPTION]
+
+    The class of weapon.
+    """
+
+    def __init__(self, game, player_id):
+        super().__init__(game, player_id)
+
+        self.attack = self.data['CAH'][1]
+        self.health = self.data['CAH'][2]
+        self.max_health = self.health
 
 
 class HeroCard(Card):

@@ -3,17 +3,12 @@
 
 from .game.core import Game
 from .game.deck import Deck
-from .utils.package_io import all_cards, all_heroes
+from .game import player_action
 
 __author__ = 'fyabc'
 
 
 def main():
-    AllCards = all_cards()
-    AllHeroes = all_heroes()
-
-    print(AllCards, AllHeroes)
-
     game = Game()
     decks = [
         Deck(0, [0]),
@@ -22,16 +17,16 @@ def main():
 
     game.start_game(decks)
 
-    from .game.player_action import TurnEnd
-
     actions = [
-        TurnEnd(game),
-        TurnEnd(game),
-        TurnEnd(game),
+        player_action.TurnEnd(game),
+        player_action.TurnEnd(game),
+        player_action.TurnEnd(game),
+        player_action.PlaySpell(game, game.hands[0][0], None),
     ]
 
     for action in actions:
         game.run_player_action(action)
+        print('*' * 80)
 
 
 if __name__ == '__main__':

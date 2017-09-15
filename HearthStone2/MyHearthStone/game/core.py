@@ -3,11 +3,11 @@
 
 from .triggers.trigger import Trigger
 from .triggers.standard import add_standard_triggers
-from .events.standard import game_begin_standard_events
+from .events.standard import game_begin_standard_events, DeathPhase
 from .events.event import Event
 from ..utils.constants import C
 from ..utils.game import order_of_play, Zone
-from ..utils.message import debug, message
+from ..utils.message import debug, message, error
 from ..utils.package_io import all_cards, all_heroes
 
 __author__ = 'fyabc'
@@ -23,7 +23,7 @@ class Game:
     ManaMax = C.Game.ManaMax
     TurnMax = C.Game.TurnMax
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         #############
         # Game data #
         #############
@@ -46,6 +46,12 @@ class Game:
         # Heroes.
         self.heroes = [None for _ in range(2)]
 
+        # Mana and overloads.
+        self.mana = [0 for _ in range(2)]
+        self.max_mana = [0 for _ in range(2)]
+        self.overload = [0 for _ in range(2)]
+        self.overload_next = [0 for _ in range(2)]
+
         # Decks, hands, plays, secrets, weapons and graveyards.
         self.decks = [[] for _ in range(2)]
         self.hands = [[] for _ in range(2)]
@@ -59,6 +65,9 @@ class Game:
 
         # Tire counters.
         self.tire_counters = [0 for _ in range(2)]
+
+        # todo: Enchantments.
+        self.enchantments = [[] for _ in range(2)]
 
         ################
         # Event engine #
@@ -80,6 +89,21 @@ class Game:
 
         # The game itself have the lowest oop.
         self.oop = 0
+
+        # Current queue (may be useless?).
+        self.current_queue = None
+
+        # The flag to stop subsequent phases.
+        self._stop_subsequent_phases = False
+
+        ###########################
+        # Stubs for high-level UI #
+        ###########################
+
+        # Stub for error message.
+        # For CLI, it is just an error text.
+        # For UI, it may be displayed onto screen.
+        self.error_stub = kwargs.pop('error_stub', error)
 
         # todo: game counters (for tasks)
 
@@ -122,8 +146,17 @@ class Game:
             return
 
         self.depth = depth
+        self.current_queue = queue
 
-        for e in queue:
+        i = 0
+        while i < len(queue):
+            if self._stop_subsequent_phases:
+                self._stop_subsequent_phases = False
+                debug('{} phases stopped'.format(len(queue) - i))
+                break
+
+            e = queue[i]
+
             if isinstance(e, Trigger):
                 if not current_event.enable:
                     return
@@ -144,28 +177,33 @@ class Game:
 
                 # Only the outermost Phase ending begins the Aura Update and Death Creation Step.
                 if depth == 0:
+                    # After the outermost Phase ends, Hearthstone does an Aura Update (Health/Attack)
                     self.aura_update_attack_health()
+
+                    # then does the Death Creation Step (Looks for all mortally wounded (0 or less Health) /
+                    # pending destroy (hit with a destroy effect) Entities and kills them),
                     deaths = self.death_creation()
-                    while deaths:
+
+                    # remove dead entities simultaneously,
+                    self.remove_from_play(deaths)
+
+                    # Then does an Aura Update (Other).
+                    self.aura_update_other()
+
+                    if deaths:
                         # If one or more Deaths happened after the outermost Phase ended,
                         # a new Phase (called a “Death Phase”) begins, where Deaths are Queued in order of play.
                         # For each Death, all Death Event triggers (Deathrattles, on-Death Secrets and on-Death
                         # triggered effects) are Queued and resolved in order of play, then the Death is resolved.
-                        self.resolve_queue(deaths, None, depth + 1)
-
-                        # Remove dead entities simultaneously.
-                        self.remove_from_play(deaths)
-
-                        # A Death Phase can have yet another Death Phase after it.
-                        # This process repeats forever until no new Deaths occur,
-                        # and we can finally move on to the next intended Phase in the Sequence.
-                        deaths = self.death_creation()
+                        queue.insert(i + 1, DeathPhase(self, deaths))
             elif e == 'check_win':
                 self.check_win()
                 if self.game_result is not None:
                     return
             else:
                 raise ValueError('Type {} of {} is not a valid type in the queue'.format(type(e), e))
+
+            i += 1
 
     #######################
     # Game system methods #
@@ -190,9 +228,11 @@ class Game:
         # todo: choose who start
 
         # Refresh some counters.
+        self.n_turns = -1
         self.current_player = 0
         self.current_oop = 1
         self.depth = 0
+        self._stop_subsequent_phases = False
         self.tire_counters = [0 for _ in range(2)]
 
         # todo: choose start hand
@@ -203,8 +243,21 @@ class Game:
         self.resolve_queue(game_begin_standard_events(self))
 
     def death_creation(self):
-        """"""
-        return []
+        """Looks for all mortally wounded (0 or less Health) / pending destroy (hit with a destroy effect) Entities.
+
+        :return: list, all deaths, sorted in order of play.
+        """
+
+        deaths = set()
+
+        for zone in [self.plays[0], self.plays[1], self.weapons, self.heroes]:
+            for e in zone:
+                if e is None:
+                    continue
+                if e.to_be_destroyed or e.health <= 0:
+                    deaths.add(zone)
+
+        return order_of_play(deaths)
 
     def remove_from_play(self, deaths):
         """Kill dead entities, remove them from play.
@@ -220,6 +273,11 @@ class Game:
 
     def aura_update_other(self):
         pass
+
+    def stop_subsequent_phases(self):
+        """Stop subsequent phases, like CounterSpell, etc."""
+
+        self._stop_subsequent_phases = True
 
     def check_win(self):
         """Check for win/lose/draw, and set the result to self."""
@@ -242,7 +300,18 @@ class Game:
         """
 
         self.n_turns += 1
-        self.current_player = 1 - self.current_player
+        if self.n_turns > 0:
+            self.current_player = 1 - self.current_player
+        else:
+            pass
+
+        # Refresh mana.
+        if self.max_mana[self.current_player] < self.ManaMax:
+            self.max_mana[self.current_player] += 1
+        self.overload[self.current_player] = min(
+            self.overload_next[self.current_player], self.max_mana[self.current_player])
+        self.overload_next[self.current_player] = 0
+        self.mana[self.current_player] = self.max_mana[self.current_player] - self.overload[self.current_player]
 
         # todo
 
@@ -269,7 +338,7 @@ class Game:
         entity = fz[from_index]
         del fz[from_index]
 
-        if from_zone != to_zone and self.full(to_zone, to_player):
+        if (from_zone, from_index) != (to_zone, to_index) and self.full(to_zone, to_player):
             message('{} full!'.format(Zone.Idx2Str(to_zone)))
 
             if from_zone == Zone.Play:
@@ -292,8 +361,26 @@ class Game:
         else:
             tz.insert(to_index, entity)
         entity.zone = to_zone
+        entity.player_id = to_player
 
         return entity, True, []
+
+    def add_mana(self, value, action, player_id):
+        """Add mana.
+
+        :param value: Value of mana.
+        :param action: '1' (one turn), 'p' (permanent) or 'r' (restore)
+        :param player_id: Player id.
+        """
+
+        if action == '1':
+            self.mana[player_id] = min(self.ManaMax - self.overload[player_id], self.mana[player_id] + value)
+        elif action == 'p':
+            pass
+        elif action == 'r':
+            pass
+        else:
+            raise ValueError('Unknown action {}'.format(action))
 
     def inc_oop(self):
         self.current_oop += 1
@@ -328,7 +415,7 @@ class Game:
         if zone == Zone.Deck:
             return self.decks[player_id]
         if zone == Zone.Hand:
-            return self.decks[player_id]
+            return self.hands[player_id]
         if zone == Zone.Secret:
             return self.secrets[player_id]
         if zone == Zone.Play:

@@ -14,13 +14,19 @@ class Hero(GameEntity, metaclass=SetDataMeta):
         'name': '',
         'package': 0,
         'klass': 0,
-        'CAH': [0, 1, 1],
+        'CAH': [None, None, 30],
         'description': '',
     }
 
     def __init__(self, game, player_id):
         super().__init__(game)
+
         self.player_id = player_id
+        self.health = self.data['CAH'][2]
+        self.max_health = self.health
+        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
+
+        self.oop = self.game.oop
 
     def __repr__(self):
-        return super()._repr(klass_=self.data['klass'], P=self.player_id)
+        return super()._repr(klass=self.data['klass'], P=self.player_id)

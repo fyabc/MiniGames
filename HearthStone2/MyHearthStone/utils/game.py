@@ -40,7 +40,14 @@ class Zone:
     Idx2Str = {v: k for k, v in Str2Idx.items()}
 
 
+class Condition:
+    """The class of conditions to get random cards or select cards."""
+
+    pass
+
+
 __all__ = [
     'order_of_play',
     'Zone',
+    'Condition',
 ]
