@@ -123,13 +123,12 @@ class AfterSpell(OnPlay):
 
 
 class PreDamage(Event):
-    def __init__(self, game, owner, target, value):
-        super().__init__(game, owner)
-        self.target = target
-        self.value = value
+    def __init__(self, game, damage):
+        super().__init__(game, damage.owner)
+        self.damage = damage
 
     def message(self):
-        super().message(source=self.owner, target=self.target, value=self.value)
+        super().message(source=self.owner, target=self.damage.target, value=self.damage.value)
 
 
 class Damage(Event):
@@ -140,6 +139,16 @@ class Damage(Event):
 
     def message(self):
         super().message(source=self.owner, target=self.target, value=self.value)
+
+
+def damage_events(game, owner, target, value):
+    """Utility to get damage event sequences."""
+
+    damage = Damage(game, owner, target, value)
+    return [
+        PreDamage(game, damage),
+        damage,
+    ]
 
 
 class DeathPhase(Event):

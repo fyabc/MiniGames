@@ -323,6 +323,7 @@ class Game:
         :param from_player: The source player id.
         :param from_zone: The source zone.
         :param from_index: The source index of the entity.
+            If it is not an integer, the game will search for the from zone.
         :param to_player: The target player id.
         :param to_zone: The target zone.
         :param to_index: The target index of the entity.
@@ -335,11 +336,19 @@ class Game:
 
         fz = self.get_zone(from_zone, from_player)
 
-        entity = fz[from_index]
-        del fz[from_index]
+        if not isinstance(from_index, int):
+            try:
+                entity = from_index
+                fz.remove(entity)
+            except ValueError:
+                error('{} does not exist in the zone {} of player {}!'.format(from_index, from_zone, from_player))
+                raise
+        else:
+            entity = fz[from_index]
+            del fz[from_index]
 
         if (from_zone, from_index) != (to_zone, to_index) and self.full(to_zone, to_player):
-            message('{} full!'.format(Zone.Idx2Str(to_zone)))
+            message('{} full!'.format(Zone.Idx2Str[to_zone]))
 
             if from_zone == Zone.Play:
                 # todo: trigger some events, such as minion death, etc.
@@ -407,7 +416,7 @@ class Game:
         if zone == Zone.Play:
             return len(self.plays[player_id]) >= self.PlayMax
         if zone == Zone.Graveyard:
-            return True
+            return False
         # todo: add warning here?
         return False
 
@@ -423,3 +432,12 @@ class Game:
         if zone == Zone.Graveyard:
             return self.graveyards[player_id]
         raise ValueError('Does not have zone {}'.format(zone))
+
+    def show_details(self):
+        message('Game details'.center(C.Logging.Width, '='))
+        for player_id in range(2):
+            message('\nPlayer {}:'.format(player_id))
+            for zone in [Zone.Deck, Zone.Hand, Zone.Secret, Zone.Play, Zone.Graveyard]:
+                message(Zone.Idx2Str[zone], '=', self.get_zone(zone, player_id))
+        message()
+        message('Game details end'.center(C.Logging.Width, '='))

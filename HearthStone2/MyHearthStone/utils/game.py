@@ -14,6 +14,20 @@ def order_of_play(objects):
     return sorted(objects, key=lambda o: o.oop)
 
 
+def error_and_stop(game, event, msg):
+    """Show an error message and stop the event.
+
+    :param game:
+    :param event:
+    :param msg:
+    :return:
+    """
+
+    game.error_stub(msg)
+    event.disable()
+    game.stop_subsequent_phases()
+
+
 class Zone:
     """An enumeration class, contains zones of the card."""
 
@@ -48,6 +62,7 @@ class Condition:
 
 __all__ = [
     'order_of_play',
+    'error_and_stop',
     'Zone',
     'Condition',
 ]

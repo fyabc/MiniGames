@@ -25,8 +25,10 @@ def main():
     ]
 
     for action in actions:
-        game.run_player_action(action)
         print('*' * 80)
+        game.run_player_action(action)
+
+    game.show_details()
 
 
 if __name__ == '__main__':

@@ -12,7 +12,7 @@ from .trigger import Trigger
 from ..events import standard
 from ..card import Minion, Weapon
 from ..hero import Hero
-from ...utils.game import Zone
+from ...utils.game import Zone, error_and_stop
 from ...utils.message import message
 from ...utils.constants import C
 
@@ -95,8 +95,8 @@ class StdDrawCard(StandardBeforeTrigger):
             message('Deck empty, take tire damage!')
             event.disable()
             self.game.tire_counters[player_id] += 1
-            return [standard.PreDamage(self.game, self.owner, self.game.heroes[player_id],
-                                       self.game.tire_counters[player_id])]
+            return standard.damage_events(self.game, self.owner, self.game.heroes[player_id],
+                                          self.game.tire_counters[player_id])
 
         card, success, new_events = self.game.move(player_id, Zone.Deck, 0, player_id, Zone.Hand, 'last')
 
@@ -131,18 +131,30 @@ class StdOnPlaySpell(StandardBeforeTrigger):
 
         # todo: Add effect of Cho'gall
         if self.game.mana[player_id] < event.spell.cost:
-            self.game.error_stub('You do not have enough mana!')
-            event.disable()
-            self.game.stop_subsequent_phases()
+            error_and_stop(self.game, event, 'You do not have enough mana!')
             return []
 
         if not event.spell.check_target(event.target):
-            self.game.error_stub('This is not a valid target!')
-            event.disable()
-            self.game.stop_subsequent_phases()
+            error_and_stop(self.game, event, 'This is not a valid target!')
             return []
 
+        if event.spell.data['secret']:
+            if self.game.full(Zone.Secret, player_id):
+                error_and_stop(self.game, event, 'I cannot have more secrets!')
+                return []
+
+            for card in self.game.get_zone(Zone.Secret, player_id):
+                if card.data['id'] == event.spell.data['id']:
+                    error_and_stop(self.game, event, 'I already have this secret!')
+                    return []
+
         event.message()
+
+        tz = Zone.Graveyard
+        if event.spell.data['secret']:
+            tz = Zone.Secret
+
+        self.game.move(player_id, Zone.Hand, event.spell, player_id, tz, 'last')
 
         return []
 
@@ -185,12 +197,15 @@ class StdPreDamage(StandardBeforeTrigger):
     def process(self, event: respond[0]):
         event.message()
 
-        if event.value <= 0:
+        if event.damage.value <= 0:
+            # [NOTE] May need to remain this event here?
+            event.disable()
+            self.game.stop_subsequent_phases()
             return []
 
         # todo
 
-        return [standard.Damage(event.game, event.owner, event.target, event.value)]
+        return []
 
 
 class StdDamage(StandardBeforeTrigger):
