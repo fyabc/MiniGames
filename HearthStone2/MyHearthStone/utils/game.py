@@ -54,6 +54,30 @@ class Zone:
     Idx2Str = {v: k for k, v in Str2Idx.items()}
 
 
+class Race:
+    """An enumeration class, contains races."""
+
+    Beast = 0
+    Murloc = 1
+    Mech = 2
+    Demon = 3
+    Dragon = 4
+    Totem = 5
+    Elemental = 6
+
+    Str2Idx = {
+        'Beast': Beast,
+        'Murloc': Murloc,
+        'Mech': Mech,
+        'Demon': Demon,
+        'Dragon': Dragon,
+        'Totem': Totem,
+        'Elemental': Elemental,
+    }
+
+    Idx2Str = {v: k for k, v in Str2Idx.items()}
+
+
 class Condition:
     """The class of conditions to get random cards or select cards."""
 
@@ -64,5 +88,6 @@ __all__ = [
     'order_of_play',
     'error_and_stop',
     'Zone',
+    'Race',
     'Condition',
 ]

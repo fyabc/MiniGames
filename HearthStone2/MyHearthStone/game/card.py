@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from .game_entity import GameEntity, SetDataMeta
+from ..utils.game import Zone
 
 __author__ = 'fyabc'
 
 
 class Card(GameEntity, metaclass=SetDataMeta):
-    """[NO_DESCRIPTION]
-
-    The class of card.
-    """
+    """The class of card."""
 
     _data = {
         'id': None,
@@ -26,19 +24,18 @@ class Card(GameEntity, metaclass=SetDataMeta):
         'description': '',
     }
 
-    # Does this card have a target?
-    have_target = False
+    have_target = False     # Does this card have a target?
 
     def __init__(self, game, player_id):
         super().__init__(game)
 
-        self.zone = 0
+        self.zone = Zone.Invalid
         self.player_id = player_id
         self.cost = self.data['CAH'][0]
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
     def __repr__(self):
-        return super()._repr(id=self.data['id'], P=self.player_id)
+        return super()._repr(id=self.data['id'], P=self.player_id, oop=self.oop)
 
     def check_target(self, target):
         """Check the validity of the target."""
@@ -47,10 +44,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
 
 class Minion(Card):
-    """[NO_DESCRIPTION]
-
-    The class of minion.
-    """
+    """The class of minion."""
 
     _data = {
         'taunt': False,
@@ -60,6 +54,10 @@ class Minion(Card):
         'windfury': False,
         'poisonous': False,
         'lifesteal': False,
+        'spell_power': 0,
+
+        'battlecry': False,
+        'deathrattle': False,
     }
 
     def __init__(self, game, player_id):
@@ -70,12 +68,18 @@ class Minion(Card):
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
+    def battle_cry(self, target):
+        """Run the battlecry. Implemented in subclasses.
+
+        :param target: Target of the battlecry.
+        :return: list of events.
+        """
+
+        return []
+
 
 class Spell(Card):
-    """[NO_DESCRIPTION]
-
-    The class of spell.
-    """
+    """The class of spell."""
 
     _data = {
         'secret': False,
@@ -92,10 +96,7 @@ class Spell(Card):
 
 
 class Weapon(Card):
-    """[NO_DESCRIPTION]
-
-    The class of weapon.
-    """
+    """The class of weapon."""
 
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
@@ -106,4 +107,6 @@ class Weapon(Card):
 
 
 class HeroCard(Card):
+    """The class of hero card."""
+
     pass

@@ -12,9 +12,6 @@
     },
 
     "Game": {
-        // Write description in docstring of card code.
-        "DocDescription": true,
-
         // Some constants of deck.
         "DeckSize": 30,
         "SameCardMax": [2, 2, 2, 2, 1],

@@ -9,6 +9,9 @@ __author__ = 'fyabc'
 class Event:
     """"""
 
+    # Skip 5 steps (summon resolution, death creation and 3 aura updates) after this event?
+    skip_5_steps = False
+
     def __init__(self, game, owner):
         """
 
@@ -39,7 +42,11 @@ class Event:
         return getattr(cls, '_ancestors')
 
     def message(self, **kwargs):
-        message(entity_message(self, kwargs, indent=True, prefix='@'))
+        message(entity_message(self, kwargs, prefix='@'))
 
     def disable(self):
         self.enable = False
+
+
+class Phase(Event):
+    pass

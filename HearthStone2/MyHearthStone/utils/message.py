@@ -53,9 +53,8 @@ def msg_block(msg, level=LEVEL_INFO, log_time=True):
     message('Done{}'.format(', time: {:.4f}s'.format(_time() - start_time) if log_time else ''), level=level)
 
 
-def entity_message(self, kwargs, indent=False, prefix=''):
-    return '{}{}{}({})'.format(
-        '  ' * self.game.depth if indent else '',
+def entity_message(self, kwargs, prefix=''):
+    return '{}{}({})'.format(
         prefix,
         self.__class__.__name__,
         ', '.join(

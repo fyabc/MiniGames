@@ -1,13 +1,31 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""Basic package, include basic cards and heroes."""
+"""Basic package, include basic cards and heroes.
 
-from MyHearthStone.ext import Spell, Hero
+Card ID format:
+
+01 02 0014
+^  ^  ^
+|  |  |
+|  |  Card ID
+|  |
+|  Class ID
+|
+Package ID
+"""
+
+from MyHearthStone.ext import Minion, Spell, Weapon, Hero
+from MyHearthStone.ext import blank_minion
+from MyHearthStone.ext import standard
 from MyHearthStone.ext import message as msg
 
 __author__ = 'fyabc'
 
+
+###########
+# Neutral #
+###########
 
 class 幸运币(Spell):
     _data = {
@@ -22,6 +40,38 @@ class 幸运币(Spell):
         msg.verbose('Add 1 mana to player {} in this turn!'.format(self.player_id))
 
         return []
+
+
+淡水鳄 = blank_minion({
+    'id': 1,
+    'name': '淡水鳄',
+    'rarity': 0,
+    'CAH': [2, 2, 3],
+    'race': [0],
+})
+
+########
+# Mage #
+########
+
+
+class 火球术(Spell):
+    _data = {
+        'id': 20004,
+        'name': '火球术',
+        'rarity': 0,
+        'CAH': [4],
+    }
+
+    have_target = True
+
+    def run(self, target):
+        return [standard.damage_events(self.game, self, target, 6)]
+
+
+##########
+# Heroes #
+##########
 
 
 class Druid(Hero):

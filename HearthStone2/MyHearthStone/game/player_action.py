@@ -48,7 +48,7 @@ class TurnEnd(PlayerAction):
 
 
 class Concede(PlayerAction):
-    """"""
+    """May be useless?"""
 
     def __init__(self, game, player_id=None):
         super().__init__(game)
@@ -77,3 +77,60 @@ class PlaySpell(PlayerAction):
             standard.AfterSpell(self.game, self.spell, self.target, self.player_id),
             'check_win',
         ]
+
+
+class PlayWeapon(PlayerAction):
+    """"""
+
+    def __init__(self, game, weapon, target, player_id=None):
+        super().__init__(game)
+        self.weapon = weapon
+        self.target = target
+        self.player_id = game.current_player if player_id is None else player_id
+
+    def phases(self):
+        return []
+
+
+class PlayMinion(PlayerAction):
+    """"""
+
+    def __init__(self, game, minion, loc, target, player_id=None):
+        super().__init__(game)
+        self.minion = minion
+        self.loc = loc
+        self.target = target
+        self.player_id = game.current_player if player_id is None else player_id
+
+    def phases(self):
+        return [
+            standard.OnPlayMinion(self.game, self.minion, self.loc, self.target, self.player_id),
+            standard.BattlecryPhase(self.game, self.minion, self.loc, self.target, self.player_id),
+            standard.AfterPlayMinion(self.game, self.minion, self.player_id),
+            standard.AfterSummon(self.game, self.minion, self.player_id),
+            'check_win',
+        ]
+
+
+class ToAttack(PlayerAction):
+    """"""
+
+    def __init__(self, game, attacker, defender):
+        super().__init__(game)
+        self.attacker = attacker
+        self.defender = defender
+
+    def phases(self):
+        return []
+
+
+class UseHeroPower(PlayerAction):
+    """"""
+
+    def __init__(self, game, target, player_id):
+        super().__init__(game)
+        self.target = target
+        self.player_id = game.current_player if player_id is None else player_id
+
+    def phases(self):
+        return []

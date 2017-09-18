@@ -60,9 +60,6 @@ class Game:
         self.weapons = [None for _ in range(2)]
         self.graveyards = [[] for _ in range(2)]
 
-        # Death event cache.
-        self.death_cache = []
-
         # Tire counters.
         self.tire_counters = [0 for _ in range(2)]
 
@@ -73,16 +70,10 @@ class Game:
         # Event engine #
         ################
 
-        # Events to be resolved.
-        self.events = []
-
         # Dict of all triggers.
         # Dict keys are the event that the trigger respond.
         # Dict values are sets of triggers.
         self.triggers = {}
-
-        # Record the depth for debug printing.
-        self.depth = 0
 
         # Current order of play id
         self.current_oop = 1
@@ -90,11 +81,18 @@ class Game:
         # The game itself have the lowest oop.
         self.oop = 0
 
-        # Current queue (may be useless?).
-        self.current_queue = None
+        # Current event queue and trigger queue (may be useless?).
+        self.current_events = None
+        self.current_triggers = None
 
         # The flag to stop subsequent phases.
         self._stop_subsequent_phases = False
+
+        # Death event cache.
+        self.death_cache = []
+
+        # Summon event cache.
+        self.summon_events = set()
 
         ###########################
         # Stubs for high-level UI #
@@ -127,17 +125,16 @@ class Game:
             self.triggers[event_type] = {trigger for trigger in triggers if trigger.enable}
 
     def run_player_action(self, player_action):
-        self.resolve_queue(player_action.phases(), None, 0)
+        self.resolve_events(player_action.phases(), 0)
 
         return self.game_result
 
-    def resolve_queue(self, queue, current_event=None, depth=0):
-        """Resolve all events and triggers in the queue.
+    def resolve_events(self, events, depth=0):
+        """Resolve all events in the queue.
 
-        This is a recursive method.
+        This will call ``resolve_triggers``.
 
-        :param queue: Queue of triggers and events to be resolved.
-        :param current_event: When resolving a trigger in the queue, the trigger will process this event.
+        :param events: Queue of events to be resolved.
         :param depth: The recursive depth.
         :return:
         """
@@ -145,25 +142,13 @@ class Game:
         if self.game_result is not None:
             return
 
-        self.depth = depth
-        self.current_queue = queue
+        self.current_events = events
 
         i = 0
-        while i < len(queue):
-            if self._stop_subsequent_phases:
-                self._stop_subsequent_phases = False
-                debug('{} phases stopped'.format(len(queue) - i))
-                break
+        while i < len(events):
+            e = events[i]
 
-            e = queue[i]
-
-            if isinstance(e, Trigger):
-                if not current_event.enable:
-                    return
-                new_queue = e.process(current_event)
-                if new_queue:
-                    self.resolve_queue(new_queue, None, depth + 1)
-            elif isinstance(e, Event):
+            if isinstance(e, Event):
                 # Get all related triggers, then check their conditions and sort them in order of play.
                 related_triggers = set()
                 for event_type in e.ancestors():
@@ -173,10 +158,27 @@ class Game:
                 triggers_queue = order_of_play(related_triggers)
 
                 if triggers_queue:
-                    self.resolve_queue(triggers_queue, e, depth=depth + 1)
+                    self.resolve_triggers(triggers_queue, e, depth=depth + 1)
+
+                # Check for stopping subsequent phases.
+                if self._stop_subsequent_phases:
+                    self._stop_subsequent_phases = False
+                    debug('{} phases stopped'.format(len(events) - i - 1))
+                    debug(events[i + 1:])
+                    del events[i + 1:]
 
                 # Only the outermost Phase ending begins the Aura Update and Death Creation Step.
-                if depth == 0:
+                if depth == 0 and not e.skip_5_steps:
+                    self.aura_update_attack_health()
+
+                    # Whenever a minion enters play (whether due to being played or summoned),
+                    # a 'Summon Event' is created, but not resolved.
+                    # Instead, during the Summon Resolution Step, in order of play, we resolve each Summon Event,
+                    # Queuing and Resolving triggers.
+                    summons = self.summon_resolution()
+                    if summons:
+                        self.resolve_events(summons, depth=depth + 1)
+
                     # After the outermost Phase ends, Hearthstone does an Aura Update (Health/Attack)
                     self.aura_update_attack_health()
 
@@ -187,7 +189,7 @@ class Game:
                     # remove dead entities simultaneously,
                     self.remove_from_play(deaths)
 
-                    # Then does an Aura Update (Other).
+                    # then does an Aura Update (Other).
                     self.aura_update_other()
 
                     if deaths:
@@ -195,13 +197,48 @@ class Game:
                         # a new Phase (called a “Death Phase”) begins, where Deaths are Queued in order of play.
                         # For each Death, all Death Event triggers (Deathrattles, on-Death Secrets and on-Death
                         # triggered effects) are Queued and resolved in order of play, then the Death is resolved.
-                        queue.insert(i + 1, DeathPhase(self, deaths))
+                        events.insert(i + 1, DeathPhase(self, deaths))
             elif e == 'check_win':
                 self.check_win()
                 if self.game_result is not None:
                     return
             else:
                 raise ValueError('Type {} of {} is not a valid type in the queue'.format(type(e), e))
+
+            # todo: need test here
+            if depth == 0 and i == len(events) - 1 and (not events or events[-1] != 'check_win'):
+                events.append('check_win')
+
+            i += 1
+
+    def resolve_triggers(self, triggers, current_event, depth=0):
+        """Resolve all triggers in the queue.
+
+        This will call ``resolve_events``.
+
+        :param triggers: Queue of triggers to be resolved.
+        :param current_event: When resolving a trigger in the queue, the trigger will process this event.
+        :param depth: The recursive depth.
+        :return:
+        """
+
+        if self.game_result is not None:
+            return
+
+        self.current_triggers = triggers
+
+        i = 0
+        while i < len(triggers):
+            t = triggers[i]
+
+            if not current_event.enable:
+                return
+            if not t.trigger_condition(current_event):
+                return
+
+            new_queue = t.process(current_event)
+            if new_queue:
+                self.resolve_events(new_queue, depth + 1)
 
             i += 1
 
@@ -231,16 +268,25 @@ class Game:
         self.n_turns = -1
         self.current_player = 0
         self.current_oop = 1
-        self.depth = 0
         self._stop_subsequent_phases = False
         self.tire_counters = [0 for _ in range(2)]
 
         # todo: choose start hand
 
+        # todo: shuffle decks
+
         add_standard_triggers(self)
 
         # todo: need test
-        self.resolve_queue(game_begin_standard_events(self))
+        self.resolve_events(game_begin_standard_events(self))
+
+    def summon_resolution(self):
+        """Resolve all summon events in order of play."""
+
+        result = order_of_play(self.summon_events)
+        self.summon_events.clear()
+
+        return result
 
     def death_creation(self):
         """Looks for all mortally wounded (0 or less Health) / pending destroy (hit with a destroy effect) Entities.
@@ -360,6 +406,35 @@ class Game:
 
             return entity, False, []
 
+        self._insert_entity(entity, to_zone, to_player, to_index)
+
+        return entity, True, []
+
+    def generate(self, to_player, to_zone, to_index, entity_id):
+        """Generate an entity into a zone.
+
+        :param to_player: The target player id.
+        :param to_zone: The target zone.
+        :param entity_id: The entity id to be generated.
+        :param to_index: The target index of the entity.
+            if it is 'last', means append.
+        :return: a tuple of (entity, bool, list)
+            The generated entity (None when failed).
+            The bool indicate success or not.
+            The list contains consequence events.
+        """
+
+        # If the play board is full, do nothing.
+        if self.full(to_zone, to_player):
+            return None, False, []
+
+        entity = self.create_card(entity_id, player_id=to_player)
+
+        self._insert_entity(entity, to_zone, to_player, to_index)
+
+        return entity, True, []
+
+    def _insert_entity(self, entity, to_zone, to_player, to_index):
         tz = self.get_zone(to_zone, to_player)
 
         # todo: set oop when moving to play zone.
@@ -371,8 +446,6 @@ class Game:
             tz.insert(to_index, entity)
         entity.zone = to_zone
         entity.player_id = to_player
-
-        return entity, True, []
 
     def add_mana(self, value, action, player_id):
         """Add mana.
@@ -395,10 +468,6 @@ class Game:
         self.current_oop += 1
         return self.current_oop
 
-        #####################
-        # Game data methods #
-        #####################
-
     ###############################################
     # Game attributes methods and other utilities #
     ###############################################
@@ -417,6 +486,8 @@ class Game:
             return len(self.plays[player_id]) >= self.PlayMax
         if zone == Zone.Graveyard:
             return False
+        if zone == Zone.Weapon:
+            return self.weapons[player_id] is not None
         # todo: add warning here?
         return False
 
@@ -435,9 +506,14 @@ class Game:
 
     def show_details(self):
         message('Game details'.center(C.Logging.Width, '='))
+        message('Turn: {} Current player: {}'.format(self.n_turns, self.current_player))
         for player_id in range(2):
             message('\nPlayer {}:'.format(player_id))
+            message('Mana = {}/{}'.format(self.mana[player_id], self.max_mana[player_id]))
             for zone in [Zone.Deck, Zone.Hand, Zone.Secret, Zone.Play, Zone.Graveyard]:
                 message(Zone.Idx2Str[zone], '=', self.get_zone(zone, player_id))
         message()
         message('Game details end'.center(C.Logging.Width, '='))
+
+    def create_card(self, card_id, **kwargs):
+        return all_cards()[card_id](self, **kwargs)

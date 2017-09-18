@@ -24,7 +24,7 @@ setup(
     scripts=[],
     entry_points={
         'console_scripts': [
-            'myhearthstone = HearthStone.main:main',
+            'myhearthstone = MyHearthStone.main:main',
         ]
     },
 )
