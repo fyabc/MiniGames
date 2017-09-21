@@ -48,15 +48,18 @@ class StdOnPlaySpell(StandardBeforeTrigger):
                     error_and_stop(self.game, event, 'I already have this secret!')
                     return []
 
+        self.game.mana[player_id] -= event.spell.cost
+
         # [NOTE]: move it to ``Game.move``?
         event.spell.oop = self.game.inc_oop()
-        event.message()
 
         tz = Zone.Graveyard
         if event.spell.data['secret']:
             tz = Zone.Secret
 
         self.game.move(player_id, Zone.Hand, event.spell, player_id, tz, 'last')
+
+        event.message()
 
         return []
 
@@ -114,9 +117,21 @@ class StdOnPlayMinion(StandardBeforeTrigger):
             error_and_stop(self.game, event, 'This is not a valid target!')
             return []
 
-        # todo
+        if self.game.full(Zone.Play, player_id):
+            error_and_stop(self.game, event, 'You cannot have more minions!')
+            return []
+
+        self.game.mana[player_id] -= event.minion.cost
+
+        self.game.summon_events.add(standard.Summon(self.game, event.minion, player_id))
+
+        # [NOTE]: move it to ``Game.move``?
+        event.minion.oop = self.game.inc_oop()
+
+        self.game.move(player_id, Zone.Hand, event.minion, player_id, Zone.Play, event.loc)
 
         event.message()
+
         return []
 
 
@@ -124,6 +139,13 @@ class StdOnBattlecry(StandardBeforeTrigger):
     """Standard trigger of BattlecryPhase."""
 
     respond = [standard.BattlecryPhase]
+
+    def process(self, event: respond[0]):
+        event.message()
+
+        # todo: Add effects of Brann Bronzebeard.
+
+        return event.minion.battlecry(event.target)
 
 
 class StdAfterPlayMinion(StandardBeforeTrigger):

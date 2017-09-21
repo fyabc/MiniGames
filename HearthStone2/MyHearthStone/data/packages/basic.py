@@ -17,7 +17,7 @@ Package ID
 
 from MyHearthStone.ext import Minion, Spell, Weapon, Hero
 from MyHearthStone.ext import blank_minion
-from MyHearthStone.ext import standard
+from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import message as msg
 
 __author__ = 'fyabc'
@@ -42,8 +42,21 @@ class 幸运币(Spell):
         return []
 
 
+class 工程师学徒(Minion):
+    _data = {
+        'id': 1,
+        'name': '工程师学徒',
+        'rarity': 0,
+        'CAH': [2, 1, 1],
+        'battlecry': True,
+    }
+
+    def battlecry(self, target):
+        return [std_events.DrawCard(self.game, self, self.player_id)]
+
+
 淡水鳄 = blank_minion({
-    'id': 1,
+    'id': 2,
     'name': '淡水鳄',
     'rarity': 0,
     'CAH': [2, 2, 3],
@@ -66,7 +79,7 @@ class 火球术(Spell):
     have_target = True
 
     def run(self, target):
-        return [standard.damage_events(self.game, self, target, 6)]
+        return [std_events.damage_events(self.game, self, target, 6)]
 
 
 ##########
