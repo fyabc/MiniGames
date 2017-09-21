@@ -12,19 +12,47 @@ from MyHearthStone.utils.message import set_debug_level, LEVEL_INFO, LEVEL_DEBUG
 from MyHearthStone.game.core import Game
 from MyHearthStone.game.deck import Deck
 from MyHearthStone.game import player_action
+from MyHearthStone.utils.package_io import search_by_name
 
 __author__ = 'fyabc'
 
 
-def play_inplace(action_type, game, player_id, index, target=None):
-    return action_type(game, game.hands[player_id][index], player_id, target)
+class Runner:
+    def run(self):
+        pass
+
+
+class PM(Runner):
+    def __init__(self, game, index, loc, target, player_id=None):
+        self.game = game
+        self.player_id = player_id
+        self.index = index
+        self.loc = loc
+        self.target = target
+
+    def run(self):
+        player_id = self.game.current_player if self.player_id is None else self.player_id
+        return player_action.PlayMinion(self.game, self.game.hands[player_id][self.index],
+                                        self.loc, self.target, player_id)
 
 
 def main():
     game = Game()
     decks = [
-        Deck(0, [0, 20004]),
-        Deck(1, [1, 0])
+        Deck(
+            0,
+            [search_by_name(n) for n in [
+                '幸运币',
+                '工程师学徒',
+            ]]
+        ),
+        Deck(
+            1,
+            [search_by_name(n) for n in [
+                '淡水鳄',
+                '火球术',
+            ]]
+        ),
     ]
 
     game.start_game(decks)
@@ -35,10 +63,10 @@ def main():
         # 1
         player_action.TurnEnd(game),
         # 0
-        (player_action.PlaySpell, game, 0, 0),
+        PM(game, 1, 0, None),
         player_action.TurnEnd(game),
         # 1
-        (player_action.PlayMinion, game, 1, 0),
+        PM(game, 0, 0, None),
         player_action.TurnEnd(game),
         # 0
     ]
@@ -46,8 +74,8 @@ def main():
     game.show_details()
     for action in actions:
         print('*' * 80)
-        if isinstance(action, tuple):
-            action = play_inplace(*action)
+        if isinstance(action, Runner):
+            action = action.run()
         game.run_player_action(action)
         game.show_details()
 

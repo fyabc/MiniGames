@@ -68,7 +68,7 @@ class Minion(Card):
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
-    def battle_cry(self, target):
+    def battlecry(self, target):
         """Run the battlecry. Implemented in subclasses.
 
         :param target: Target of the battlecry.

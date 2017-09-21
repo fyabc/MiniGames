@@ -151,6 +151,16 @@ def all_heroes():
     return _AllHeroes
 
 
+def search_by_name(name):
+    data = all_cards()
+
+    for i, e in data.items():
+        if e.data['name'] == name:
+            return i
+
+    return None
+
+
 __all__ = [
     'all_cards',
     'all_heroes',

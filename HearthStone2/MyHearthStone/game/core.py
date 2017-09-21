@@ -509,7 +509,10 @@ class Game:
         message('Turn: {} Current player: {}'.format(self.n_turns, self.current_player))
         for player_id in range(2):
             message('\nPlayer {}:'.format(player_id))
-            message('Mana = {}/{}'.format(self.mana[player_id], self.max_mana[player_id]))
+            message('Mana = {}/{}, Health = {}'.format(
+                self.mana[player_id], self.max_mana[player_id],
+                self.heroes[player_id].health,
+            ))
             for zone in [Zone.Deck, Zone.Hand, Zone.Secret, Zone.Play, Zone.Graveyard]:
                 message(Zone.Idx2Str[zone], '=', self.get_zone(zone, player_id))
         message()
@@ -517,3 +520,10 @@ class Game:
 
     def create_card(self, card_id, **kwargs):
         return all_cards()[card_id](self, **kwargs)
+
+    def game_status(self):
+        """Parse game status into a dict."""
+
+        return {
+            # todo
+        }

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainApp</class>
+ <widget class="QMainWindow" name="MainApp">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1175</width>
+    <height>683</height>
+   </rect>
+  </property>
+  <property name="mouseTracking">
+   <bool>false</bool>
+  </property>
+  <property name="windowTitle">
+   <string>炉石传说</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_9">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="main_layout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="horizontalSpacing">
+       <number>7</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QTabWidget" name="main_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>微软雅黑</family>
+         </font>
+        </property>
+        <property name="tabPosition">
+         <enum>QTabWidget::North</enum>
+        </property>
+        <property name="tabShape">
+         <enum>QTabWidget::Rounded</enum>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <property name="elideMode">
+         <enum>Qt::ElideNone</enum>
+        </property>
+        <widget class="QWidget" name="tab_main">
+         <attribute name="title">
+          <string>主页</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_collection">
+         <attribute name="title">
+          <string>我的收藏</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_play">
+         <attribute name="title">
+          <string>对战模式</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_adventure">
+         <attribute name="title">
+          <string>冒险模式</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_arena">
+         <attribute name="title">
+          <string>竞技场</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_brawl">
+         <attribute name="title">
+          <string>乱斗模式</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_quest">
+         <attribute name="title">
+          <string>我的任务</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_open_packs">
+         <attribute name="title">
+          <string>打开卡包</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_shop">
+         <attribute name="title">
+          <string>商店</string>
+         </attribute>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="sizeGripEnabled">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1175</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="mouseTracking">
+    <bool>false</bool>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
+   <widget class="QMenu" name="menu_help">
+    <property name="title">
+     <string>帮助(&amp;H)</string>
+    </property>
+    <addaction name="action_introduction"/>
+    <addaction name="action_about"/>
+   </widget>
+   <widget class="QMenu" name="menu_game">
+    <property name="title">
+     <string>游戏(&amp;G)</string>
+    </property>
+    <addaction name="action_play"/>
+    <addaction name="action_adventure"/>
+    <addaction name="action_arena"/>
+    <addaction name="action_brawl"/>
+    <addaction name="separator"/>
+    <addaction name="action_quest"/>
+    <addaction name="separator"/>
+    <addaction name="action_exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_card">
+    <property name="title">
+     <string>卡牌(&amp;C)</string>
+    </property>
+    <addaction name="action_collection"/>
+    <addaction name="action_open_packs"/>
+    <addaction name="separator"/>
+    <addaction name="action_shop"/>
+   </widget>
+   <addaction name="menu_game"/>
+   <addaction name="menu_card"/>
+   <addaction name="menu_help"/>
+  </widget>
+  <action name="action_about">
+   <property name="text">
+    <string>关于(&amp;A)...</string>
+   </property>
+   <property name="iconText">
+    <string>关于</string>
+   </property>
+   <property name="toolTip">
+    <string>关于(A)</string>
+   </property>
+   <property name="statusTip">
+    <string>显示关于本游戏的信息</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+  </action>
+  <action name="action_exit">
+   <property name="text">
+    <string>退出(&amp;X)</string>
+   </property>
+   <property name="toolTip">
+    <string>退出(X)</string>
+   </property>
+   <property name="statusTip">
+    <string>退出游戏</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WindowShortcut</enum>
+   </property>
+  </action>
+  <action name="action_play">
+   <property name="text">
+    <string>对战模式(&amp;P)</string>
+   </property>
+   <property name="statusTip">
+    <string>进入对战模式</string>
+   </property>
+  </action>
+  <action name="action_adventure">
+   <property name="text">
+    <string>冒险模式(&amp;A)</string>
+   </property>
+   <property name="toolTip">
+    <string>冒险模式(A)</string>
+   </property>
+   <property name="statusTip">
+    <string>进入冒险模式</string>
+   </property>
+  </action>
+  <action name="action_arena">
+   <property name="text">
+    <string>竞技场(&amp;R)</string>
+   </property>
+   <property name="toolTip">
+    <string>竞技场(R)</string>
+   </property>
+   <property name="statusTip">
+    <string>进入竞技场</string>
+   </property>
+  </action>
+  <action name="action_brawl">
+   <property name="text">
+    <string>乱斗模式(&amp;B)</string>
+   </property>
+   <property name="toolTip">
+    <string>乱斗模式(B)</string>
+   </property>
+   <property name="statusTip">
+    <string>进入乱斗模式</string>
+   </property>
+  </action>
+  <action name="action_shop">
+   <property name="text">
+    <string>商店(&amp;S)</string>
+   </property>
+   <property name="toolTip">
+    <string>商店(S)</string>
+   </property>
+   <property name="statusTip">
+    <string>购买商品</string>
+   </property>
+  </action>
+  <action name="action_collection">
+   <property name="text">
+    <string>我的收藏(&amp;C)</string>
+   </property>
+   <property name="toolTip">
+    <string>我的收藏(C)</string>
+   </property>
+   <property name="statusTip">
+    <string>浏览我的收藏</string>
+   </property>
+  </action>
+  <action name="action_open_packs">
+   <property name="text">
+    <string>打开卡包(&amp;O)</string>
+   </property>
+   <property name="toolTip">
+    <string>打开卡包(O)</string>
+   </property>
+   <property name="statusTip">
+    <string>打开获得的卡包</string>
+   </property>
+  </action>
+  <action name="action_introduction">
+   <property name="text">
+    <string>游戏介绍(&amp;I)</string>
+   </property>
+   <property name="toolTip">
+    <string>游戏介绍(I)</string>
+   </property>
+  </action>
+  <action name="action_quest">
+   <property name="text">
+    <string>我的任务(&amp;Q)</string>
+   </property>
+   <property name="toolTip">
+    <string>我的任务(Q)</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -18,10 +18,8 @@ class PlayerAction:
         raise NotImplementedError('implemented by subclasses')
 
     @classmethod
-    def try_to_run(cls, game, *args, **kwargs):
-        """Try to run the player action.
-        It will search entities according to indices
-        and validate conditions.
+    def make_action(cls, game, *args, **kwargs):
+        """Make an action from arguments.
 
         :param game: The game instance.
         :param args: Contains zones and indices.
