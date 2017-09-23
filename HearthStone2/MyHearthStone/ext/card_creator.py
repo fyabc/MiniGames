@@ -54,8 +54,8 @@ def create_blank(data, name=None, card_type=Minion):
 
     result = new_class(name, (card_type,), {}, lambda ns: ns.update(cls_dict))
 
-    # # Get the module name of caller.
-    # result.__module__ = sys._getframe(1).f_globals['__name__']
+    # Get the module name of caller.
+    result.__module__ = sys._getframe(1).f_globals['__name__']
     return result
 
 
