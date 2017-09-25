@@ -109,7 +109,7 @@ class LanHandler(socketserver.StreamRequestHandler):
         # 1. Ask user data from client.
         user_data = self.recv()
         assert user_data['type'] == 'user_data'
-        self.user = utils.User(self.client_address, user_data['nickname'], user_data['deck_code'])
+        self.user = utils.NetworkUser(self.client_address, user_data['nickname'], user_data['deck_code'])
 
         failed = False
         try:

@@ -23,6 +23,7 @@ class Deck:
         self.mode = mode
         self.hero_id = hero_id
         self.card_id_list = card_id_list
+        self.name = kwargs.pop('name', 'Custom Deck')
 
     def __repr__(self):
         return 'Deck(mode={}, hero_id={}, card_id_list={})'.format(self.mode, self.hero_id, self.card_id_list)

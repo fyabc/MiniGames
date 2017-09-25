@@ -28,6 +28,8 @@ def error_and_stop(game, event, msg):
     game.stop_subsequent_phases()
 
 
+# TODO: change these classes into ``enum.IntEnum``?
+
 class Zone:
     """An enumeration class, contains zones of the card."""
 
@@ -78,6 +80,38 @@ class Race:
     Idx2Str = {v: k for k, v in Str2Idx.items()}
 
 
+class Klass:
+    """An enumeration class, contains classes."""
+
+    Druid = 0
+    Hunter = 1
+    Mage = 2
+    Paladin = 3
+    Priest = 4
+    Rogue = 5
+    Shaman = 6
+    Warlock = 7
+    Warrior = 8
+    Monk = 9
+    DeathKnight = 10
+
+    Str2Idx = {
+        'Druid': Druid,
+        'Hunter': Hunter,
+        'Mage': Mage,
+        'Paladin': Paladin,
+        'Priest': Priest,
+        'Rogue': Rogue,
+        'Shaman': Shaman,
+        'Warlock': Warlock,
+        'Warrior': Warrior,
+        'Monk': Monk,
+        'DeathKnight': DeathKnight,
+    }
+
+    Idx2Str = {v: k for k, v in Str2Idx.items()}
+
+
 class Condition:
     """The class of conditions to get random cards or select cards."""
 
@@ -89,5 +123,6 @@ __all__ = [
     'error_and_stop',
     'Zone',
     'Race',
+    'Klass',
     'Condition',
 ]

@@ -88,4 +88,4 @@ class LanClient:
 
 
 def start_client(address, nickname, deck_code):
-    LanClient(utils.User(address, nickname, deck_code))
+    LanClient(utils.NetworkUser(address, nickname, deck_code))

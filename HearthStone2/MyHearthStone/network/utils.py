@@ -39,8 +39,8 @@ class ClientError(Exception):
     pass
 
 
-class User:
-    """The user class."""
+class NetworkUser:
+    """The network user class."""
 
     def __init__(self, address, nickname, deck_code):
         self.address = address

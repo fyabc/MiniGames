@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1175</width>
-    <height>683</height>
+    <width>1135</width>
+    <height>686</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -19,92 +19,399 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_9">
     <item row="0" column="0">
-     <layout class="QGridLayout" name="main_layout">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="horizontalSpacing">
-       <number>7</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QTabWidget" name="main_tab">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+     <widget class="QStackedWidget" name="tab_main">
+      <widget class="QWidget" name="page_main" native="true">
+       <layout class="QGridLayout" name="main_layout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
         </property>
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-         </font>
+        <property name="leftMargin">
+         <number>1</number>
         </property>
-        <property name="tabPosition">
-         <enum>QTabWidget::North</enum>
+        <property name="rightMargin">
+         <number>1</number>
         </property>
-        <property name="tabShape">
-         <enum>QTabWidget::Rounded</enum>
+        <property name="horizontalSpacing">
+         <number>7</number>
         </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <property name="elideMode">
-         <enum>Qt::ElideNone</enum>
-        </property>
-        <widget class="QWidget" name="tab_main">
-         <attribute name="title">
-          <string>主页</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_collection">
-         <attribute name="title">
-          <string>我的收藏</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_play">
-         <attribute name="title">
-          <string>对战模式</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_adventure">
-         <attribute name="title">
-          <string>冒险模式</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_arena">
-         <attribute name="title">
-          <string>竞技场</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_brawl">
-         <attribute name="title">
-          <string>乱斗模式</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_quest">
-         <attribute name="title">
-          <string>我的任务</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_open_packs">
-         <attribute name="title">
-          <string>打开卡包</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_shop">
-         <attribute name="title">
-          <string>商店</string>
-         </attribute>
-        </widget>
-       </widget>
-      </item>
-     </layout>
+        <item row="0" column="0">
+         <widget class="QTabWidget" name="main_tab">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>微软雅黑</family>
+           </font>
+          </property>
+          <property name="tabPosition">
+           <enum>QTabWidget::North</enum>
+          </property>
+          <property name="tabShape">
+           <enum>QTabWidget::Rounded</enum>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <property name="elideMode">
+           <enum>Qt::ElideNone</enum>
+          </property>
+          <widget class="QWidget" name="tab_welcome">
+           <attribute name="title">
+            <string>主页</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QLabel" name="label_title">
+              <property name="font">
+               <font>
+                <pointsize>40</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>炉 石 传 说</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_welcome">
+                <property name="text">
+                 <string>欢迎回来！</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_collection">
+           <attribute name="title">
+            <string>我的收藏</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item alignment="Qt::AlignLeft">
+             <widget class="QLabel" name="label_collections_title">
+              <property name="font">
+               <font>
+                <pointsize>20</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>我的收藏</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="margin">
+               <number>20</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QStackedWidget" name="widget_deck">
+                <property name="maximumSize">
+                 <size>
+                  <width>270</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <widget class="QWidget" name="page_deck_list">
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <item>
+                   <widget class="QListWidget" name="list_decks">
+                    <property name="maximumSize">
+                     <size>
+                      <width>270</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>新建套牌</string>
+                     </property>
+                     <property name="statusTip">
+                      <string>新建一副套牌</string>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>Microsoft YaHei UI</family>
+                       <pointsize>20</pointsize>
+                       <weight>75</weight>
+                       <bold>true</bold>
+                      </font>
+                     </property>
+                     <property name="textAlignment">
+                      <set>AlignCenter</set>
+                     </property>
+                     <property name="background">
+                      <brush brushstyle="NoBrush">
+                       <color alpha="255">
+                        <red>170</red>
+                        <green>170</green>
+                        <blue>127</blue>
+                       </color>
+                      </brush>
+                     </property>
+                     <property name="foreground">
+                      <brush brushstyle="NoBrush">
+                       <color alpha="255">
+                        <red>0</red>
+                        <green>0</green>
+                        <blue>0</blue>
+                       </color>
+                      </brush>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="page_deck_edit">
+                 <layout class="QVBoxLayout" name="verticalLayout_5">
+                  <item>
+                   <widget class="QTableWidget" name="table_deck">
+                    <property name="maximumSize">
+                     <size>
+                      <width>270</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <attribute name="horizontalHeaderCascadingSectionResizes">
+                     <bool>false</bool>
+                    </attribute>
+                    <attribute name="horizontalHeaderStretchLastSection">
+                     <bool>false</bool>
+                    </attribute>
+                    <attribute name="verticalHeaderVisible">
+                     <bool>false</bool>
+                    </attribute>
+                    <column>
+                     <property name="text">
+                      <string>法力</string>
+                     </property>
+                    </column>
+                    <column>
+                     <property name="text">
+                      <string>卡牌</string>
+                     </property>
+                    </column>
+                    <column>
+                     <property name="text">
+                      <string>数量</string>
+                     </property>
+                    </column>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="button_deck_done">
+                    <property name="maximumSize">
+                     <size>
+                      <width>270</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>完成</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                 <layout class="QGridLayout" name="gridLayout_3">
+                  <item row="1" column="0">
+                   <widget class="QPushButton" name="pushButton_4">
+                    <property name="text">
+                     <string>PushButton</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="3">
+                   <widget class="QPushButton" name="pushButton_2">
+                    <property name="text">
+                     <string>PushButton</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QPushButton" name="pushButton_3">
+                    <property name="text">
+                     <string>PushButton</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QPushButton" name="pushButton_6">
+                    <property name="text">
+                     <string>PushButton</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QPushButton" name="pushButton_7">
+                    <property name="text">
+                     <string>PushButton</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QPushButton" name="pushButton_5">
+                    <property name="text">
+                     <string>DSDSdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsd</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QPushButton" name="pushButton_8">
+                    <property name="text">
+                     <string>PushButton</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QPushButton" name="pushButton_9">
+                    <property name="text">
+                     <string>PushButton</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item alignment="Qt::AlignRight">
+                 <widget class="QPushButton" name="pushButton">
+                  <property name="text">
+                   <string>PushButton</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_play">
+           <attribute name="title">
+            <string>对战模式</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_adventure">
+           <attribute name="title">
+            <string>冒险模式</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_arena">
+           <attribute name="title">
+            <string>竞技场</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_brawl">
+           <attribute name="title">
+            <string>乱斗模式</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_quest">
+           <attribute name="title">
+            <string>我的任务</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_open_packs">
+           <attribute name="title">
+            <string>打开卡包</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_shop">
+           <attribute name="title">
+            <string>商店</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_settings">
+           <attribute name="title">
+            <string>设置</string>
+           </attribute>
+           <widget class="QLabel" name="label_settings_title">
+            <property name="geometry">
+             <rect>
+              <x>11</x>
+              <y>11</y>
+              <width>172</width>
+              <height>84</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>20</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>游戏设置</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="margin">
+             <number>20</number>
+            </property>
+           </widget>
+           <widget class="QWidget" name="layoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>40</x>
+              <y>170</y>
+              <width>298</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QLabel" name="label_change_nickname">
+               <property name="text">
+                <string>修改昵称</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="edit_change_nickname"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="button_change_nickname">
+               <property name="text">
+                <string>确定</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_game"/>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -118,7 +425,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1175</width>
+     <width>1135</width>
      <height>25</height>
     </rect>
    </property>
@@ -146,6 +453,7 @@
     <addaction name="separator"/>
     <addaction name="action_quest"/>
     <addaction name="separator"/>
+    <addaction name="action_settings"/>
     <addaction name="action_exit"/>
    </widget>
    <widget class="QMenu" name="menu_card">
@@ -280,6 +588,14 @@
    </property>
    <property name="toolTip">
     <string>我的任务(Q)</string>
+   </property>
+  </action>
+  <action name="action_settings">
+   <property name="text">
+    <string>设置(&amp;S)</string>
+   </property>
+   <property name="toolTip">
+    <string>设置(S)</string>
    </property>
   </action>
  </widget>

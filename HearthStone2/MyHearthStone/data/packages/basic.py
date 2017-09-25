@@ -87,30 +87,38 @@ class 火球术(Spell):
 ##########
 
 
-class Druid(Hero):
+class StdDruid(Hero):
     _data = {
         'id': 0,
+        'name': '玛法里奥·怒风',
+        'klass': 0,
         'CAH': [None, None, 30],
     }
 
 
-class Hunter(Hero):
+class StdHunter(Hero):
     _data = {
         'id': 1,
+        'name': '雷克萨',
+        'klass': 1,
         'CAH': [None, None, 30],
     }
 
 
-class Mage(Hero):
+class StdMage(Hero):
     _data = {
         'id': 2,
+        'name': '吉安娜·普罗德摩尔',
+        'klass': 2,
         'CAH': [None, None, 30],
     }
 
 
-class Paladin(Hero):
+class StdPaladin(Hero):
     _data = {
         'id': 3,
+        'name': '乌瑟尔·光明使者',
+        'klass': 3,
         'CAH': [None, None, 30],
     }
 
@@ -118,6 +126,8 @@ class Paladin(Hero):
 class Priest(Hero):
     _data = {
         'id': 4,
+        'name': '安度因·乌瑞恩',
+        'klass': 4,
         'CAH': [None, None, 30],
     }
 
@@ -125,6 +135,8 @@ class Priest(Hero):
 class Rogue(Hero):
     _data = {
         'id': 5,
+        'name': '瓦莉拉·萨古纳尔',
+        'klass': 5,
         'CAH': [None, None, 30],
     }
 
@@ -132,6 +144,8 @@ class Rogue(Hero):
 class Shaman(Hero):
     _data = {
         'id': 6,
+        'name': '萨尔',
+        'klass': 6,
         'CAH': [None, None, 30],
     }
 
@@ -139,6 +153,8 @@ class Shaman(Hero):
 class Warlock(Hero):
     _data = {
         'id': 7,
+        'name': '古尔丹',
+        'klass': 7,
         'CAH': [None, None, 30],
     }
 
@@ -146,5 +162,7 @@ class Warlock(Hero):
 class Warrior(Hero):
     _data = {
         'id': 8,
+        'name': '加尔鲁什·地狱咆哮',
+        'klass': 8,
         'CAH': [None, None, 30],
     }
