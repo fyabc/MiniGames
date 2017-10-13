@@ -108,7 +108,7 @@ def main():
     director.director.init(resizable=True)
 
     # [NOTE] One Scene can contain many layers.
-    director.director.run_after(scene.Scene(KeyDisplay(), MouseDisplay()))
+    director.director.run(scene.Scene(KeyDisplay(), MouseDisplay()))
 
 
 if __name__ == '__main__':

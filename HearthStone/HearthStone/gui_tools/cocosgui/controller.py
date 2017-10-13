@@ -62,6 +62,6 @@ class Controller(pyglet.event.EventDispatcher):
         self.running = False
 
     def run(self):
-        director.director.run_after(self.main_scene)
+        director.director.run(self.main_scene)
 
         self.on_quit()
