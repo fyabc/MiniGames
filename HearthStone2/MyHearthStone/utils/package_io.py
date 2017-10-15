@@ -7,7 +7,7 @@ import sys
 import os
 from importlib import import_module
 
-from .constants import PackagePaths
+from .constants import get_package_paths
 from .message import error, warning, msg_block
 from ..game.game_entity import SetDataMeta
 from ..game.card import Card
@@ -88,7 +88,7 @@ def _load_packages():
     AllGameData = []
 
     with msg_block('Loading cards and heroes'):
-        for package_path in PackagePaths:
+        for package_path in get_package_paths():
             AllGameData.append(_GameData(package_path))
 
             for vars_ in AllGameData[-1].vars_list:

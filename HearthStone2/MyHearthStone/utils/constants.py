@@ -6,6 +6,7 @@
 import os as _os
 import json as _json
 import re as _re
+from collections import namedtuple as _namedtuple
 
 from appdirs import AppDirs as _AppDirs
 
@@ -48,40 +49,81 @@ class _Config(dict):
         raise Exception('Cannot change the value of configuration')
 
 
-def _load_project_config():
-    """Load project configuration.
+def _update_config(old_config, new_config):
+    """Update config. It will update each key recursively if the value is a dict.
+
+    :param old_config: dict
+    :param new_config: dict
+    :return:
+    """
+
+    # TODO
+
+
+def _load_config(config_filename):
+    """Load JSON config file and remove line comments."""
+
+    # If config file not exist, just return silently.
+    if not _os.path.exists(config_filename):
+        return {}
+
+    with open(config_filename, 'r') as config_file:
+        _lines = list(config_file)
+
+        for _i, _line in enumerate(_lines):
+            _lines[_i] = _re.sub(r'//.*\n', '\n', _line)
+
+        return _json.loads(''.join(_lines))
+
+
+# Project config.
+# [NOTE] Load system config and user config when loading the module, argument config is loaded by user.
+_config_dict = _load_config(SystemConfigFilename)
+_update_config(_config_dict, _load_config(UserConfigFilename))
+Config = _Config(_config_dict)
+C = Config
+
+
+def load_arg_config(arg_config):
+    """Update project configuration from arguments.
 
     Load order:
         System config
         User config
     """
 
-    def _load_config(config_filename):
-        """Load JSON config file and remove line comments."""
+    global C, Config
 
-        # If config file not exist, just return silently.
-        if not _os.path.exists(config_filename):
-            return {}
+    config = dict(C)
+    _update_config(config, arg_config)
 
-        with open(config_filename, 'r') as config_file:
-            _lines = list(config_file)
+    result = _Config(config)
+    Config = result
+    C = result
 
-            for _i, _line in enumerate(_lines):
-                _lines[_i] = _re.sub(r'//.*\n', '\n', _line)
+    return result
 
-            return _json.loads(''.join(_lines))
-
-    config = _load_config(SystemConfigFilename)
-    config.update(_load_config(UserConfigFilename))
-
-    return _Config(config)
-
-
-# Project config.
-Config = _load_project_config()
-C = Config
 
 # Package data path list
-PackagePaths = [SystemPackageDataPath]
-if C.EnableUserExtension:
-    PackagePaths += C.UserExtensionPaths
+_PackagePaths = None
+
+
+def get_package_paths():
+    global _PackagePaths
+    if _PackagePaths is None:
+        _PackagePaths = [SystemPackageDataPath]
+        if C.EnableUserExtension:
+            _PackagePaths += C.UserExtensionPaths
+    return _PackagePaths
+
+
+# Game version.
+_GameVersionClass = _namedtuple('_GameVersionClass', ['major', 'minor', 'micro'])
+_GameVersion = None
+
+
+def get_game_version():
+    global _GameVersion
+    if _GameVersion is None:
+        _GameVersion = _GameVersionClass(*C.Game.Version)
+    return _GameVersion

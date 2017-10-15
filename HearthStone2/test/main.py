@@ -8,6 +8,11 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+# Load project config.
+# [NOTE]: This must before the import of any other game modules.
+from MyHearthStone.utils.constants import load_arg_config
+load_arg_config({})
+
 from MyHearthStone.utils.message import set_debug_level, LEVEL_INFO, LEVEL_DEBUG
 from MyHearthStone.game.core import Game
 from MyHearthStone.game.deck import Deck
