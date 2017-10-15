@@ -54,10 +54,20 @@ def _update_config(old_config, new_config):
 
     :param old_config: dict
     :param new_config: dict
-    :return:
+    :return: None
     """
 
-    # TODO
+    for key, value in new_config.items():
+        if key not in old_config:
+            old_config[key] = value
+        else:
+            old_value = old_config[key]
+            if isinstance(old_value, dict) and isinstance(value, dict):
+                _update_config(old_value, value)
+            elif not isinstance(old_value, dict) and not isinstance(value, dict):
+                old_config[key] = value
+            else:
+                raise ValueError('Type mismatch in config update: "{}" vs "{}"'.format(type(old_value), type(value)))
 
 
 def _load_config(config_filename):
@@ -85,12 +95,7 @@ C = Config
 
 
 def load_arg_config(arg_config):
-    """Update project configuration from arguments.
-
-    Load order:
-        System config
-        User config
-    """
+    """Update project configuration from arguments."""
 
     global C, Config
 

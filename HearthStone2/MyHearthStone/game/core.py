@@ -28,7 +28,7 @@ class Game:
         # Game data #
         #############
 
-        # Game mode: 'standard', 'wild', 'arena', '乱斗'
+        # Game mode: 'standard', 'wild', 'arena', 'brawl'
         self.mode = None
 
         self.n_turns = 0
