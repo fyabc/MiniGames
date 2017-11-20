@@ -26,9 +26,26 @@ def _auto_label(rects):
 
 class CardRecord:
     Pattern = re.compile(r'1\. (?P<name>\S+) (?P<class>\w+) (?P<type>\w+) (?P<rarity>\w+)(?: (?P<race>\w+))? '
-                         r'(?P<cost>\d)(?: (?P<attack>\d) (?P<health>\d))? - ?(?P<description>.*?)(?:#.*)?$')
+                         r'(?P<cost>\d+)(?: (?P<attack>\d+) (?P<health>\d+))? - ?(?P<description>.*?)(?:#.*)?$')
 
     AllCards = []
+
+    Classes = {
+        '中立': 0,
+        '德鲁伊': 1, '法师': 2, '圣骑士': 3,
+        '猎人': 4, '术士': 5, '战士': 6,
+        '潜行者': 7, '牧师': 8, '萨满': 9,
+        '武僧': 10, '死亡骑士': 11,
+    }
+
+    Rarities = {
+        '基本': 0, '普通': 1, '稀有': 2,
+        '史诗': 3, '传说': 4, '衍生物': 5,
+    }
+
+    Types = {
+        '随从': 0, '法术': 1, '武器': 2, '英雄': 3,
+    }
 
     def __init__(self, match):
         self.AllCards.append(self)
@@ -51,6 +68,16 @@ class CardRecord:
         print('{} cards total'.format(len(cls.AllCards)))
         for card in cls.AllCards:
             print(card)
+
+    @classmethod
+    def sort_key(cls, field):
+        if field == 'klass':
+            return lambda k: cls.Classes.get(k, -1)
+        if field == 'type':
+            return lambda k: cls.Types.get(k, -1)
+        if field == 'rarity':
+            return lambda k: cls.Rarities.get(k, -1)
+        return lambda k: -1 if k is None else k
 
     @classmethod
     def plot_over(cls, fields=('cost',), show_none=False):
@@ -82,7 +109,7 @@ class CardRecord:
             plt.subplot(2, (n_figures + 1) // 2, fig_i + 1)
 
             index = np.arange(len(all_values))
-            keys = sorted(list(all_values.keys()), key=lambda k: -1 if k is None else k)
+            keys = sorted(list(all_values.keys()), key=cls.sort_key(field))
             values = [len(all_values[key]) for key in keys]
 
             rects = plt.bar(
@@ -102,9 +129,12 @@ class CardRecord:
         plt.show()
 
 
-def main():
+def main(args=None):
     # Usage: python cards_statistic.py [filename of package Markdown files]
-    filenames = sys.argv[1:]
+    if args is None:
+        args = sys.argv[1:]
+
+    filenames = args
 
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as f:
@@ -118,4 +148,16 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main([
+        '../doc/BasicClassic.md',
+        '../doc/Naxxramas.md',
+        '../doc/GVG.md',
+        '../doc/BlackMountain.md',
+        '../doc/TGT.md',
+        '../doc/LOE.md',
+        '../doc/OldGods.md',
+        '../doc/Karazhan.md',
+        '../doc/Gadgetzan.md',
+        '../doc/JUG.md',
+        '../doc/ICC.md',
+    ])
