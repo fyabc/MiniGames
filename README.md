@@ -31,7 +31,7 @@ Some MiniGames written in **Python 3**, using *pygame* and *cocos2d* library.
 3. Run
 
     ```bash
-    hearthstone     # Example: run hearthstone, add -h for help
+    myhearthstone     # Example: run hearthstone, add -h for help
     ```
 
 -------
