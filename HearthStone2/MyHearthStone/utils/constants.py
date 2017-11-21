@@ -29,10 +29,18 @@ SystemConfigFilename = _os.path.join(ProjectRootPath, ConfigFilename)
 SystemPackageDataPath = _os.path.join(SystemDataPath, 'packages')
 
 # User data and config.
-UserDirectory = _AppDirs(appname=ProjectName, appauthor=ProjectAuthor, version=ProjectVersion)
+UserDirectory = _AppDirs(appname=ProjectName, appauthor=ProjectAuthor)
 
 UserDataPath = UserDirectory.user_data_dir
+# [NOTE] Users under the same system user directory share the same user config file.
 UserConfigFilename = _os.path.join(UserDirectory.user_config_dir, ConfigFilename)
+UserListFilename = _os.path.join(UserDataPath, 'users.json')
+
+
+if not _os.path.exists(UserDirectory.user_config_dir):
+    _os.makedirs(UserDirectory.user_config_dir)
+if not _os.path.exists(UserDataPath):
+    _os.makedirs(UserDataPath)
 
 
 class _Config(dict):

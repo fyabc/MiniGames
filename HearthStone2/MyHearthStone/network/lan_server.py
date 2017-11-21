@@ -79,14 +79,19 @@ class LanServer(socketserver.ThreadingTCPServer):
 
             self.game = Game()
 
-            # todo: add error check, mode check, etc.
-            self.game.start_game(
+            start_game_iter = self.game.start_game(
                 decks=[
                     Deck.from_code(users[0].deck_code),
                     Deck.from_code(users[1].deck_code),
                 ],
                 mode='standard',
             )
+
+            try:
+                next(start_game_iter)
+                start_game_iter.send([[], []])
+            except StopIteration:
+                pass
 
             self.broadcast_text('Game ({} vs {}) start!'.format(users[0].nickname, users[1].nickname), locked=False)
             self.broadcast('game_status', self.game.game_status(), locked=False)

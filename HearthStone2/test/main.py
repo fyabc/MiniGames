@@ -47,8 +47,15 @@ def main():
         Deck(
             0,
             [search_by_name(n) for n in [
-                '幸运币',
                 '工程师学徒',
+                '工程师学徒',
+                '工程师学徒',
+                '工程师学徒',
+                '工程师学徒',
+                '工程师学徒',
+                '工程师学徒',
+                '火球术',
+                '火球术',
             ]]
         ),
         Deck(
@@ -56,11 +63,24 @@ def main():
             [search_by_name(n) for n in [
                 '淡水鳄',
                 '火球术',
+                '淡水鳄',
+                '淡水鳄',
+                '淡水鳄',
+                '淡水鳄',
+                '淡水鳄',
+                '淡水鳄',
+                '淡水鳄',
             ]]
         ),
     ]
 
-    game.start_game(decks)
+    start_game_iter = game.start_game(decks)
+    try:
+        next(start_game_iter)
+        game.show_details()
+        start_game_iter.send([[0], [1, 2]])
+    except StopIteration:
+        pass
 
     actions = [
         # 0

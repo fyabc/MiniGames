@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import random
+
 from .triggers.trigger import Trigger
 from .triggers.standard import add_standard_triggers
 from .events.standard import game_begin_standard_events, DeathPhase
@@ -22,6 +24,8 @@ class Game:
     SecretMax = C.Game.SecretMax
     ManaMax = C.Game.ManaMax
     TurnMax = C.Game.TurnMax
+    StartCardOffensive = C.Game.StartCardOffensive
+    StartCardDefensive = C.Game.StartCardDefensive
 
     def __init__(self, **kwargs):
         #############
@@ -94,14 +98,15 @@ class Game:
         # Summon event cache.
         self.summon_events = set()
 
-        ###########################
-        # Stubs for high-level UI #
-        ###########################
+        #######################################
+        # Stubs for high-level UI frontend(s) #
+        #######################################
 
-        # Stub for error message.
-        # For CLI, it is just an error text.
-        # For UI, it may be displayed onto screen.
-        self.error_stub = kwargs.pop('error_stub', error)
+        # The frontends for all players.
+        # Key: uuid, user_id; Value: frontend, player_id
+        self.frontends = {}
+
+        self.error_stub = error
 
         # todo: game counters (for tasks)
 
@@ -251,29 +256,45 @@ class Game:
 
         :param decks: List of 2 players' decks.
         :param mode: Game mode, default is 'standard'.
-        :return: None
+        :return: iterator
+            1. yield None, send list of indices of changed cards
         """
 
         self.mode = mode
+
+        start_player = random.randint(0, 1)
 
         cards = all_cards()
         heroes = all_heroes()
         for player_id, deck in enumerate(decks):
             self.heroes[player_id] = heroes[deck.hero_id](self, player_id)
             self.decks[player_id] = [cards[card_id](self, player_id) for card_id in deck.card_id_list]
-
-        # todo: choose who start
+            if player_id == start_player:
+                self.hands[player_id] = self.decks[player_id][:self.StartCardOffensive]
+                self.decks[player_id] = self.decks[player_id][self.StartCardOffensive:]
+            else:
+                self.hands[player_id] = self.decks[player_id][:self.StartCardDefensive]
+                self.decks[player_id] = self.decks[player_id][self.StartCardDefensive:]
 
         # Refresh some counters.
         self.n_turns = -1
-        self.current_player = 0
+        self.current_player = start_player
         self.current_oop = 1
         self._stop_subsequent_phases = False
         self.tire_counters = [0 for _ in range(2)]
 
-        # todo: choose start hand
+        replaces = yield
+        for player_id, replace in enumerate(replaces):
+            replace_index = random.sample(list(range(len(self.decks[player_id]))), k=len(replace))
+            for hand_index, deck_index in zip(replace, replace_index):
+                self.decks[player_id][deck_index], self.hands[player_id][hand_index] = \
+                    self.hands[player_id][hand_index], self.decks[player_id][deck_index]
 
-        # todo: shuffle decks
+        random.shuffle(self.decks[0])
+        random.shuffle(self.decks[1])
+
+        # Add coin into defensive hand
+        self.hands[1 - start_player].append(cards[0](self, 1 - start_player))
 
         add_standard_triggers(self)
 

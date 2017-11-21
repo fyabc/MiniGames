@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
 
 TYPED = False
@@ -17,9 +18,9 @@ else:
     Ui_MainApp, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'main_app.ui'))
     Ui_DialogCreateDeck, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'dialog_create_deck.ui'))
 
-from ...app.user import AppUser
 from ...game.deck import Deck
 from ...utils.game import Klass
+from ...utils.user import AppUser
 
 __author__ = 'fyabc'
 
@@ -35,14 +36,14 @@ class DialogCreateDeck(QtWidgets.QDialog):
         for button in self.ui.group_class.children():
             if isinstance(button, QtWidgets.QRadioButton) and button.isChecked():
                 _deck_class = button.objectName().split('_')[-1]
-                self.parent().deck_class = Klass.Str2Idx[_deck_class]
+                self.parent().data['deck_class'] = Klass.Str2Idx[_deck_class]
                 break
         for button in self.ui.group_mode.children():
             if isinstance(button, QtWidgets.QRadioButton) and button.isChecked():
-                self.parent().deck_mode = button.objectName().split('_')[-1]
+                self.parent().data['deck_mode'] = button.objectName().split('_')[-1]
                 break
         _deck_name = self.ui.edit_deck_name.text()
-        self.parent().deck_name = _deck_name if _deck_name else 'Custom {}'.format(_deck_class)
+        self.parent().data['deck_name'] = _deck_name if _deck_name else 'Custom {}'.format(_deck_class)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -59,10 +60,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._current_deck = None
         self._current_deck_index = None
 
-        # Communicate with deck create dialog
-        self.deck_class = None
-        self.deck_mode = None
-        self.deck_name = ''
+        # Communicate with other windows
+        self.data = {}
 
         ###############
         # Set init UI #
@@ -118,7 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if not ok:
                 return
 
-            self._current_deck = Deck(self.deck_class, [], self.deck_mode, name=self.deck_name)
+            self._current_deck = Deck(self.data['deck_class'], [], self.data['deck_mode'], name=self.data['deck_name'])
             self._current_deck_index = deck_index
             self.decks.append(self._current_deck)
 

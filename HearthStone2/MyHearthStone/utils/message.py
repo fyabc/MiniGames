@@ -19,11 +19,24 @@ LEVEL_COMMON = 2.5
 LEVEL_WARNING = 3
 LEVEL_ERROR = 4
 
+_DebugLevelNames = {
+    'debug': LEVEL_DEBUG,
+    'verbose': LEVEL_VERBOSE,
+    'info': LEVEL_INFO,
+    'common': LEVEL_COMMON,
+    'warning': LEVEL_WARNING,
+    'error': LEVEL_ERROR,
+}
+
 _debug_level = LEVEL_COMMON
 
 
 def set_debug_level(new_level):
     global _debug_level
+
+    if isinstance(new_level, str):
+        new_level = _DebugLevelNames.get(new_level.lower(), _debug_level)
+
     _debug_level = new_level
 
 
