@@ -32,6 +32,8 @@ class Game:
         # Game data #
         #############
 
+        self.running = False
+
         # Game mode: 'standard', 'wild', 'arena', 'brawl'
         self.mode = None
 
@@ -261,6 +263,7 @@ class Game:
         """
 
         self.mode = mode
+        self.running = True
 
         start_player = random.randint(0, 1)
 
@@ -300,6 +303,10 @@ class Game:
 
         # todo: need test
         self.resolve_events(game_begin_standard_events(self))
+
+    def end_game(self):
+        # TODO: add more clean here?
+        self.running = False
 
     def summon_resolution(self):
         """Resolve all summon events in order of play."""

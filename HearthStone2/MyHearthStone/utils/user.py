@@ -55,7 +55,7 @@ class AppUser:
         self._nickname = value
 
     @staticmethod
-    def _get_user_list():
+    def get_user_list():
         if not os.path.exists(UserListFilename):
             return None
         with open(UserListFilename, 'r') as f:
@@ -68,7 +68,7 @@ class AppUser:
             if isinstance(user_id_or_name, int):
                 user_id = user_id_or_name
             elif isinstance(user_id_or_name, str):
-                users = cls._get_user_list()
+                users = cls.get_user_list()
                 if users is None:
                     nickname = user_id_or_name
                     user_id = 0
@@ -84,11 +84,14 @@ class AppUser:
                                      'please give use id'.format(user_id_or_name))
                 user_id = users[user_names.index(user_id_or_name)][0]
             elif user_id_or_name is None:
-                users = cls._get_user_list()
+                # If user_id_or_name is None:
+                #     If there isn't any users, create a new default user
+                #     Otherwise, return the last user (the first entry in the user list)
+                users = cls.get_user_list()
                 if users is None:
                     user_id = 0
                 else:
-                    user_id = 1 + max(e[0] for e in users)
+                    user_id = users[0][0]
             else:
                 raise ValueError('argument "user_id_or_name" must be int or str')
             break
@@ -105,28 +108,29 @@ class AppUser:
         return result
 
     def dump(self):
-        changed = False
+        """Dump the user and update the user list.
 
-        users = self._get_user_list()
+        **NOTE**: This method will update the user list and put the current user as the first element.
+
+        :return: None
+        """
+
+        users = self.get_user_list()
 
         if users is None:
-            changed = True
             users = [[self.user_id, self.nickname]]
         else:
             user_ids = [e[0] for e in users]
 
             try:
                 index = user_ids.index(self.user_id)
-                if users[index][1] != self.nickname:
-                    changed = True
-                    users[index][1] = self.nickname
+                del users[index]
             except ValueError:
-                changed = True
-                users.append([self.user_id, self.nickname])
+                pass
+            users.insert(0, [self.user_id, self.nickname])
 
-        if changed:
-            with open(UserListFilename, 'w') as f:
-                json.dump(users, f, indent=4)
+        with open(UserListFilename, 'w') as f:
+            json.dump(users, f, indent=4)
 
         user_data_filename = os.path.join(UserDataPath, '{}.json'.format(self.user_id))
         with open(user_data_filename, 'w') as f:

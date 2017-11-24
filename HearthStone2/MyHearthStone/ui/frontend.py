@@ -38,14 +38,6 @@ class Frontend:
         pass
 
     def run(self):
-        # Start game processing
-        try:
-            while True:
-                pass
-        except StopIteration:
-            pass
-
-        # Main game processing
         pass
 
     def finalize(self):
