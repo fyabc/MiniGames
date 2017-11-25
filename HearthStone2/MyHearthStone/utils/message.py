@@ -15,15 +15,17 @@ __author__ = 'fyabc'
 LEVEL_DEBUG = 0
 LEVEL_VERBOSE = 1
 LEVEL_INFO = 2
-LEVEL_COMMON = 2.5
-LEVEL_WARNING = 3
-LEVEL_ERROR = 4
+LEVEL_COMMON = 3
+LEVEL_NOTE = 3
+LEVEL_WARNING = 4
+LEVEL_ERROR = 5
 
 _DebugLevelNames = {
     'debug': LEVEL_DEBUG,
     'verbose': LEVEL_VERBOSE,
     'info': LEVEL_INFO,
     'common': LEVEL_COMMON,
+    'note': LEVEL_NOTE,
     'warning': LEVEL_WARNING,
     'error': LEVEL_ERROR,
 }
@@ -53,6 +55,7 @@ def message(*args, **kwargs):
 debug = _partial(message, level=LEVEL_DEBUG)
 verbose = _partial(message, level=LEVEL_VERBOSE)
 info = _partial(message, level=LEVEL_INFO)
+note = _partial(message, level=LEVEL_NOTE)
 warning = _partial(message, level=LEVEL_WARNING)
 error = _partial(message, level=LEVEL_ERROR)
 

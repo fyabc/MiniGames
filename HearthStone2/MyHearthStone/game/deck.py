@@ -6,6 +6,7 @@
 import base64
 import binascii
 
+from ..utils.game import Klass
 from ..utils.message import error
 
 __author__ = 'fyabc'
@@ -17,16 +18,18 @@ class Deck:
     This class is usually used for deck I/O.
     """
 
-    AllModes = ['standard', 'wild', 'arena', '乱斗']
+    AllModes = ['standard', 'wild', 'arena', 'brawl']
 
-    def __init__(self, hero_id, card_id_list, mode='standard', **kwargs):
+    _delimiter = '\1'
+
+    def __init__(self, klass, card_id_list, mode='standard', **kwargs):
         self.mode = mode
-        self.hero_id = hero_id
+        self.klass = klass
         self.card_id_list = card_id_list
-        self.name = kwargs.pop('name', 'Custom Deck')
+        self.name = kwargs.pop('name', 'Custom {}'.format(Klass.Idx2Str[klass]))
 
     def __repr__(self):
-        return 'Deck(mode={}, hero_id={}, card_id_list={})'.format(self.mode, self.hero_id, self.card_id_list)
+        return 'Deck(class={}, name={!r}, mode={})'.format(Klass.Idx2Str[self.klass], self.name, self.mode)
 
     def to_code(self, comment=True):
         """Convert deck to code.
@@ -35,9 +38,14 @@ class Deck:
         :return: code: A string of deck.
         """
 
-        str_deck = '{} {} {}'.format(self.mode, self.hero_id, ' '.join(str(e) for e in self.card_id_list))
+        str_deck = '{}{}{}{}{}{}{}'.format(
+            self.klass, self._delimiter,
+            self.name, self._delimiter,
+            self.mode, self._delimiter,
+            self._delimiter.join(str(e) for e in self.card_id_list)
+        )
 
-        result = base64.b64encode(str_deck.encode('ascii')).decode('ascii')
+        result = base64.b64encode(str_deck.encode('utf-8')).decode('ascii')
 
         if comment:
             pass
@@ -62,22 +70,23 @@ class Deck:
                 break
 
         try:
-            str_deck = base64.b64decode(code_line).decode('ascii')
+            str_deck = base64.b64decode(code_line).decode('utf-8')
 
-            mode, hero_id, *card_id_list = str_deck.split()
+            klass, name, mode, *card_id_list = str_deck.strip(cls._delimiter).split(cls._delimiter)
 
             if mode not in cls.AllModes:
                 error('Unknown deck mode, return None')
                 return None
 
-            hero_id = int(hero_id)
+            klass = int(klass)
             card_id_list = [int(e) for e in card_id_list]
 
-            return cls(hero_id, card_id_list, mode)
+            return cls(klass, card_id_list, mode, name=name)
         except binascii.Error as e:
             error(e)
             error('Error when loading deck code, return None')
             return None
-        except ValueError:
+        except ValueError as e:
+            error(e)
             error('Error when loading deck code, return None')
             return None

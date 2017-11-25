@@ -6,6 +6,7 @@ import json
 import os
 import uuid
 
+from ..game.deck import Deck
 from .constants import UserListFilename, UserDataPath
 from .message import info
 
@@ -21,7 +22,7 @@ class AppUser:
     def __init__(self, user_id=0, nickname='', **kwargs):
         self.user_id = user_id
         self._nickname = nickname if nickname else getpass.getuser()
-        self.decks = kwargs.pop('decks', [])
+        self.decks = [Deck.from_code(deck) if isinstance(deck, str) else deck for deck in kwargs.pop('decks', [])]
         self.cards = kwargs.pop('cards', {})
         self.packs = kwargs.pop('packs', {})
         self.dusts = kwargs.pop('dusts', 0)
@@ -37,7 +38,7 @@ class AppUser:
         return {
             'user_id': self.user_id,
             'nickname': self.nickname,
-            'decks': self.decks,
+            'decks': [deck.to_code() if isinstance(deck, Deck) else deck for deck in self.decks],
             'cards': self.cards,
             'packs': self.packs,
             'dusts': self.dusts,
