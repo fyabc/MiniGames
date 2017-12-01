@@ -9,7 +9,7 @@ from .events.standard import game_begin_standard_events, DeathPhase
 from .events.event import Event
 from ..utils.constants import C
 from ..utils.game import order_of_play, Zone
-from ..utils.message import debug, message, error
+from ..utils.message import debug, message, error, get_debug_level, set_debug_level
 from ..utils.package_io import all_cards, all_heroes
 
 __author__ = 'fyabc'
@@ -270,8 +270,9 @@ class Game:
         cards = all_cards()
         heroes = all_heroes()
         for player_id, deck in enumerate(decks):
-            self.heroes[player_id] = heroes[deck.hero_id](self, player_id)
+            self.heroes[player_id] = heroes[deck.klass](self, player_id)
             self.decks[player_id] = [cards[card_id](self, player_id) for card_id in deck.card_id_list]
+            random.shuffle(self.decks[player_id])
             if player_id == start_player:
                 self.hands[player_id] = self.decks[player_id][:self.StartCardOffensive]
                 self.decks[player_id] = self.decks[player_id][self.StartCardOffensive:]
@@ -288,6 +289,7 @@ class Game:
 
         replaces = yield
         for player_id, replace in enumerate(replaces):
+            replace = sorted(set(replace))  # Get sorted unique elements
             replace_index = random.sample(list(range(len(self.decks[player_id]))), k=len(replace))
             for hand_index, deck_index in zip(replace, replace_index):
                 self.decks[player_id][deck_index], self.hands[player_id][hand_index] = \
@@ -532,19 +534,36 @@ class Game:
             return self.graveyards[player_id]
         raise ValueError('Does not have zone {}'.format(zone))
 
-    def show_details(self):
-        message('Game details'.center(C.Logging.Width, '='))
-        message('Turn: {} Current player: {}'.format(self.n_turns, self.current_player))
+    def show_details(self, level='message'):
+        def _msg(*args, **kwargs):
+            message(*args, **kwargs, level=level)
+        _msg('Game details'.center(C.Logging.Width, '='))
+        _msg('Turn: {} Current player: {}'.format(self.n_turns, self.current_player))
         for player_id in range(2):
-            message('\nPlayer {}:'.format(player_id))
-            message('Mana = {}/{}, Health = {}'.format(
+            _msg('\nPlayer {}:'.format(player_id))
+            _msg('Mana = {}/{}, Health = {}'.format(
                 self.mana[player_id], self.max_mana[player_id],
                 self.heroes[player_id].health,
             ))
             for zone in [Zone.Deck, Zone.Hand, Zone.Secret, Zone.Play, Zone.Graveyard]:
-                message(Zone.Idx2Str[zone], '=', self.get_zone(zone, player_id))
-        message()
-        message('Game details end'.center(C.Logging.Width, '='))
+                _msg(Zone.Idx2Str[zone], '=', self.get_zone(zone, player_id))
+        _msg()
+        _msg('Game details end'.center(C.Logging.Width, '='))
+
+    def format_zone(self, zone, player_id, verbose=False):
+        """Format cards in the zone into string.
+
+        :param zone:
+        :param player_id:
+        :param verbose: If True, return str(card), or only return card.name if False. [False]
+        :return: String to represent the zone.
+        :rtype: str
+        """
+
+        if verbose:
+            return str(self.get_zone(zone, player_id))
+        else:
+            return str([card.name for card in self.get_zone(zone, player_id)])
 
     def create_card(self, card_id, **kwargs):
         return all_cards()[card_id](self, **kwargs)

@@ -152,6 +152,12 @@ def all_heroes():
 
 
 def search_by_name(name):
+    """Search card by name, return the FIRST card with same name.
+
+    :param name: card name
+    :return: card id
+    """
+
     data = all_cards()
 
     for i, e in data.items():

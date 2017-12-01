@@ -48,6 +48,8 @@ def get_debug_level():
 
 def message(*args, **kwargs):
     level = kwargs.pop('level', LEVEL_INFO)
+    if isinstance(level, str):
+        level = _DebugLevelNames.get(level.lower(), _debug_level)
     if level >= _debug_level:
         print(*args, **kwargs)
 

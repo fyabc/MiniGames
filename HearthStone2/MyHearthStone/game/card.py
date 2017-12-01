@@ -42,6 +42,10 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
         return True
 
+    @property
+    def name(self):
+        return self.data['name']
+
 
 class Minion(Card):
     """The class of minion."""
