@@ -7,6 +7,14 @@ import pyglet
 __author__ = 'fyabc'
 
 
+# [LEARN] You can also use common function instead of methods:
+# window = pyglet.window.Window()
+# @window.event
+# def on_key_press(symbol, modifiers):
+#     if symbol == pyglet.window.key.ESCAPE:
+#         return pyglet.event.EVENT_HANDLED
+
+
 class KeyDisplay(layer.Layer):
     # [LEARN] If you want that your layer receives director.window events
     # You must set this variable = True

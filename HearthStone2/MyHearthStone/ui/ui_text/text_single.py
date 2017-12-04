@@ -12,6 +12,7 @@ from ...utils.constants import C
 from ...utils.game import Klass, Zone
 from ...utils.message import error, note
 from ...utils.package_io import search_by_name, all_cards
+from ...utils.cocos_draw import draw_game
 
 __author__ = 'fyabc'
 
@@ -318,17 +319,7 @@ Syntax: q | quit | exit\
         self.parser_game.print_help()
 
     def do_draw(self, arg):
-        import turtle as t
-        t.tracer(False)
-        t.color('red', 'yellow')
-        # t.speed(10)
-        t.begin_fill()
-        for _ in range(50):
-            t.forward(200)
-            t.left(170)
-        t.end_fill()
-
-        t.done()
+        draw_game(self.frontend.game)
 
 
 class TextSingleFrontend(Frontend):
@@ -342,9 +333,6 @@ class TextSingleFrontend(Frontend):
         self.session.cmdloop()
 
     def run(self):
-        pass
-
-    def _draw_status(self):
         pass
 
 

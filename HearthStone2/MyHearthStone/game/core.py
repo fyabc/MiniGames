@@ -9,7 +9,7 @@ from .events.standard import game_begin_standard_events, DeathPhase
 from .events.event import Event
 from ..utils.constants import C
 from ..utils.game import order_of_play, Zone
-from ..utils.message import debug, message, error, get_debug_level, set_debug_level
+from ..utils.message import debug, message, error
 from ..utils.package_io import all_cards, all_heroes
 
 __author__ = 'fyabc'
@@ -522,6 +522,14 @@ class Game:
         return False
 
     def get_zone(self, zone, player_id):
+        """
+
+        :param zone:
+        :param player_id:
+        :return: list of the zone
+        :rtype: list
+        """
+
         if zone == Zone.Deck:
             return self.decks[player_id]
         if zone == Zone.Hand:
