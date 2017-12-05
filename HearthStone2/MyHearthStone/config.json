@@ -1,5 +1,9 @@
 {
     "ProjectName": "HearthStone",
+
+    // Locale, default is `locale.getdefaultlocale()`.
+    "Locale": null,
+
     "Frontend": "text-single",
 
     /// User extension

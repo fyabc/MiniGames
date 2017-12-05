@@ -16,7 +16,7 @@ Package ID
 """
 
 from MyHearthStone.ext import Minion, Spell, Weapon, Hero
-from MyHearthStone.ext import blank_minion
+from MyHearthStone.ext import blank_minion, blank_weapon
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import message as msg
 
@@ -31,6 +31,7 @@ class 幸运币(Spell):
     _data = {
         'id': 0,
         'name': '幸运币',
+        'type': 1,
         'rarity': -1,
         'CAH': [0],
     }
@@ -70,9 +71,11 @@ class 工程师学徒(Minion):
 
 class 火球术(Spell):
     _data = {
-        'id': 20004,
+        'id': 30004,
         'name': '火球术',
+        'type': 1,
         'rarity': 0,
+        'klass': 3,
         'CAH': [4],
     }
 
@@ -80,6 +83,20 @@ class 火球术(Spell):
 
     def run(self, target):
         return [std_events.damage_events(self.game, self, target, 6)]
+
+
+###########
+# Warrior #
+###########
+
+炽炎战斧 = blank_weapon({
+    'id': 90001,
+    'name': '炽炎战斧',
+    'type': 2,
+    'klass': 9,
+    'rarity': 0,
+    'CAH': [3, 3, 2],
+})
 
 
 ##########
@@ -91,7 +108,7 @@ class StdDruid(Hero):
     _data = {
         'id': 0,
         'name': '玛法里奥·怒风',
-        'klass': 0,
+        'klass': 1,
         'CAH': [None, None, 30],
     }
 
@@ -100,7 +117,7 @@ class StdHunter(Hero):
     _data = {
         'id': 1,
         'name': '雷克萨',
-        'klass': 1,
+        'klass': 2,
         'CAH': [None, None, 30],
     }
 
@@ -109,7 +126,7 @@ class StdMage(Hero):
     _data = {
         'id': 2,
         'name': '吉安娜·普罗德摩尔',
-        'klass': 2,
+        'klass': 3,
         'CAH': [None, None, 30],
     }
 
@@ -118,7 +135,7 @@ class StdPaladin(Hero):
     _data = {
         'id': 3,
         'name': '乌瑟尔·光明使者',
-        'klass': 3,
+        'klass': 4,
         'CAH': [None, None, 30],
     }
 
@@ -127,7 +144,7 @@ class Priest(Hero):
     _data = {
         'id': 4,
         'name': '安度因·乌瑞恩',
-        'klass': 4,
+        'klass': 5,
         'CAH': [None, None, 30],
     }
 
@@ -136,7 +153,7 @@ class Rogue(Hero):
     _data = {
         'id': 5,
         'name': '瓦莉拉·萨古纳尔',
-        'klass': 5,
+        'klass': 6,
         'CAH': [None, None, 30],
     }
 
@@ -145,7 +162,7 @@ class Shaman(Hero):
     _data = {
         'id': 6,
         'name': '萨尔',
-        'klass': 6,
+        'klass': 7,
         'CAH': [None, None, 30],
     }
 
@@ -154,7 +171,7 @@ class Warlock(Hero):
     _data = {
         'id': 7,
         'name': '古尔丹',
-        'klass': 7,
+        'klass': 8,
         'CAH': [None, None, 30],
     }
 
@@ -163,6 +180,6 @@ class Warrior(Hero):
     _data = {
         'id': 8,
         'name': '加尔鲁什·地狱咆哮',
-        'klass': 8,
+        'klass': 9,
         'CAH': [None, None, 30],
     }

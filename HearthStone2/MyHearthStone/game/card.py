@@ -46,6 +46,14 @@ class Card(GameEntity, metaclass=SetDataMeta):
     def name(self):
         return self.data['name']
 
+    @property
+    def type(self):
+        return self.data['type']
+
+    @property
+    def klass(self):
+        return self.data['klass']
+
 
 class Minion(Card):
     """The class of minion."""
@@ -113,4 +121,7 @@ class Weapon(Card):
 class HeroCard(Card):
     """The class of hero card."""
 
-    pass
+    def __init__(self, game, player_id):
+        super().__init__(game, player_id)
+
+        self.armor = self.data['CAH'][1]

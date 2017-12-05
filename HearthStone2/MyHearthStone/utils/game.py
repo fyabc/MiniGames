@@ -30,6 +30,19 @@ def error_and_stop(game, event, msg):
 
 # TODO: change these classes into ``enum.IntEnum``?
 
+
+class Type:
+    """An enumeration class, contains card types."""
+
+    Minion = 0
+    Spell = 1
+    Weapon = 2
+    HeroCard = 3
+    Permanent = 4   # Permanent card, such as the seed of 'Sherazin, Corpse Flower'.
+
+    # todo
+
+
 class Zone:
     """An enumeration class, contains zones of the card."""
 
@@ -51,6 +64,28 @@ class Zone:
         'Graveyard': Graveyard,
         'SetAside': SetAside,
         'Weapon': Weapon,
+    }
+
+    Idx2Str = {v: k for k, v in Str2Idx.items()}
+
+
+class Rarity:
+    """An enumeration class, contains rarities."""
+
+    Derivative = -1
+    Basic = 0
+    Common = 1
+    Rare = 2
+    Epic = 3
+    Legend = 4
+
+    Str2Idx = {
+        'Derivative': Derivative,
+        'Basic': Basic,
+        'Common': Common,
+        'Rare': Rare,
+        'Epic': Epic,
+        'Legend': Legend,
     }
 
     Idx2Str = {v: k for k, v in Str2Idx.items()}
@@ -83,19 +118,21 @@ class Race:
 class Klass:
     """An enumeration class, contains classes."""
 
-    Druid = 0
-    Hunter = 1
-    Mage = 2
-    Paladin = 3
-    Priest = 4
-    Rogue = 5
-    Shaman = 6
-    Warlock = 7
-    Warrior = 8
-    Monk = 9
-    DeathKnight = 10
+    Neutral = 0
+    Druid = 1
+    Hunter = 2
+    Mage = 3
+    Paladin = 4
+    Priest = 5
+    Rogue = 6
+    Shaman = 7
+    Warlock = 8
+    Warrior = 9
+    Monk = 10
+    DeathKnight = 11
 
     Str2Idx = {
+        'Neutral': Neutral,
         'Druid': Druid,
         'Hunter': Hunter,
         'Mage': Mage,

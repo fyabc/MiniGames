@@ -3,11 +3,14 @@
 
 """I/O utilities for package data (project built-in or user extension)."""
 
+# todo: Add loading names and descriptions from value resource directory (specific locale) when loading cards/heroes.
+
 import sys
 import os
+from locale import getdefaultlocale
 from importlib import import_module
 
-from .constants import get_package_paths
+from .constants import get_package_paths, C
 from .message import error, warning, msg_block
 from ..game.game_entity import SetDataMeta
 from ..game.card import Card
@@ -78,6 +81,12 @@ class _GameData:
                 module_vars = _load_module_variables(self.path, package_name)
                 if module_vars is not None:
                     self._package_vars.append(module_vars)
+
+
+def _load_package_locale():
+    my_locale = C.Locale
+    if my_locale is None:
+        my_locale = getdefaultlocale()[0]
 
 
 def _load_packages():
