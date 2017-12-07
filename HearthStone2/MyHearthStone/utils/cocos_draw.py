@@ -3,7 +3,7 @@
 
 """Draw HearthStone game board using cocos2d."""
 
-from cocos import scene, layer, text, director, draw
+from cocos import scene, layer, text, director, draw, actions
 from cocos.sprite import Sprite
 import pyglet
 from pyglet import resource
@@ -34,26 +34,31 @@ class CardSprite(Sprite):
     def __init__(self, card: Card, position=(0, 0), scale=1, hidden=False):
         card_image_name = '{}-{}.png'.format(Klass.Idx2Str[card.klass], card.type)
         super().__init__(image=card_image_name, position=position, scale=scale)
+        self.card = card
 
         aabb = self.get_AABB()
 
         self.hidden = hidden
-        self.front = [self]
+        self.front = []
         self.back = []
 
         back_sprite = Sprite(
-            'Card_back-Classic.png',
-            position=_pos(0., 0., base=self.point_to_local(aabb.center)),
-            scale=1.0,
-        )
+            'Card_back-Classic.png', position=_pos(0., 0., base=self.point_to_local(aabb.center)), scale=1.0,)
         self.add(back_sprite)
         self.back.append(back_sprite)
 
         name_label = text.Label(
-            text=card.name,
-            font_name='SimHei', font_size=60 * self.scale, anchor_x='center', anchor_y='center', bold=True)
+            text=card.name, position=(0, 0),
+            font_name='SimHei', font_size=60 * self.scale, anchor_x='center', anchor_y='center', bold=True,)
+        # todo: add style on it (by replace the html string)
+        desc_label = text.HTMLLabel(
+            text=card.description, position=_pos(0.0, 0.55, base=self.point_to_local(aabb.bottomleft)),
+            # font_name='SimHei', font_size=50 * self.scale, color=Colors['black'],
+            anchor_x='center', anchor_y='center',
+            width=self.width * 1.5, multiline=True,)
         self.add(name_label)
-        self.front.append(name_label)
+        self.add(desc_label)
+        self.front += [name_label, desc_label]
 
         # [NOTE] Only `get_AABB` method get the correct position of the child sprite.
         if card.type == Type.Permanent:
@@ -92,6 +97,7 @@ class CardSprite(Sprite):
         elif card.type == Type.Weapon:
             assert isinstance(card, Weapon)
             mana_sprite.position = _pos(0.85, 0.78, base=self.point_to_local(aabb.topleft))
+            desc_label.color = Colors['white']
             attack_sprite = Sprite(
                 'WeaponAtk-{}.png'.format(card.attack),
                 position=_pos(0.85, 0.86, base=self.point_to_local(aabb.bottomleft)),
@@ -112,21 +118,81 @@ class CardSprite(Sprite):
             self.add(armor_sprite)
             self.front.append(armor_sprite)
 
+        # z-order and move actions for animation to restore original state.
+        self._orig_z_order = None
+        self._move_actions = None
+
         self._update_hidden()
+
+    def __repr__(self):
+        return '<Sprite of card {}>'.format(self.card)
+
+    def my_contains(self, x, y):
+        """My implementation of contains.
+
+        Returns:
+            bool
+        """
+        sx, sy = self.position
+        sx -= self.width / 2
+        sy -= self.height / 2
+        if x < sx or x > sx + self.width:
+            return False
+        if y < sy or y > sy + self.height:
+            return False
+        return True
 
     def _update_hidden(self, new_hidden=None):
         if new_hidden is not None:
             self.hidden = new_hidden
         if self.hidden:
+            self.opacity = 0
             for sprite in self.front:
-                sprite.opacity = 0
+                sprite.visible = False
             for sprite in self.back:
-                sprite.opacity = 255
+                sprite.visible = True
         else:
+            self.opacity = 255
             for sprite in self.front:
-                sprite.opacity = 255
+                sprite.visible = True
             for sprite in self.back:
-                sprite.opacity = 0
+                sprite.visible = False
+
+    def _find_myself(self):
+        z_list = [e[0] for e in self.parent.children]
+        children_list = [e[1] for e in self.parent.children]
+        i = children_list.index(self)
+
+        return (i, z_list[i]), z_list
+
+    def selected(self):
+        """The card is selected (move mouse on it)."""
+
+        self._orig_z_order, z_list = self._find_myself()
+
+        # Put myself at last.
+        del self.parent.children[self._orig_z_order[0]]
+        self.parent.children.append((max(z_list) + 1, self))
+
+        # Scale up and move to center
+        # todo: change hard code here to calculate by align the new top/bottom and window top/bottom.
+        self._move_actions = actions.ScaleBy(2, 0.3) | actions.MoveBy((0, (Height // 2 - self.y) * 0.28), 0)
+        if self.x < self.width:
+            self._move_actions = self._move_actions | actions.MoveBy((self.width * 0.6, 0), 0)
+        self.do(self._move_actions)
+        # self.scale *= 2
+
+    def unselected(self):
+        """The card is unselected (move mouse from it)."""
+
+        # Restore my z-order.
+        _new_z_order, _ = self._find_myself()
+        del self.parent.children[_new_z_order[0]]
+        self.parent.children.insert(self._orig_z_order[0], (self._orig_z_order[1], self))
+
+        # self.do(actions.ScaleBy(1 / 2, 0.5) | actions.Place(self._orig_position))
+        self.do(actions.Reverse(self._move_actions))
+        # self.scale /= 2
 
 
 class HSGameBoard(layer.Layer):
@@ -134,6 +200,9 @@ class HSGameBoard(layer.Layer):
 
     def __init__(self, game: Game, **kwargs):
         super(HSGameBoard, self).__init__()
+
+        self.cards = []
+        self.active_card = None
 
         # Players. P0 is current player (show in bottom), P1 is current player (show in top, hide something)
         players = game.current_player, 1 - game.current_player
@@ -166,16 +235,22 @@ class HSGameBoard(layer.Layer):
                 bold=True,
             ))
 
+        # Other components of right board.
+        for pi, y in zip(players, [0.42, 0.58]):
+            self.add(text.Label(
+                'Player {}'.format(pi),
+                _pos(0.94, y), font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', bold=True,
+            ))
+
         # Hands.
         hands = [game.get_zone(Zone.Hand, p) for p in players]
-        self.hand_cards = [[], []]
 
         for pi, (hand, y) in enumerate(zip(hands, [0.115, 0.885])):
             for i, card in enumerate(hand):
                 # [NOTE]: position need fix here.
-                hand_card = CardSprite(card, _pos(0.05 + i * 0.09, y), scale=0.35, hidden=(pi == 1))
-                self.hand_cards[pi].append(hand_card)
+                hand_card = CardSprite(card, _pos(0.045 + i * 0.087, y), scale=0.35, hidden=(pi == 1))
                 self.add(hand_card)
+                self.cards.append(hand_card)
 
         # Plays.
 
@@ -186,6 +261,34 @@ class HSGameBoard(layer.Layer):
         if key == pyglet.window.key.ESCAPE:
             # The default action on ESCAPE (pyglet.app.exit()) will cause crush.
             director.director.window.close()
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        new_active_card = None
+        for card in self.cards:
+            if card.my_contains(x, y):
+                new_active_card = card
+                break
+
+        # [NOTE] Do nothing when actions running.
+        if self.active_card and self.active_card.are_actions_running() or \
+                new_active_card and new_active_card.are_actions_running():
+            return
+
+        if new_active_card is None:
+            if self.active_card is not None:
+                self.active_card.unselected()
+            else:
+                pass
+        else:
+            if self.active_card is None:
+                new_active_card.selected()
+            else:
+                if self.active_card != new_active_card:
+                    self.active_card.unselected()
+                    new_active_card.selected()
+                else:
+                    pass
+        self.active_card = new_active_card
 
 
 def preprocess():

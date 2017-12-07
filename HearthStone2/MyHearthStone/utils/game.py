@@ -158,7 +158,9 @@ class Condition:
 __all__ = [
     'order_of_play',
     'error_and_stop',
+    'Type',
     'Zone',
+    'Rarity',
     'Race',
     'Klass',
     'Condition',

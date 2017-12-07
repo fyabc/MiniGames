@@ -45,7 +45,7 @@ class 幸运币(Spell):
 
 class 工程师学徒(Minion):
     _data = {
-        'id': 1,
+        'id': 7,
         'name': '工程师学徒',
         'rarity': 0,
         'CAH': [2, 1, 1],
@@ -71,7 +71,7 @@ class 工程师学徒(Minion):
 
 class 火球术(Spell):
     _data = {
-        'id': 30004,
+        'id': 30008,
         'name': '火球术',
         'type': 1,
         'rarity': 0,

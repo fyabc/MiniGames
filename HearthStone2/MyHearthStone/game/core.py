@@ -532,7 +532,7 @@ class Game:
         if zone == Zone.Deck:
             return len(self.decks[player_id]) >= self.DeckMax
         if zone == Zone.Hand:
-            return len(self.decks[player_id]) >= self.HandMax
+            return len(self.hands[player_id]) >= self.HandMax
         if zone == Zone.Secret:
             return len(self.secrets[player_id]) >= self.SecretMax
         if zone == Zone.Play:
