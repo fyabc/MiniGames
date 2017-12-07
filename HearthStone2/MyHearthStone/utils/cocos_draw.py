@@ -8,7 +8,7 @@ from cocos.sprite import Sprite
 import pyglet
 from pyglet import resource
 
-from .game import Zone, Klass, Type
+from .game import Zone, Klass, Type, Rarity
 from .draw.constants import Colors
 from ..game.core import Game
 from ..game.card import Card, Minion, Spell, Weapon, HeroCard
@@ -16,7 +16,7 @@ from ..game.card import Card, Minion, Spell, Weapon, HeroCard
 __author__ = 'fyabc'
 
 X, Y = None, None
-Width, Height = 1000, 600
+Width, Height = 1200, 700
 
 
 def _pos(x, y, base=None, scale=1.0):
@@ -31,60 +31,102 @@ def _pos(x, y, base=None, scale=1.0):
 
 
 class CardSprite(Sprite):
-    def __init__(self, card: Card, position=(0, 0), scale=1):
+    def __init__(self, card: Card, position=(0, 0), scale=1, hidden=False):
         card_image_name = '{}-{}.png'.format(Klass.Idx2Str[card.klass], card.type)
         super().__init__(image=card_image_name, position=position, scale=scale)
+
+        aabb = self.get_AABB()
+
+        self.hidden = hidden
+        self.front = [self]
+        self.back = []
+
+        back_sprite = Sprite(
+            'Card_back-Classic.png',
+            position=_pos(0., 0., base=self.point_to_local(aabb.center)),
+            scale=1.0,
+        )
+        self.add(back_sprite)
+        self.back.append(back_sprite)
+
+        name_label = text.Label(
+            text=card.name,
+            font_name='SimHei', font_size=60 * self.scale, anchor_x='center', anchor_y='center', bold=True)
+        self.add(name_label)
+        self.front.append(name_label)
 
         # [NOTE] Only `get_AABB` method get the correct position of the child sprite.
         if card.type == Type.Permanent:
             mana_sprite = Sprite(
                 'Mana.png',
-                position=_pos(0.85, 0.76, base=self.point_to_local(self.get_AABB().topleft)),
-                scale=0.9,
-            )
+                position=_pos(0.85, 0.76, base=self.point_to_local(aabb.topleft)),
+                scale=0.9,)
         else:
             mana_sprite = Sprite(
                 'Mana-{}.png'.format(card.cost),
-                position=_pos(0.85, 0.76, base=self.point_to_local(self.get_AABB().topleft)),
-                scale=0.9,
-            )
+                position=_pos(0.85, 0.76, base=self.point_to_local(aabb.topleft)),
+                scale=0.9,)
         self.add(mana_sprite)
+        self.front.append(mana_sprite)
+
+        if card.rarity not in (Rarity.Basic, Rarity.Derivative):
+            pass
 
         if card.type == Type.Minion:
             assert isinstance(card, Minion)
-            self.add(Sprite(
+            name_label.position = _pos(0.0, 0.1, base=self.point_to_local(aabb.midbottom))
+            attack_sprite = Sprite(
                 'Atk-{}.png'.format(card.attack),
-                position=_pos(0.85, 0.86, base=self.point_to_local(self.get_AABB().bottomleft)),
-                scale=1.08,
-            ))
-            self.add(Sprite(
+                position=_pos(0.85, 0.86, base=self.point_to_local(aabb.bottomleft)),
+                scale=1.08,)
+            health_sprite = Sprite(
                 'Health-{}.png'.format(card.health),
-                position=_pos(0.85, 0.86, base=self.point_to_local(self.get_AABB().bottomright)),
-                scale=1.08,
-            ))
+                position=_pos(0.85, 0.86, base=self.point_to_local(aabb.bottomright)),
+                scale=1.08,)
+            self.add(attack_sprite)
+            self.add(health_sprite)
+            self.front += [attack_sprite, health_sprite]
         elif card.type == Type.Spell:
             assert isinstance(card, Spell)
-            mana_sprite.position = _pos(0.85, 0.86, base=self.point_to_local(self.get_AABB().topleft))
+            mana_sprite.position = _pos(0.85, 0.86, base=self.point_to_local(aabb.topleft))
         elif card.type == Type.Weapon:
             assert isinstance(card, Weapon)
-            mana_sprite.position = _pos(0.85, 0.78, base=self.point_to_local(self.get_AABB().topleft))
-            self.add(Sprite(
+            mana_sprite.position = _pos(0.85, 0.78, base=self.point_to_local(aabb.topleft))
+            attack_sprite = Sprite(
                 'WeaponAtk-{}.png'.format(card.attack),
-                position=_pos(0.85, 0.86, base=self.point_to_local(self.get_AABB().bottomleft)),
-                scale=1.08,
-            ))
-            self.add(Sprite(
+                position=_pos(0.85, 0.86, base=self.point_to_local(aabb.bottomleft)),
+                scale=1.08,)
+            health_sprite = Sprite(
                 'WeaponHealth-{}.png'.format(card.health),
-                position=_pos(0.85, 0.86, base=self.point_to_local(self.get_AABB().bottomright)),
-                scale=1.08,
-            ))
+                position=_pos(0.85, 0.86, base=self.point_to_local(aabb.bottomright)),
+                scale=1.08,)
+            self.add(attack_sprite)
+            self.add(health_sprite)
+            self.front += [attack_sprite, health_sprite]
         elif card.type == Type.HeroCard:
             assert isinstance(card, HeroCard)
-            self.add(Sprite(
+            armor_sprite = Sprite(
                 'HeroArmor-{}.png'.format(card.armor),
-                position=_pos(0.85, 0.86, base=self.point_to_local(self.get_AABB().bottomright)),
-                scale=1.08,
-            ))
+                position=_pos(0.85, 0.86, base=self.point_to_local(aabb.bottomright)),
+                scale=1.08,)
+            self.add(armor_sprite)
+            self.front.append(armor_sprite)
+
+        self._update_hidden()
+
+    def _update_hidden(self, new_hidden=None):
+        if new_hidden is not None:
+            self.hidden = new_hidden
+        if self.hidden:
+            for sprite in self.front:
+                sprite.opacity = 0
+            for sprite in self.back:
+                sprite.opacity = 255
+        else:
+            for sprite in self.front:
+                sprite.opacity = 255
+            for sprite in self.back:
+                sprite.opacity = 0
 
 
 class HSGameBoard(layer.Layer):
@@ -107,7 +149,7 @@ class HSGameBoard(layer.Layer):
         for ds, y in zip(deck_sizes, [0.15, 0.85]):
             self.add(text.Label(
                 str(ds), _pos(0.94, y),
-                font_name='YaHei', font_size=16, anchor_x='center', anchor_y='center',
+                font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', bold=True,
             ))
 
         # Manas.
@@ -120,19 +162,20 @@ class HSGameBoard(layer.Layer):
                     '' if overload_next == 0 else '\n(Overload next {})'.format(overload_next),
                 ),
                 _pos(0.94, y),
-                font_name='YaHei', font_size=16, anchor_x='center', anchor_y='center', color=Colors['blue'],
+                font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', color=Colors['blue'],
+                bold=True,
             ))
 
         # Hands.
         hands = [game.get_zone(Zone.Hand, p) for p in players]
+        self.hand_cards = [[], []]
 
-        for hand, y in zip(hands, [0.115, 0.885]):
+        for pi, (hand, y) in enumerate(zip(hands, [0.115, 0.885])):
             for i, card in enumerate(hand):
                 # [NOTE]: position need fix here.
-                self.add(CardSprite(card, _pos(0.06 + i * 0.1, y), scale=0.3))
-
-        # from cocos.actions import MoveBy
-        # card.do(MoveBy((-100, 0), 8))
+                hand_card = CardSprite(card, _pos(0.05 + i * 0.09, y), scale=0.35, hidden=(pi == 1))
+                self.hand_cards[pi].append(hand_card)
+                self.add(hand_card)
 
         # Plays.
 
@@ -174,6 +217,7 @@ def draw_game(game, **kwargs):
         director.director.init(
             caption='HearthStone Board',
             resizable=True,
+            autoscale=True,
             width=Width,
             height=Height,
         )

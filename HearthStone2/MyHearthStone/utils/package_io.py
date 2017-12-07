@@ -3,12 +3,11 @@
 
 """I/O utilities for package data (project built-in or user extension)."""
 
-# todo: Add loading names and descriptions from value resource directory (specific locale) when loading cards/heroes.
-
 import sys
 import os
 from locale import getdefaultlocale
 from importlib import import_module
+import json
 
 from .constants import get_package_paths, C
 from .message import error, warning, msg_block
@@ -58,6 +57,9 @@ class _GameData:
     """
 
     ResourcePathName = 'resources'
+    ImagesPathName = 'images'
+    SoundsPathName = 'sounds'
+    ValuesPathName = 'values'
 
     def __init__(self, path):
         self.path = path
@@ -82,11 +84,53 @@ class _GameData:
                 if module_vars is not None:
                     self._package_vars.append(module_vars)
 
+    def load_strings(self, cards_dict: dict, heroes_dict: dict):
+        """Load strings of name and description (specific locale) of cards and heroes."""
 
-def _load_package_locale():
-    my_locale = C.Locale
-    if my_locale is None:
-        my_locale = getdefaultlocale()[0]
+        my_locale = C.Locale
+        if my_locale is None:
+            my_locale = getdefaultlocale()[0]
+
+        values_filename = os.path.join(self.path, self.ResourcePathName, self.ValuesPathName, my_locale + '.json')
+        if not os.path.exists(values_filename):
+            warning('Locale "{}" not found, use default locale "{}".'.format(my_locale, C.DefaultLocale))
+            my_locale = C.DefaultLocale
+            values_filename = os.path.join(self.path, self.ResourcePathName, self.ValuesPathName, my_locale + '.json')
+
+            if not os.path.exists(values_filename):
+                warning('Default locale not found, do not load strings.')
+                return
+
+        try:
+            with open(values_filename, 'r', encoding='utf-8') as f:
+                values_dict = json.load(f)
+            values_cards = values_dict['Cards']
+            values_heroes = values_dict['Heroes']
+            for k, v in values_cards.items():
+                assert isinstance(v, list)
+                assert len(v) == 2
+                assert isinstance(v[0], str)
+                assert isinstance(v[1], str)
+
+                var = cards_dict.get(int(k), None)
+                if var is not None:
+                    data = getattr(var, '_data')
+                    data['name'] = v[0]
+                    data['description'] = v[1]
+            for k, v in values_heroes.items():
+                assert isinstance(v, list)
+                assert len(v) == 2
+                assert isinstance(v[0], str)
+                assert isinstance(v[1], str)
+
+                var = heroes_dict.get(int(k), None)
+                if var is not None:
+                    data = getattr(var, '_data')
+                    data['name'] = v[0]
+                    data['description'] = v[1]
+        except (json.JSONDecodeError, ValueError, AssertionError) as e:
+            error('Error when loading locale of game data in "{}"'.format(self.path))
+            return
 
 
 def _load_packages():
@@ -128,6 +172,8 @@ def _load_packages():
                             warning('The hero id {} already exists, overwrite it'.format(hero_id))
 
                         AllHeroes[hero_id] = var
+
+            AllGameData[-1].load_strings(AllCards, AllHeroes)
 
     return AllCards, AllHeroes, AllGameData
 

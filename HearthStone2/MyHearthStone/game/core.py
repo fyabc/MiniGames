@@ -48,6 +48,10 @@ class Game:
 
         # Current player id.
         self.current_player = 0
+        # Buffer to get player of next turn, used by `_next_player()`.
+        # Triggers can change this buffer to implement the effect of 'extra turn', etc.
+        self.player_buffer = [None]
+        self.__player_iter = self.__player_generator()
 
         # Heroes.
         self.heroes = [None for _ in range(2)]
@@ -286,6 +290,7 @@ class Game:
         self.current_oop = 1
         self._stop_subsequent_phases = False
         self.tire_counters = [0 for _ in range(2)]
+        self.player_buffer = [None]
 
         replaces = yield
         for player_id, replace in enumerate(replaces):
@@ -376,10 +381,7 @@ class Game:
         """
 
         self.n_turns += 1
-        if self.n_turns > 0:
-            self.current_player = 1 - self.current_player
-        else:
-            pass
+        self.current_player = self._next_player()
 
         # Refresh mana.
         if self.max_mana[self.current_player] < self.ManaMax:
@@ -392,6 +394,27 @@ class Game:
         # todo
 
         pass
+
+    def _next_player(self):
+        """The iterator to yield next player.
+
+        :return: The next player id.
+        """
+
+        return next(self.__player_iter)
+
+    def __player_generator(self):
+        while True:
+            if not self.player_buffer:
+                # Normal: change player
+                yield 1 - self.current_player
+            else:
+                p = self.player_buffer.pop(0)
+                if p is None:
+                    # `None` indicates the first turn of the game, do not change current player.
+                    yield self.current_player
+                else:
+                    yield p
 
     def move(self, from_player, from_zone, from_index, to_player, to_zone, to_index):
         """Move an entity from one zone to another.

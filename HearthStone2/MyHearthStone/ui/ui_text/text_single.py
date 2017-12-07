@@ -7,6 +7,7 @@ import shlex
 
 from ...game.core import Game
 from ...game.deck import Deck
+from ...game import player_action as pa
 from ..frontend import Frontend
 from ...utils.constants import C
 from ...utils.game import Klass, Zone
@@ -250,14 +251,17 @@ Syntax: q | quit | exit\
     def complete_deck(self, *args):
         return [c for c in self.sub_deck.choices if c.startswith(args[0])]
 
+    #################
+    # Game commands #
+    #################
+
     def do_game(self, arg):
         try:
             args = self.parser_game.parse_args(shlex.split(arg))
         except ParserExit:
             return
 
-        if self.state == self.StateGame:
-            print('The game is running, please exit current game and restart.')
+        if not self._check_state(self.StateMain):
             return
 
         decks = self.frontend.user.decks
@@ -315,11 +319,31 @@ Syntax: q | quit | exit\
         # Now in game main loop.
         self.state = self.StateGame
 
+    def do_info(self, arg):
+        for card in all_cards().values():
+            print(dict(card.data))
+            print()
+
     def help_game(self):
         self.parser_game.print_help()
 
     def do_draw(self, arg):
         draw_game(self.frontend.game)
+
+    def do_turnend(self, arg):
+        if not self._check_state(self.StateGame):
+            return
+
+        game = self.frontend.game
+        game.run_player_action(pa.TurnEnd(game))
+
+    do_te = do_turnend
+
+    def _check_state(self, state):
+        result = state == self.state
+        if not result:
+            print('This command must run in mode {!r}.'.format(state))
+        return result
 
 
 class TextSingleFrontend(Frontend):

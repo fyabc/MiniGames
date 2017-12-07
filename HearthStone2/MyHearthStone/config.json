@@ -4,6 +4,9 @@
     // Locale, default is `locale.getdefaultlocale()`.
     "Locale": null,
 
+    // The locale to use when "Locale" does not exists.
+    "DefaultLocale": "zh_CN",
+
     "Frontend": "text-single",
 
     /// User extension

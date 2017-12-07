@@ -32,6 +32,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
         self.zone = Zone.Invalid
         self.player_id = player_id
         self.cost = self.data['CAH'][0]
+        self.orig_cost = self.data['CAH'][0]    # The original cost.
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
     def __repr__(self):
@@ -47,12 +48,20 @@ class Card(GameEntity, metaclass=SetDataMeta):
         return self.data['name']
 
     @property
+    def description(self):
+        return self.data['description']
+
+    @property
     def type(self):
         return self.data['type']
 
     @property
     def klass(self):
         return self.data['klass']
+
+    @property
+    def rarity(self):
+        return self.data['rarity']
 
 
 class Minion(Card):
@@ -77,6 +86,7 @@ class Minion(Card):
 
         self.attack = self.data['CAH'][1]
         self.health = self.data['CAH'][2]
+        self.orig_health = self.data['CAH'][2]      # The original health.
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
@@ -115,6 +125,7 @@ class Weapon(Card):
 
         self.attack = self.data['CAH'][1]
         self.health = self.data['CAH'][2]
+        self.orig_health = self.data['CAH'][2]  # The original health.
         self.max_health = self.health
 
 
