@@ -49,6 +49,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
     @property
     def description(self):
+        # todo: Apply enchantments that affect description (e.g. spell power) on it.
         return self.data['description']
 
     @property

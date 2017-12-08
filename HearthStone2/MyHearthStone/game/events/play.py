@@ -19,7 +19,13 @@ class OnPlaySpell(OnPlay):
     def __init__(self, game, spell, target, player_id=None):
         super().__init__(game, spell)
         self.target = target
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def spell(self):
@@ -37,7 +43,13 @@ class SpellBenderPhase(Phase):
     def __init__(self, game, spell, target, player_id=None):
         super().__init__(game, spell)
         self.target = target
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def spell(self):
@@ -51,7 +63,13 @@ class SpellText(Phase):
     def __init__(self, game, spell, target, player_id=None):
         super().__init__(game, spell)
         self.target = target
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def spell(self):
@@ -65,7 +83,13 @@ class AfterSpell(AfterPlay):
     def __init__(self, game, spell, target, player_id=None):
         super().__init__(game, spell)
         self.target = target
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def spell(self):
@@ -92,7 +116,13 @@ class OnPlayMinion(OnPlay):
         super().__init__(game, minion)
         self.loc = loc
         self.target = target
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def minion(self):
@@ -107,7 +137,13 @@ class BattlecryPhase(Phase):
         super().__init__(game, minion)
         self.loc = loc  # May be useless?
         self.target = target
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def minion(self):
@@ -122,7 +158,13 @@ class AfterPlayMinion(AfterPlay):
 
     def __init__(self, game, minion, player_id=None):
         super().__init__(game, minion)
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def minion(self):
@@ -135,7 +177,13 @@ class AfterPlayMinion(AfterPlay):
 class AfterSummon(Phase):
     def __init__(self, game, minion, player_id=None):
         super().__init__(game, minion)
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def minion(self):
@@ -148,7 +196,13 @@ class AfterSummon(Phase):
 class Summon(Event):
     def __init__(self, game, minion, player_id=None):
         super().__init__(game, minion)
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     @property
     def minion(self):

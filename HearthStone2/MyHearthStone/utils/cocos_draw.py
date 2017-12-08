@@ -187,7 +187,7 @@ class CardSprite(Sprite):
 
         return (i, z_list[i]), z_list
 
-    def selected(self):
+    def mouse_move_on(self):
         """The card is selected (move mouse on it)."""
 
         self._orig_z_order, z_list = self._find_myself()
@@ -203,7 +203,7 @@ class CardSprite(Sprite):
             self._move_actions = self._move_actions | actions.MoveBy((self.width * 0.6, 0), 0)
         self.do(self._move_actions)
 
-    def unselected(self):
+    def mouse_move_off(self):
         """The card is unselected (move mouse from it)."""
 
         # Restore my z-order.
@@ -226,6 +226,7 @@ class HSGameBoard(layer.Layer):
         # Players. P0 is current player (show in bottom), P1 is current player (show in top, hide something)
         players = game.current_player, 1 - game.current_player
 
+        # Some positions.
         right_b = 0.88
         right_c = (1 + right_b) / 2
         hero_b = 0.66
@@ -272,7 +273,7 @@ class HSGameBoard(layer.Layer):
         for pi, (hand, y) in enumerate(zip(hands, [0.115, 0.885])):
             for i, card in enumerate(hand):
                 # [NOTE]: position need fix here.
-                hand_card = CardSprite(card, _pos(0.045 + i * 0.062, y), scale=0.35, hidden=(pi == 1))
+                hand_card = CardSprite(card, _pos(hero_b / (len(hand) + 1) * (i + 1), y), scale=0.35, hidden=(pi == 1))
                 self.add(hand_card)
                 self.cards.append(hand_card)
 
@@ -300,16 +301,16 @@ class HSGameBoard(layer.Layer):
 
         if new_active_card is None:
             if self.active_card is not None:
-                self.active_card.unselected()
+                self.active_card.mouse_move_off()
             else:
                 pass
         else:
             if self.active_card is None:
-                new_active_card.selected()
+                new_active_card.mouse_move_on()
             else:
                 if self.active_card != new_active_card:
-                    self.active_card.unselected()
-                    new_active_card.selected()
+                    self.active_card.mouse_move_off()
+                    new_active_card.mouse_move_on()
                 else:
                     pass
         self.active_card = new_active_card

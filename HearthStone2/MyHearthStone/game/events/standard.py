@@ -39,9 +39,22 @@ class EndOfTurn(Event):
 
 class DrawCard(Event):
     def __init__(self, game, owner, player_id=None):
+        """The event of draw a card.
+
+        :param game:
+        :param owner:
+        :param player_id: The player to draw the card. If None, will be the current player when the event HAPPEN.
+        """
+
         super().__init__(game, owner)
-        self.player_id = player_id if player_id is not None else self.game.current_player
+        self._player_id = player_id
         self.card = None
+
+    @property
+    def player_id(self):
+        if self._player_id is None:
+            return self.game.current_player
+        return self._player_id
 
     def message(self):
         super().message(P=self.player_id, card=self.card)

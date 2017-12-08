@@ -3,7 +3,6 @@
 
 import random
 
-from .triggers.trigger import Trigger
 from .triggers.standard import add_standard_triggers
 from .events.standard import game_begin_standard_events, DeathPhase
 from .events.event import Event
