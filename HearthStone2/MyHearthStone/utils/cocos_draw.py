@@ -16,7 +16,7 @@ from ..game.card import Card, Minion, Spell, Weapon, HeroCard
 __author__ = 'fyabc'
 
 X, Y = None, None
-Width, Height = 1200, 700
+Width, Height = 1280, 700
 
 
 def _pos(x, y, base=None, scale=1.0):
@@ -28,6 +28,25 @@ def _pos(x, y, base=None, scale=1.0):
     if X is None:
         X, Y = director.director.get_window_size()
     return X * x * scale, Y * y * scale
+
+
+def _render_desc(description, **kwargs):
+    """Render description in HTML."""
+
+    format_map = {
+        'description': description,
+        # [NOTE]: There is an encoding bug when parsing the font name in HTML (in `pyglet\font\win32query.py:311`),
+        # must set font out of HTML.
+        'font_name': kwargs.pop('font_name', 'SimHei'),
+        # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
+        'font_size': int(kwargs.pop('font_size', 16)),
+        # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.
+        'color': kwargs.pop('color', 'black'),
+    }
+
+    return '<font size="{font_size}" color="{color}">' \
+           '{description}' \
+           '</font>'.format_map(format_map)
 
 
 class CardSprite(Sprite):
@@ -50,12 +69,15 @@ class CardSprite(Sprite):
         name_label = text.Label(
             text=card.name, position=(0, 0),
             font_name='SimHei', font_size=60 * self.scale, anchor_x='center', anchor_y='center', bold=True,)
-        # todo: add style on it (by replace the html string)
         desc_label = text.HTMLLabel(
-            text=card.description, position=_pos(0.0, 0.55, base=self.point_to_local(aabb.bottomleft)),
-            # font_name='SimHei', font_size=50 * self.scale, color=Colors['black'],
+            text=_render_desc(card.description, color='black'),
+            position=_pos(0.0, 0.55, base=self.point_to_local(aabb.bottomleft)),
             anchor_x='center', anchor_y='center',
             width=self.width * 1.5, multiline=True,)
+        # See notes in `_render_desc`.
+        desc_label.element.font_name = 'SimHei'
+        desc_label.element.font_size = 50 * self.scale
+
         self.add(name_label)
         self.add(desc_label)
         self.front += [name_label, desc_label]
@@ -97,7 +119,7 @@ class CardSprite(Sprite):
         elif card.type == Type.Weapon:
             assert isinstance(card, Weapon)
             mana_sprite.position = _pos(0.85, 0.78, base=self.point_to_local(aabb.topleft))
-            desc_label.color = Colors['white']
+            desc_label.element.color = Colors['white']
             attack_sprite = Sprite(
                 'WeaponAtk-{}.png'.format(card.attack),
                 position=_pos(0.85, 0.86, base=self.point_to_local(aabb.bottomleft)),
@@ -176,11 +198,10 @@ class CardSprite(Sprite):
 
         # Scale up and move to center
         # todo: change hard code here to calculate by align the new top/bottom and window top/bottom.
-        self._move_actions = actions.ScaleBy(2, 0.3) | actions.MoveBy((0, (Height // 2 - self.y) * 0.28), 0)
+        self._move_actions = actions.ScaleBy(2.2, 0.3) | actions.MoveBy((0, (Height // 2 - self.y) * 0.36), 0)
         if self.x < self.width:
             self._move_actions = self._move_actions | actions.MoveBy((self.width * 0.6, 0), 0)
         self.do(self._move_actions)
-        # self.scale *= 2
 
     def unselected(self):
         """The card is unselected (move mouse from it)."""
@@ -190,9 +211,7 @@ class CardSprite(Sprite):
         del self.parent.children[_new_z_order[0]]
         self.parent.children.insert(self._orig_z_order[0], (self._orig_z_order[1], self))
 
-        # self.do(actions.ScaleBy(1 / 2, 0.5) | actions.Place(self._orig_position))
         self.do(actions.Reverse(self._move_actions))
-        # self.scale /= 2
 
 
 class HSGameBoard(layer.Layer):
@@ -207,17 +226,22 @@ class HSGameBoard(layer.Layer):
         # Players. P0 is current player (show in bottom), P1 is current player (show in top, hide something)
         players = game.current_player, 1 - game.current_player
 
+        right_b = 0.88
+        right_c = (1 + right_b) / 2
+        hero_b = 0.66
+
         # Lines.
-        self.add(draw.Line(_pos(.88, .0), _pos(.88, 1.), Colors['white'], 2))
+        self.add(draw.Line(_pos(right_b, .0), _pos(right_b, 1.), Colors['white'], 2))
         self.add(draw.Line(_pos(.0, .5), _pos(1., .5), Colors['white'], 2))
-        self.add(draw.Line(_pos(.0, .23), _pos(.88, .23), Colors['white'], 2))
-        self.add(draw.Line(_pos(.0, .77), _pos(.88, .77), Colors['white'], 2))
+        self.add(draw.Line(_pos(.0, .23), _pos(hero_b, .23), Colors['white'], 2))
+        self.add(draw.Line(_pos(.0, .77), _pos(hero_b, .77), Colors['white'], 2))
+        self.add(draw.Line(_pos(hero_b, .0), _pos(hero_b, 1.), Colors['white'], 2))
 
         # Decks.
         deck_sizes = [len(game.get_zone(Zone.Deck, p)) for p in players]
         for ds, y in zip(deck_sizes, [0.15, 0.85]):
             self.add(text.Label(
-                str(ds), _pos(0.94, y),
+                '牌库：{}'.format(ds), _pos(right_c, y),
                 font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', bold=True,
             ))
 
@@ -230,16 +254,16 @@ class HSGameBoard(layer.Layer):
                     '' if overload == 0 else '\n(Overload {})'.format(overload),
                     '' if overload_next == 0 else '\n(Overload next {})'.format(overload_next),
                 ),
-                _pos(0.94, y),
+                _pos(right_c, y),
                 font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', color=Colors['blue'],
-                bold=True,
+                bold=True, multiline=True, width=(1 - right_b) * Width, align='center',
             ))
 
         # Other components of right board.
         for pi, y in zip(players, [0.42, 0.58]):
             self.add(text.Label(
                 'Player {}'.format(pi),
-                _pos(0.94, y), font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', bold=True,
+                _pos(right_c, y), font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', bold=True,
             ))
 
         # Hands.
@@ -248,7 +272,7 @@ class HSGameBoard(layer.Layer):
         for pi, (hand, y) in enumerate(zip(hands, [0.115, 0.885])):
             for i, card in enumerate(hand):
                 # [NOTE]: position need fix here.
-                hand_card = CardSprite(card, _pos(0.045 + i * 0.087, y), scale=0.35, hidden=(pi == 1))
+                hand_card = CardSprite(card, _pos(0.045 + i * 0.062, y), scale=0.35, hidden=(pi == 1))
                 self.add(hand_card)
                 self.cards.append(hand_card)
 
@@ -319,7 +343,7 @@ def draw_game(game, **kwargs):
 
         director.director.init(
             caption='HearthStone Board',
-            resizable=True,
+            resizable=False,
             autoscale=True,
             width=Width,
             height=Height,
