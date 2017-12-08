@@ -43,6 +43,7 @@ Welcome to HearthStone (single player text mode).
     def __init__(self, frontend: Frontend):
         super().__init__()
         self.frontend = frontend
+        self.game = frontend.game
         self.state = self.StateMain
         self.prompt = 'HS[main]> '  # Init prompt
 
@@ -330,14 +331,27 @@ Syntax: q | quit | exit\
     def do_draw(self, arg):
         draw_game(self.frontend.game)
 
+    # Player actions.
     def do_turnend(self, arg):
         if not self._check_state(self.StateGame):
             return
 
-        game = self.frontend.game
-        game.run_player_action(pa.TurnEnd(game))
+        self.game.run_player_action(pa.TurnEnd(self.game))
 
     do_te = do_turnend
+
+    def do_concede(self, arg):
+        if not self._check_state(self.StateGame):
+            return
+
+        self.game.run_player_action(pa.Concede(self.game))
+
+    def do_play(self, arg):
+        if not self._check_state(self.StateGame):
+            return
+
+        # todo
+        # self.game.run_player_action(pa.PlayMinion(self.game, ))
 
     def _check_state(self, state):
         result = state == self.state

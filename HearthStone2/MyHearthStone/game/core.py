@@ -26,6 +26,10 @@ class Game:
     StartCardOffensive = C.Game.StartCardOffensive
     StartCardDefensive = C.Game.StartCardDefensive
 
+    ResultWin0 = 1
+    ResultWin1 = -1
+    ResultDraw = 0
+
     def __init__(self, **kwargs):
         #############
         # Game data #
@@ -53,7 +57,7 @@ class Game:
         self.__player_iter = self.__player_generator()
 
         # Heroes.
-        self.heroes = [None for _ in range(2)]
+        self.heroes = [None for _ in range(2)]  # Change it into lists?
 
         # Mana and overloads.
         self.mana = [0 for _ in range(2)]
@@ -66,7 +70,7 @@ class Game:
         self.hands = [[] for _ in range(2)]
         self.plays = [[] for _ in range(2)]
         self.secrets = [[] for _ in range(2)]
-        self.weapons = [None for _ in range(2)]
+        self.weapons = [None for _ in range(2)]     # Change it into lists?
         self.graveyards = [[] for _ in range(2)]
 
         # Tire counters.
@@ -135,8 +139,14 @@ class Game:
             self.triggers[event_type] = {trigger for trigger in triggers if trigger.enable}
 
     def run_player_action(self, player_action):
+        if not self.running:
+            error('The game is not running.')
+            return
         self.resolve_events(player_action.phases(), 0)
 
+        if self.game_result is not None:
+            debug('Game end in result {}.'.format(self.game_result))
+            self.running = False
         return self.game_result
 
     def resolve_events(self, events, depth=0):
@@ -305,6 +315,8 @@ class Game:
         # Add coin into defensive hand
         self.hands[1 - start_player].append(cards[0](self, 1 - start_player))
 
+        self._init_card_zones()
+
         add_standard_triggers(self)
 
         # todo: need test
@@ -334,18 +346,21 @@ class Game:
             for e in zone:
                 if e is None:
                     continue
-                if e.to_be_destroyed or e.health <= 0:
+                if not e.alive:
                     deaths.add(zone)
 
         return order_of_play(deaths)
 
     def remove_from_play(self, deaths):
-        """Kill dead entities, remove them from play.
+        """Kill dead entities, remove them from play simultaneously.
 
         Entities that have been removed from play cannot trigger, be triggered, or emit auras, and do not take up space.
 
         NOTE: mortally wounded and pending destroy are ONLY converted into dead once the outermost Phase ends!
         """
+
+        # [NOTE]: When remove a hero from play,
+        # we send it into graveyard, but do not delete it from `self.heroes`, just set its `play_state` into `False`.
         pass
 
     def aura_update_attack_health(self):
@@ -364,10 +379,16 @@ class Game:
 
         # If turn number larger than TurnMax, the game will be a draw.
         if self.n_turns > self.TurnMax:
-            self.game_result = 0
+            self.game_result = self.ResultDraw
+            return
 
-        debug('No one wins')
-        self.game_result = None
+        # Check play state of CURRENT heroes (when replacing a hero, will check the new hero, so game will not end).
+        self.game_result = {
+            (True, True): None,
+            (True, False): self.ResultWin0,
+            (False, True): self.ResultWin1,
+            (False, False): self.ResultDraw,
+        }[(self.heroes[0].play_state, self.heroes[1].play_state)]
 
     def new_turn(self):
         """TODO:
@@ -414,6 +435,23 @@ class Game:
                     yield self.current_player
                 else:
                     yield p
+                    
+    def _init_card_zones(self):
+        """Initialize cards' zones when the game start."""
+        # fixme: merge this method into `generate`?
+        # Need to init hero zone?
+
+        for player_id in (0, 1):
+            for zone_id in Zone.Idx2Str.keys():
+                try:
+                    zone = self.get_zone(zone_id, player_id)
+                    for card in zone:
+                        card.zone = zone_id
+                except ValueError:
+                    pass
+            self.heroes[player_id].zone = Zone.Hero
+            if self.weapons[player_id] is not None:
+                self.weapons[player_id].zone = Zone.Weapon
 
     def move(self, from_player, from_zone, from_index, to_player, to_zone, to_index):
         """Move an entity from one zone to another.
@@ -462,12 +500,12 @@ class Game:
 
         return entity, True, []
 
-    def generate(self, to_player, to_zone, to_index, entity_id):
+    def generate(self, to_player, to_zone, to_index, entity):
         """Generate an entity into a zone.
 
         :param to_player: The target player id.
         :param to_zone: The target zone.
-        :param entity_id: The entity id to be generated.
+        :param entity: The entity id to be generated, or the entity object.
         :param to_index: The target index of the entity.
             if it is 'last', means append.
         :return: a tuple of (entity, bool, list)
@@ -478,9 +516,11 @@ class Game:
 
         # If the play board is full, do nothing.
         if self.full(to_zone, to_player):
+            message('{} full!'.format(Zone.Idx2Str[to_zone]))
             return None, False, []
 
-        entity = self.create_card(entity_id, player_id=to_player)
+        if isinstance(entity, int):
+            entity = self.create_card(entity, player_id=to_player)
 
         self._insert_entity(entity, to_zone, to_player, to_index)
 

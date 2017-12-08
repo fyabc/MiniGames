@@ -284,7 +284,7 @@ class HSGameBoard(layer.Layer):
         # todo
 
         if key == pyglet.window.key.ESCAPE:
-            # The default action on ESCAPE (pyglet.app.exit()) will cause crush.
+            # The default action on ESCAPE (`pyglet.app.exit`) will cause crush.
             director.director.window.close()
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -294,7 +294,7 @@ class HSGameBoard(layer.Layer):
                 new_active_card = card
                 break
 
-        # [NOTE] Do nothing when actions running.
+        # [NOTE] Do nothing when actions are running.
         if self.active_card and self.active_card.are_actions_running() or \
                 new_active_card and new_active_card.are_actions_running():
             return

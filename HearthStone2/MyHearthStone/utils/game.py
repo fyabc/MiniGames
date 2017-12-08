@@ -54,6 +54,7 @@ class Zone:
     Graveyard = 5
     SetAside = 6
     Weapon = 7
+    Hero = 8
 
     Str2Idx = {
         'Invalid': Invalid,
@@ -64,6 +65,7 @@ class Zone:
         'Graveyard': Graveyard,
         'SetAside': SetAside,
         'Weapon': Weapon,
+        'Hero': Hero,
     }
 
     Idx2Str = {v: k for k, v in Str2Idx.items()}

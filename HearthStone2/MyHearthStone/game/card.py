@@ -91,6 +91,10 @@ class Minion(Card):
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
+    @property
+    def alive(self):
+        return self.health > 0 and not self.to_be_destroyed
+
     def battlecry(self, target):
         """Run the battlecry. Implemented in subclasses.
 
@@ -128,6 +132,11 @@ class Weapon(Card):
         self.health = self.data['CAH'][2]
         self.orig_health = self.data['CAH'][2]  # The original health.
         self.max_health = self.health
+        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
+
+    @property
+    def alive(self):
+        return self.health > 0 and not self.to_be_destroyed
 
 
 class HeroCard(Card):

@@ -46,8 +46,6 @@ def main():
 
     set_debug_level(C.Logging.Level)
 
-    debug('A debug message')
-    verbose('A verbose message')
     verbose(C)
 
     frontend = get_frontend(C.Frontend)(user_id_or_name=args.user_id_or_name)

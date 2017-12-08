@@ -41,7 +41,7 @@ class TurnEnd(PlayerAction):
         return [
             standard.EndOfTurn(self.game), 'check_win',
             standard.BeginOfTurn(self.game), 'check_win',
-            standard.DrawCard(self.game, None), 'check_win',
+            standard.DrawCard(self.game, None), 'check_win',    # The card drawer is determined by the next player.
         ]
 
 
@@ -91,7 +91,12 @@ class PlayWeapon(PlayerAction):
 
 
 class PlayMinion(PlayerAction):
-    """"""
+    """The action to play a minion.
+
+    Some Notes:
+        1. Playing Lord Jaraxxus initially summons him as a minion, before his Battlecry transforms him into a hero
+            who then takes over from the playing hero. (in `BattlecryPhase`)
+    """
 
     def __init__(self, game, minion, loc, target, player_id=None):
         super().__init__(game)
