@@ -11,12 +11,7 @@ class Hero(GameEntity, metaclass=SetDataMeta):
     """[NO_DESCRIPTION]"""
 
     _data = {
-        'id': None,
-        'name': '',
-        'package': 0,
-        'klass': 0,
         'CAH': [None, None, 30],
-        'description': '',
     }
 
     def __init__(self, game, player_id):

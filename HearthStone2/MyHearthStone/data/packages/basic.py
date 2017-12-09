@@ -77,9 +77,8 @@ class 火球术(Spell):
         'rarity': 0,
         'klass': 3,
         'CAH': [4],
+        'have_target': True,
     }
-
-    have_target = True
 
     def run(self, target):
         return [std_events.damage_events(self.game, self, target, 6)]

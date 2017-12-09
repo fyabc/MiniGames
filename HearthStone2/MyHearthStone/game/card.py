@@ -11,20 +11,14 @@ class Card(GameEntity, metaclass=SetDataMeta):
     """The class of card."""
 
     _data = {
-        'id': None,
         'type': 0,
-        'name': '',
-        'package': 0,
         'rarity': 0,
-        'klass': 0,
         'race': [],
         'CAH': [0, 1, 1],
         'overload': 0,
         'spell_power': 0,
-        'description': '',
+        'have_target': False,
     }
-
-    have_target = False     # Does this card have a target?
 
     def __init__(self, game, player_id):
         super().__init__(game)
@@ -42,15 +36,6 @@ class Card(GameEntity, metaclass=SetDataMeta):
         """Check the validity of the target."""
 
         return True
-
-    @property
-    def name(self):
-        return self.data['name']
-
-    @property
-    def description(self):
-        # todo: Apply enchantments that affect description (e.g. spell power) on it.
-        return self.data['description']
 
     @property
     def type(self):

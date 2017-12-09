@@ -12,7 +12,14 @@ __author__ = 'fyabc'
 class GameEntity:
     """The base class of all game entities."""
 
-    data = ChainMap()
+    data = ChainMap({
+        'id': None,
+        'name': '',
+        'package': 0,
+        'klass': 0,
+        'CAH': [0, 1, 1],
+        'description': '',
+    })
 
     def __init__(self, game):
         self.game = game
@@ -21,11 +28,27 @@ class GameEntity:
         # All game entities have this attribute, and share the same oop list.
         self.oop = None
 
+        # Enchantment list of this entity.
+        self.enchantments = []
+
     def _repr(self, **kwargs):
         return entity_message(self, kwargs, prefix='#')
 
     def __repr__(self):
         return self._repr()
+
+    @property
+    def id(self):
+        return self.data['id']
+
+    @property
+    def name(self):
+        return self.data['name']
+
+    @property
+    def description(self):
+        # todo: Apply enchantments that affect description (e.g. spell power) on it.
+        return self.data['description']
 
 
 class SetDataMeta(type):
