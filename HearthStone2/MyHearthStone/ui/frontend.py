@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from ..utils.user import AppUser
-from ..game.core import Game
+from ..utils.message import info
 
 __author__ = 'fyabc'
 
 
 class Frontend:
     def __init__(self, **kwargs):
+        info('Start the frontend "{}"'.format(self.__class__.__name__))
         self.user = AppUser.load_or_create(kwargs.pop('user_id_or_name', None))
         self.game = None
 
@@ -24,8 +25,9 @@ class Frontend:
 
         try:
             self._main()
-        except Exception as e:
-            print(e)
+        except Exception:
+            from traceback import print_exc
+            print_exc()
             return 1
         finally:
             self.finalize()
@@ -41,4 +43,8 @@ class Frontend:
         pass
 
     def finalize(self):
+        info('Saving user information...')
         self.user.dump()
+        info('Save use information done')
+
+        info('App exited')

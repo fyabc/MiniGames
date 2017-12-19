@@ -11,7 +11,7 @@ import socketserver
 from . import utils
 from ..game.core import Game
 from ..game.deck import Deck
-from ..utils.message import message
+from ..utils.message import info, warning
 
 __author__ = 'fyabc'
 
@@ -121,7 +121,7 @@ class LanHandler(socketserver.StreamRequestHandler):
             self.server.add_user(self.user, self.wfile)
             self.send_text('Hello {}, welcome to the HearthStone local server!'.format(self.user.nickname))
             self.broadcast_text('{} has joined into the game.'.format(self.user.nickname), False)
-            message('{} has joined into the game.'.format(self.user.nickname))
+            info('{} has joined into the game.'.format(self.user.nickname))
             self.server.try_start_game()
         except utils.ClientError as e:
             self.send_text(e.args[0], error=True)
@@ -153,10 +153,10 @@ class LanHandler(socketserver.StreamRequestHandler):
     def finish(self):
         try:
             self.broadcast_text('{} has quit.'.format(self.user.nickname), False)
-            message('{} has quit.'.format(self.user.nickname))
+            info('{} has quit.'.format(self.user.nickname))
             self.server.remove_user(self.user)
         except utils.ClientError as e:
-            message(e.args[0])
+            warning(e.args[0])
         except socket.error:
             pass
         super().finish()

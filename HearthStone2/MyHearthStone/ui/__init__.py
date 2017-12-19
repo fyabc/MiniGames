@@ -3,19 +3,27 @@
 
 from .frontend import Frontend
 from .ui_text.text_single import TextSingleFrontend
+from .ui_cocos.cocos_single import CocosSingleFrontend
+from ..utils.message import error
 
 __author__ = 'fyabc'
 
 
-_FrontendDict = {
-    'text-single': TextSingleFrontend
+FrontendDict = {
+    'text-single': TextSingleFrontend,
+    'cocos-single': CocosSingleFrontend,
 }
 
 
 def get_frontend(name) -> type(Frontend):
-    return _FrontendDict.get(name, TextSingleFrontend)
+    result = FrontendDict.get(name, None)
+    if result is None:
+        error('Unknown frontend {}, fall back to "text-single".'.format(name))
+        result = TextSingleFrontend
+    return result
 
 
 __all__ = [
     'get_frontend',
+    'FrontendDict',
 ]

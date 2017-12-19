@@ -12,11 +12,12 @@ def main():
     parser = argparse.ArgumentParser(description='My HearthStone Game.')
 
     group_basic = parser.add_argument_group('Basic', 'basic settings')
-    group_basic.add_argument('-l', '--log-level', metavar='level', action='store', default='common',
-                             dest='debug_level', choices=['debug', 'verbose', 'info', 'common', 'warning', 'error'],
-                             help='Game debug level, default is "%(default)s"')
-    group_basic.add_argument('-f', '--frontend', metavar='mode', action='store', default='text-single',
-                             dest='frontend', choices=['text-single', 'text', 'qt', 'tk'],
+    group_basic.add_argument('-l', '--log-level', metavar='level', action='store', default='info',
+                             dest='debug_level', choices=['debug', 'verbose', 'info', 'warning', 'error', 'critical'],
+                             help='Game logging level, default is "%(default)s"')
+    group_basic.add_argument('-L', '--scr-log', action='store_true', default=False, dest='screen_log',
+                             help='Show logging message into screen, default is %(default)s')
+    group_basic.add_argument('-f', '--frontend', metavar='mode', action='store', default='text-single', dest='frontend',
                              help='Choose game frontend, default is "%(default)s"')
     group_basic.add_argument('-u', '--user', metavar='name', action='store', default=None, dest='user_id_or_name',
                              help='User name, default is %(default)s, will override value of "--uid"')
@@ -35,18 +36,17 @@ def main():
     load_arg_config({
         'Frontend': args.frontend,
         'Logging': {
-            'Level': args.debug_level,
+            'Level': args.debug_level.upper(),
+            'ScreenLog': args.screen_log,
         }
     })
 
     # [NOTE]: The import of C must after the loading of arg config.
     from .utils.constants import C
-    from .utils.message import set_debug_level, debug, verbose
+    from .utils.message import setup_logging
     from .ui import get_frontend
 
-    set_debug_level(C.Logging.Level)
-
-    verbose(C)
+    setup_logging(level=C.Logging.Level, scr_log=C.Logging.ScreenLog)
 
     frontend = get_frontend(C.Frontend)(user_id_or_name=args.user_id_or_name)
     sys.exit(frontend.main())

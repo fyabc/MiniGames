@@ -49,6 +49,11 @@ class Card(GameEntity, metaclass=SetDataMeta):
     def rarity(self):
         return self.data['rarity']
 
+    @property
+    def have_target(self):
+        # todo: This attribute may be changed in game, e.g. combo cards. Must calculate this.
+        return self.data['have_target']
+
 
 class Minion(Card):
     """The class of minion."""

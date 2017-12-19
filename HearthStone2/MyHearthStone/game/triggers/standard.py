@@ -13,7 +13,7 @@ from .play import *
 from .damage import *
 from .trigger import StandardBeforeTrigger
 from ...utils.constants import C
-from ...utils.message import message
+from ...utils.message import debug
 
 __author__ = 'fyabc'
 
@@ -24,7 +24,7 @@ class StdGameBegin(StandardBeforeTrigger):
     respond = [standard.BeginOfGame]
 
     def process(self, event):
-        message('Game Start!'.center(C.Logging.Width, '='))
+        debug('Game Start!'.center(C.Logging.Width, '='))
         event.message()
 
         return []
@@ -36,7 +36,7 @@ class StdTurnBegin(StandardBeforeTrigger):
     respond = [standard.BeginOfTurn]
 
     def process(self, event: respond[0]):
-        message('Turn Begin!'.center(C.Logging.Width, '-'))
+        debug('Turn Begin!'.center(C.Logging.Width, '-'))
         self.game.new_turn()
         event.message()
 
@@ -60,7 +60,7 @@ class StdDrawCard(StandardBeforeTrigger):
         # Tire damage
         if not self.game.decks[player_id]:
             event.message()
-            message('Deck empty, take tire damage!')
+            debug('Deck empty, take tire damage!')
             event.disable()
             self.game.tire_counters[player_id] += 1
             return standard.damage_events(self.game, self.owner, self.game.heroes[player_id],

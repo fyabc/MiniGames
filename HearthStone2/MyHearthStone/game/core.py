@@ -8,7 +8,7 @@ from .events.standard import game_begin_standard_events, DeathPhase
 from .events.event import Event
 from ..utils.constants import C
 from ..utils.game import order_of_play, Zone
-from ..utils.message import debug, message, error
+from ..utils.message import message, debug, error, info
 from ..utils.package_io import all_cards, all_heroes
 
 __author__ = 'fyabc'
@@ -115,9 +115,11 @@ class Game:
         # Key: uuid, user_id; Value: frontend, player_id
         self.frontends = {}
 
-        self.error_stub = error
+        self.error_stub = kwargs.pop('error_stub', error)
 
-        # todo: game counters (for tasks)
+        # todo: game counters (for tasks) and history loggers
+        # All history events. Store in `Event` instance or its string representation?
+        self.event_history = []
 
     ########################
     # Event engine methods #
@@ -145,8 +147,7 @@ class Game:
         self.resolve_events(player_action.phases(), 0)
 
         if self.game_result is not None:
-            debug('Game end in result {}.'.format(self.game_result))
-            self.running = False
+            self.end_game()
         return self.game_result
 
     def resolve_events(self, events, depth=0):
@@ -169,6 +170,9 @@ class Game:
             e = events[i]
 
             if isinstance(e, Event):
+                # Log history.
+                self.event_history.append(e)
+
                 # Get all related triggers, then check their conditions and sort them in order of play.
                 related_triggers = set()
                 for event_type in e.ancestors():
@@ -277,6 +281,9 @@ class Game:
 
         self.mode = mode
         self.running = True
+        info('Start a new game: {}'.format(self))
+
+        self.event_history.clear()
 
         start_player = random.randint(0, 1)
 
@@ -324,6 +331,7 @@ class Game:
 
     def end_game(self):
         # TODO: add more clean here?
+        debug('{} end in result {}.'.format(self, self.game_result))
         self.running = False
 
     def summon_resolution(self):
@@ -484,7 +492,7 @@ class Game:
             del fz[from_index]
 
         if (from_zone, from_index) != (to_zone, to_index) and self.full(to_zone, to_player):
-            message('{} full!'.format(Zone.Idx2Str[to_zone]))
+            debug('{} full!'.format(Zone.Idx2Str[to_zone]))
 
             if from_zone == Zone.Play:
                 # todo: trigger some events, such as minion death, etc.
@@ -516,7 +524,7 @@ class Game:
 
         # If the play board is full, do nothing.
         if self.full(to_zone, to_player):
-            message('{} full!'.format(Zone.Idx2Str[to_zone]))
+            debug('{} full!'.format(Zone.Idx2Str[to_zone]))
             return None, False, []
 
         if isinstance(entity, int):
@@ -604,9 +612,9 @@ class Game:
             return self.graveyards[player_id]
         raise ValueError('Does not have zone {}'.format(zone))
 
-    def show_details(self, level='message'):
+    def show_details(self, level='INFO'):
         def _msg(*args, **kwargs):
-            message(*args, **kwargs, level=level)
+            message(level, *args, **kwargs)
         _msg('Game details'.center(C.Logging.Width, '='))
         _msg('Turn: {} Current player: {}'.format(self.n_turns, self.current_player))
         for player_id in range(2):

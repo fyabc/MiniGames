@@ -28,9 +28,6 @@ def error_and_stop(game, event, msg):
     game.stop_subsequent_phases()
 
 
-# TODO: change these classes into ``enum.IntEnum``?
-
-
 class Type:
     """An enumeration class, contains card types."""
 
@@ -40,7 +37,15 @@ class Type:
     HeroCard = 3
     Permanent = 4   # Permanent card, such as the seed of 'Sherazin, Corpse Flower'.
 
-    # todo
+    Str2Idx = {
+        'Minion': Minion,
+        'Spell': Spell,
+        'Weapon': Weapon,
+        'HeroCard': HeroCard,
+        'Permanent': Permanent,
+    }
+
+    Idx2Str = {v: k for k, v in Str2Idx.items()}
 
 
 class Zone:

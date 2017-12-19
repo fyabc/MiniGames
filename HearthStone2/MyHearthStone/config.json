@@ -16,7 +16,8 @@
     "UserExtensionPaths": [],
 
     "Logging": {
-        "Level": "common",
+        "Level": "INFO",
+        "ScreenLog": false,
         "Width": 80
     },
 
@@ -41,5 +42,12 @@
         // Start hand card number.
         "StartCardOffensive": 3,
         "StartCardDefensive": 4
+    },
+
+    "UI": {
+        "Cocos": {
+            // Window width and height.
+            "WindowSize": [1280, 700]
+        }
     }
 }

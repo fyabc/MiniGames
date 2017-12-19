@@ -11,7 +11,7 @@ from ...game import player_action as pa
 from ..frontend import Frontend
 from ...utils.constants import C
 from ...utils.game import Klass, Zone
-from ...utils.message import error, note
+from ...utils.message import error, info
 from ...utils.package_io import search_by_name, all_cards
 from ...utils.cocos_draw import draw_game
 
@@ -99,12 +99,22 @@ Welcome to HearthStone (single player text mode).
         self.prompt = self.prompt_pattern.format(self.state, player_str)
         return stop
 
-    @staticmethod
-    def do_quit(arg):
+    def do_quit(self, arg):
         """\
 Terminate the application.
 Syntax: q | quit | exit\
 """
+        if self.state == self.StateGame:
+            while True:
+                confirm = input('The game is running. Are you sure to concede? (y/n) ').lower()
+                if confirm == 'y':
+                    self.game.run_player_action(pa.Concede(self.game))
+                    return True
+                elif confirm == 'n':
+                    info('Nothing happens.')
+                    return
+                else:
+                    pass
         return True
 
     do_exit = do_q = do_quit
@@ -221,7 +231,7 @@ Syntax: q | quit | exit\
             card_id_list = sorted(card_id_list)
 
             decks.append(Deck(klass=klass, card_id_list=card_id_list, name=name))
-            note('Create new deck: {}[{}]'.format(name, klass_name))
+            info('Create new deck: {}[{}]'.format(name, klass_name))
         elif args.action == 'delete':
             if args.name is not None:
                 try:
@@ -237,11 +247,11 @@ Syntax: q | quit | exit\
             while True:
                 confirm = input('> Delete deck {} {}, confirm? (y/n) '.format(index, decks[index])).lower()
                 if confirm == 'y':
-                    note('Deck {} {} deleted.'.format(index, decks[index]))
+                    info('Deck {} {} deleted.'.format(index, decks[index]))
                     del decks[index]
                     return
                 elif confirm == 'n':
-                    note('Nothing happens.')
+                    info('Nothing happens.')
                     return
                 else:
                     pass
@@ -338,6 +348,8 @@ Syntax: q | quit | exit\
 
         self.game.run_player_action(pa.TurnEnd(self.game))
 
+        self._update_state()
+
     do_te = do_turnend
 
     def do_concede(self, arg):
@@ -345,6 +357,8 @@ Syntax: q | quit | exit\
             return
 
         self.game.run_player_action(pa.Concede(self.game))
+
+        self._update_state()
 
     def do_play(self, arg):
         if not self._check_state(self.StateGame):
@@ -359,13 +373,26 @@ Syntax: q | quit | exit\
             print('This command must run in mode {!r}.'.format(state))
         return result
 
+    def _update_state(self):
+        if self.state == self.StateGame:
+            if not self.game.running:
+                self.state = self.StateMain
+
 
 class TextSingleFrontend(Frontend):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.game = Game(frontend=self)
+        self.game = Game(
+            frontend=self,
+            error_stub=self.game_error,
+        )
         self.session = TextSingleSession(self)
+
+    @staticmethod
+    def game_error(*args, **kwargs):
+        print('Game error: ', end='')
+        print(*args, **kwargs)
 
     def _main(self):
         self.session.cmdloop()

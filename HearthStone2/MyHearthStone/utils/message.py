@@ -3,72 +3,70 @@
 
 """Utilities for output message."""
 
-# TODO: Add logging file into it (using `logging` module)
-
+import os as _os
+import logging as _logging
 from time import time as _time
 from functools import partial as _partial
 from contextlib import contextmanager as _cm
 
+from ..utils.constants import UserLogPath, C
+
 __author__ = 'fyabc'
 
 # Debug levels.
-LEVEL_DEBUG = 0
-LEVEL_VERBOSE = 1
-LEVEL_INFO = 2
-LEVEL_COMMON = 3
-LEVEL_NOTE = 3
-LEVEL_WARNING = 4
-LEVEL_ERROR = 5
-
-_DebugLevelNames = {
-    'debug': LEVEL_DEBUG,
-    'verbose': LEVEL_VERBOSE,
-    'info': LEVEL_INFO,
-    'common': LEVEL_COMMON,
-    'note': LEVEL_NOTE,
-    'warning': LEVEL_WARNING,
-    'error': LEVEL_ERROR,
-}
-
-_debug_level = LEVEL_COMMON
+LEVEL_DEBUG = _logging.DEBUG
+LEVEL_VERBOSE = 15
+LEVEL_INFO = _logging.INFO
+LEVEL_WARNING = _logging.WARNING
+LEVEL_ERROR = _logging.ERROR
+LEVEL_CRITICAL = _logging.CRITICAL
 
 
-def set_debug_level(new_level):
-    global _debug_level
+def _get_handler(level=_logging.INFO, file=None, fmt=None, datefmt=None):
+    if file is None:
+        handler = _logging.StreamHandler()
+    else:
+        handler = _logging.FileHandler(file)
+    handler.setFormatter(_logging.Formatter(fmt=fmt, datefmt=datefmt, style='{'))
+    handler.setLevel(level)
 
-    if isinstance(new_level, str):
-        new_level = _DebugLevelNames.get(new_level.lower(), _debug_level)
-
-    _debug_level = new_level
-
-
-def get_debug_level():
-    return _debug_level
+    return handler
 
 
-def message(*args, **kwargs):
-    level = kwargs.pop('level', LEVEL_INFO)
-    if isinstance(level, str):
-        level = _DebugLevelNames.get(level.lower(), _debug_level)
-    if level >= _debug_level:
-        print(*args, **kwargs)
+def setup_logging(file='log.txt', level=_logging.INFO, scr_log=False):
+    """Setup logging. This function will setup some loggers and print some initial message."""
+    _logging.addLevelName(15, 'VERBOSE')
+    _logging.addLevelName(25, 'NOTE')
+    _logging.addLevelName(25, 'COMMON')
+
+    handlers = [
+        _get_handler(level=level, file=_os.path.join(UserLogPath, file),
+                     fmt='[{levelname:<8}] {asctime}.{msecs:.0f}: <{pathname}:{lineno}> {message}',
+                     datefmt='%Y-%m-%d %H:%M:%S')]
+    if scr_log:
+        handlers.append(_get_handler(level='DEBUG', file=None, fmt='[{levelname:<8}] <{filename}:{lineno}> {message}'))
+    _logging.basicConfig(level=_logging.DEBUG, handlers=handlers)
+
+    info('Start the app')
+    info('Game config: {}'.format(C))
 
 
-debug = _partial(message, level=LEVEL_DEBUG)
-verbose = _partial(message, level=LEVEL_VERBOSE)
-info = _partial(message, level=LEVEL_INFO)
-note = _partial(message, level=LEVEL_NOTE)
-warning = _partial(message, level=LEVEL_WARNING)
-error = _partial(message, level=LEVEL_ERROR)
+message = _logging.log
+debug = _logging.debug
+verbose = _partial(message, LEVEL_VERBOSE)
+info = _logging.info
+warning = _logging.warning
+error = _logging.error
+critical = _logging.critical
 
 
 @_cm
 def msg_block(msg, level=LEVEL_INFO, log_time=True):
     if log_time:
         start_time = _time()
-    message('{}... '.format(msg), end='', level=level)
+    message(level, '{}... '.format(msg))
     yield
-    message('Done{}'.format(', time: {:.4f}s'.format(_time() - start_time) if log_time else ''), level=level)
+    message(level, '{} done{}'.format(msg, ', time: {:.4f}s'.format(_time() - start_time) if log_time else ''))
 
 
 def entity_message(self, kwargs, prefix=''):

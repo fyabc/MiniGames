@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ...utils.message import message, entity_message
+from ...utils.message import debug, entity_message
 
 __author__ = 'fyabc'
 
@@ -42,7 +42,7 @@ class Event:
         return getattr(cls, '_ancestors')
 
     def message(self, **kwargs):
-        message(entity_message(self, kwargs, prefix='@'))
+        debug(entity_message(self, kwargs, prefix='@'))
 
     def disable(self):
         self.enable = False

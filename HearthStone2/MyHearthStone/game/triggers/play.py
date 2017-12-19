@@ -125,7 +125,7 @@ class StdOnPlayMinion(StandardBeforeTrigger):
 
         self.game.summon_events.add(standard.Summon(self.game, event.minion, player_id))
 
-        # [NOTE]: move it to ``Game.move``?
+        # [NOTE]: move it to `Game.move`?
         event.minion.oop = self.game.inc_oop()
 
         self.game.move(player_id, Zone.Hand, event.minion, player_id, Zone.Play, event.loc)

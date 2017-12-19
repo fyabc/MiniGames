@@ -5,7 +5,7 @@ import socket
 import threading
 
 from . import utils
-from ..utils.message import message, error
+from ..utils.message import info, error
 
 __author__ = 'fyabc'
 
@@ -62,7 +62,7 @@ class LanClient:
     def parse_msg(self, msg):
         msg_type = msg['type']
         if msg_type == 'text':
-            message(msg['text'])
+            info(msg['text'])
         elif msg_type == 'error':
             error(msg['text'])
         elif msg_type == 'ok':

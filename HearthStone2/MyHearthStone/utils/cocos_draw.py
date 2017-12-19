@@ -49,6 +49,26 @@ def _render_desc(description, **kwargs):
            '</font>'.format_map(format_map)
 
 
+class SelectionManager:
+    """The state machine of selection manager."""
+
+    Idle = 'idle'
+    LookCard = 'look_card'
+    SelectCard = 'select_card'
+    PutMinion = 'put_minion'
+    SelectTarget = 'select_target'
+
+    def __init__(self, board):
+        self.board = board
+        self.state = self.Idle
+        self.active_card = None
+
+    def reset(self):
+        """Right click to reset to the initial state."""
+        self.state = self.Idle
+        self.active_card = None
+
+
 class CardSprite(Sprite):
     def __init__(self, card: Card, position=(0, 0), scale=1, hidden=False):
         card_image_name = '{}-{}.png'.format(Klass.Idx2Str[card.klass], card.type)
@@ -221,7 +241,6 @@ class HSGameBoard(layer.Layer):
         super(HSGameBoard, self).__init__()
 
         self.cards = []
-        self.active_card = None
 
         # Players. P0 is current player (show in bottom), P1 is current player (show in top, hide something)
         players = game.current_player, 1 - game.current_player
@@ -279,6 +298,9 @@ class HSGameBoard(layer.Layer):
 
         # Plays.
 
+        # Variables for selection.
+        self.active_card = None
+
     def on_key_press(self, key, modifiers):
         """Process key press events."""
         # todo
@@ -314,6 +336,13 @@ class HSGameBoard(layer.Layer):
                 else:
                     pass
         self.active_card = new_active_card
+
+    def on_mouse_press(self, x, y, buttons, modifiers):
+        print('$', x, y, buttons, modifiers)
+        pass
+
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        pass
 
 
 def preprocess():

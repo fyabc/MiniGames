@@ -35,12 +35,15 @@ UserDataPath = UserDirectory.user_data_dir
 # [NOTE] Users under the same system user directory share the same user config file.
 UserConfigFilename = _os.path.join(UserDirectory.user_config_dir, ConfigFilename)
 UserListFilename = _os.path.join(UserDataPath, 'users.json')
+UserLogPath = UserDirectory.user_log_dir
 
 
 if not _os.path.exists(UserDirectory.user_config_dir):
     _os.makedirs(UserDirectory.user_config_dir)
 if not _os.path.exists(UserDataPath):
     _os.makedirs(UserDataPath)
+if not _os.path.exists(UserLogPath):
+    _os.makedirs(UserLogPath)
 
 
 class _Config(dict):
