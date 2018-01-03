@@ -41,14 +41,14 @@ def setup_logging(file='log.txt', level=_logging.INFO, scr_log=False):
 
     handlers = [
         _get_handler(level=level, file=_os.path.join(UserLogPath, file),
-                     fmt='[{levelname:<8}] {asctime}.{msecs:.0f}: <{pathname}:{lineno}> {message}',
+                     fmt='[{levelname:<8}] {asctime}.{msecs:0>3.0f}: <{pathname}:{lineno}> {message}',
                      datefmt='%Y-%m-%d %H:%M:%S')]
     if scr_log:
         handlers.append(_get_handler(level='DEBUG', file=None, fmt='[{levelname:<8}] <{filename}:{lineno}> {message}'))
     _logging.basicConfig(level=_logging.DEBUG, handlers=handlers)
 
     info('Start the app')
-    info('Game config: {}'.format(C))
+    info('App config: {}'.format(C))
 
 
 message = _logging.log
@@ -66,7 +66,7 @@ def msg_block(msg, level=LEVEL_INFO, log_time=True):
         start_time = _time()
     message(level, '{}... '.format(msg))
     yield
-    message(level, '{} done{}'.format(msg, ', time: {:.4f}s'.format(_time() - start_time) if log_time else ''))
+    message(level, '{} done{}.'.format(msg, ', time: {:.4f}s'.format(_time() - start_time) if log_time else ''))
 
 
 def entity_message(self, kwargs, prefix=''):

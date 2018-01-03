@@ -665,6 +665,12 @@ Colors = {
     'brown1': (255, 64, 64, 255),
 }
 
+
+# TODO: Change this into loading font from config.
+DefaultFont = 'Arial'
+
+
 __all__ = [
     'Colors',
+    'DefaultFont',
 ]

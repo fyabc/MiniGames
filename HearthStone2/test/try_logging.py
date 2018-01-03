@@ -10,7 +10,7 @@ def main():
     logging.basicConfig(
         level='INFO',
         style='{',
-        format='[{levelname:<8}] {asctime}.{msecs:.0f}: <{pathname}:{lineno}> {message}',
+        format='[{levelname:<8}] {asctime}.{msecs:0>3.0f}: <{pathname}:{lineno}> {message}',
         datefmt='%Y-%m-%d %H:%M:%S',
     )
     logging.addLevelName(25, 'COMMON')

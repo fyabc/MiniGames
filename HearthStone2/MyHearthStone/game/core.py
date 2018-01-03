@@ -311,6 +311,7 @@ class Game:
         replaces = yield
         for player_id, replace in enumerate(replaces):
             replace = sorted(set(replace))  # Get sorted unique elements
+            debug('Replace hand {} of player {}'.format(replace, player_id))
             replace_index = random.sample(list(range(len(self.decks[player_id]))), k=len(replace))
             for hand_index, deck_index in zip(replace, replace_index):
                 self.decks[player_id][deck_index], self.hands[player_id][hand_index] = \

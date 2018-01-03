@@ -225,4 +225,5 @@ def search_by_name(name):
 __all__ = [
     'all_cards',
     'all_heroes',
+    'search_by_name',
 ]
