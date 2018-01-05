@@ -222,8 +222,15 @@ def search_by_name(name):
     return None
 
 
+def reload_packages(force=False):
+    global _AllCards, _AllHeroes, _AllGameData
+    if force or _AllCards is None or _AllHeroes is None or _AllGameData is None:
+        _AllCards, _AllHeroes, _AllGameData = _load_packages()
+
+
 __all__ = [
     'all_cards',
     'all_heroes',
     'search_by_name',
+    'reload_packages',
 ]

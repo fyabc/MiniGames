@@ -46,11 +46,11 @@ if not _os.path.exists(UserLogPath):
     _os.makedirs(UserLogPath)
 
 
-class _Config(dict):
+class Configuration(dict):
     def __getattr__(self, item):
         value = self[item]
         if isinstance(value, dict):
-            return _Config(value)
+            return Configuration(value)
         return self[item]
 
     def __setattr__(self, key, value):
@@ -58,6 +58,9 @@ class _Config(dict):
 
     def __setitem__(self, key, value):
         raise Exception('Cannot change the value of configuration')
+
+    def to_dict(self):
+        return dict(self)
 
 
 def _update_config(old_config, new_config):
@@ -101,20 +104,18 @@ def _load_config(config_filename):
 # [NOTE] Load system config and user config when loading the module, argument config is loaded by user.
 _config_dict = _load_config(SystemConfigFilename)
 _update_config(_config_dict, _load_config(UserConfigFilename))
-Config = _Config(_config_dict)
-C = Config
+C = Configuration(_config_dict)
 
 
 def load_arg_config(arg_config):
     """Update project configuration from arguments."""
 
-    global C, Config
+    global C
 
     config = dict(C)
     _update_config(config, arg_config)
 
-    result = _Config(config)
-    Config = result
+    result = Configuration(config)
     C = result
 
     return result

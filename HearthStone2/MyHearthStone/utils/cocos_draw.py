@@ -16,6 +16,7 @@ from .draw.constants import Colors
 from ..game.core import Game
 from ..game.card import Card, Minion, Spell, Weapon, HeroCard
 from ..utils.constants import get_package_paths
+from ..utils import constants
 
 __author__ = 'fyabc'
 
@@ -342,6 +343,17 @@ def draw_game(game, **kwargs):
     :return:
     """
 
+    if kwargs.pop('subprocess', False):
+        # Do some initialization in the new process.
+
+        # Overwrite global configuration with the configuration from parent process.
+        config_dict = kwargs.pop('config_dict', None)
+        if config_dict is not None:
+            constants.C = constants.Configuration(config_dict)
+
+        from ..utils.package_io import reload_packages
+        reload_packages()
+
     try:
         preprocess()
 
@@ -370,8 +382,8 @@ def draw_game_spawn(game, **kwargs):
     1. See <http://python.cocos2d.org/doc/programming_guide/threading_and_multiprocessing.html>
         It says, when using multiprocessing, import cocos and pyglet in only one process.
         (But Not any error in this case when import them in main process?)
-
     2. The passed arguments must be pickleable. (The `Game` class implements `__getstate__` and `__setstate__`).
+    3. The dynamic package loading will not run automatically in the sub-process, need to force it.
 
     :param game:
     :param kwargs:
@@ -379,6 +391,10 @@ def draw_game_spawn(game, **kwargs):
     """
 
     orig_sys_path = sys.path.copy()
+
+    # Force package reload in the subprocess.
+    kwargs['subprocess'] = True
+    kwargs['config_dict'] = constants.C.to_dict()
 
     # NOTE: Must extend package paths, or the initializer of Process cannot found the module of packages.
     sys.path.extend(get_package_paths())

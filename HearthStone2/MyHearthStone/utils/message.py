@@ -39,6 +39,7 @@ def setup_logging(file='log.txt', level=_logging.INFO, scr_log=False):
     _logging.addLevelName(25, 'NOTE')
     _logging.addLevelName(25, 'COMMON')
 
+    # TODO: add pid into logging format?
     handlers = [
         _get_handler(level=level, file=_os.path.join(UserLogPath, file),
                      fmt='[{levelname:<8}] {asctime}.{msecs:0>3.0f}: <{pathname}:{lineno}> {message}',
