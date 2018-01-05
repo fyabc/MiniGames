@@ -13,16 +13,11 @@ from cocos.scenes import transitions
 import pyglet
 
 from .utils import set_menu_style
+from .background_layer import BackgroundLayer
+
 from ...utils.constants import C
 
 __author__ = 'fyabc'
-
-
-class BackgroundLayer(layer.Layer):
-    def __init__(self):
-        super(BackgroundLayer, self).__init__()
-
-        # Add more other things here
 
 
 class MainMenu(menu.Menu):
@@ -56,7 +51,7 @@ class MainMenu(menu.Menu):
         # TODO: start a new game.
 
     def on_deck(self):
-        director.director.replace(transitions.SlideInLTransition(self.ctrl.deck_scene, duration=1.2))
+        director.director.replace(transitions.SlideInLTransition(self.ctrl.scenes['collection'], duration=1.2))
 
     def on_options(self):
         self.parent.switch_to(1)

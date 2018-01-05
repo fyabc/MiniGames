@@ -54,7 +54,7 @@ class Game:
         # Buffer to get player of next turn, used by `_next_player()`.
         # Triggers can change this buffer to implement the effect of 'extra turn', etc.
         self.player_buffer = [None]
-        self.__player_iter = self.__player_generator()
+        self._player_iter = self._player_generator()
 
         # Heroes.
         self.heroes = [None for _ in range(2)]  # Change it into lists?
@@ -430,9 +430,9 @@ class Game:
         :return: The next player id.
         """
 
-        return next(self.__player_iter)
+        return next(self._player_iter)
 
-    def __player_generator(self):
+    def _player_generator(self):
         while True:
             if not self.player_buffer:
                 # Normal: change player
@@ -575,6 +575,15 @@ class Game:
 
     def __repr__(self):
         return 'Game(mode={})'.format(self.mode)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['_player_iter']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._player_iter = self._player_generator()
 
     def full(self, zone, player_id):
         if zone == Zone.Deck:

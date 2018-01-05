@@ -13,7 +13,7 @@ from ...utils.constants import C
 from ...utils.game import Klass, Zone
 from ...utils.message import error, info
 from ...utils.package_io import search_by_name, all_cards
-from ...utils.cocos_draw import draw_game
+from ...utils.cocos_draw import draw_game, draw_game_spawn
 
 __author__ = 'fyabc'
 
@@ -85,6 +85,10 @@ Welcome to HearthStone (single player text mode).
                                  help='Name of deck 2.')
         deck2_group.add_argument('-y', '--id2', action='store', dest='deck2_id', metavar='N', type=int, default=None,
                                  help='Index of deck 2.')
+
+        self.parser_draw = NoExitParser(prog='draw')
+        self.parser_draw.add_argument('-S', '--no-spawn', action='store_false', dest='spawn', default=True,
+                                      help='Do not spawn a new process, default will spawn.')
 
     def emptyline(self):
         """Do nothing when enter an empty line."""
@@ -339,7 +343,18 @@ Syntax: q | quit | exit\
         self.parser_game.print_help()
 
     def do_draw(self, arg):
-        draw_game(self.frontend.game)
+        try:
+            args = self.parser_draw.parse_args(shlex.split(arg))
+        except ParserExit:
+            return
+
+        if args.spawn:
+            draw_game_spawn(self.frontend.game)
+        else:
+            draw_game(self.frontend.game)
+
+    def help_draw(self):
+        self.parser_draw.print_help()
 
     # Player actions.
     def do_turnend(self, arg):

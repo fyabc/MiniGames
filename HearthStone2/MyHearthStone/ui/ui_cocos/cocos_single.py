@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from pyglet import resource
-from cocos import director, layer, scene
+from cocos import director
 
 from .main_scene import get_main_scene
+from .collection_scene import get_collection_scene
 from ...game.core import Game
 from ..frontend import Frontend
 from ...utils.constants import C
@@ -28,6 +29,8 @@ class CocosSingleFrontend(Frontend):
             frontend=self,
         )
 
+        self.scenes = {}
+
     def _main(self):
         self.preprocess()
 
@@ -39,10 +42,10 @@ class CocosSingleFrontend(Frontend):
             height=self.Height,
         )
 
-        # TODO: NEXT: Add scenes
-        self.main_scene = get_main_scene(self)
+        self.scenes['main'] = get_main_scene(self)
+        self.scenes['collection'] = get_collection_scene(self)
 
-        director.director.run(self.main_scene)
+        director.director.run(self.scenes['main'])
 
     def preprocess(self):
         ResourcePath = 'F:/DIYs/HearthStone/Resources'

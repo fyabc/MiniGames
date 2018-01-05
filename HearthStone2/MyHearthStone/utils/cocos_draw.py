@@ -1,7 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""Draw HearthStone game board using cocos2d."""
+"""Draw HearthStone game board using cocos2d (only for seen)."""
+
+import sys
+from multiprocessing import Process
 
 from cocos import scene, layer, text, director, draw, actions
 from cocos.sprite import Sprite
@@ -12,6 +15,7 @@ from .game import Zone, Klass, Type, Rarity
 from .draw.constants import Colors
 from ..game.core import Game
 from ..game.card import Card, Minion, Spell, Weapon, HeroCard
+from ..utils.constants import get_package_paths
 
 __author__ = 'fyabc'
 
@@ -47,26 +51,6 @@ def _render_desc(description, **kwargs):
     return '<font size="{font_size}" color="{color}">' \
            '{description}' \
            '</font>'.format_map(format_map)
-
-
-class SelectionManager:
-    """The state machine of selection manager."""
-
-    Idle = 'idle'
-    LookCard = 'look_card'
-    SelectCard = 'select_card'
-    PutMinion = 'put_minion'
-    SelectTarget = 'select_target'
-
-    def __init__(self, board):
-        self.board = board
-        self.state = self.Idle
-        self.active_card = None
-
-    def reset(self):
-        """Right click to reset to the initial state."""
-        self.state = self.Idle
-        self.active_card = None
 
 
 class CardSprite(Sprite):
@@ -303,7 +287,6 @@ class HSGameBoard(layer.Layer):
 
     def on_key_press(self, key, modifiers):
         """Process key press events."""
-        # todo
 
         if key == pyglet.window.key.ESCAPE:
             # The default action on ESCAPE (`pyglet.app.exit`) will cause crush.
@@ -337,13 +320,6 @@ class HSGameBoard(layer.Layer):
                     pass
         self.active_card = new_active_card
 
-    def on_mouse_press(self, x, y, buttons, modifiers):
-        print('$', x, y, buttons, modifiers)
-        pass
-
-    def on_mouse_release(self, x, y, buttons, modifiers):
-        pass
-
 
 def preprocess():
     ResourcePath = 'F:/DIYs/HearthStone/Resources'
@@ -360,8 +336,6 @@ def preprocess():
 
 def draw_game(game, **kwargs):
     """Draw the game board using cocos2d.
-
-    [NOTE]: The multiprocessing run will cause `ImportError`, so just run in main process now.
 
     :param game:
     :param kwargs:
@@ -388,6 +362,35 @@ def draw_game(game, **kwargs):
         director.director.window.close()
 
 
+def draw_game_spawn(game, **kwargs):
+    """Spawn a new sub-process to draw the game board using cocos2d.
+
+    [NOTE]: Something about cocos and multiprocessing
+
+    1. See <http://python.cocos2d.org/doc/programming_guide/threading_and_multiprocessing.html>
+        It says, when using multiprocessing, import cocos and pyglet in only one process.
+        (But Not any error in this case when import them in main process?)
+
+    2. The passed arguments must be pickleable. (The `Game` class implements `__getstate__` and `__setstate__`).
+
+    :param game:
+    :param kwargs:
+    :return:
+    """
+
+    orig_sys_path = sys.path.copy()
+
+    # NOTE: Must extend package paths, or the initializer of Process cannot found the module of packages.
+    sys.path.extend(get_package_paths())
+    try:
+        t = Process(target=draw_game, args=(game,), kwargs=kwargs)
+        t.start()
+    finally:
+        # NOTE: This must after `t.start()`.
+        sys.path = orig_sys_path
+
+
 __all__ = [
     'draw_game',
+    'draw_game_spawn',
 ]
