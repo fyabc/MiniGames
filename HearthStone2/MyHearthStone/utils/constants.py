@@ -10,6 +10,8 @@ from collections import namedtuple as _namedtuple
 
 from appdirs import AppDirs as _AppDirs
 
+from .config_class import Configuration as _ConfigType
+
 __author__ = 'fyabc'
 
 
@@ -46,44 +48,6 @@ if not _os.path.exists(UserLogPath):
     _os.makedirs(UserLogPath)
 
 
-class Configuration(dict):
-    def __getattr__(self, item):
-        value = self[item]
-        if isinstance(value, dict):
-            return Configuration(value)
-        return self[item]
-
-    def __setattr__(self, key, value):
-        raise Exception('Cannot change the value of configuration')
-
-    def __setitem__(self, key, value):
-        raise Exception('Cannot change the value of configuration')
-
-    def to_dict(self):
-        return dict(self)
-
-
-def _update_config(old_config, new_config):
-    """Update config. It will update each key recursively if the value is a dict.
-
-    :param old_config: dict
-    :param new_config: dict
-    :return: None
-    """
-
-    for key, value in new_config.items():
-        if key not in old_config:
-            old_config[key] = value
-        else:
-            old_value = old_config[key]
-            if isinstance(old_value, dict) and isinstance(value, dict):
-                _update_config(old_value, value)
-            elif not isinstance(old_value, dict) and not isinstance(value, dict):
-                old_config[key] = value
-            else:
-                raise ValueError('Type mismatch in config update: "{}" vs "{}"'.format(type(old_value), type(value)))
-
-
 def _load_config(config_filename):
     """Load JSON config file and remove line comments."""
 
@@ -102,23 +66,14 @@ def _load_config(config_filename):
 
 # Project config.
 # [NOTE] Load system config and user config when loading the module, argument config is loaded by user.
-_config_dict = _load_config(SystemConfigFilename)
-_update_config(_config_dict, _load_config(UserConfigFilename))
-C = Configuration(_config_dict)
+C = _ConfigType.from_dict(_load_config(SystemConfigFilename))
+C.iter_update(_ConfigType.from_dict(_load_config(UserConfigFilename)))
 
 
-def load_arg_config(arg_config):
+def load_arg_config(arg_config: dict):
     """Update project configuration from arguments."""
 
-    global C
-
-    config = dict(C)
-    _update_config(config, arg_config)
-
-    result = Configuration(config)
-    C = result
-
-    return result
+    C.iter_update(_ConfigType.from_dict(arg_config))
 
 
 # Package data path list

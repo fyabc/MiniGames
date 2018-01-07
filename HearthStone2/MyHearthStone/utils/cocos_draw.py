@@ -347,9 +347,9 @@ def draw_game(game, **kwargs):
         # Do some initialization in the new process.
 
         # Overwrite global configuration with the configuration from parent process.
-        config_dict = kwargs.pop('config_dict', None)
-        if config_dict is not None:
-            constants.C = constants.Configuration(config_dict)
+        parent_config = kwargs.pop('parent_config', None)
+        if parent_config is not None:
+            constants.C = parent_config
 
         from ..utils.package_io import reload_packages
         reload_packages()
@@ -394,7 +394,7 @@ def draw_game_spawn(game, **kwargs):
 
     # Force package reload in the subprocess.
     kwargs['subprocess'] = True
-    kwargs['config_dict'] = constants.C.to_dict()
+    kwargs['parent_config'] = constants.C
 
     # NOTE: Must extend package paths, or the initializer of Process cannot found the module of packages.
     sys.path.extend(get_package_paths())

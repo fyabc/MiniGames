@@ -50,15 +50,12 @@ class Frontend:
     def create_server(self):
         pass
 
-    def run(self):
-        pass
-
     def finalize(self):
-        info('Saving user information...')
-        self.user.dump()
-        info('Save use information done')
-
         if self._hold_lock_file:
+            info('Saving user information...')
+            self.user.dump()
+            info('Save use information done')
+
             try:
                 os.remove(self.__lock_filename())
             except FileNotFoundError:

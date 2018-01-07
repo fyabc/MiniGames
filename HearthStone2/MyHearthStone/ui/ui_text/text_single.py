@@ -412,9 +412,6 @@ class TextSingleFrontend(Frontend):
     def _main(self):
         self.session.cmdloop()
 
-    def run(self):
-        pass
-
 
 __all__ = [
     'TextSingleFrontend',
