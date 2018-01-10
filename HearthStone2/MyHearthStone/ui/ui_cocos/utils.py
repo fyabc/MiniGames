@@ -5,6 +5,18 @@ from ...utils.draw.constants import Colors, DefaultFont
 
 __author__ = 'fyabc'
 
+_Width, _Height = None, None
+
+
+def pos(x, y, base=None, scale=1.0):
+    if base is not None:
+        return base[0] * x * scale, base[1] * y * scale
+    global _Width, _Height
+    if _Width is None:
+        from cocos import director
+        _Width, _Height = director.director.get_window_size()
+    return _Width * x * scale, _Height * y * scale
+
 
 def set_menu_style(self, **kwargs):
     # you can override the font that will be used for the title and the items
@@ -25,3 +37,11 @@ def set_menu_style(self, **kwargs):
     self.font_item_selected['font_name'] = 'Arial'
     self.font_item_selected['color'] = Colors['green1']
     self.font_item_selected['font_size'] = selected_size
+
+
+__all__ = [
+    'Colors',
+    'DefaultFont',
+    'pos',
+    'set_menu_style',
+]

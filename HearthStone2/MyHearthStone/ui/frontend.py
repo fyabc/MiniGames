@@ -63,7 +63,7 @@ class Frontend:
             else:
                 info('User lock file removed')
 
-        info('App exited')
+        info('App exited\n')
 
     def __check_user_locked(self):
         if os.path.exists(self.__lock_filename()):
