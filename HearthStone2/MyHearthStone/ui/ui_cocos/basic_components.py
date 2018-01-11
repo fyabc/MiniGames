@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import layer, text, rect
+from cocos import layer, text, rect, director, menu, actions
 
 from .utils import pos, DefaultFont, Colors
 
@@ -9,13 +9,21 @@ __author__ = 'fyabc'
 
 
 class ActiveLabel(text.Label):
-    def __init__(self, text='', position=(0, 0), callback=None, stop_event=False, **kwargs):
+    def __init__(self, text='', position=(0, 0),
+                 callback=None, stop_event=False,
+                 selected_effect=None, unselected_effect=None, activated_effect=None,
+                 **kwargs):
         self.callback = callback
         self.callback_args = kwargs.pop('callback_args', ())
         self.callback_kwargs = kwargs.pop('callback_kwargs', {})
         self.stop_event = stop_event
 
         super().__init__(text=text, position=position, **kwargs)
+
+        self.selected_effect = selected_effect
+        self.unselected_effect = unselected_effect
+        self.activated_effect = activated_effect
+        self.is_selected = False
 
     def get_box(self):
         """Get the box of the label.
@@ -55,11 +63,38 @@ class ActiveLabel(text.Label):
         box = self.get_box()
         return box.contains(x, y)
 
-    def on_mouse_press(self, x, y, buttons, modifiers):
+    def on_mouse_release(self, x, y, buttons, modifiers):
         if self.is_inside_box(x, y) and self.callback is not None:
+            if self.activated_effect is not None:
+                self.stop()
+                self.do(self.activated_effect)
             self.callback(*self.callback_args, **self.callback_kwargs)
             if self.stop_event:
                 return True
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        inside_box = self.is_inside_box(x, y)
+
+        if inside_box and not self.is_selected:
+            self.is_selected = True
+            if self.selected_effect is not None:
+                self.stop()
+                self.do(self.selected_effect)
+        elif not inside_box and self.is_selected:
+            self.is_selected = False
+            if self.unselected_effect is not None:
+                self.stop()
+                self.do(self.unselected_effect)
+
+
+def shake_selected(selected_color=Colors['green1']):
+    """A common selected affect: shake + set to selected color."""
+    return actions.CallFuncS(lambda label: setattr(label.element, 'color', selected_color)) + menu.shake()
+
+
+def shake_unselected(unselected_color=Colors['whitesmoke']):
+    """A common selected affect: shake back + set to unselected color."""
+    return actions.CallFuncS(lambda label: setattr(label.element, 'color', unselected_color)) + menu.shake_back()
 
 
 class ActiveLayer(layer.Layer):
@@ -70,18 +105,29 @@ class ActiveLayer(layer.Layer):
 
     is_event_handler = True
 
-    def on_mouse_press(self, x, y, buttons, modifiers):
-        """Handler for mouse press events.
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        """Handler for mouse release events.
 
-        [NOTE]: This handler just send this event to all of its children.
-
-        Like `Kivy`, if one of the children handlers return `True`, it will stop the event and return `True`.
+        This handler just send this event to all of its children.
         """
 
+        x, y = director.director.get_virtual_coordinates(x, y)
+
         for child in self.get_children():
-            if hasattr(child, 'on_mouse_press'):
-                if child.on_mouse_press(x, y, buttons, modifiers) is True:
-                    return True
+            if hasattr(child, 'on_mouse_release'):
+                child.on_mouse_release(x, y, buttons, modifiers)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        """Handler for mouse motion events.
+
+        This handler just send this event to all of its children.
+        """
+
+        x, y = director.director.get_virtual_coordinates(x, y)
+
+        for child in self.get_children():
+            if hasattr(child, 'on_mouse_motion'):
+                child.on_mouse_motion(x, y, dx, dy)
 
 
 class BackgroundLayer(layer.Layer):
@@ -103,6 +149,8 @@ class BasicButtonsLayer(ActiveLayer):
                 'Back',
                 pos(0.9, 0.1),
                 callback=back_func,
+                selected_effect=shake_selected(),
+                unselected_effect=shake_unselected(),
                 font_name=DefaultFont,
                 font_size=32,
                 anchor_x='center',

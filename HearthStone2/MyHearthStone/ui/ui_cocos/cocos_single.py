@@ -36,7 +36,7 @@ class CocosSingleFrontend(Frontend):
 
         director.director.init(
             caption=C.ProjectName,
-            resizable=False,
+            resizable=True,
             autoscale=True,
             width=self.Width,
             height=self.Height,
