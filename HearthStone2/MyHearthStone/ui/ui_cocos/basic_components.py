@@ -87,14 +87,8 @@ class ActiveLabel(text.Label):
                 self.do(self.unselected_effect)
 
 
-def shake_selected(selected_color=Colors['green1']):
-    """A common selected affect: shake + set to selected color."""
-    return actions.CallFuncS(lambda label: setattr(label.element, 'color', selected_color)) + menu.shake()
-
-
-def shake_unselected(unselected_color=Colors['whitesmoke']):
-    """A common selected affect: shake back + set to unselected color."""
-    return actions.CallFuncS(lambda label: setattr(label.element, 'color', unselected_color)) + menu.shake_back()
+def set_color(color):
+    return actions.CallFuncS(lambda label: setattr(label.element, 'color', color))
 
 
 class ActiveLayer(layer.Layer):
@@ -149,8 +143,8 @@ class BasicButtonsLayer(ActiveLayer):
                 'Back',
                 pos(0.9, 0.1),
                 callback=back_func,
-                selected_effect=shake_selected(),
-                unselected_effect=shake_unselected(),
+                selected_effect=set_color(Colors['green1']),
+                unselected_effect=set_color(Colors['whitesmoke']),
                 font_name=DefaultFont,
                 font_size=32,
                 anchor_x='center',

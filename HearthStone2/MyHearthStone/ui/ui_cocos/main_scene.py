@@ -38,12 +38,7 @@ class MainMenu(menu.Menu):
             menu.MenuItem('Exit', self.on_quit),
         ]
 
-        self.create_menu(
-            items,
-            selected_effect=menu.shake(),
-            unselected_effect=menu.shake_back(),
-            # activated_effect=actions.ScaleTo(1.15, duration=0.2),
-        )
+        self.create_menu(items)
 
     def on_new_game(self):
         print('New game!')
