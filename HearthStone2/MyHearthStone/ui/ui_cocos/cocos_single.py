@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from os.path import split
+
 from pyglet import resource
 from cocos import director
 
@@ -46,6 +48,28 @@ class CocosSingleFrontend(Frontend):
         self.scenes['collection'] = get_collection_scene(self)
 
         director.director.run(self.scenes['main'])
+
+    def get(self, name):
+        if name in self.scenes:
+            return self.scenes[name]
+        else:
+            raise Exception('Child not found: {}'.format(name))
+
+    def get_node(self, path: str):
+        """Get node by '/' separated node path.
+
+        Important: The node names in the path must not contain '/'.
+
+        Path example:
+            self.get_node('collections/basic_buttons/options')
+            => self.get('collections').get('basic_buttons').get('options')
+        """
+
+        result = self
+        for node in path.strip('/').split('/'):
+            result = result.get(node)
+
+        return result
 
     def preprocess(self):
         ResourcePath = 'F:/DIYs/HearthStone/Resources'

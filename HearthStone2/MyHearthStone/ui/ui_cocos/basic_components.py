@@ -1,7 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import layer, text, rect, director, menu, actions
+from cocos import layer, text, rect, director, actions
+from cocos.scenes import transitions
 
 from .utils import pos, DefaultFont, Colors
 
@@ -87,7 +88,7 @@ class ActiveLabel(text.Label):
                 self.do(self.unselected_effect)
 
 
-def set_color(color):
+def set_color_action(color):
     return actions.CallFuncS(lambda label: setattr(label.element, 'color', color))
 
 
@@ -95,6 +96,7 @@ class ActiveLayer(layer.Layer):
     """The layer of active objects.
 
     It will dispatch the mouse press event to all of its children (if it defined the event handler).
+    [NOTE]: This layer will not check if the event is in the box of a child, this check is done by the child itself.
     """
 
     is_event_handler = True
@@ -109,7 +111,8 @@ class ActiveLayer(layer.Layer):
 
         for child in self.get_children():
             if hasattr(child, 'on_mouse_release'):
-                child.on_mouse_release(x, y, buttons, modifiers)
+                if child.on_mouse_release(x, y, buttons, modifiers) is True:
+                    return True
 
     def on_mouse_motion(self, x, y, dx, dy):
         """Handler for mouse motion events.
@@ -135,23 +138,57 @@ class BackgroundLayer(layer.Layer):
 class BasicButtonsLayer(ActiveLayer):
     """A commonly used active layer that contains some basic buttons."""
 
-    def __init__(self, back_func=None):
+    def __init__(self, controller, back=True, options=True):
         super(BasicButtonsLayer, self).__init__()
+        self.ctrl = controller
 
-        if back_func:
+        if back:
             self.back_label = ActiveLabel(
                 'Back',
-                pos(0.9, 0.1),
-                callback=back_func,
-                selected_effect=set_color(Colors['green1']),
-                unselected_effect=set_color(Colors['whitesmoke']),
+                pos(0.99, 0.03),
+                callback=self.go_back,
+                selected_effect=set_color_action(Colors['green1']),
+                unselected_effect=set_color_action(Colors['whitesmoke']),
                 font_name=DefaultFont,
-                font_size=32,
-                anchor_x='center',
+                font_size=28,
+                anchor_x='right',
                 anchor_y='baseline',
                 color=Colors['whitesmoke'],
             )
-            self.add(self.back_label)
+            self.add(self.back_label, name='back')
+
+        if options:
+            self.options_label = ActiveLabel(
+                'Options',
+                pos(0.01, 0.03),
+                callback=self.goto_options,
+                selected_effect=set_color_action(Colors['green1']),
+                unselected_effect=set_color_action(Colors['whitesmoke']),
+                font_name=DefaultFont,
+                font_size=28,
+                anchor_x='left',
+                anchor_y='baseline',
+                color=Colors['whitesmoke'],
+            )
+            self.add(self.options_label, name='options')
+
+    def go_back(self):
+        self.ctrl.get_node('main/main').switch_to(0)
+
+        main_scene = self.ctrl.get('main')
+        if director.director.scene == main_scene:
+            # Transition to the same scene will cause error.
+            return
+
+        director.director.replace(transitions.FadeTransition(main_scene, duration=1.0))
+
+    def goto_options(self):
+        self.ctrl.get_node('main/main').switch_to(1)
+
+        main_scene = self.ctrl.get('main')
+        if director.director.scene == main_scene:
+            return
+        director.director.replace(transitions.FadeTransition(main_scene, duration=1.0))
 
 
 __all__ = [

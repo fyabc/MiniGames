@@ -13,9 +13,7 @@ from cocos.scenes import transitions
 import pyglet
 
 from .utils import set_menu_style
-from .basic_components import BackgroundLayer
-
-from ...utils.constants import C
+from .basic_components import BackgroundLayer, BasicButtonsLayer
 
 __author__ = 'fyabc'
 
@@ -33,7 +31,7 @@ class MainMenu(menu.Menu):
         # Menu items
         items = [
             menu.MenuItem('New Game', self.on_new_game),
-            menu.MenuItem('Deck', self.on_deck),
+            menu.MenuItem('Deck', self.on_collections),
             menu.MenuItem('Options', self.on_options),
             menu.MenuItem('Exit', self.on_quit),
         ]
@@ -45,8 +43,8 @@ class MainMenu(menu.Menu):
 
         # TODO: start a new game.
 
-    def on_deck(self):
-        director.director.replace(transitions.SlideInLTransition(self.ctrl.scenes['collection'], duration=1.0))
+    def on_collections(self):
+        director.director.replace(transitions.FadeTransition(self.ctrl.scenes['collection'], duration=1.0))
 
     def on_options(self):
         self.parent.switch_to(1)
@@ -93,11 +91,12 @@ class OptionsMenu(menu.Menu):
 def get_main_scene(controller):
     main_scene = scene.Scene()
 
-    main_scene.add(BackgroundLayer(), z=0)
+    main_scene.add(BackgroundLayer(), z=0, name='background')
+    main_scene.add(BasicButtonsLayer(controller, back=False), z=1, name='basic_buttons')
     main_scene.add(layer.MultiplexLayer(
         MainMenu(controller),
         OptionsMenu(controller),
-    ), z=1)
+    ), z=2, name='main')
 
     return main_scene
 

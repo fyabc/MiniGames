@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from cocos import scene, layer
-from cocos.director import director
-from cocos.scenes import transitions
 
 from .basic_components import BackgroundLayer, BasicButtonsLayer
 
@@ -17,13 +15,10 @@ class CollectionsLayer(layer.Layer):
 
 
 def get_collection_scene(controller):
-    def back_to_main():
-        director.replace(transitions.SlideInRTransition(controller.scenes['main'], duration=1.0))
-
     collection_scene = scene.Scene()
-    collection_scene.add(BackgroundLayer(), z=0)
-    collection_scene.add(BasicButtonsLayer(back_func=back_to_main), z=1)
-    collection_scene.add(CollectionsLayer(controller), z=2)
+    collection_scene.add(BackgroundLayer(), z=0, name='background')
+    collection_scene.add(BasicButtonsLayer(controller), z=1, name='basic_buttons')
+    collection_scene.add(CollectionsLayer(controller), z=2, name='main')
 
     return collection_scene
 
