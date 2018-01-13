@@ -69,6 +69,22 @@ class _GameData:
     def resource_path(self):
         return os.path.join(self.path, self.ResourcePathName)
 
+    def resource_directories(self, include_values=False):
+        """Get resource directories.
+
+        :param include_values: Include values directory.
+        :return:
+        """
+
+        result = [
+            os.path.join(self.path, self.ResourcePathName, self.ImagesPathName),
+            os.path.join(self.path, self.ResourcePathName, self.SoundsPathName),
+        ]
+
+        if include_values:
+            result.append(os.path.join(self.path, self.ResourcePathName, self.ValuesPathName))
+        return result
+
     @property
     def vars_list(self):
         if self._package_vars is None:
@@ -206,6 +222,20 @@ def all_heroes():
     return _AllHeroes
 
 
+def all_package_data():
+    """Get list of all package data.
+
+    If packages not loaded, it will load packages automatically.
+
+    :return: List of all packages.
+    """
+
+    global _AllCards, _AllHeroes, _AllGameData
+    if _AllHeroes is None:
+        _AllCards, _AllHeroes, _AllGameData = _load_packages()
+    return _AllGameData
+
+
 def search_by_name(name):
     """Search card by name, return the FIRST card with same name.
 
@@ -231,6 +261,7 @@ def reload_packages(force=False):
 __all__ = [
     'all_cards',
     'all_heroes',
+    'all_package_data',
     'search_by_name',
     'reload_packages',
 ]

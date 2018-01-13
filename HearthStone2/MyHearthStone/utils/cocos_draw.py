@@ -9,13 +9,13 @@ from multiprocessing import Process
 from cocos import scene, layer, text, director, draw, actions
 from cocos.sprite import Sprite
 import pyglet
-from pyglet import resource
 
 from .game import Zone, Klass, Type, Rarity
 from .draw.constants import Colors
 from ..game.core import Game
 from ..game.card import Card, Minion, Spell, Weapon, HeroCard
 from ..utils.constants import get_package_paths
+from ..utils.draw.load_resource import index_resources
 from ..utils import constants
 
 __author__ = 'fyabc'
@@ -323,16 +323,7 @@ class HSGameBoard(layer.Layer):
 
 
 def preprocess():
-    ResourcePath = 'F:/DIYs/HearthStone/Resources'
-
-    if ResourcePath not in resource.path:
-        resource.path.append(ResourcePath)
-        resource.reindex()
-
-        # Preload resources.
-        import os
-        for filename in os.listdir(ResourcePath):
-            resource.file(filename)
+    index_resources()
 
 
 def draw_game(game, **kwargs):

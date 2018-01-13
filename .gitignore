@@ -72,3 +72,6 @@ HearthStone/test/logs/
 
 # Shift game series record files
 Shift_pygame/Shift_pygame/data/records/
+
+# HearthStone2 resource files
+/HearthStone2/MyHearthStone/data/**/resources

@@ -1,9 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from os.path import split
-
-from pyglet import resource
 from cocos import director
 
 from .main_scene import get_main_scene
@@ -11,6 +8,7 @@ from .collection_scene import get_collection_scene
 from ...game.core import Game
 from ..frontend import Frontend
 from ...utils.constants import C
+from ...utils.draw.load_resource import index_resources
 
 __author__ = 'fyabc'
 
@@ -72,16 +70,7 @@ class CocosSingleFrontend(Frontend):
         return result
 
     def preprocess(self):
-        ResourcePath = 'F:/DIYs/HearthStone/Resources'
-
-        if ResourcePath not in resource.path:
-            resource.path.append(ResourcePath)
-            resource.reindex()
-
-            # Preload resources.
-            import os
-            for filename in os.listdir(ResourcePath):
-                resource.file(filename)
+        index_resources()
 
 
 __all__ = [
