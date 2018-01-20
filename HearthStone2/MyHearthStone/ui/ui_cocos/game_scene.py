@@ -18,6 +18,9 @@ class SelectDeckLayer(ActiveLayer):
     def __init__(self, ctrl):
         super().__init__(ctrl)
 
+        # Selected deck indices.
+        self.deck_indices = [None, None]
+
         self.start_game = ActiveLabel.hs_style(
             'Start Game',
             pos(self.RightC, 0.15),
@@ -28,6 +31,16 @@ class SelectDeckLayer(ActiveLayer):
         self.add(self.start_game, name='button_start_game')
 
     def on_start_game(self):
+        if any(map(lambda e: e is None, self.deck_indices)):
+            notice(self, 'Must select two decks!',
+                   position=pos(0.5, 0.5), anchor_y='center', font_size=32, color=Colors['yellow1'], time=1.5)
+            return
+
+        decks = self.ctrl.user.decks
+        start_game_iter = self.ctrl.game.start_game([decks[i] for i in self.deck_indices], mode='standard')
+
+        game_board_layer = self.ctrl.get_node('game/board')
+        game_board_layer.start_game_iter = start_game_iter
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=1.0))
 
 
@@ -62,6 +75,9 @@ class GameBoardLayer(ActiveLayer):
         super().__init__(ctrl)
 
         ctrl.game.add_resolve_callback(self.update_content)
+
+        # Start game iterator returned from `Game.start_game`. Sent from select deck layer.
+        self.start_game_iter = None
 
         # Card sprites
         self.hand_sprites = [[] for _ in range(2)]

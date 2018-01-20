@@ -4,9 +4,33 @@
 from cocos import layer, text, rect, director, actions, sprite
 from cocos.scenes import transitions
 
-from .utils import pos, DefaultFont, Colors
+from .utils import pos, DefaultFont, Colors, DefaultLabelStyle
 
 __author__ = 'fyabc'
+
+
+class NoticeLabel(text.Label):
+    """A notice label with default HearthStone style.
+
+    This label will fade out after `time` seconds, then be automatically removed from its parent.
+    """
+
+    def __init__(self, *args, **kwargs):
+        time = kwargs.pop('time', 1.5)
+
+        kw_with_default = DefaultLabelStyle.copy()
+        kw_with_default.update(kwargs)
+
+        super().__init__(*args, **kw_with_default)
+
+        self.do(actions.FadeOut(time) + actions.CallFunc(self.remove_self))
+
+    def remove_self(self):
+        self.parent.remove(self)
+
+
+def notice(layer_, text_, **kwargs):
+    layer_.add(NoticeLabel(text_, **kwargs))
 
 
 class ActiveLabel(text.Label):
@@ -280,6 +304,8 @@ class BasicButtonsLayer(ActiveLayer):
 
 
 __all__ = [
+    'NoticeLabel',
+    'notice',
     'BackgroundLayer',
     'ActiveLabel',
     'ActiveSprite',

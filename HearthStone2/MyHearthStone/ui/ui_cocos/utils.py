@@ -39,9 +39,19 @@ def set_menu_style(self, **kwargs):
     self.font_item_selected['font_size'] = selected_size
 
 
+DefaultLabelStyle = {
+    'font_name': DefaultFont,
+    'font_size': 28,
+    'anchor_x': 'center',
+    'anchor_y': 'baseline',
+    'color': Colors['whitesmoke'],
+}
+
+
 __all__ = [
     'Colors',
     'DefaultFont',
     'pos',
     'set_menu_style',
+    'DefaultLabelStyle'
 ]
