@@ -5,6 +5,7 @@ from cocos import director
 
 from .main_scene import get_main_scene
 from .collection_scene import get_collection_scene
+from .game_scene import get_select_deck_scene, get_game_scene
 from ...game.core import Game
 from ..frontend import Frontend
 from ...utils.constants import C
@@ -44,6 +45,8 @@ class CocosSingleFrontend(Frontend):
 
         self.scenes['main'] = get_main_scene(self)
         self.scenes['collection'] = get_collection_scene(self)
+        self.scenes['select_deck'] = get_select_deck_scene(self)
+        self.scenes['game'] = get_game_scene(self)
 
         director.director.run(self.scenes['main'])
 

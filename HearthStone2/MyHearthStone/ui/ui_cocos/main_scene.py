@@ -39,9 +39,7 @@ class MainMenu(menu.Menu):
         self.create_menu(items)
 
     def on_new_game(self):
-        print('New game!')
-
-        # TODO: start a new game.
+        director.director.replace(transitions.FadeTransition(self.ctrl.scenes['select_deck'], duration=1.0))
 
     def on_collections(self):
         director.director.replace(transitions.FadeTransition(self.ctrl.scenes['collection'], duration=1.0))

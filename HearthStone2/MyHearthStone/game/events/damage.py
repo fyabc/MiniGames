@@ -11,8 +11,8 @@ class PreDamage(Phase):
         super().__init__(game, damage.owner)
         self.damage = damage
 
-    def message(self):
-        super().message(source=self.owner, target=self.damage.target, value=self.damage.value)
+    def _repr(self):
+        return super()._repr(source=self.owner, target=self.damage.target, value=self.damage.value)
 
 
 class Damage(Phase):
@@ -21,8 +21,8 @@ class Damage(Phase):
         self.target = target
         self.value = value
 
-    def message(self):
-        super().message(source=self.owner, target=self.target, value=self.value)
+    def _repr(self):
+        return super()._repr(source=self.owner, target=self.target, value=self.value)
 
 
 def damage_events(game, owner, target, value):

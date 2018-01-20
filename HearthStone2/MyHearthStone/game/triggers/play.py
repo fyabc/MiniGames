@@ -59,8 +59,6 @@ class StdOnPlaySpell(StandardBeforeTrigger):
 
         self.game.move(player_id, Zone.Hand, event.spell, player_id, tz, 'last')
 
-        event.message()
-
         return []
 
 
@@ -70,7 +68,6 @@ class StdSpellBlenderPhase(StandardBeforeTrigger):
     respond = [standard.SpellBenderPhase]
 
     def process(self, event: respond[0]):
-        event.message()
         return []
 
 
@@ -80,7 +77,6 @@ class StdSpellText(StandardBeforeTrigger):
     respond = [standard.SpellText]
 
     def process(self, event: respond[0]):
-        event.message()
         return event.spell.run(event.target)
 
 
@@ -90,7 +86,6 @@ class StdAfterSpell(StandardBeforeTrigger):
     respond = [standard.AfterSpell]
 
     def process(self, event: respond[0]):
-        event.message()
         return []
 
 
@@ -130,8 +125,6 @@ class StdOnPlayMinion(StandardBeforeTrigger):
 
         self.game.move(player_id, Zone.Hand, event.minion, player_id, Zone.Play, event.loc)
 
-        event.message()
-
         return []
 
 
@@ -141,8 +134,6 @@ class StdOnBattlecry(StandardBeforeTrigger):
     respond = [standard.BattlecryPhase]
 
     def process(self, event: respond[0]):
-        event.message()
-
         # todo: Add effects of Brann Bronzebeard.
 
         return event.minion.battlecry(event.target)

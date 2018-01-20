@@ -13,8 +13,8 @@ class PrepareCombat(Phase):
         super().__init__(game, None)
         self.combat = combat
 
-    def message(self):
-        return super().message(attacker=self.combat.attacker, defender=self.combat.defender)
+    def _repr(self):
+        return super()._repr(attacker=self.combat.attacker, defender=self.combat.defender)
 
 
 class Combat(Phase):
@@ -22,8 +22,8 @@ class Combat(Phase):
         super().__init__(game, None)
         self.combat = combat
 
-    def message(self):
-        return super().message(attacker=self.combat.attacker, defender=self.combat.defender)
+    def _repr(self):
+        return super()._repr(attacker=self.combat.attacker, defender=self.combat.defender)
 
 
 class ProposedAttack(Event):
@@ -31,8 +31,8 @@ class ProposedAttack(Event):
         super().__init__(game, None)
         self.combat = combat
 
-    def message(self):
-        return super().message(attacker=self.combat.attacker, defender=self.combat.defender)
+    def _repr(self):
+        return super()._repr(attacker=self.combat.attacker, defender=self.combat.defender)
 
 
 class Attack(Event):
@@ -41,5 +41,5 @@ class Attack(Event):
         self.attacker = attacker
         self.defender = defender
 
-    def message(self):
-        return super().message(attacker=self.attacker, defender=self.defender)
+    def _repr(self):
+        return super()._repr(attacker=self.attacker, defender=self.defender)

@@ -88,6 +88,9 @@ class Game:
         # Dict values are sets of triggers.
         self.triggers = {}
 
+        # Resolve callbacks.
+        self.resolve_callbacks = []
+
         # Current order of play id
         self.current_oop = 1
 
@@ -140,6 +143,17 @@ class Game:
         for event_type, triggers in self.triggers.items():
             self.triggers[event_type] = {trigger for trigger in triggers if trigger.enable}
 
+    def add_resolve_callback(self, callback):
+        """Add a callback after each resolve.
+
+        :param callback: (function)
+            Callback prototype: (event_or_trigger, current_event) -> Any (return value ignored)
+            If `event_or_trigger` is an event, `current_event` is None;
+            If `event_or_trigger` is a trigger, `current_event` is the trigger's current event.
+        :return: None
+        """
+        self.resolve_callbacks.append(callback)
+
     def run_player_action(self, player_action):
         if not self.running:
             error('The game is not running.')
@@ -171,7 +185,12 @@ class Game:
 
             if isinstance(e, Event):
                 # Log history.
+                e.message()
                 self.event_history.append(e)
+
+                # Callback after each event (maybe useless, only need to call after triggers?)
+                for callback in self.resolve_callbacks:
+                    callback(e, None)
 
                 # Get all related triggers, then check their conditions and sort them in order of play.
                 related_triggers = set()
@@ -261,6 +280,12 @@ class Game:
                 return
 
             new_queue = t.process(current_event)
+            t.message(current_event)
+
+            # Callback after each trigger.
+            for callback in self.resolve_callbacks:
+                callback(t, current_event)
+
             if new_queue:
                 self.resolve_events(new_queue, depth + 1)
 

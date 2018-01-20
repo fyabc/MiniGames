@@ -11,20 +11,20 @@ class DeathPhase(Phase):
         super().__init__(game, None)
         self.deaths = deaths
 
-    def message(self):
-        super().message(deaths=self.deaths)
+    def _repr(self):
+        return super()._repr(deaths=self.deaths)
 
 
 class HeroDeath(Event):
-    def message(self):
-        super().message(hero=self.owner)
+    def _repr(self):
+        return super()._repr(hero=self.owner)
 
 
 class MinionDeath(Event):
-    def message(self):
-        super().message(minion=self.owner)
+    def _repr(self):
+        return super()._repr(minion=self.owner)
 
 
 class WeaponDeath(Event):
-    def message(self):
-        super().message(weapon=self.owner)
+    def _repr(self):
+        return super()._repr(weapon=self.owner)

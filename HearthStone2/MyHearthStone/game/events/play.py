@@ -31,8 +31,8 @@ class OnPlaySpell(OnPlay):
     def spell(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, spell=self.owner, target=self.target)
+    def _repr(self):
+        return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
 
 
 class SpellBenderPhase(Phase):
@@ -55,8 +55,8 @@ class SpellBenderPhase(Phase):
     def spell(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, spell=self.owner, target=self.target)
+    def _repr(self):
+        return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
 
 
 class SpellText(Phase):
@@ -75,8 +75,8 @@ class SpellText(Phase):
     def spell(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, spell=self.owner, target=self.target)
+    def _repr(self):
+        return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
 
 
 class AfterSpell(AfterPlay):
@@ -95,8 +95,8 @@ class AfterSpell(AfterPlay):
     def spell(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, spell=self.owner, target=self.target)
+    def _repr(self):
+        return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
 
 
 class OnPlayWeapon(OnPlay):
@@ -128,8 +128,8 @@ class OnPlayMinion(OnPlay):
     def minion(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, minion=self.owner, loc=self.loc, target=self.target)
+    def _repr(self):
+        return super()._repr(P=self.player_id, minion=self.owner, loc=self.loc, target=self.target)
 
 
 class BattlecryPhase(Phase):
@@ -149,8 +149,8 @@ class BattlecryPhase(Phase):
     def minion(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, minion=self.owner, target=self.target)
+    def _repr(self):
+        return super()._repr(P=self.player_id, minion=self.owner, target=self.target)
 
 
 class AfterPlayMinion(AfterPlay):
@@ -170,8 +170,8 @@ class AfterPlayMinion(AfterPlay):
     def minion(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, minion=self.owner)
+    def _repr(self):
+        return super()._repr(P=self.player_id, minion=self.owner)
 
 
 class AfterSummon(Phase):
@@ -189,8 +189,8 @@ class AfterSummon(Phase):
     def minion(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, minion=self.owner)
+    def _repr(self):
+        return super()._repr(P=self.player_id, minion=self.owner)
 
 
 class Summon(Event):
@@ -208,8 +208,8 @@ class Summon(Event):
     def minion(self):
         return self.owner
 
-    def message(self):
-        super().message(P=self.player_id, minion=self.owner)
+    def _repr(self):
+        return super()._repr(P=self.player_id, minion=self.owner)
 
 
 def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone=None):

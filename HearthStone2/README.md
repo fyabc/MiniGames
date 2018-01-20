@@ -36,7 +36,7 @@ $ cd /path/to/this/file
 $ python setup.py install
 ```
 or
-```
+```bash
 $ cd /path/to/this/file
 $ pip install .
 ```

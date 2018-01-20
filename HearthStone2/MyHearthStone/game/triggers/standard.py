@@ -25,7 +25,6 @@ class StdGameBegin(StandardBeforeTrigger):
 
     def process(self, event):
         debug('Game Start!'.center(C.Logging.Width, '='))
-        event.message()
 
         return []
 
@@ -38,7 +37,6 @@ class StdTurnBegin(StandardBeforeTrigger):
     def process(self, event: respond[0]):
         debug('Turn Begin!'.center(C.Logging.Width, '-'))
         self.game.new_turn()
-        event.message()
 
         return []
 
@@ -59,7 +57,6 @@ class StdDrawCard(StandardBeforeTrigger):
 
         # Tire damage
         if not self.game.decks[player_id]:
-            event.message()
             debug('Deck empty, take tire damage!')
             event.disable()
             self.game.tire_counters[player_id] += 1
@@ -70,9 +67,7 @@ class StdDrawCard(StandardBeforeTrigger):
 
         if success:
             event.card = card
-            event.message()
         else:
-            event.message()
             event.disable()
 
         return new_events

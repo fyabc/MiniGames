@@ -17,24 +17,24 @@ class BeginOfGame(Event):
     def __init__(self, game):
         super().__init__(game, game)
 
-    def message(self):
-        super().message(first_player=self.game.current_player)
+    def _repr(self):
+        return super()._repr(first_player=self.game.current_player)
 
 
 class BeginOfTurn(Event):
     def __init__(self, game):
         super().__init__(game, game)
 
-    def message(self):
-        super().message(n=self.game.n_turns, player=self.game.current_player)
+    def _repr(self):
+        return super()._repr(n=self.game.n_turns, player=self.game.current_player)
 
 
 class EndOfTurn(Event):
     def __init__(self, game):
         super().__init__(game, game)
 
-    def message(self):
-        super().message(n=self.game.n_turns, player=self.game.current_player)
+    def _repr(self):
+        return super()._repr(n=self.game.n_turns, player=self.game.current_player)
 
 
 class DrawCard(Event):
@@ -56,8 +56,8 @@ class DrawCard(Event):
             return self.game.current_player
         return self._player_id
 
-    def message(self):
-        super().message(P=self.player_id, card=self.card)
+    def _repr(self):
+        return super()._repr(P=self.player_id, card=self.card)
 
 
 def game_begin_standard_events(game):

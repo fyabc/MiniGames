@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from ...utils.message import info, entity_message
+
 __author__ = 'fyabc'
 
 
@@ -55,11 +57,21 @@ class Trigger:
         return True
 
     def process(self, event):
-        """Process the event, return a queue of events."""
+        """Process the event, return a queue of events.
+
+        Note: conditions have been checked.
+        """
         return []
 
     def message(self, event):
-        pass
+        # todo: complete logging of events and triggers
+        info('{} processing {}'.format(self, event))
+
+    def __str__(self):
+        return self._repr()
+
+    def _repr(self, **kwargs):
+        return entity_message(self, kwargs, prefix='^')
 
 
 class StandardBeforeTrigger(Trigger):
@@ -67,11 +79,6 @@ class StandardBeforeTrigger(Trigger):
 
     def __init__(self, game):
         super().__init__(game, game)
-
-    def process(self, event):
-        event.message()
-
-        return []
 
 
 class StandardAfterTrigger(Trigger):
@@ -86,8 +93,3 @@ class StandardAfterTrigger(Trigger):
     @property
     def oop(self):
         return self._oop
-
-    def process(self, event):
-        event.message()
-
-        return []
