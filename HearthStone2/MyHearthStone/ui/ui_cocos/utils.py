@@ -18,6 +18,14 @@ def pos(x, y, base=None, scale=1.0):
     return _Width * x * scale, _Height * y * scale
 
 
+def pos_x(x, base=None, scale=1.0):
+    return pos(x, 0.0, base, scale)[0]
+
+
+def pos_y(y, base=None, scale=1.0):
+    return pos(0.0, y, base, scale)[1]
+
+
 def set_menu_style(self, **kwargs):
     # you can override the font that will be used for the title and the items
     # you can also override the font size and the colors. see menu.py for
@@ -52,6 +60,8 @@ __all__ = [
     'Colors',
     'DefaultFont',
     'pos',
+    'pos_x',
+    'pos_y',
     'set_menu_style',
     'DefaultLabelStyle'
 ]

@@ -18,10 +18,7 @@ class NoticeLabel(text.Label):
     def __init__(self, *args, **kwargs):
         time = kwargs.pop('time', 1.5)
 
-        kw_with_default = DefaultLabelStyle.copy()
-        kw_with_default.update(kwargs)
-
-        super().__init__(*args, **kw_with_default)
+        super().__init__(*args, **kwargs)
 
         self.do(actions.FadeOut(time) + actions.CallFunc(self.remove_self))
 
@@ -30,7 +27,11 @@ class NoticeLabel(text.Label):
 
 
 def notice(layer_, text_, **kwargs):
-    layer_.add(NoticeLabel(text_, **kwargs))
+    """Add a notice label with default HearthStone style."""
+
+    kw_with_default = DefaultLabelStyle.copy()
+    kw_with_default.update(kwargs)
+    layer_.add(NoticeLabel(text_, **kw_with_default))
 
 
 class ActiveLabel(text.Label):
@@ -42,7 +43,7 @@ class ActiveLabel(text.Label):
     def __init__(self, text='', position=(0, 0),
                  callback=None, stop_event=False,
                  selected_effect=None, unselected_effect=None, activated_effect=None,
-                 active_invisible=False,
+                 active_invisible=False, self_in_callback=False,
                  **kwargs):
         """Create an active label.
 
@@ -54,6 +55,7 @@ class ActiveLabel(text.Label):
         :param unselected_effect:
         :param activated_effect:
         :param active_invisible: The label is still active when invisible? [False]
+        :param self_in_callback: Add `self` as the first parameter of callback? [False]
         :param kwargs:
         """
 
@@ -62,6 +64,7 @@ class ActiveLabel(text.Label):
         self.callback_kwargs = kwargs.pop('callback_kwargs', {})
         self.stop_event = stop_event
         self.active_invisible = active_invisible
+        self.self_in_callback = self_in_callback
 
         super().__init__(text=text, position=position, **kwargs)
 
@@ -116,7 +119,10 @@ class ActiveLabel(text.Label):
             if self.activated_effect is not None:
                 self.stop()
                 self.do(self.activated_effect)
-            self.callback(*self.callback_args, **self.callback_kwargs)
+            if self.self_in_callback:
+                self.callback(self, *self.callback_args, **self.callback_kwargs)
+            else:
+                self.callback(*self.callback_args, **self.callback_kwargs)
             if self.stop_event:
                 return True
 
@@ -149,12 +155,10 @@ class ActiveLabel(text.Label):
         color = kwargs.pop('color', Colors['whitesmoke'])
 
         return cls(
-            *args,
-            **kwargs,
+            *args, **kwargs,
             selected_effect=selected_effect,
             unselected_effect=unselected_effect,
-            font_name=font_name,
-            font_size=font_size,
+            font_name=font_name, font_size=font_size,
             anchor_y=anchor_y,
             color=color,
         )
@@ -255,32 +259,18 @@ class BasicButtonsLayer(ActiveLayer):
         super(BasicButtonsLayer, self).__init__(ctrl)
 
         if back:
-            self.back_label = ActiveLabel(
-                'Back',
-                pos(0.99, 0.03),
+            self.back_label = ActiveLabel.hs_style(
+                'Back', pos(0.99, 0.03),
                 callback=self.go_back,
-                selected_effect=set_color_action(Colors['green1']),
-                unselected_effect=set_color_action(Colors['whitesmoke']),
-                font_name=DefaultFont,
-                font_size=28,
                 anchor_x='right',
-                anchor_y='baseline',
-                color=Colors['whitesmoke'],
             )
             self.add(self.back_label, name='back')
 
         if options:
-            self.options_label = ActiveLabel(
-                'Options',
-                pos(0.01, 0.03),
+            self.options_label = ActiveLabel.hs_style(
+                'Options', pos(0.01, 0.03),
                 callback=self.goto_options,
-                selected_effect=set_color_action(Colors['green1']),
-                unselected_effect=set_color_action(Colors['whitesmoke']),
-                font_name=DefaultFont,
-                font_size=28,
                 anchor_x='left',
-                anchor_y='baseline',
-                color=Colors['whitesmoke'],
             )
             self.add(self.options_label, name='options')
 
