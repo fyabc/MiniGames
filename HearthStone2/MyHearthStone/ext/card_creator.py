@@ -11,8 +11,13 @@ __author__ = 'fyabc'
 
 
 def create_blank(data, name=None, card_type=Minion):
+    assert 'id' in data, 'Data must contain value of key "id".'
+
     if name is None:
-        name = data['name']
+        if 'name' in data:
+            name = data['name']
+        else:
+            name = '{}_{}'.format(card_type.__name__, data['id'])
 
     cls_dict = {'_data': data}
 

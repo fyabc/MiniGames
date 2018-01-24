@@ -335,8 +335,10 @@ Syntax: q | quit | exit\
         self.state = self.StateGame
 
     def do_info(self, arg):
+        import textwrap
         for card in all_cards().values():
-            print(dict(card.data))
+            print('{}{}:'.format(card.data['name'], card.data['CAH']))
+            print(textwrap.indent(card.data['description'], '    '))
             print()
 
     def help_game(self):

@@ -13,6 +13,17 @@ Card ID format:
 |  Class ID
 |
 Package ID
+
+Card ID start from 0.
+
+Ordered by:
+    Package
+    Class
+    Rarity (Basic -> Common -> Rare -> Epic -> Legend -> Derivative
+    Type (Minion -> Spell -> Weapon -> HeroCard)
+    Cost (CAH[0]) Ascending
+    Attack (CAH[1]) Ascending
+    Health (CAH[2]) Ascending
 """
 
 from MyHearthStone.ext import Minion, Spell, Weapon, Hero
@@ -22,14 +33,36 @@ from MyHearthStone.ext import message as msg
 
 __author__ = 'fyabc'
 
+PackageID = 0
 
-###########
-# Neutral #
-###########
+
+###############
+# Neutral (0) #
+###############
+
+class 工程师学徒(Minion):
+    _data = {
+        'id': 6,
+        'name': '工程师学徒',
+        'rarity': 0,
+        'CAH': [2, 1, 1],
+        'battlecry': True,
+    }
+
+    def battlecry(self, target):
+        return [std_events.DrawCard(self.game, self, self.player_id)]
+
+
+淡水鳄 = blank_minion({
+    'id': 11,
+    'CAH': [2, 2, 3],
+    'race': [0],
+})
+
 
 class 幸运币(Spell):
     _data = {
-        'id': 0,
+        'id': 43,
         'name': '幸运币',
         'type': 1,
         'rarity': -1,
@@ -43,38 +76,25 @@ class 幸运币(Spell):
         return []
 
 
-class 工程师学徒(Minion):
-    _data = {
-        'id': 7,
-        'name': '工程师学徒',
-        'rarity': 0,
-        'CAH': [2, 1, 1],
-        'battlecry': True,
-    }
+#############
+# Druid (1) #
+#############
 
-    def battlecry(self, target):
-        return [std_events.DrawCard(self.game, self, self.player_id)]
-
-
-淡水鳄 = blank_minion({
-    'id': 2,
-    'name': '淡水鳄',
-    'rarity': 0,
-    'CAH': [2, 2, 3],
-    'race': [0],
+埃隆巴克保护者 = blank_minion({
+    'id': 10000,
+    'CAH': [8, 8, 8],
+    'taunt': True,
 })
 
-########
-# Mage #
-########
 
+############
+# Mage (3) #
+############
 
 class 火球术(Spell):
     _data = {
-        'id': 30008,
-        'name': '火球术',
+        'id': 30007,
         'type': 1,
-        'rarity': 0,
         'klass': 3,
         'CAH': [4],
         'have_target': True,
@@ -84,16 +104,14 @@ class 火球术(Spell):
         return [std_events.damage_events(self.game, self, target, 6)]
 
 
-###########
-# Warrior #
-###########
+###############
+# Warrior (9) #
+###############
 
 炽炎战斧 = blank_weapon({
-    'id': 90001,
-    'name': '炽炎战斧',
+    'id': 90008,
     'type': 2,
     'klass': 9,
-    'rarity': 0,
     'CAH': [3, 3, 2],
 })
 
@@ -101,7 +119,6 @@ class 火球术(Spell):
 ##########
 # Heroes #
 ##########
-
 
 class StdDruid(Hero):
     _data = {
