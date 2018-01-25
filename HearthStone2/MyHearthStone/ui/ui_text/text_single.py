@@ -40,10 +40,9 @@ Welcome to HearthStone (single player text mode).
 
     prompt_pattern = 'HS[{}]{}> '
 
-    def __init__(self, frontend: Frontend):
+    def __init__(self, frontend: 'TextSingleFrontend'):
         super().__init__()
         self.frontend = frontend
-        self.game = frontend.game
         self.state = self.StateMain
         self.prompt = 'HS[main]> '  # Init prompt
 
@@ -97,6 +96,7 @@ Welcome to HearthStone (single player text mode).
     def postcmd(self, stop, line):
         """Update prompt after each command."""
         if self.state == self.StateGame:
+            assert self.frontend.game is not None
             player_str = '(P{})'.format(self.frontend.game.current_player)
         else:
             player_str = ''
@@ -112,7 +112,8 @@ Syntax: q | quit | exit\
             while True:
                 confirm = input('The game is running. Are you sure to concede? (y/n) ').lower()
                 if confirm == 'y':
-                    self.game.run_player_action(pa.Concede(self.game))
+                    game = self.frontend.game
+                    game.run_player_action(pa.Concede(game))
                     return True
                 elif confirm == 'n':
                     info('Nothing happens.')
@@ -280,7 +281,6 @@ Syntax: q | quit | exit\
             return
 
         decks = self.frontend.user.decks
-        game = self.frontend.game
 
         # Load decks.
         def _get_deck(deck_name, deck_id, n=1):
@@ -304,6 +304,7 @@ Syntax: q | quit | exit\
             return
 
         # Start game processing.
+        game = self.frontend.game = Game(frontend=self.frontend, error_stub=self.frontend.game_error)
         start_game_iter = game.start_game([deck1, deck2], mode=args.mode)
         try:
             next(start_game_iter)
@@ -363,7 +364,8 @@ Syntax: q | quit | exit\
         if not self._check_state(self.StateGame):
             return
 
-        self.game.run_player_action(pa.TurnEnd(self.game))
+        game = self.frontend.game
+        game.run_player_action(pa.TurnEnd(game))
 
         self._update_state()
 
@@ -373,7 +375,8 @@ Syntax: q | quit | exit\
         if not self._check_state(self.StateGame):
             return
 
-        self.game.run_player_action(pa.Concede(self.game))
+        game = self.frontend.game
+        game.run_player_action(pa.Concede(game))
 
         self._update_state()
 
@@ -392,7 +395,7 @@ Syntax: q | quit | exit\
 
     def _update_state(self):
         if self.state == self.StateGame:
-            if not self.game.running:
+            if self.frontend.game is None or not self.frontend.game.running:
                 self.state = self.StateMain
 
 
@@ -400,10 +403,6 @@ class TextSingleFrontend(Frontend):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.game = Game(
-            frontend=self,
-            error_stub=self.game_error,
-        )
         self.session = TextSingleSession(self)
 
     @staticmethod

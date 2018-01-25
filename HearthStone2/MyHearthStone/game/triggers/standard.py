@@ -53,17 +53,16 @@ class StdDrawCard(StandardBeforeTrigger):
     respond = [standard.DrawCard]
 
     def process(self, event: respond[0]):
-        player_id = event.player_id
+        player = self.game.players[event.player_id]
 
         # Tire damage
-        if not self.game.decks[player_id]:
+        if not player.deck:
             debug('Deck empty, take tire damage!')
             event.disable()
-            self.game.tire_counters[player_id] += 1
-            return standard.damage_events(self.game, self.owner, self.game.heroes[player_id],
-                                          self.game.tire_counters[player_id])
+            player.tire_counter += 1
+            return standard.damage_events(self.game, self.owner, player.hero, player.tire_counter)
 
-        card, success, new_events = self.game.move(player_id, Zone.Deck, 0, player_id, Zone.Hand, 'last')
+        card, success, new_events = self.game.move(event.player_id, Zone.Deck, 0, event.player_id, Zone.Hand, 'last')
 
         if success:
             event.card = card

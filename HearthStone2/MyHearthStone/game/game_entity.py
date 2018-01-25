@@ -16,8 +16,6 @@ class GameEntity:
         'id': None,
         'name': '',
         'package': 0,
-        'klass': 0,
-        'CAH': [0, 1, 1],
         'description': '',
     })
 

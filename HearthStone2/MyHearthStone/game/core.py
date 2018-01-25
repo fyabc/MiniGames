@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import random
+from typing import *
 
+from .player import Player
 from .triggers.standard import add_standard_triggers
 from .events.standard import game_begin_standard_events, DeathPhase
 from .events.event import Event
@@ -17,15 +19,7 @@ __author__ = 'fyabc'
 class Game:
     """The core game system. Include an event engine and some game data."""
 
-    DeckMax = C.Game.DeckMax
-    HandMax = C.Game.HandMax
-    PlayMax = C.Game.PlayMax
-    SecretMax = C.Game.SecretMax
-    ManaMax = C.Game.ManaMax
     TurnMax = C.Game.TurnMax
-    StartCardOffensive = C.Game.StartCardOffensive
-    StartCardDefensive = C.Game.StartCardDefensive
-
     ResultWin0 = 1
     ResultWin1 = -1
     ResultDraw = 0
@@ -56,28 +50,8 @@ class Game:
         self.player_buffer = [None]
         self._player_iter = self._player_generator()
 
-        # Heroes.
-        self.heroes = [None for _ in range(2)]  # Change it into lists?
-
-        # Mana and overloads.
-        self.mana = [0 for _ in range(2)]
-        self.max_mana = [0 for _ in range(2)]
-        self.overload = [0 for _ in range(2)]
-        self.overload_next = [0 for _ in range(2)]
-
-        # Decks, hands, plays, secrets, weapons and graveyards.
-        self.decks = [[] for _ in range(2)]
-        self.hands = [[] for _ in range(2)]
-        self.plays = [[] for _ in range(2)]
-        self.secrets = [[] for _ in range(2)]
-        self.weapons = [None for _ in range(2)]     # Change it into lists?
-        self.graveyards = [[] for _ in range(2)]
-
-        # Tire counters.
-        self.tire_counters = [0 for _ in range(2)]
-
-        # todo: Enchantments.
-        self.enchantments = [[] for _ in range(2)]
+        # Players.
+        self.players = [None, None]     # type: List[Player]
 
         ################
         # Event engine #
@@ -120,7 +94,6 @@ class Game:
 
         self.error_stub = kwargs.pop('error_stub', error)
 
-        # todo: game counters (for tasks) and history loggers
         # All history events. Store in `Event` instance or its string representation?
         self.event_history = []
 
@@ -308,47 +281,30 @@ class Game:
         self.running = True
         info('Start a new game: {}'.format(self))
 
-        self.event_history.clear()
-
+        # Select start player.
         start_player = random.randint(0, 1)
 
-        cards = all_cards()
-        heroes = all_heroes()
-        for player_id, deck in enumerate(decks):
-            self.heroes[player_id] = heroes[deck.klass](self, player_id)
-            self.decks[player_id] = [cards[card_id](self, player_id) for card_id in deck.card_id_list]
-            random.shuffle(self.decks[player_id])
-            if player_id == start_player:
-                self.hands[player_id] = self.decks[player_id][:self.StartCardOffensive]
-                self.decks[player_id] = self.decks[player_id][self.StartCardOffensive:]
-            else:
-                self.hands[player_id] = self.decks[player_id][:self.StartCardDefensive]
-                self.decks[player_id] = self.decks[player_id][self.StartCardDefensive:]
-
         # Refresh some counters.
+        self.event_history.clear()
         self.n_turns = -1
         self.current_player = start_player
         self.current_oop = 1
         self._stop_subsequent_phases = False
-        self.tire_counters = [0 for _ in range(2)]
         self.player_buffer = [None]
+        self.players = [Player(self) for _ in range(2)]
+
+        player_start_game_iters = [
+            player.start_game(deck, player_id, start_player)
+            for player_id, (player, deck) in enumerate(zip(self.players, decks))]
+        for it in player_start_game_iters:
+            next(it)
 
         replaces = yield
         for player_id, replace in enumerate(replaces):
-            replace = sorted(set(replace))  # Get sorted unique elements
-            debug('Replace hand {} of player {}'.format(replace, player_id))
-            replace_index = random.sample(list(range(len(self.decks[player_id]))), k=len(replace))
-            for hand_index, deck_index in zip(replace, replace_index):
-                self.decks[player_id][deck_index], self.hands[player_id][hand_index] = \
-                    self.hands[player_id][hand_index], self.decks[player_id][deck_index]
-
-        random.shuffle(self.decks[0])
-        random.shuffle(self.decks[1])
-
-        # Add coin into defensive hand
-        self.hands[1 - start_player].append(cards[0](self, 1 - start_player))
-
-        self._init_card_zones()
+            try:
+                player_start_game_iters[player_id].send(replace)
+            except StopIteration:
+                pass
 
         add_standard_triggers(self)
 
@@ -356,7 +312,8 @@ class Game:
         self.resolve_events(game_begin_standard_events(self))
 
     def end_game(self):
-        # TODO: add more clean here?
+        for player in self.players:
+            player.end_game()
         debug('{} end in result {}.'.format(self, self.game_result))
         self.running = False
 
@@ -376,12 +333,12 @@ class Game:
 
         deaths = set()
 
-        for zone in [self.plays[0], self.plays[1], self.weapons, self.heroes]:
-            for e in zone:
+        for player in self.players:
+            for e in player.play + [player.weapon, player.hero]:
                 if e is None:
                     continue
                 if not e.alive:
-                    deaths.add(zone)
+                    deaths.add(e)
 
         return order_of_play(deaths)
 
@@ -422,7 +379,7 @@ class Game:
             (True, False): self.ResultWin0,
             (False, True): self.ResultWin1,
             (False, False): self.ResultDraw,
-        }[(self.heroes[0].play_state, self.heroes[1].play_state)]
+        }[(self.players[0].hero.play_state, self.players[1].hero.play_state)]
 
     def new_turn(self):
         """TODO:
@@ -437,15 +394,10 @@ class Game:
         self.n_turns += 1
         self.current_player = self._next_player()
 
-        # Refresh mana.
-        if self.max_mana[self.current_player] < self.ManaMax:
-            self.max_mana[self.current_player] += 1
-        self.overload[self.current_player] = min(
-            self.overload_next[self.current_player], self.max_mana[self.current_player])
-        self.overload_next[self.current_player] = 0
-        self.mana[self.current_player] = self.max_mana[self.current_player] - self.overload[self.current_player]
+        current_player = self.players[self.current_player]
+        opp_player = self.players[1 - self.current_player]
 
-        # todo
+        # todo: Refresh mana, etc.
 
         pass
 
@@ -469,23 +421,6 @@ class Game:
                     yield self.current_player
                 else:
                     yield p
-                    
-    def _init_card_zones(self):
-        """Initialize cards' zones when the game start."""
-        # fixme: merge this method into `generate`?
-        # Need to init hero zone?
-
-        for player_id in (0, 1):
-            for zone_id in Zone.Idx2Str.keys():
-                try:
-                    zone = self.get_zone(zone_id, player_id)
-                    for card in zone:
-                        card.zone = zone_id
-                except ValueError:
-                    pass
-            self.heroes[player_id].zone = Zone.Hero
-            if self.weapons[player_id] is not None:
-                self.weapons[player_id].zone = Zone.Weapon
 
     def move(self, from_player, from_zone, from_index, to_player, to_zone, to_index):
         """Move an entity from one zone to another.
@@ -526,7 +461,7 @@ class Game:
 
             # Move it to graveyard.
             entity.zone = Zone.Graveyard
-            self.graveyards[from_player].append(entity)
+            self.get_zone(Zone.Graveyard, from_player).append(entity)
 
             return entity, False, []
 
@@ -548,47 +483,15 @@ class Game:
             The list contains consequence events.
         """
 
-        # If the play board is full, do nothing.
-        if self.full(to_zone, to_player):
-            debug('{} full!'.format(Zone.Idx2Str[to_zone]))
-            return None, False, []
-
-        if isinstance(entity, int):
-            entity = self.create_card(entity, player_id=to_player)
-
-        self._insert_entity(entity, to_zone, to_player, to_index)
-
-        return entity, True, []
+        return self.players[to_player].generate(to_zone, to_index, entity)
 
     def _insert_entity(self, entity, to_zone, to_player, to_index):
-        tz = self.get_zone(to_zone, to_player)
-
-        # todo: set oop when moving to play zone.
-        # todo: set other things
-
-        if to_index == 'last':
-            tz.append(entity)
-        else:
-            tz.insert(to_index, entity)
-        entity.zone = to_zone
-        entity.player_id = to_player
+        self.players[to_player].insert_entity(entity, to_zone, to_index)
 
     def add_mana(self, value, action, player_id):
-        """Add mana.
+        """Add mana. See details for `Player.add_mana`."""
 
-        :param value: Value of mana.
-        :param action: '1' (one turn), 'p' (permanent) or 'r' (restore)
-        :param player_id: Player id.
-        """
-
-        if action == '1':
-            self.mana[player_id] = min(self.ManaMax - self.overload[player_id], self.mana[player_id] + value)
-        elif action == 'p':
-            pass
-        elif action == 'r':
-            pass
-        else:
-            raise ValueError('Unknown action {}'.format(action))
+        self.players[player_id].add_mana(value, action)
 
     def inc_oop(self):
         self.current_oop += 1
@@ -610,53 +513,25 @@ class Game:
         self.__dict__.update(state)
         self._player_iter = self._player_generator()
 
+    def displayed_mana(self):
+        return [player.displayed_mana() for player in self.players]
+
     def full(self, zone, player_id):
-        if zone == Zone.Deck:
-            return len(self.decks[player_id]) >= self.DeckMax
-        if zone == Zone.Hand:
-            return len(self.hands[player_id]) >= self.HandMax
-        if zone == Zone.Secret:
-            return len(self.secrets[player_id]) >= self.SecretMax
-        if zone == Zone.Play:
-            return len(self.plays[player_id]) >= self.PlayMax
-        if zone == Zone.Graveyard:
-            return False
-        if zone == Zone.Weapon:
-            return self.weapons[player_id] is not None
-        # todo: add warning here?
-        return False
+        return self.players[player_id].full(zone)
 
     def get_zone(self, zone, player_id):
-        """
-
-        :param zone:
-        :param player_id:
-        :return: list of the zone
-        :rtype: list
-        """
-
-        if zone == Zone.Deck:
-            return self.decks[player_id]
-        if zone == Zone.Hand:
-            return self.hands[player_id]
-        if zone == Zone.Secret:
-            return self.secrets[player_id]
-        if zone == Zone.Play:
-            return self.plays[player_id]
-        if zone == Zone.Graveyard:
-            return self.graveyards[player_id]
-        raise ValueError('Does not have zone {}'.format(zone))
+        return self.players[player_id].get_zone(zone)
 
     def show_details(self, level='INFO'):
         def _msg(*args, **kwargs):
             message(level, *args, **kwargs)
         _msg('Game details'.center(C.Logging.Width, '='))
         _msg('Turn: {} Current player: {}'.format(self.n_turns, self.current_player))
-        for player_id in range(2):
+        for player_id, player in enumerate(self.players):
             _msg('\nPlayer {}:'.format(player_id))
             _msg('Mana = {}/{}, Health = {}'.format(
-                self.mana[player_id], self.max_mana[player_id],
-                self.heroes[player_id].health,
+                player.displayed_mana(), player.max_mana,
+                player.hero.health,
             ))
             for zone in [Zone.Deck, Zone.Hand, Zone.Secret, Zone.Play, Zone.Graveyard]:
                 _msg(Zone.Idx2Str[zone], '=', self.get_zone(zone, player_id))
@@ -664,19 +539,8 @@ class Game:
         _msg('Game details end'.center(C.Logging.Width, '='))
 
     def format_zone(self, zone, player_id, verbose=False):
-        """Format cards in the zone into string.
-
-        :param zone:
-        :param player_id:
-        :param verbose: If True, return str(card), or only return card.name if False. [False]
-        :return: String to represent the zone.
-        :rtype: str
-        """
-
-        if verbose:
-            return str(self.get_zone(zone, player_id))
-        else:
-            return str([card.name for card in self.get_zone(zone, player_id)])
+        """Format cards in the zone into string. See details in `Player.format_zone`."""
+        return self.players[player_id].format_zone(zone, verbose)
 
     def create_card(self, card_id, **kwargs):
         return all_cards()[card_id](self, **kwargs)

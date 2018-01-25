@@ -11,6 +11,7 @@ class Hero(GameEntity, metaclass=SetDataMeta):
     """[NO_DESCRIPTION]"""
 
     _data = {
+        'klass': 0,
         'CAH': [None, None, 30],
     }
 

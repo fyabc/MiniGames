@@ -13,6 +13,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
     _data = {
         'type': 0,
         'rarity': 0,
+        'klass': 0,
         'race': [],
         'CAH': [0, 1, 1],
         'overload': 0,
@@ -25,7 +26,7 @@ class Card(GameEntity, metaclass=SetDataMeta):
 
         self.zone = Zone.Invalid
         self.player_id = player_id
-        self.cost = self.data['CAH'][0]
+        self._cost = self.data['CAH'][0]
         self.orig_cost = self.data['CAH'][0]    # The original cost.
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
@@ -48,6 +49,22 @@ class Card(GameEntity, metaclass=SetDataMeta):
     @property
     def rarity(self):
         return self.data['rarity']
+
+    @property
+    def cost(self):
+        """Get cost of the card.
+
+        Mana cost rules copied from Advanced Rulebook:
+            Rule M5: The mana cost of a card has no lower limit. Negative mana costs are displayed as, and use, 0,
+                but help to counteract mana cost increases.
+            Rule M6: When multiple effects change the cost of a card or your Hero Power, they are applied in order of
+                play (Auras and Enchantments having no special priority). One exception is Summoning Portal's aura,
+                which has a very early Priority that makes it considered before ALL other effects. Besides, cards that
+                apply a Mana Cost Aura (Molten Giant, Volcanic Drake, Dread Corsair, etc) have a latest priority.
+            Rule M7: When an effect refers to the cost of casting a spell (such as Summoning Stone or Gazlowe),
+                it means the amount of mana you paid to cast it, not the base mana cost.
+        """
+        return max(self._cost, 0)
 
     @property
     def have_target(self):

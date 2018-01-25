@@ -9,6 +9,7 @@ from cocos.scenes import transitions
 from .utils import pos, pos_y
 from ...utils.draw.constants import Colors
 from .basic_components import *
+from ...game.core import Game
 
 __author__ = 'fyabc'
 
@@ -111,6 +112,7 @@ class SelectDeckLayer(ActiveLayer):
                    position=pos(0.5, 0.5), anchor_y='center', font_size=32, color=Colors['yellow1'], time=1.5)
             return
 
+        self.ctrl.game = Game(frontend=self.ctrl)
         start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
 
         game_board_layer = self.ctrl.get_node('game/board')

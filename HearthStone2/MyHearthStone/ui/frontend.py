@@ -15,7 +15,7 @@ class Frontend:
     def __init__(self, **kwargs):
         info('Start the frontend "{}"'.format(self.__class__.__name__))
         self.user = AppUser.load_or_create(kwargs.pop('user_id_or_name', None))
-        self.game = None
+        self.game = None    # type: 'MyHearthStone.game.core.Game'
 
         self._hold_lock_file = False
 

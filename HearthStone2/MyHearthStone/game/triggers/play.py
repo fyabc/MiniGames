@@ -27,10 +27,10 @@ class StdOnPlaySpell(StandardBeforeTrigger):
         :return: new event list.
         """
 
-        player_id = event.player_id
+        player = self.game.players[event.player_id]
 
         # todo: Add effect of Cho'gall
-        if self.game.mana[player_id] < event.spell.cost:
+        if player.displayed_mana() < event.spell.cost:
             error_and_stop(self.game, event, 'You do not have enough mana!')
             return []
 
@@ -39,16 +39,16 @@ class StdOnPlaySpell(StandardBeforeTrigger):
             return []
 
         if event.spell.data['secret']:
-            if self.game.full(Zone.Secret, player_id):
+            if player.full(Zone.Secret):
                 error_and_stop(self.game, event, 'I cannot have more secrets!')
                 return []
 
-            for card in self.game.get_zone(Zone.Secret, player_id):
+            for card in player.get_zone(Zone.Secret):
                 if card.data['id'] == event.spell.data['id']:
                     error_and_stop(self.game, event, 'I already have this secret!')
                     return []
 
-        self.game.mana[player_id] -= event.spell.cost
+        player.used_mana += event.spell.cost
 
         # [NOTE]: move it to ``Game.move``?
         event.spell.oop = self.game.inc_oop()
@@ -57,7 +57,7 @@ class StdOnPlaySpell(StandardBeforeTrigger):
         if event.spell.data['secret']:
             tz = Zone.Secret
 
-        self.game.move(player_id, Zone.Hand, event.spell, player_id, tz, 'last')
+        self.game.move(event.player_id, Zone.Hand, event.spell, event.player_id, tz, 'last')
 
         return []
 
@@ -101,10 +101,10 @@ class StdOnPlayMinion(StandardBeforeTrigger):
         :return: new event list.
         """
 
-        player_id = event.player_id
+        player = self.game.players[event.player_id]
 
         # todo: Add effect of Seadevil Stinger
-        if self.game.mana[player_id] < event.minion.cost:
+        if player.displayed_mana() < event.minion.cost:
             error_and_stop(self.game, event, 'You do not have enough mana!')
             return []
 
@@ -112,18 +112,18 @@ class StdOnPlayMinion(StandardBeforeTrigger):
             error_and_stop(self.game, event, 'This is not a valid target!')
             return []
 
-        if self.game.full(Zone.Play, player_id):
+        if player.full(Zone.Play):
             error_and_stop(self.game, event, 'You cannot have more minions!')
             return []
 
-        self.game.mana[player_id] -= event.minion.cost
+        player.used_mana += event.minion.cost
 
-        self.game.summon_events.add(standard.Summon(self.game, event.minion, player_id))
+        self.game.summon_events.add(standard.Summon(self.game, event.minion, event.player_id))
 
         # [NOTE]: move it to `Game.move`?
         event.minion.oop = self.game.inc_oop()
 
-        self.game.move(player_id, Zone.Hand, event.minion, player_id, Zone.Play, event.loc)
+        self.game.move(event.player_id, Zone.Hand, event.minion, event.player_id, Zone.Play, event.loc)
 
         return []
 

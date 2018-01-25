@@ -6,7 +6,6 @@ from cocos import director
 from .main_scene import get_main_scene
 from .collection_scene import get_collection_scene
 from .game_scene import get_select_deck_scene, get_game_scene
-from ...game.core import Game
 from ..frontend import Frontend
 from ...utils.constants import C
 from ...utils.draw.load_resource import index_resources
@@ -25,10 +24,6 @@ class CocosSingleFrontend(Frontend):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        self.game = Game(
-            frontend=self,
-        )
 
         self.scenes = {}
 

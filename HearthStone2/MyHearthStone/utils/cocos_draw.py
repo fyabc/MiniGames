@@ -228,7 +228,8 @@ class HSGameBoard(layer.Layer):
         self.cards = []
 
         # Players. P0 is current player (show in bottom), P1 is current player (show in top, hide something)
-        players = game.current_player, 1 - game.current_player
+        player_ids = game.current_player, 1 - game.current_player
+        players = [game.players[player_id] for player_id in player_ids]
 
         # Some positions.
         right_b = 0.88
@@ -243,7 +244,7 @@ class HSGameBoard(layer.Layer):
         self.add(draw.Line(_pos(hero_b, .0), _pos(hero_b, 1.), Colors['white'], 2))
 
         # Decks.
-        deck_sizes = [len(game.get_zone(Zone.Deck, p)) for p in players]
+        deck_sizes = [len(p.get_zone(Zone.Deck)) for p in players]
         for ds, y in zip(deck_sizes, [0.15, 0.85]):
             self.add(text.Label(
                 '牌库：{}'.format(ds), _pos(right_c, y),
@@ -251,7 +252,7 @@ class HSGameBoard(layer.Layer):
             ))
 
         # Manas.
-        manas = [[game.mana[p], game.max_mana[p], game.overload[p], game.overload_next[p]] for p in players]
+        manas = [[p.displayed_mana(), p.max_mana, p.overload, p.overload_next] for p in players]
         for (mana, max_mana, overload, overload_next), y in zip(manas, [0.3, 0.7]):
             self.add(text.Label(
                 '{}/{}{}{}'.format(
@@ -265,14 +266,14 @@ class HSGameBoard(layer.Layer):
             ))
 
         # Other components of right board.
-        for pi, y in zip(players, [0.42, 0.58]):
+        for pi, y in zip(player_ids, [0.42, 0.58]):
             self.add(text.Label(
                 'Player {}'.format(pi),
                 _pos(right_c, y), font_name='SimHei', font_size=16, anchor_x='center', anchor_y='center', bold=True,
             ))
 
         # Hands.
-        hands = [game.get_zone(Zone.Hand, p) for p in players]
+        hands = [p.get_zone(Zone.Hand) for p in players]
 
         for pi, (hand, y) in enumerate(zip(hands, [0.115, 0.885])):
             for i, card in enumerate(hand):

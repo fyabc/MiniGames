@@ -54,7 +54,7 @@ class Concede(PlayerAction):
 
     def phases(self):
         return [
-            standard.HeroDeath(self.game, self.game.heroes[self.player_id]), 'check_win',
+            standard.HeroDeath(self.game, self.game.players[self.player_id].hero), 'check_win',
         ]
 
 
