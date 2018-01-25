@@ -25,7 +25,7 @@ def _auto_label(rects):
 
 
 class CardRecord:
-    Pattern = re.compile(r'1\. (?P<name>\S+) (?P<class>\w+) (?P<type>\w+) (?P<rarity>\w+)(?: (?P<race>\w+))? '
+    Pattern = re.compile(r'\d+\. (?P<name>\S+) (?P<class>\w+) (?P<type>\w+) (?P<rarity>\w+)(?: (?P<race>\w+))? '
                          r'(?P<cost>\d+)(?: (?P<attack>\d+) (?P<health>\d+))? - ?(?P<description>.*?)(?:#.*)?$')
 
     AllCards = []

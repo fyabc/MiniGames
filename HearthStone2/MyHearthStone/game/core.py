@@ -308,7 +308,6 @@ class Game:
 
         add_standard_triggers(self)
 
-        # todo: need test
         self.resolve_events(game_begin_standard_events(self))
 
     def end_game(self):

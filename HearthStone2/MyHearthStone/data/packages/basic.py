@@ -60,10 +60,11 @@ class 工程师学徒(Minion):
 })
 
 
+# Neutral derivations.
+
 class 幸运币(Spell):
     _data = {
         'id': 43,
-        'name': '幸运币',
         'type': 1,
         'rarity': -1,
         'CAH': [0],
@@ -72,7 +73,6 @@ class 幸运币(Spell):
     def run(self, target):
         self.game.add_mana(1, 'T', self.player_id)
         msg.verbose('Add 1 mana to player {} in this turn!'.format(self.player_id))
-
         return []
 
 
