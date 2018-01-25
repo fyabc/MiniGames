@@ -48,7 +48,7 @@ class StdOnPlaySpell(StandardBeforeTrigger):
                     error_and_stop(self.game, event, 'I already have this secret!')
                     return []
 
-        player.used_mana += event.spell.cost
+        player.spend_mana(event.spell.cost)
 
         # [NOTE]: move it to ``Game.move``?
         event.spell.oop = self.game.inc_oop()
@@ -116,7 +116,7 @@ class StdOnPlayMinion(StandardBeforeTrigger):
             error_and_stop(self.game, event, 'You cannot have more minions!')
             return []
 
-        player.used_mana += event.minion.cost
+        player.spend_mana(event.minion.cost)
 
         self.game.summon_events.add(standard.Summon(self.game, event.minion, event.player_id))
 

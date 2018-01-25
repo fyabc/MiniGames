@@ -397,7 +397,10 @@ class Game:
         current_player = self.players[self.current_player]
         opp_player = self.players[1 - self.current_player]
 
-        # todo: Refresh mana, etc.
+        # Refresh mana.
+        current_player.add_mana(1, 'N')
+
+        # todo
 
         pass
 

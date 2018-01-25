@@ -70,7 +70,7 @@ class 幸运币(Spell):
     }
 
     def run(self, target):
-        self.game.add_mana(1, '1', self.player_id)
+        self.game.add_mana(1, 'T', self.player_id)
         msg.verbose('Add 1 mana to player {} in this turn!'.format(self.player_id))
 
         return []

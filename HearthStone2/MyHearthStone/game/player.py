@@ -167,7 +167,7 @@ class Player(GameEntity):
             return self.graveyard
         raise ValueError('Does not have zone {}'.format(zone))
 
-    def add_mana(self, value, action):
+    def add_mana(self, value: int, action: str):
         """Add mana.
 
          Mana rules copied from Advanced Rulebook:
@@ -181,9 +181,51 @@ class Player(GameEntity):
             Mana crystals <https://hearthstone.gamepedia.com/Mana#Mana_Crystals>
             Current mana <https://hearthstone.gamepedia.com/Advanced_rulebook#Why_available_mana_can_be_negative>
 
-        :param value:
-        :param action:
+        :param value: (int) Mana value to be added.
+        :param action: (str)
+            'T': Add temp mana
+            'M': Add (empty) max mana
+            'D': Destroy mana
+            'B': Both add max mana and temp mana
+            'R': Restore mana
+            'N': New turn: add a new max mana and restore all mana
         """
+
+        if action == 'N':
+            # New turn
+            self.max_mana = min(self.ManaMax, value + self.max_mana)
+            self.overload = self.overload_next
+            self.overload_next = 0
+            self.temp_mana = 0
+            self.used_mana = self.overload
+        elif action == 'T':
+            self.temp_mana = min(self.ManaMax, value + self.temp_mana)
+        else:
+            raise ValueError('Unknown action {!r}'.format(action))
+
+    def spend_mana(self, value):
+        """Spend mana."""
+
+        # assert value <= self.displayed_mana()
+
+        if value < self.temp_mana:
+            # Also handle the case of `value == 0`.
+            self.temp_mana -= value
+            return
+        value -= self.temp_mana
+        self.temp_mana = 0
+        self.used_mana += value
+
+    def spend_all_mana(self):
+        """Spend all available mana.
+
+        :return: Value of spent mana.
+        """
+
+        result = self.displayed_mana()
+        self.temp_mana = 0
+        self.used_mana = self.max_mana
+        return result
 
     def displayed_mana(self):
         """Get displayed current mana value. Negative value will be displayed as 0.
