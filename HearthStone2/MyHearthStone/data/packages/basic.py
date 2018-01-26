@@ -3,6 +3,8 @@
 
 """Basic package, include basic cards and heroes.
 
+All ID start from 0.
+
 Card ID format:
 
 01 02 0014
@@ -14,8 +16,6 @@ Card ID format:
 |
 Package ID
 
-Card ID start from 0.
-
 Ordered by:
     Package
     Class
@@ -24,12 +24,40 @@ Ordered by:
     Cost (CAH[0]) Ascending
     Attack (CAH[1]) Ascending
     Health (CAH[2]) Ascending
+
+Default:
+    Type = 0
+    Rarity = 0
+    Klass = 0
+    Race = []
+
+Hero ID format:
+
+01 0004
+^  ^
+|  |
+|  Hero ID
+|
+Package ID
+
+Enchantment ID format:
+
+01 0004
+^  ^
+|  |
+|  Enchantment ID
+|
+Package ID
 """
 
-from MyHearthStone.ext import Minion, Spell, Weapon, Hero
+from MyHearthStone.ext import Minion, Spell, Hero
 from MyHearthStone.ext import blank_minion, blank_weapon
-from MyHearthStone.ext import std_events, std_triggers
+from MyHearthStone.ext import std_events
 from MyHearthStone.ext import message as msg
+
+# Load other implementation modules.
+# noinspection PyUnresolvedReferences
+from impl.basic_enchantments import *
 
 __author__ = 'fyabc'
 
@@ -43,8 +71,6 @@ PackageID = 0
 class 工程师学徒(Minion):
     _data = {
         'id': 6,
-        'name': '工程师学徒',
-        'rarity': 0,
         'CAH': [2, 1, 1],
         'battlecry': True,
     }

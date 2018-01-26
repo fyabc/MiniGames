@@ -14,13 +14,17 @@ from .message import error, warning, msg_block
 from ..game.game_entity import SetDataMeta
 from ..game.card import Card
 from ..game.hero import Hero
+from ..game.enchantments.enchantment import Enchantment
 
 __author__ = 'fyabc'
 
 
-_AllCards = None
-_AllHeroes = None
-_AllGameData = None
+_AllData = {
+    'cards': None,
+    'heroes': None,
+    'enchantments': None,
+    'game_data': None,
+}
 
 
 def _load_module_variables(root_package_path, package_name):
@@ -30,7 +34,6 @@ def _load_module_variables(root_package_path, package_name):
     :param package_name: The name of the module.
     :return: All variables in this module.
     """
-
     _origin_sys_path = sys.path.copy()
 
     full_package_name = os.path.join(root_package_path, package_name)
@@ -55,7 +58,6 @@ class _GameData:
     Game data contains some packages and resources.
     A package is a Python file, contains some cards and heroes.
     """
-
     ResourcePathName = 'resources'
     ImagesPathName = 'images'
     SoundsPathName = 'sounds'
@@ -75,7 +77,6 @@ class _GameData:
         :param include_values: Include values directory.
         :return:
         """
-
         result = [
             os.path.join(self.path, self.ResourcePathName, self.ImagesPathName),
             os.path.join(self.path, self.ResourcePathName, self.SoundsPathName),
@@ -95,12 +96,15 @@ class _GameData:
         self._package_vars = []
         for filename in os.listdir(self.path):
             package_name, ext = os.path.splitext(filename)
+            # Only load top-level Python modules.
+            # Python modules in subdirectories (i.e. impl/xxx.py) will not be loaded,
+            # so they can be used as implementation files.
             if ext == '.py':
                 module_vars = _load_module_variables(self.path, package_name)
                 if module_vars is not None:
                     self._package_vars.append(module_vars)
 
-    def load_strings(self, cards_dict: dict, heroes_dict: dict):
+    def load_strings(self, cards_dict: dict, heroes_dict: dict, enchantments_dict: dict):
         """Load strings of name and description (specific locale) of cards and heroes."""
 
         my_locale = C.Locale
@@ -151,9 +155,9 @@ class _GameData:
 
 def _load_packages():
     """Load package data."""
-
     AllCards = {}
     AllHeroes = {}
+    AllEnchantments = {}
     AllGameData = []
 
     with msg_block('Loading cards and heroes'):
@@ -164,76 +168,86 @@ def _load_packages():
                 for var in vars_.values():
                     if isinstance(var, SetDataMeta) and issubclass(var, Card):
                         data = var.data
-
                         card_id = data.get('id', None)
-                        if card_id is None:
+                        if card_id is None:     # Do not load base classes (id = None).
                             continue
-
                         if card_id in AllCards:
                             if AllCards[card_id] == var:
                                 continue
                             warning('The card id {} already exists, overwrite it'.format(card_id))
-
                         AllCards[card_id] = var
                     elif isinstance(var, SetDataMeta) and issubclass(var, Hero):
                         data = var.data
-
                         hero_id = data.get('id', None)
-                        if hero_id is None:
+                        if hero_id is None:     # Do not load base classes (id = None).
                             continue
-
                         if hero_id in AllHeroes:
                             if AllHeroes[hero_id] == var:
                                 continue
                             warning('The hero id {} already exists, overwrite it'.format(hero_id))
-
                         AllHeroes[hero_id] = var
+                    elif isinstance(var, SetDataMeta) and issubclass(var, Enchantment):
+                        data = var.data
+                        enchantment_id = data.get('id', None)
+                        if enchantment_id is None:  # Do not load base classes (id = None).
+                            continue
+                        if enchantment_id in AllEnchantments:
+                            if AllEnchantments[enchantment_id] == var:
+                                continue
+                            warning('The enchantment id {} already exists, overwrite it'.format(enchantment_id))
+                        AllEnchantments[enchantment_id] = var
 
-            AllGameData[-1].load_strings(AllCards, AllHeroes)
+            AllGameData[-1].load_strings(AllCards, AllHeroes, AllEnchantments)
 
-    return AllCards, AllHeroes, AllGameData
+    return {
+        'cards': AllCards,
+        'heroes': AllHeroes,
+        'enchantments': AllEnchantments,
+        'game_data': AllGameData,
+    }
+
+
+def _get_all_data(key):
+    global _AllData
+    if _AllData[key] is None:
+        _AllData.update(_load_packages())
+    return _AllData[key]
 
 
 def all_cards():
     """Get dict of all cards.
-
     If cards not loaded, it will load cards automatically.
 
     :return: Dict of all cards.
     """
-
-    global _AllCards, _AllHeroes, _AllGameData
-    if _AllCards is None:
-        _AllCards, _AllHeroes, _AllGameData = _load_packages()
-    return _AllCards
+    return _get_all_data('cards')
 
 
 def all_heroes():
     """Get dict of all heroes.
-
     If heroes not loaded, it will load heroes automatically.
 
     :return: Dict of all heroes.
     """
+    return _get_all_data('heroes')
 
-    global _AllCards, _AllHeroes, _AllGameData
-    if _AllHeroes is None:
-        _AllCards, _AllHeroes, _AllGameData = _load_packages()
-    return _AllHeroes
+
+def all_enchantments():
+    """Get dict of all enchantments.
+    If enchantments not loaded, it will load enchantments automatically.
+
+    :return: Dict of all enchantments.
+    """
+    return _get_all_data('enchantments')
 
 
 def all_package_data():
     """Get list of all package data.
-
     If packages not loaded, it will load packages automatically.
 
     :return: List of all packages.
     """
-
-    global _AllCards, _AllHeroes, _AllGameData
-    if _AllHeroes is None:
-        _AllCards, _AllHeroes, _AllGameData = _load_packages()
-    return _AllGameData
+    return _get_all_data('game_data')
 
 
 def search_by_name(name):
@@ -242,7 +256,6 @@ def search_by_name(name):
     :param name: card name
     :return: card id
     """
-
     data = all_cards()
 
     for i, e in data.items():
@@ -253,14 +266,15 @@ def search_by_name(name):
 
 
 def reload_packages(force=False):
-    global _AllCards, _AllHeroes, _AllGameData
-    if force or _AllCards is None or _AllHeroes is None or _AllGameData is None:
-        _AllCards, _AllHeroes, _AllGameData = _load_packages()
+    global _AllData
+    if force or any(map(lambda e: e is None, _AllData.values())):
+        _AllData.update(_load_packages())
 
 
 __all__ = [
     'all_cards',
     'all_heroes',
+    'all_enchantments',
     'all_package_data',
     'search_by_name',
     'reload_packages',

@@ -12,7 +12,7 @@ __author__ = 'fyabc'
 class NoticeLabel(text.Label):
     """A notice label with default HearthStone style.
 
-    This label will fade out after `time` seconds, then be automatically removed from its parent.
+    This label will fade out after `time` seconds, then will be automatically removed from its parent.
     """
 
     def __init__(self, *args, **kwargs):
@@ -30,6 +30,12 @@ def notice(layer_, text_, **kwargs):
     """Add a notice label with default HearthStone style."""
 
     kw_with_default = DefaultLabelStyle.copy()
+    kw_with_default.update({
+        'time': 1.5, 'position': pos(0.5, 0.5),
+        'anchor_y': 'center', 'font_size': 32,
+        'color': Colors['yellow'],
+    })
+
     kw_with_default.update(kwargs)
     layer_.add(NoticeLabel(text_, **kw_with_default))
 

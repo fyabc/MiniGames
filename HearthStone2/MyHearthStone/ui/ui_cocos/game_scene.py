@@ -108,15 +108,16 @@ class SelectDeckLayer(ActiveLayer):
 
     def on_start_game(self):
         if any(map(lambda e: e is None, self.selected_decks)):
-            notice(self, 'Must select two decks!',
-                   position=pos(0.5, 0.5), anchor_y='center', font_size=32, color=Colors['yellow1'], time=1.5)
+            notice(self, 'Must select two decks!')
             return
 
+        # Create new game, register callback and start game.
         self.ctrl.game = Game(frontend=self.ctrl)
-        start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
-
         game_board_layer = self.ctrl.get_node('game/board')
+        self.ctrl.game.add_resolve_callback(game_board_layer.update_content)
+        start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
         game_board_layer.start_game_iter = start_game_iter
+
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=1.0))
 
     def scroll_decks(self, player_id, is_down):
@@ -164,8 +165,6 @@ class GameBoardLayer(ActiveLayer):
     def __init__(self, ctrl):
         super().__init__(ctrl)
 
-        ctrl.game.add_resolve_callback(self.update_content)
-
         # Start game iterator returned from `Game.start_game`. Sent from select deck layer.
         self.start_game_iter = None
 
@@ -173,10 +172,28 @@ class GameBoardLayer(ActiveLayer):
         self.hand_sprites = [[] for _ in range(2)]
         self.deck_sprites = [[] for _ in range(2)]
 
+    def on_enter(self):
+        super().on_enter()
+
+        assert self.start_game_iter is not None, 'The game is not started correctly!'
+
+        # TODO: Play start game animation, hand replacement selection, etc.
+        try:
+            next(self.start_game_iter)
+            self.start_game_iter.send(self._replacement_selection())
+        except StopIteration:
+            pass
+
     def update_content(self, event_or_trigger, current_event):
-        """Update the game board content, called by game event engine."""
+        """Update the game board content, called by game event engine.
+
+        Registered at `SelectDeckLayer.on_start_game`.
+        """
 
         pass
+
+    def _replacement_selection(self):
+        return [], []
 
 
 class GameButtonsLayer(ActiveLayer):
