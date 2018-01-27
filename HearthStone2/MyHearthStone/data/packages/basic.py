@@ -84,7 +84,8 @@ class 工程师学徒(Minion):
         return [std_events.DrawCard(self.game, self, self.player_id)]
 
 
-淡水鳄 = blank_minion({
+# 淡水鳄
+blank_minion({
     'id': 11,
     'CAH': [2, 2, 3],
     'race': [0],
@@ -96,9 +97,7 @@ class 工程师学徒(Minion):
 class 幸运币(Spell):
     _data = {
         'id': 43,
-        'type': 1,
-        'rarity': -1,
-        'CAH': [0],
+        'type': 1, 'rarity': -1, 'CAH': [0],
     }
 
     def run(self, target):
@@ -111,7 +110,8 @@ class 幸运币(Spell):
 # Druid (1) #
 #############
 
-埃隆巴克保护者 = blank_minion({
+# 埃隆巴克保护者
+blank_minion({
     'id': 10000,
     'CAH': [8, 8, 8],
     'taunt': True,
@@ -125,9 +125,7 @@ class 幸运币(Spell):
 class 火球术(Spell):
     _data = {
         'id': 30007,
-        'type': 1,
-        'klass': 3,
-        'CAH': [4],
+        'type': 1, 'klass': 3, 'CAH': [4],
         'have_target': True,
     }
 
@@ -139,11 +137,10 @@ class 火球术(Spell):
 # Warrior (9) #
 ###############
 
-炽炎战斧 = blank_weapon({
+# 炽炎战斧
+blank_weapon({
     'id': 90008,
-    'type': 2,
-    'klass': 9,
-    'CAH': [3, 3, 2],
+    'type': 2, 'klass': 9, 'CAH': [3, 3, 2],
 })
 
 
