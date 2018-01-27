@@ -10,6 +10,7 @@ from .utils import pos, pos_y
 from ...utils.draw.constants import Colors
 from .basic_components import *
 from ...game.core import Game
+from ...game import player_action as pa
 
 __author__ = 'fyabc'
 
@@ -207,7 +208,8 @@ class GameButtonsLayer(ActiveLayer):
         self.add(self.turn_end, name='button_turn_end')
 
     def on_turn_end(self):
-        pass
+        game = self.ctrl.game
+        game.run_player_action(pa.TurnEnd(game))
 
 
 def get_game_bg():

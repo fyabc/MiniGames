@@ -47,6 +47,11 @@ def setup_logging(file='log.txt', level=_logging.INFO, scr_log=False, scr_level=
     _logging.addLevelName(25, 'NOTE')
     _logging.addLevelName(25, 'COMMON')
 
+    # Clear old handlers. Useful for multiprocessing (call this in a new process).
+    old_handlers = _logging.root.handlers[:]
+    for old_handler in old_handlers:
+        _logging.root.removeHandler(old_handler)
+
     # TODO: add pid into logging format?
     handlers = []
     if file is not None:

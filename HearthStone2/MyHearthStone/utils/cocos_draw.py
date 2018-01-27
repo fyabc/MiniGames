@@ -16,6 +16,7 @@ from ..game.core import Game
 from ..game.card import Card, Minion, Spell, Weapon, HeroCard
 from ..utils.constants import get_package_paths
 from ..utils.draw.load_resource import index_resources
+from ..utils.message import info, warning, error, setup_logging
 from ..utils import constants
 
 __author__ = 'fyabc'
@@ -225,12 +226,6 @@ class HSGameBoard(layer.Layer):
     def __init__(self, game: Game, **kwargs):
         super(HSGameBoard, self).__init__()
 
-        self.cards = []
-
-        # Players. P0 is current player (show in bottom), P1 is current player (show in top, hide something)
-        player_ids = game.current_player, 1 - game.current_player
-        players = [game.players[player_id] for player_id in player_ids]
-
         # Some positions.
         right_b = 0.88
         right_c = (1 + right_b) / 2
@@ -242,6 +237,19 @@ class HSGameBoard(layer.Layer):
         self.add(draw.Line(_pos(.0, .23), _pos(hero_b, .23), Colors['white'], 2))
         self.add(draw.Line(_pos(.0, .77), _pos(hero_b, .77), Colors['white'], 2))
         self.add(draw.Line(_pos(hero_b, .0), _pos(hero_b, 1.), Colors['white'], 2))
+
+        self.cards = []
+
+        # Variables for selection.
+        self.active_card = None
+
+        if game is None:
+            warning('The game is not running, just show the board')
+            return
+
+        # Players. P0 is current player (show in bottom), P1 is current player (show in top, hide something)
+        player_ids = game.current_player, 1 - game.current_player
+        players = [game.players[player_id] for player_id in player_ids]
 
         # Decks.
         deck_sizes = [len(p.get_zone(Zone.Deck)) for p in players]
@@ -283,9 +291,6 @@ class HSGameBoard(layer.Layer):
                 self.cards.append(hand_card)
 
         # Plays.
-
-        # Variables for selection.
-        self.active_card = None
 
     def on_key_press(self, key, modifiers):
         """Process key press events."""
@@ -336,6 +341,7 @@ def draw_game(game, **kwargs):
     """
 
     if kwargs.pop('subprocess', False):
+        info('Creating a Cocos2d-Python drawing window in a new process')
         # Do some initialization in the new process.
 
         # Overwrite global configuration with the configuration from parent process.
@@ -343,8 +349,12 @@ def draw_game(game, **kwargs):
         if parent_config is not None:
             constants.C = parent_config
 
+        setup_logging(level=constants.C.Logging.Level, scr_log=constants.C.Logging.ScreenLog)
+
         from ..utils.package_io import reload_packages
         reload_packages()
+    else:
+        info('Creating a Cocos2d-Python drawing window in the main process')
 
     try:
         preprocess()
@@ -362,8 +372,10 @@ def draw_game(game, **kwargs):
 
         director.director.run(main_scene)
     except Exception as e:
-        print('Error "{}" when running the cocos app: {}'.format(type(e), e))
+        error('Error "{}" when running the Cocos2d-Python app: {}'.format(type(e), e))
         director.director.window.close()
+    finally:
+        info('The Cocos2d-Python drawing window exited')
 
 
 def draw_game_spawn(game, **kwargs):
