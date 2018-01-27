@@ -17,18 +17,6 @@ class PlayerAction:
 
         raise NotImplementedError('implemented by subclasses')
 
-    @classmethod
-    def make_action(cls, game, *args, **kwargs):
-        """Make an action from arguments.
-
-        :param game: The game instance.
-        :param args: Contains zones and indices.
-        :param kwargs: Other optional keywords.
-        :return: The instance of this player action, None if failed.
-        """
-
-        return cls(game, *args, **kwargs)
-
 
 class TurnEnd(PlayerAction):
     """"""

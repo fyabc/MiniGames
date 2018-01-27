@@ -33,19 +33,30 @@ def _get_handler(level=_logging.INFO, file=None, fmt=None, datefmt=None):
     return handler
 
 
-def setup_logging(file='log.txt', level=_logging.INFO, scr_log=False):
-    """Setup logging. This function will setup some loggers and print some initial message."""
+def setup_logging(file='log.txt', level=_logging.INFO, scr_log=False, scr_level=_logging.DEBUG):
+    """Setup logging. This function will setup some loggers and print some initial message.
+
+    :param file: (str or None) ['log.txt']
+        Logging filename. If set to None, do not create file logger.
+    :param level: [logging.INFO] Message level of file logger.
+    :param scr_log: (bool) [False]
+        Open screen logger.
+    :param scr_level: [logging.DEBUG] Message level of screen logger.
+    """
     _logging.addLevelName(15, 'VERBOSE')
     _logging.addLevelName(25, 'NOTE')
     _logging.addLevelName(25, 'COMMON')
 
     # TODO: add pid into logging format?
-    handlers = [
-        _get_handler(level=level, file=_os.path.join(UserLogPath, file),
-                     fmt='[{levelname:<8}] {asctime}.{msecs:0>3.0f}: <{pathname}:{lineno}> {message}',
-                     datefmt='%Y-%m-%d %H:%M:%S')]
+    handlers = []
+    if file is not None:
+        handlers.append(
+            _get_handler(level=level, file=_os.path.join(UserLogPath, file),
+                         fmt='[{levelname:<8}] {asctime}.{msecs:0>3.0f}: <{pathname}:{lineno}> {message}',
+                         datefmt='%Y-%m-%d %H:%M:%S'))
     if scr_log:
-        handlers.append(_get_handler(level='DEBUG', file=None, fmt='[{levelname:<8}] <{filename}:{lineno}> {message}'))
+        handlers.append(
+            _get_handler(level=scr_level, file=None, fmt='[{levelname:<8}] <{filename}:{lineno}> {message}'))
     _logging.basicConfig(level=_logging.DEBUG, handlers=handlers)
 
     info('Start the app')
@@ -67,6 +78,7 @@ def msg_block(msg, level=LEVEL_INFO, log_time=True):
         start_time = _time()
     message(level, '{}... '.format(msg))
     yield
+    # noinspection PyUnboundLocalVariable
     message(level, '{} done{}.'.format(msg, ', time: {:.4f}s'.format(_time() - start_time) if log_time else ''))
 
 

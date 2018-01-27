@@ -29,6 +29,7 @@ def create_blank(data, name=None, card_type=Minion, module_dict=None):
     """
 
     if module_dict is None:
+        # noinspection PyProtectedMember
         module_dict = sys._getframe(1).f_globals
 
     assert 'id' in data, 'Data must contain value of key "id".'
