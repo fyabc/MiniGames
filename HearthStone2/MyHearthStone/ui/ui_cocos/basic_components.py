@@ -40,44 +40,82 @@ def notice(layer_, text_, **kwargs):
     layer_.add(NoticeLabel(text_, **kw_with_default))
 
 
-class ActiveLabel(text.Label):
-    """The active label, which can handle mouse release and mouse motion events.
+# noinspection PyUnresolvedReferences, PyDunderSlots, PyAttributeOutsideInit
+class ActiveMixin:
+    """The mixin class of active Cocos2d-Python entities (Labels, Sprites, etc.)
 
-    [NOTE]: `ActiveLabel`s must be put in `ActiveLayer`s or other cocos nodes that can send events to them.
+    Active entities can handle mouse release and mouse motion events.
+    [NOTE]: Active entities must be put in `ActiveLayer`s or other cocos nodes that can send events to them.
+
+    Required instance attributes of subclass:
+        callback:
+        callback_args:
+        callback_kwargs:
+        stop_event:
+        selected_effect:
+        unselected_effect:
+        activated_effect:
+        active_invisible:
+        self_in_callback:
     """
 
-    def __init__(self, text='', position=(0, 0),
-                 callback=None, stop_event=False,
-                 selected_effect=None, unselected_effect=None, activated_effect=None,
-                 active_invisible=False, self_in_callback=False,
-                 **kwargs):
-        """Create an active label.
+    __slots__ = ()
 
-        :param text:
-        :param position:
-        :param callback:
-        :param stop_event:
-        :param selected_effect:
-        :param unselected_effect:
-        :param activated_effect:
-        :param active_invisible: The label is still active when invisible? [False]
-        :param self_in_callback: Add `self` as the first parameter of callback? [False]
-        :param kwargs:
-        """
+    def get_box(self):
+        raise NotImplementedError('subclass must implement `get_box`')
 
-        self.callback = callback
+    def is_inside_box(self, x, y):
+        return self.get_box().contains(x, y)
+
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        if not self.active_invisible and not self.visible:
+            return
+
+        if self.is_inside_box(x, y) and self.callback is not None:
+            if self.activated_effect is not None:
+                self.stop()
+                self.do(self.activated_effect)
+            if self.self_in_callback:
+                self.callback(self, *self.callback_args, **self.callback_kwargs)
+            else:
+                self.callback(*self.callback_args, **self.callback_kwargs)
+            if self.stop_event:
+                return True
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        if not self.active_invisible and not self.visible:
+            return
+
+        inside_box = self.is_inside_box(x, y)
+
+        if inside_box and not self.is_selected:
+            self.is_selected = True
+            if self.selected_effect is not None:
+                self.stop()
+                self.do(self.selected_effect)
+        elif not inside_box and self.is_selected:
+            self.is_selected = False
+            if self.unselected_effect is not None:
+                self.stop()
+                self.do(self.unselected_effect)
+
+
+class ActiveLabel(ActiveMixin, text.Label):
+    """The class of active label."""
+
+    def __init__(self, *args, **kwargs):
+        self.callback = kwargs.pop('callback', None)
         self.callback_args = kwargs.pop('callback_args', ())
         self.callback_kwargs = kwargs.pop('callback_kwargs', {})
-        self.stop_event = stop_event
-        self.active_invisible = active_invisible
-        self.self_in_callback = self_in_callback
-
-        super().__init__(text=text, position=position, **kwargs)
-
-        self.selected_effect = selected_effect
-        self.unselected_effect = unselected_effect
-        self.activated_effect = activated_effect
+        self.stop_event = kwargs.pop('stop_event', False)
+        self.selected_effect = kwargs.pop('selected_effect', None)
+        self.unselected_effect = kwargs.pop('unselected_effect', None)
+        self.activated_effect = kwargs.pop('activated_effect', None)
+        self.active_invisible = kwargs.pop('active_invisible', False)
+        self.self_in_callback = kwargs.pop('self_in_callback', False)
         self.is_selected = False
+
+        super().__init__(*args, **kwargs)
 
     def get_box(self):
         """Get the box of the label.
@@ -113,42 +151,6 @@ class ActiveLabel(text.Label):
 
         return rect.Rect(x, y, width, height)
 
-    def is_inside_box(self, x, y):
-        box = self.get_box()
-        return box.contains(x, y)
-
-    def on_mouse_release(self, x, y, buttons, modifiers):
-        if not self.active_invisible and not self.visible:
-            return
-
-        if self.is_inside_box(x, y) and self.callback is not None:
-            if self.activated_effect is not None:
-                self.stop()
-                self.do(self.activated_effect)
-            if self.self_in_callback:
-                self.callback(self, *self.callback_args, **self.callback_kwargs)
-            else:
-                self.callback(*self.callback_args, **self.callback_kwargs)
-            if self.stop_event:
-                return True
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        if not self.active_invisible and not self.visible:
-            return
-
-        inside_box = self.is_inside_box(x, y)
-
-        if inside_box and not self.is_selected:
-            self.is_selected = True
-            if self.selected_effect is not None:
-                self.stop()
-                self.do(self.selected_effect)
-        elif not inside_box and self.is_selected:
-            self.is_selected = False
-            if self.unselected_effect is not None:
-                self.stop()
-                self.do(self.unselected_effect)
-
     @classmethod
     def hs_style(cls, *args, **kwargs):
         """The active label with commonly used style in MyHearthStone."""
@@ -170,11 +172,8 @@ class ActiveLabel(text.Label):
         )
 
 
-class ActiveSprite(sprite.Sprite):
-    """The active sprite, which can handle mouse release and mouse motion events.
-
-    [NOTE]: `ActiveSprite`s must be put in `ActiveLayer`s or other cocos nodes that can send events to them.
-    """
+class ActiveSprite(ActiveMixin, sprite.Sprite):
+    """The class of active sprite."""
 
     def __init__(self, *args, **kwargs):
         self.callback = kwargs.pop('callback', None)
@@ -185,26 +184,13 @@ class ActiveSprite(sprite.Sprite):
         self.unselected_effect = kwargs.pop('unselected_effect', None)
         self.activated_effect = kwargs.pop('activated_effect', None)
         self.active_invisible = kwargs.pop('active_invisible', False)
+        self.self_in_callback = kwargs.pop('self_in_callback', False)
         self.is_selected = False
 
         super().__init__(*args, **kwargs)
 
     def get_box(self):
-        pass
-
-    def is_inside_box(self, x, y):
-        box = self.get_box()
-        return box.contains(x, y)
-
-    def on_mouse_release(self, x, y, buttons, modifiers):
-        if not self.active_invisible and not self.visible:
-            return
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        if not self.active_invisible and not self.visible:
-            return
-
-    # todo
+        return self.get_AABB()
 
 
 def set_color_action(color):
