@@ -35,5 +35,15 @@ class TestDeck(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def _assertDeckSame(self, deck):
+        self.assertEqual(self.test_deck.mode, deck.mode)
+        self.assertEqual(self.test_deck.klass, deck.klass)
+        self.assertListEqual(self.test_deck.card_id_list, deck.card_id_list)
+        self.assertEqual(self.test_deck.name, deck.name)
+
     def testBasic(self):
         self.assertEqual(str(self.test_deck), "Deck(class=Druid, name='Test Druid', mode=standard)")
+
+    def testCodeIO(self):
+        new_deck = Deck.from_code(self.test_deck.to_code())
+        self._assertDeckSame(new_deck)

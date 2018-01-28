@@ -13,6 +13,7 @@ class GameEntity:
     """The base class of all game entities."""
 
     data = ChainMap({
+        'version': None,
         'id': None,
         'name': '',
         'package': 0,

@@ -117,6 +117,7 @@ class Spell(Card):
 
     _data = {
         'secret': False,
+        'quest': False,
     }
 
     def run(self, target):
