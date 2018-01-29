@@ -68,11 +68,7 @@ class OptionsMenu(menu.Menu):
             menu.MenuItem('Back', self.on_quit)
         ]
 
-        self.create_menu(
-            items,
-            selected_effect=menu.shake(),
-            unselected_effect=menu.shake_back(),
-        )
+        self.create_menu(items)
 
     @staticmethod
     def on_show_fps(value):
@@ -80,7 +76,7 @@ class OptionsMenu(menu.Menu):
 
     @staticmethod
     def on_full_screen():
-        director.window.set_fullscreen(not director.window.fullscreen)
+        director.director.window.set_fullscreen(not director.director.window.fullscreen)
 
     def on_quit(self):
         self.parent.switch_to(0)

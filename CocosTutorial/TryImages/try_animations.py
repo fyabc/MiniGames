@@ -24,6 +24,7 @@ def main():
     layer_.add(explosion_sprite)
 
     # Try move action.
+    # [NOTE]: Can overwrite `on_animation_end` method to implement the same thing.
     def move_sprite(_):
         explosion_sprite.position = (random.randint(0, 640), random.randint(0, 480))
     explosion_sprite.schedule_interval(move_sprite, 0.1 * 8)

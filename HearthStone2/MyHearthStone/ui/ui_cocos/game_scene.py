@@ -9,6 +9,7 @@ from cocos.scenes import transitions
 from .utils import pos, pos_y
 from ...utils.draw.constants import Colors
 from .basic_components import *
+from .card_sprite import CardSprite
 from ...game.core import Game
 from ...game import player_action as pa
 
@@ -83,7 +84,6 @@ class SelectDeckLayer(ActiveLayer):
 
     def on_exit(self):
         super().on_exit()
-
         # Clear deck buttons.
         self._remove_decks_buttons()
         self.deck_button_lists = [[], []]
@@ -111,7 +111,6 @@ class SelectDeckLayer(ActiveLayer):
         if any(map(lambda e: e is None, self.selected_decks)):
             notice(self, 'Must select two decks!')
             return
-
         # Create new game, register callback and start game.
         self.ctrl.game = Game(frontend=self.ctrl)
         game_board_layer = self.ctrl.get_node('game/board')
@@ -128,9 +127,7 @@ class SelectDeckLayer(ActiveLayer):
         else:
             if self.deck_show_start[player_id] == 0:
                 return
-
         self.deck_show_start[player_id] += int(is_down) * 2 - 1
-
         self._refresh_deck_buttons()
 
 
@@ -201,15 +198,23 @@ class GameButtonsLayer(ActiveLayer):
     def __init__(self, ctrl):
         super().__init__(ctrl)
 
-        self.turn_end = ActiveLabel.hs_style(
+        self.add(ActiveLabel.hs_style(
             'End Turn', pos(GameBoardLayer.RightC, 0.5),
             callback=self.on_turn_end,
-            font_size=24, anchor_x='center', anchor_y='center',)
-        self.add(self.turn_end, name='button_turn_end')
+            font_size=24, anchor_x='center', anchor_y='center',
+        ), name='button_turn_end')
+        self.add(ActiveLabel.hs_style(
+            'Options', pos(0.997, 0.01),
+            callback=self.on_options,
+            font_size=16, anchor_x='right', anchor_y='bottom',
+        ), name='button_options')
 
     def on_turn_end(self):
         game = self.ctrl.game
         game.run_player_action(pa.TurnEnd(game))
+
+    def on_options(self):
+        print('Options clicked!')
 
 
 def get_game_bg():

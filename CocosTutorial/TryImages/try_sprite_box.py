@@ -14,26 +14,29 @@ class MyLayer(layer.Layer):
         super().__init__()
 
         self.scale = 0.8
-        self.position = 50, -50
+        self.position = -50, -50
+
+        explosion_animation = image.Animation.from_image_sequence(
+            image.ImageGrid(image.load('explosion.png'), 1, 8), 0.1,
+        )
 
         self.explosion = sprite.Sprite(
-            image.Animation.from_image_sequence(
-                image.ImageGrid(image.load('explosion.png'), 1, 8),
-                0.1,
-            ),
+            explosion_animation,
             position=(320, 240),
             scale=1.5,
         )
         self.explosion2 = sprite.Sprite(
-            image.Animation.from_image_sequence(
-                image.ImageGrid(image.load('explosion.png'), 1, 8),
-                0.1,
-            ),
+            explosion_animation,
             position=(160, 120),
             scale=1.7,
         )
+        self.explosion3 = sprite.Sprite(
+            explosion_animation,
+            position=(32, 32),
+        )
         self.add(self.explosion)
         self.explosion.add(self.explosion2)
+        self.explosion2.add(self.explosion3)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         print('$global', x, y)

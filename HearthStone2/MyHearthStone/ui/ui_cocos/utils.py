@@ -1,6 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from cocos import rect
+from cocos.sprite import Sprite
+
 from ...utils.draw.constants import Colors, DefaultFont
 
 __author__ = 'fyabc'
@@ -24,6 +27,13 @@ def pos_x(x, base=None, scale=1.0):
 
 def pos_y(y, base=None, scale=1.0):
     return pos(0.0, y, base, scale)[1]
+
+
+def get_sprite_box(sprite: Sprite):
+    aabb = sprite.get_AABB()
+    global_bl = sprite.parent.point_to_world(aabb.bottomleft)
+    global_tr = sprite.parent.point_to_world(aabb.topright)
+    return rect.Rect(*global_bl, *(global_tr - global_bl))
 
 
 def set_menu_style(self, **kwargs):
@@ -62,6 +72,7 @@ __all__ = [
     'pos',
     'pos_x',
     'pos_y',
+    'get_sprite_box',
     'set_menu_style',
     'DefaultLabelStyle'
 ]

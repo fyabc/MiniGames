@@ -4,7 +4,7 @@
 from cocos import layer, text, rect, director, actions, sprite
 from cocos.scenes import transitions
 
-from .utils import pos, DefaultFont, Colors, DefaultLabelStyle
+from .utils import *
 
 __author__ = 'fyabc'
 
@@ -62,7 +62,8 @@ class ActiveMixin:
     __slots__ = ()
 
     def get_box(self):
-        raise NotImplementedError('subclass must implement `get_box`')
+        """Subclass must implement this method or override `is_inside_box`."""
+        return NotImplemented
 
     def is_inside_box(self, x, y):
         return self.get_box().contains(x, y)
@@ -190,10 +191,7 @@ class ActiveSprite(ActiveMixin, sprite.Sprite):
         super().__init__(*args, **kwargs)
 
     def get_box(self):
-        aabb = self.get_AABB()
-        global_bl = self.parent.point_to_world(aabb.bottomleft)
-        global_tr = self.parent.point_to_world(aabb.topright)
-        return rect.Rect(*global_bl, *(global_tr - global_bl))
+        return get_sprite_box(self)
 
 
 def set_color_action(color):
@@ -292,6 +290,7 @@ __all__ = [
     'NoticeLabel',
     'notice',
     'BackgroundLayer',
+    'ActiveMixin',
     'ActiveLabel',
     'ActiveSprite',
     'ActiveLayer',
