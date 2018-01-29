@@ -190,7 +190,10 @@ class ActiveSprite(ActiveMixin, sprite.Sprite):
         super().__init__(*args, **kwargs)
 
     def get_box(self):
-        return self.get_AABB()
+        aabb = self.get_AABB()
+        global_bl = self.parent.point_to_world(aabb.bottomleft)
+        global_tr = self.parent.point_to_world(aabb.topright)
+        return rect.Rect(*global_bl, *(global_tr - global_bl))
 
 
 def set_color_action(color):
