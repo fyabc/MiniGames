@@ -3,7 +3,7 @@
 
 from cocos import scene, layer
 
-from .basic_components import BackgroundLayer, BasicButtonsLayer
+from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 
 __author__ = 'fyabc'
 

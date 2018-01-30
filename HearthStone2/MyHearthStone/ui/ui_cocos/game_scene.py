@@ -3,12 +3,14 @@
 
 from functools import partial
 
-from cocos import scene, draw, director
+from cocos import scene, draw, director, rect, text
 from cocos.scenes import transitions
 
-from .utils import pos, pos_y
 from ...utils.draw.constants import Colors
-from .basic_components import *
+from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label
+from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveColorLayer
+from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
+from ...utils.draw.cocos_utils.primitives import Rect
 from .card_sprite import CardSprite
 from ...game.core import Game
 from ...game import player_action as pa
@@ -118,7 +120,7 @@ class SelectDeckLayer(ActiveLayer):
         start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
         game_board_layer.start_game_iter = start_game_iter
 
-        director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=1.0))
+        director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=0.5))
 
     def scroll_decks(self, player_id, is_down):
         if is_down:
@@ -165,6 +167,7 @@ class GameBoardLayer(ActiveLayer):
 
         # Start game iterator returned from `Game.start_game`. Sent from select deck layer.
         self.start_game_iter = None
+        self._replacement = [None, None]
 
         # Card sprites
         self.hand_sprites = [[] for _ in range(2)]
@@ -175,12 +178,15 @@ class GameBoardLayer(ActiveLayer):
 
         assert self.start_game_iter is not None, 'The game is not started correctly!'
 
-        # TODO: Play start game animation, hand replacement selection, etc.
-        try:
-            next(self.start_game_iter)
-            self.start_game_iter.send(self._replacement_selection())
-        except StopIteration:
-            pass
+        # [NOTE]: With transitions, this function will be called more than once.
+        # Must confirm that the start game iterator is called exactly once.
+        if director.director.scene != self.parent:
+            return
+
+        # TODO: Play start game animation, etc.
+        next(self.start_game_iter)
+
+        self._replace_dialog(self.ctrl.game.current_player)
 
     def update_content(self, event_or_trigger, current_event):
         """Update the game board content, called by game event engine.
@@ -192,17 +198,53 @@ class GameBoardLayer(ActiveLayer):
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""
+        DW, DH = 0.9, 0.6   # Dialog width / height
+        game = self.ctrl.game
 
-        layer_ = ActiveLayer()
-        layer_.scale = 0.7
+        layer_ = ActiveColorLayer(*Colors['black'], *map(int, pos(DW, DH)))
+        layer_.position = pos((1 - DW) / 2, (1 - DH) / 2)
+        layer_.add(hs_style_label('      请选择要替换的卡牌（玩家{}）'.format(player_id),
+                                  pos(DW - 0.5, DH - 0.03), anchor_y='top'))
         layer_.add(ActiveLabel.hs_style(
-            '确定', pos(0.5, 0.05),
+            '确定', pos(DW - 0.5, 0.03),
+            callback=lambda: self._on_replacement_selected(layer_, player_id),
         ))
-        self.parent.add(layer_, z=max(e[0] for e in self.parent.children) + 1, name='temp_dialog')
+        layer_.add(Rect(rect.Rect(*pos(0.0, 0.0), *pos(DW, DH)), Colors['white'], 2))
+        layer_.card_sprites = []
 
-    def _replacement_selection(self):
-        self._replace_dialog(0)
-        return [], []
+        num_cards = len(game.players[player_id].hand)
+        for i, card in enumerate(game.players[player_id].hand):
+            card_sprite = CardSprite(
+                card, pos((2 * i + 1) / (2 * num_cards + 1), DH / 2),
+                is_front=True, scale=0.6,
+                callback=lambda self_: self_.toggle_side(),
+                self_in_callback=True,
+            )
+            layer_.card_sprites.append(card_sprite)
+            layer_.add(card_sprite)
+
+        # Pause all other layers.
+        for other_layer in self.parent.get_children():
+            if hasattr(other_layer, 'enabled'):
+                other_layer.enabled = False
+        self.parent.add(layer_, z=max(e[0] for e in self.parent.children) + 1)
+
+    def _on_replacement_selected(self, dialog, player_id):
+        self._replacement[player_id] = [i for i, c in enumerate(dialog.card_sprites) if not c.is_front]
+        if any(e is None for e in self._replacement):
+            # Replacement for the other player.
+            self.parent.remove(dialog)
+            self._replace_dialog(1 - player_id)
+        else:
+            # Replacement done, start game.
+            self.parent.remove(dialog)
+            for other_layer in self.parent.get_children():
+                if hasattr(other_layer, 'enabled'):
+                    other_layer.enabled = True
+            try:
+                self.start_game_iter.send(self._replacement)
+            except StopIteration:
+                pass
 
 
 class GameButtonsLayer(ActiveLayer):

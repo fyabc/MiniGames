@@ -1,10 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import rect
+from cocos import rect, text, actions
 from cocos.sprite import Sprite
 
-from ...utils.draw.constants import Colors, DefaultFont
+from ..constants import Colors, DefaultFont
 
 __author__ = 'fyabc'
 
@@ -66,6 +66,43 @@ DefaultLabelStyle = {
 }
 
 
+def hs_style_label(text_='', position=(0, 0), **kwargs):
+    kw_with_default = DefaultLabelStyle.copy()
+    kw_with_default.update(kwargs)
+    return text.Label(text_, position, **kw_with_default)
+
+
+class NoticeLabel(text.Label):
+    """A notice label with default HearthStone style.
+
+    This label will fade out after `time` seconds, then will be automatically removed from its parent.
+    """
+
+    def __init__(self, *args, **kwargs):
+        time = kwargs.pop('time', 1.5)
+
+        super().__init__(*args, **kwargs)
+
+        self.do(actions.FadeOut(time) + actions.CallFunc(self.remove_self))
+
+    def remove_self(self):
+        self.parent.remove(self)
+
+
+def notice(layer_, text_, **kwargs):
+    """Add a notice label with default HearthStone style."""
+
+    kw_with_default = DefaultLabelStyle.copy()
+    kw_with_default.update({
+        'time': 1.5, 'position': pos(0.5, 0.5),
+        'anchor_y': 'center', 'font_size': 32,
+        'color': Colors['yellow'],
+    })
+
+    kw_with_default.update(kwargs)
+    layer_.add(NoticeLabel(text_, **kw_with_default))
+
+
 __all__ = [
     'Colors',
     'DefaultFont',
@@ -74,5 +111,8 @@ __all__ = [
     'pos_y',
     'get_sprite_box',
     'set_menu_style',
-    'DefaultLabelStyle'
+    'DefaultLabelStyle',
+    'hs_style_label',
+    'NoticeLabel',
+    'notice',
 ]

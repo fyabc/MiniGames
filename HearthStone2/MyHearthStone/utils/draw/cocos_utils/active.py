@@ -1,43 +1,16 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import layer, text, rect, director, actions, sprite
-from cocos.scenes import transitions
+from cocos import layer, sprite, text, rect, actions, director
 
-from .utils import *
+from ..constants import Colors, DefaultFont
+from .basic import get_sprite_box
 
 __author__ = 'fyabc'
 
 
-class NoticeLabel(text.Label):
-    """A notice label with default HearthStone style.
-
-    This label will fade out after `time` seconds, then will be automatically removed from its parent.
-    """
-
-    def __init__(self, *args, **kwargs):
-        time = kwargs.pop('time', 1.5)
-
-        super().__init__(*args, **kwargs)
-
-        self.do(actions.FadeOut(time) + actions.CallFunc(self.remove_self))
-
-    def remove_self(self):
-        self.parent.remove(self)
-
-
-def notice(layer_, text_, **kwargs):
-    """Add a notice label with default HearthStone style."""
-
-    kw_with_default = DefaultLabelStyle.copy()
-    kw_with_default.update({
-        'time': 1.5, 'position': pos(0.5, 0.5),
-        'anchor_y': 'center', 'font_size': 32,
-        'color': Colors['yellow'],
-    })
-
-    kw_with_default.update(kwargs)
-    layer_.add(NoticeLabel(text_, **kw_with_default))
+def set_color_action(color):
+    return actions.CallFuncS(lambda label: setattr(label.element, 'color', color))
 
 
 # noinspection PyUnresolvedReferences, PyDunderSlots, PyAttributeOutsideInit
@@ -197,28 +170,29 @@ class ActiveSprite(ActiveMixin, sprite.Sprite):
         return get_sprite_box(self)
 
 
-def set_color_action(color):
-    return actions.CallFuncS(lambda label: setattr(label.element, 'color', color))
-
-
-class ActiveLayer(layer.Layer):
-    """The layer of active objects.
+# noinspection PyUnresolvedReferences, PyArgumentList
+class ActiveLayerMixin:
+    """The mixin class of active Cocos2d-Python layers.
 
     It will dispatch the mouse press event to all of its children (if it defined the event handler).
     [NOTE]: This layer will not check if the event is in the box of a child, this check is done by the child itself.
     """
 
+    __slots__ = ('enabled',)
+
     is_event_handler = True
 
-    def __init__(self, ctrl=None):
-        super().__init__()
-        self.ctrl = ctrl
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.enabled = True
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         """Handler for mouse release events.
 
         This handler just send this event to all of its children.
         """
+        if not self.enabled:
+            return
 
         x, y = director.director.get_virtual_coordinates(x, y)
 
@@ -232,6 +206,8 @@ class ActiveLayer(layer.Layer):
 
         This handler just send this event to all of its children.
         """
+        if not self.enabled:
+            return
 
         x, y = director.director.get_virtual_coordinates(x, y)
 
@@ -240,63 +216,23 @@ class ActiveLayer(layer.Layer):
                 child.on_mouse_motion(x, y, dx, dy)
 
 
-class BackgroundLayer(layer.Layer):
-    """The layer that only contains some backgrounds."""
+class ActiveLayer(ActiveLayerMixin, layer.Layer):
+    """The common layer of active objects."""
 
-    def __init__(self):
-        super(BackgroundLayer, self).__init__()
-        # Add more other things here
+    def __init__(self, ctrl=None):
+        super().__init__()
+        self.ctrl = ctrl
 
 
-class BasicButtonsLayer(ActiveLayer):
-    """A commonly used active layer that contains some basic buttons."""
-
-    def __init__(self, ctrl, back=True, options=True):
-        super(BasicButtonsLayer, self).__init__(ctrl)
-
-        if back:
-            self.back_label = ActiveLabel.hs_style(
-                'Back', pos(0.99, 0.03),
-                callback=self.go_back,
-                anchor_x='right',
-            )
-            self.add(self.back_label, name='back')
-
-        if options:
-            self.options_label = ActiveLabel.hs_style(
-                'Options', pos(0.01, 0.03),
-                callback=self.goto_options,
-                anchor_x='left',
-            )
-            self.add(self.options_label, name='options')
-
-    def go_back(self):
-        self.ctrl.get_node('main/main').switch_to(0)
-
-        main_scene = self.ctrl.get('main')
-        if director.director.scene == main_scene:
-            # Transition to the same scene will cause error.
-            return
-
-        director.director.replace(transitions.FadeTransition(main_scene, duration=1.0))
-
-    def goto_options(self):
-        self.ctrl.get_node('main/main').switch_to(1)
-
-        main_scene = self.ctrl.get('main')
-        if director.director.scene == main_scene:
-            return
-        director.director.replace(transitions.FadeTransition(main_scene, duration=1.0))
+class ActiveColorLayer(ActiveLayerMixin, layer.ColorLayer):
+    """The color layer of active objects."""
 
 
 __all__ = [
-    'NoticeLabel',
-    'notice',
-    'BackgroundLayer',
     'ActiveMixin',
     'ActiveLabel',
     'ActiveSprite',
     'ActiveLayer',
-    'BasicButtonsLayer',
+    'ActiveColorLayer',
     'set_color_action',
 ]

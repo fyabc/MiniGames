@@ -113,7 +113,7 @@ class 幸运币(Spell):
 # 埃隆巴克保护者
 blank_minion({
     'id': 10000,
-    'CAH': [8, 8, 8],
+    'klass': 1, 'CAH': [8, 8, 8],
     'taunt': True,
 })
 

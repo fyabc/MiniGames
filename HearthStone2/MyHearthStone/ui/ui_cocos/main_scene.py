@@ -12,8 +12,8 @@ from cocos import director, layer, scene, menu
 from cocos.scenes import transitions
 import pyglet
 
-from .utils import set_menu_style
-from .basic_components import BackgroundLayer, BasicButtonsLayer
+from ...utils.draw.cocos_utils.basic import set_menu_style
+from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 
 __author__ = 'fyabc'
 

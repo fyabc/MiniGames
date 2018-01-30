@@ -24,12 +24,8 @@ PackageID = 1
 
 class 炎爆术(Spell):
     _data = {
-        'id': 1030013,
-        'package': PackageID,
-        'type': 1,
-        'rarity': 3,
-        'klass': 3,
-        'CAH': [10],
+        'id': 1030013, 'package': PackageID,
+        'type': 1, 'rarity': 3, 'klass': 3, 'CAH': [10],
         'have_target': True,
     }
 
