@@ -8,7 +8,7 @@ from .collection_scene import get_collection_scene
 from .game_scene import get_select_deck_scene, get_game_scene
 from ..frontend import Frontend
 from ...utils.constants import C
-from ...utils.draw.load_resource import index_resources
+from ...utils.resource import index_resources
 
 __author__ = 'fyabc'
 

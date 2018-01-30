@@ -15,7 +15,7 @@ from .draw.constants import Colors
 from ..game.core import Game
 from ..game.card import Card, Minion, Spell, Weapon, HeroCard
 from ..utils.constants import get_package_paths
-from ..utils.draw.load_resource import index_resources
+from ..utils.resource import index_resources
 from ..utils.message import info, warning, error, setup_logging
 from ..utils import constants
 

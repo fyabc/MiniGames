@@ -150,7 +150,10 @@ class ActiveLabel(ActiveMixin, text.Label):
         else:
             raise ValueError('Invalid x anchor: {}'.format(self.element.anchor_x))
 
-        return rect.Rect(x, y, width, height)
+        world_x, world_y = self.parent.point_to_world((x, y))
+        world_r, world_t = self.parent.point_to_world((x + width, y + height))
+
+        return rect.Rect(world_x, world_y, world_r - world_x, world_t - world_y)
 
     @classmethod
     def hs_style(cls, *args, **kwargs):

@@ -5,9 +5,9 @@ import os
 
 from pyglet import resource
 
-from ..message import info
-from ..package_io import all_package_data
-from ...utils.constants import SystemDataPath
+from .message import info
+from .package_io import all_package_data
+from .constants import SystemDataPath
 
 __author__ = 'fyabc'
 
@@ -23,12 +23,21 @@ def get_resource_paths():
 
 
 def index_resources():
+    """Add global and package resources (images and sounds) into pyglet resource path, then reindex resources."""
     rc_paths = get_resource_paths()
     for rc_path in rc_paths:
         if rc_path not in resource.path:
             resource.path.append(rc_path)
         resource.reindex()
     info('Reindex resources in these directories:\n{}\n'.format('\n'.join(map(str, rc_paths))))
+
+
+def tr(string):
+    """Get localized version of the string."""
+
+    # todo
+
+    return string
 
 
 __all__ = [

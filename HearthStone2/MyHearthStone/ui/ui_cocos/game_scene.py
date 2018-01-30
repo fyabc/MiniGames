@@ -190,7 +190,18 @@ class GameBoardLayer(ActiveLayer):
 
         pass
 
+    def _replace_dialog(self, player_id):
+        """Create a replace dialog, and return the selections when the dialog closed."""
+
+        layer_ = ActiveLayer()
+        layer_.scale = 0.7
+        layer_.add(ActiveLabel.hs_style(
+            '确定', pos(0.5, 0.05),
+        ))
+        self.parent.add(layer_, z=max(e[0] for e in self.parent.children) + 1, name='temp_dialog')
+
     def _replacement_selection(self):
+        self._replace_dialog(0)
         return [], []
 
 
