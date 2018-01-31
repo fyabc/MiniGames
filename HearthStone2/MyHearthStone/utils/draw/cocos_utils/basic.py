@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import rect, text, actions
+from cocos import rect, text, actions, director
 from cocos.sprite import Sprite
 
 from ..constants import Colors, DefaultFont
@@ -11,12 +11,25 @@ __author__ = 'fyabc'
 _Width, _Height = None, None
 
 
+def get_width():
+    global _Width, _Height
+    if _Width is None:
+        _Width, _Height = director.director.get_window_size()
+    return _Width
+
+
+def get_height():
+    global _Width, _Height
+    if _Height is None:
+        _Width, _Height = director.director.get_window_size()
+    return _Height
+
+
 def pos(x, y, base=None, scale=1.0):
     if base is not None:
         return base[0] * x * scale, base[1] * y * scale
     global _Width, _Height
     if _Width is None:
-        from cocos import director
         _Width, _Height = director.director.get_window_size()
     return _Width * x * scale, _Height * y * scale
 
@@ -27,6 +40,41 @@ def pos_x(x, base=None, scale=1.0):
 
 def pos_y(y, base=None, scale=1.0):
     return pos(0.0, y, base, scale)[1]
+
+
+def get_label_box(label: text.Label):
+    """Get the box of the label.
+
+    :return: A rect that contains the label.
+    """
+    x, y = label.x, label.y
+    width, height = label.element.content_width, label.element.content_height
+
+    if label.element.anchor_x == 'left':
+        pass
+    elif label.element.anchor_x == 'center':
+        x -= width / 2
+    elif label.element.anchor_x == 'right':
+        x -= width
+    else:
+        raise ValueError('Invalid x anchor: {}'.format(label.element.anchor_x))
+
+    # Note: may need to fix 'center' and 'baseline' for multi-line label?
+    if label.element.anchor_y == 'top':
+        y -= height
+    elif label.element.anchor_y == 'center':
+        y -= height / 2
+    elif label.element.anchor_y == 'baseline':
+        pass
+    elif label.element.anchor_y == 'bottom':
+        pass
+    else:
+        raise ValueError('Invalid x anchor: {}'.format(label.element.anchor_x))
+
+    world_x, world_y = label.parent.point_to_world((x, y))
+    world_r, world_t = label.parent.point_to_world((x + width, y + height))
+
+    return rect.Rect(world_x, world_y, world_r - world_x, world_t - world_y)
 
 
 def get_sprite_box(sprite: Sprite):
@@ -106,10 +154,13 @@ def notice(layer_, text_, **kwargs):
 __all__ = [
     'Colors',
     'DefaultFont',
+    'get_width',
+    'get_height',
     'pos',
     'pos_x',
     'pos_y',
     'get_sprite_box',
+    'get_label_box',
     'set_menu_style',
     'DefaultLabelStyle',
     'hs_style_label',

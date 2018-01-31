@@ -5,7 +5,7 @@ from cocos import layer, director
 from cocos.scenes import transitions
 
 from .basic import pos
-from .active import ActiveLayer, ActiveLabel
+from . import active
 
 __author__ = 'fyabc'
 
@@ -18,14 +18,14 @@ class BackgroundLayer(layer.Layer):
         # Add more other things here
 
 
-class BasicButtonsLayer(ActiveLayer):
+class BasicButtonsLayer(active.ActiveLayer):
     """A commonly used active layer that contains some basic buttons."""
 
     def __init__(self, ctrl, back=True, options=True):
         super(BasicButtonsLayer, self).__init__(ctrl)
 
         if back:
-            self.back_label = ActiveLabel.hs_style(
+            self.back_label = active.ActiveLabel.hs_style(
                 'Back', pos(0.99, 0.03),
                 callback=self.go_back,
                 anchor_x='right',
@@ -33,7 +33,7 @@ class BasicButtonsLayer(ActiveLayer):
             self.add(self.back_label, name='back')
 
         if options:
-            self.options_label = ActiveLabel.hs_style(
+            self.options_label = active.ActiveLabel.hs_style(
                 'Options', pos(0.01, 0.03),
                 callback=self.goto_options,
                 anchor_x='left',
@@ -59,7 +59,12 @@ class BasicButtonsLayer(ActiveLayer):
         director.director.replace(transitions.FadeTransition(main_scene, duration=1.0))
 
 
+class DialogLayer(active.ActiveColorLayer):
+    pass
+
+
 __all__ = [
     'BackgroundLayer',
     'BasicButtonsLayer',
+    'DialogLayer',
 ]

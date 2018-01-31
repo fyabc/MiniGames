@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from functools import partial
+from itertools import chain
 
-from cocos import scene, draw, director, rect, text
+from cocos import scene, draw, director, rect
 from cocos.scenes import transitions
 
 from ...utils.draw.constants import Colors
-from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label
+from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label, get_width
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveColorLayer
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 from ...utils.draw.cocos_utils.primitives import Rect
@@ -155,6 +156,14 @@ def get_select_deck_scene(controller):
 
 
 class GameBoardLayer(ActiveLayer):
+    """Show the game board.
+
+    [NOTE]: The current player will always displayed in the bottom of the board.
+    When the current player changes, the top and bottom part of the board will be swapped.
+    So the index of the component nodes (such as index in label names) indicates their place in the board,
+    not player id.
+    """
+
     RightB = 0.88  # Border of right pane
     RightC = (1 + RightB) / 2  # Center of right pane
     HeroB = 0.66  # Border of hero pane
@@ -169,9 +178,24 @@ class GameBoardLayer(ActiveLayer):
         self.start_game_iter = None
         self._replacement = [None, None]
 
-        # Card sprites
-        self.hand_sprites = [[] for _ in range(2)]
-        self.deck_sprites = [[] for _ in range(2)]
+        # Right border components (deck info, mana info, etc).
+        for i, y in enumerate((.15, .85)):
+            self.add(hs_style_label(
+                '牌库：0', pos(self.RightC, y), anchor_y='center', bold=True, font_size=16,
+            ), name='label_deck_{}'.format(i))
+        for i, y in enumerate((.3, .7)):
+            self.add(hs_style_label(
+                '0/0', pos(self.RightC, y), color=Colors['blue'], anchor_y='center', bold=True,
+                font_size=16, multiline=True, width=(1 - self.RightB) * get_width(), align='center',
+            ), name='label_mana_{}'.format(i))
+        for i, y in enumerate((.42, .58)):
+            self.add(hs_style_label(
+                'Player {}'.format(i), pos(self.RightC, y), anchor_y='center', bold=True, font_size=16,
+            ), name='label_player_{}'.format(i))
+
+        # Card sprites.
+        self.hand_sprites = [[], []]
+        self.play_sprites = [[], []]
 
     def on_enter(self):
         super().on_enter()
@@ -194,7 +218,38 @@ class GameBoardLayer(ActiveLayer):
         Registered at `SelectDeckLayer.on_start_game`.
         """
 
-        pass
+        game = self.ctrl.game
+
+        # Right border components.
+        for i, player in enumerate(self._player_list()):
+            self.get('label_deck_{}'.format(i)).element.text = '牌库：{}'.format(len(player.deck))
+            self.get('label_mana_{}'.format(i)).element.text = '{}/{}{}{}'.format(
+                player.displayed_mana(), player.max_mana,
+                '' if player.overload == 0 else '\n(Overload {})'.format(player.overload),
+                '' if player.overload_next == 0 else '\n(Overload next {})'.format(player.overload_next),
+            )
+            self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
+
+        # Remove all old card sprites, and replace it to new.
+        # TODO: Optimize it?
+        for card_sprite_list in chain(self.hand_sprites, self.play_sprites):
+            for card_sprite in card_sprite_list:
+                self.remove(card_sprite)
+            card_sprite_list.clear()
+        for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.38, .62))):
+            num_hand, num_play = len(player.hand), len(player.play)
+            for j, card in enumerate(player.hand):
+                card_sprite = CardSprite(
+                    card, position=pos((2 * j + 1) / (2 * num_hand + 1) * self.HeroB, y_hand),
+                    is_front=(i == 0), scale=0.35)
+                self.add(card_sprite)
+                self.hand_sprites[i].append(card_sprite)
+            for j, card in enumerate(player.play):
+                card_sprite = CardSprite(
+                    card, position=pos((2 * j + 1) / (2 * num_play + 1) * self.HeroB, y_play),
+                    is_front=(i == 0), scale=0.4)
+                self.add(card_sprite)
+                self.play_sprites[i].append(card_sprite)
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""
@@ -206,9 +261,7 @@ class GameBoardLayer(ActiveLayer):
         layer_.add(hs_style_label('      请选择要替换的卡牌（玩家{}）'.format(player_id),
                                   pos(DW - 0.5, DH - 0.03), anchor_y='top'))
         layer_.add(ActiveLabel.hs_style(
-            '确定', pos(DW - 0.5, 0.03),
-            callback=lambda: self._on_replacement_selected(layer_, player_id),
-        ))
+            '确定', pos(DW - 0.5, 0.03), callback=lambda: self._on_replacement_selected(layer_, player_id)))
         layer_.add(Rect(rect.Rect(*pos(0.0, 0.0), *pos(DW, DH)), Colors['white'], 2))
         layer_.card_sprites = []
 
@@ -245,6 +298,12 @@ class GameBoardLayer(ActiveLayer):
                 self.start_game_iter.send(self._replacement)
             except StopIteration:
                 pass
+
+    def _player_list(self):
+        """Return the player list, in order (current player, opponent player)."""
+
+        game = self.ctrl.game
+        return game.players[game.current_player], game.players[1 - game.current_player]
 
 
 class GameButtonsLayer(ActiveLayer):

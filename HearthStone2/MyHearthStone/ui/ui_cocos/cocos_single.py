@@ -8,6 +8,7 @@ from .collection_scene import get_collection_scene
 from .game_scene import get_select_deck_scene, get_game_scene
 from ..frontend import Frontend
 from ...utils.constants import C
+from ...utils.message import info
 from ...utils.resource import index_resources
 
 __author__ = 'fyabc'
@@ -30,6 +31,7 @@ class CocosSingleFrontend(Frontend):
     def _main(self):
         self.preprocess()
 
+        info('Initializing Cocos2d-Python app')
         director.director.init(
             caption=C.ProjectName,
             resizable=True,
@@ -69,6 +71,10 @@ class CocosSingleFrontend(Frontend):
 
     def preprocess(self):
         index_resources()
+
+    def finalize(self):
+        info('Cocos2d-Python app exited')
+        super().finalize()
 
 
 __all__ = [

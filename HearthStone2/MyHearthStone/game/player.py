@@ -8,7 +8,7 @@ import random
 from .game_entity import GameEntity
 from ..utils.constants import C
 from ..utils.game import Zone
-from ..utils.message import debug
+from ..utils.message import info, debug
 from ..utils.package_io import all_cards, all_heroes
 
 __author__ = 'fyabc'
@@ -48,6 +48,7 @@ class Player(GameEntity):
         self.tire_counter = 0
 
     def start_game(self, deck, player_id: int, start_player: int):
+        info('Deck of player {}: {}'.format(player_id, deck))
         self.player_id = player_id
 
         cards = all_cards()
@@ -68,7 +69,7 @@ class Player(GameEntity):
 
         replace = yield
         replace = sorted(set(replace))  # Get sorted unique elements
-        debug('Replace hand {} of player {}'.format(replace, player_id))
+        info('Replace hand {} of player {}'.format(replace, player_id))
         replace_index = random.sample(list(range(len(self.deck))), k=len(replace))
         for hand_index, deck_index in zip(replace, replace_index):
             self.deck[deck_index], self.hand[hand_index] = self.hand[hand_index], self.deck[deck_index]

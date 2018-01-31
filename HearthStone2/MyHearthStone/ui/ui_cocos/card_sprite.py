@@ -3,11 +3,12 @@
 
 from cocos.cocosnode import CocosNode
 from cocos.sprite import Sprite
+from cocos.text import Label, HTMLLabel
 from cocos.euclid import Vector2
 
 from ...utils.game import Klass, Type
 
-from ...utils.draw.cocos_utils.basic import get_sprite_box, pos
+from ...utils.draw.cocos_utils.basic import pos, get_sprite_box, get_label_box, DefaultFont
 from ...utils.draw.cocos_utils.active import ActiveMixin
 
 __author__ = 'fyabc'
@@ -45,8 +46,13 @@ class CardSprite(ActiveMixin, CocosNode):
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[card.klass], card.type), position=(0, 0), scale=1.0,)
         mana_sprite = Sprite('Mana.png' if card.type == Type.Permanent else 'Mana-{}.png'.format(card.cost),
                              position=pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
+        name_label = Label(card.name, position=pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
+                           anchor_y='center', bold=True)
+        desc_label = HTMLLabel(self._render_desc(card.description, color='black', font_size=5),
+                               position=pos(0, -0.58, base=self.SizeBase), anchor_x='center', anchor_y='center',
+                               width=main_sprite.width * 0.9, multiline=True)
         back_sprite = Sprite('Card_back-Classic.png', position=(0, 0), scale=1.0,)
-        self.front_sprites = [main_sprite, mana_sprite]
+        self.front_sprites = [main_sprite, mana_sprite, name_label, desc_label]
         self.back_sprites = [back_sprite]
 
         if card.type == Type.Minion:
@@ -56,9 +62,11 @@ class CardSprite(ActiveMixin, CocosNode):
                                    scale=1.08)
             self.front_sprites.extend([atk_sprite, health_sprite])
         elif card.type == Type.Spell:
-            main_sprite.position = pos(0.0, -0.07, base=self.SizeBase)
+            name_label.position = pos(0, -0.04, base=self.SizeBase)
+            main_sprite.position = pos(0, -0.07, base=self.SizeBase)
         elif card.type == Type.Weapon:
-            main_sprite.position = pos(0.0, -0.01, base=self.SizeBase)
+            name_label.position = pos(0, -0.01, base=self.SizeBase)
+            main_sprite.position = pos(0, -0.01, base=self.SizeBase)
             atk_sprite = Sprite('WeaponAtk-{}.png'.format(card.attack), position=pos(-0.85, -0.86, base=self.SizeBase),
                                 scale=1.08)
             health_sprite = Sprite('WeaponHealth-{}.png'.format(card.health),
@@ -70,24 +78,17 @@ class CardSprite(ActiveMixin, CocosNode):
             self.front_sprites.extend([armor_sprite])
 
         self._is_front = None
-
-        # TODO: add component sprites.
-
         self.is_front = is_front
 
     def is_inside_box(self, x, y):
         for child in self.get_children():
-            if get_sprite_box(child).contains(x, y):
-                return True
+            if isinstance(child, Label):
+                if get_label_box(child).contains(x, y):
+                    return True
+            elif isinstance(child, Sprite):
+                if get_sprite_box(child).contains(x, y):
+                    return True
         return False
-
-    def update_content(self):
-        """Update the card sprite content, called by the `update_content` method of parent layer.
-
-        :return:
-        """
-
-        pass
 
     @property
     def is_front(self):
@@ -95,7 +96,7 @@ class CardSprite(ActiveMixin, CocosNode):
 
     @is_front.setter
     def is_front(self, is_front: bool):
-        """Set the card side (front or end)."""
+        """Set the card side (front or back)."""
         if is_front == self.is_front:
             return
 
@@ -117,7 +118,21 @@ class CardSprite(ActiveMixin, CocosNode):
         self.is_front = not self._is_front
 
     def _card_clicked(self):
-        print('${} clicked!'.format(self.card))
+        print('Sprite of {} clicked!'.format(self.card))
+
+    @staticmethod
+    def _render_desc(desc: str, **kwargs) -> str:
+        format_map = {
+            'desc': desc,
+            # [NOTE]: There is an encoding bug when parsing the font name in HTML (in `pyglet\font\win32query.py:311`),
+            # must set font out of HTML.
+            'font_name': kwargs.pop('font_name', DefaultFont),
+            # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
+            'font_size': int(kwargs.pop('font_size', 16)),
+            # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.
+            'color': kwargs.pop('color', 'black'),
+        }
+        return '<center><font size="{font_size}" color="{color}">{desc}</font></center>'.format_map(format_map)
 
 
 __all__ = [
