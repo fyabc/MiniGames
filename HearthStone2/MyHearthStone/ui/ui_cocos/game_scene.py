@@ -4,9 +4,11 @@
 from functools import partial
 from itertools import chain
 
-from cocos import scene, draw, director, rect
+from cocos import scene, draw, director, rect, sprite
 from cocos.scenes import transitions
+from pyglet import resource
 
+from ...utils.message import debug
 from ...utils.draw.constants import Colors
 from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label, get_width
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveColorLayer
@@ -118,6 +120,7 @@ class SelectDeckLayer(ActiveLayer):
         self.ctrl.game = Game(frontend=self.ctrl)
         game_board_layer = self.ctrl.get_node('game/board')
         self.ctrl.game.add_resolve_callback(game_board_layer.update_content)
+        self.ctrl.game.add_resolve_callback(game_board_layer.log_update_time)
         start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
         game_board_layer.start_game_iter = start_game_iter
 
@@ -192,6 +195,10 @@ class GameBoardLayer(ActiveLayer):
             self.add(hs_style_label(
                 'Player {}'.format(i), pos(self.RightC, y), anchor_y='center', bold=True, font_size=16,
             ), name='label_player_{}'.format(i))
+        for i, y in enumerate((.1, .6)):
+            self.add(sprite.Sprite(
+                'Health-1.png', pos(self.HeroB + (self.RightB - self.HeroB) * 0.8, y), scale=0.7,
+            ), name='sprite_health_{}'.format(i))
 
         # Card sprites.
         self.hand_sprites = [[], []]
@@ -212,13 +219,23 @@ class GameBoardLayer(ActiveLayer):
 
         self._replace_dialog(self.ctrl.game.current_player)
 
+    def log_update_time(self, *_):
+        """Logging time elapsed since last event/trigger.
+
+        The time indicates the speed of update function.
+        """
+        import time
+        if not hasattr(self, '_time'):
+            setattr(self, '_time', time.time())
+        _time = time.time()
+        debug('Time since last call: {:.6f}s'.format(_time - getattr(self, '_time')))
+        setattr(self, '_time', _time)
+
     def update_content(self, event_or_trigger, current_event):
         """Update the game board content, called by game event engine.
 
         Registered at `SelectDeckLayer.on_start_game`.
         """
-
-        game = self.ctrl.game
 
         # Right border components.
         for i, player in enumerate(self._player_list()):
@@ -229,27 +246,42 @@ class GameBoardLayer(ActiveLayer):
                 '' if player.overload_next == 0 else '\n(Overload next {})'.format(player.overload_next),
             )
             self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
+            # TODO: Health-0.png does not exists
+            self.get('sprite_health_{}'.format(i)).image = resource.image(
+                'Health-{}.png'.format(max(1, player.hero.health)))
 
         # Remove all old card sprites, and replace it to new.
-        # TODO: Optimize it?
+        # [NOTE]: Use cache, need more tests.
+        _card_sprite_cache = {card_sprite.card: card_sprite
+                              for card_sprite in chain(*self.hand_sprites, *self.play_sprites)}
         for card_sprite_list in chain(self.hand_sprites, self.play_sprites):
-            for card_sprite in card_sprite_list:
-                self.remove(card_sprite)
+            # for card_sprite in card_sprite_list:
+            #     self.remove(card_sprite)
             card_sprite_list.clear()
         for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.38, .62))):
             num_hand, num_play = len(player.hand), len(player.play)
             for j, card in enumerate(player.hand):
-                card_sprite = CardSprite(
-                    card, position=pos((2 * j + 1) / (2 * num_hand + 1) * self.HeroB, y_hand),
-                    is_front=(i == 0), scale=0.35)
-                self.add(card_sprite)
+                spr_kw = {'position': pos((2 * j + 1) / (2 * num_hand + 1) * self.HeroB, y_hand),
+                          'is_front': (i == 0), 'scale': 0.35}
+                if card in _card_sprite_cache:
+                    card_sprite = _card_sprite_cache.pop(card)
+                    card_sprite.update_content(**spr_kw)
+                else:
+                    card_sprite = CardSprite(card, **spr_kw)
+                    self.add(card_sprite)
                 self.hand_sprites[i].append(card_sprite)
             for j, card in enumerate(player.play):
-                card_sprite = CardSprite(
-                    card, position=pos((2 * j + 1) / (2 * num_play + 1) * self.HeroB, y_play),
-                    is_front=(i == 0), scale=0.4)
-                self.add(card_sprite)
+                spr_kw = {'position': pos((2 * j + 1) / (2 * num_play + 1) * self.HeroB, y_play),
+                          'is_front': (i == 0), 'scale': 0.4}
+                if card in _card_sprite_cache:
+                    card_sprite = _card_sprite_cache.pop(card)
+                    card_sprite.update_content(**spr_kw)
+                else:
+                    card_sprite = CardSprite(card, **spr_kw)
+                    self.add(card_sprite)
                 self.play_sprites[i].append(card_sprite)
+        for card_sprite in _card_sprite_cache.values():
+            self.remove(card_sprite)
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""
@@ -301,7 +333,6 @@ class GameBoardLayer(ActiveLayer):
 
     def _player_list(self):
         """Return the player list, in order (current player, opponent player)."""
-
         game = self.ctrl.game
         return game.players[game.current_player], game.players[1 - game.current_player]
 

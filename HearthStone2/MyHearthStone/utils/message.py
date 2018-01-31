@@ -6,7 +6,7 @@
 import os as _os
 import logging as _logging
 from time import time as _time
-from functools import partial as _partial
+from functools import partial as _partial, wraps as _wraps
 from contextlib import contextmanager as _cm
 
 from ..utils.constants import UserLogPath, C
@@ -85,6 +85,16 @@ def msg_block(msg, level=LEVEL_INFO, log_time=True):
     yield
     # noinspection PyUnboundLocalVariable
     message(level, '{} done{}.'.format(msg, ', time: {:.4f}s'.format(_time() - start_time) if log_time else ''))
+
+
+def msg_time(func, level=LEVEL_INFO):
+    @_wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = _time()
+        result = func(*args, **kwargs)
+        message(level, 'Function "{}" time: {:.4f}s'.format(func.__name__, _time() - start_time))
+        return result
+    return wrapper
 
 
 def entity_message(self, kwargs, prefix=''):

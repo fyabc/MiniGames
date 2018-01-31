@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from cocos import director
+from pyglet.font import add_file
 
 from .main_scene import get_main_scene
 from .collection_scene import get_collection_scene
@@ -9,7 +10,7 @@ from .game_scene import get_select_deck_scene, get_game_scene
 from ..frontend import Frontend
 from ...utils.constants import C
 from ...utils.message import info
-from ...utils.resource import index_resources
+from ...utils.resource import index_resources, load_fonts
 
 __author__ = 'fyabc'
 
@@ -70,6 +71,7 @@ class CocosSingleFrontend(Frontend):
         return result
 
     def preprocess(self):
+        load_fonts()
         index_resources()
 
     def finalize(self):

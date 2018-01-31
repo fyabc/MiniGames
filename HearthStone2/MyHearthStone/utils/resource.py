@@ -4,6 +4,7 @@
 import os
 
 from pyglet import resource
+from pyglet.font import add_file
 
 from .message import info
 from .package_io import all_package_data
@@ -32,6 +33,10 @@ def index_resources():
     info('Reindex resources in these directories:\n{}\n'.format('\n'.join(map(str, rc_paths))))
 
 
+def load_fonts():
+    add_file(os.path.join(SystemDataPath, 'resources', 'fonts', 'BelweBdBTBold.ttf'))
+
+
 def tr(string):
     """Get localized version of the string."""
 
@@ -43,4 +48,6 @@ def tr(string):
 __all__ = [
     'get_resource_paths',
     'index_resources',
+    'load_fonts',
+    'tr',
 ]

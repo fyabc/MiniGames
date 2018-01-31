@@ -100,7 +100,7 @@ def set_menu_style(self, **kwargs):
     self.font_item['font_name'] = kwargs.pop('font_name', DefaultFont)
     self.font_item['color'] = Colors['white']
     self.font_item['font_size'] = item_size
-    self.font_item_selected['font_name'] = 'Arial'
+    self.font_item_selected['font_name'] = kwargs.pop('font_name', DefaultFont)
     self.font_item_selected['color'] = Colors['green1']
     self.font_item_selected['font_size'] = selected_size
 

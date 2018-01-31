@@ -667,7 +667,7 @@ Colors = {
 
 
 # TODO: Change this into loading font from config.
-DefaultFont = 'Arial'
+DefaultFont = 'Belwe Bd BT'
 
 
 __all__ = [
