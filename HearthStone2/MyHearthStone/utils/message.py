@@ -97,10 +97,10 @@ def msg_time(func, level=LEVEL_INFO):
     return wrapper
 
 
-def entity_message(self, kwargs, prefix=''):
+def entity_message(self, kwargs, prefix='', __show_cls=True):
     return '{}{}({})'.format(
         prefix,
-        self.__class__.__name__,
+        self.__class__.__name__ if __show_cls else '',
         ', '.join(
             '{}={}'.format(k, v)
             for k, v in kwargs.items()

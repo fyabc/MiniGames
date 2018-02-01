@@ -60,7 +60,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         self.callback = kwargs.pop('callback', self._card_clicked)
         self.callback_args = kwargs.pop('callback_args', ())
         self.callback_kwargs = kwargs.pop('callback_kwargs', {})
-        self.stop_event = kwargs.pop('stop_event', False)
+        self.stop_event = kwargs.pop('stop_event', True)
         self._sel_mgr = self._SelectEffectManager()
         self.selected_effect = kwargs.pop('selected_effect', self._sel_mgr.get_selected_eff())
         self.unselected_effect = kwargs.pop('unselected_effect', self._sel_mgr.get_unselected_eff())
@@ -79,6 +79,9 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
 
         self._is_front = None
         self.is_front = is_front
+
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.card)
 
     def is_inside_box(self, x, y):
         for child in self.get_children():
@@ -150,7 +153,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         self.is_front = not self._is_front
 
     def _card_clicked(self):
-        print('Sprite of {} clicked!'.format(self.card))
+        print('{} clicked!'.format(self))
         self.is_activated = not self.is_activated
 
     # Internal methods to build components.
@@ -180,7 +183,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
-        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=2)
+        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=4)
 
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self.card.klass], self.card.type), (0, 0),
                              scale=1.0,)

@@ -31,7 +31,7 @@ class Card(GameEntity):
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
     def __repr__(self):
-        return super()._repr(id=self.data['id'], P=self.player_id, oop=self.oop)
+        return super()._repr(name=self.data['name'], P=self.player_id, oop=self.oop, __show_cls=False)
 
     def check_target(self, target):
         """Check the validity of the target."""

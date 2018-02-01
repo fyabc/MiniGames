@@ -59,7 +59,8 @@ class GameEntity(metaclass=SetDataMeta):
         self.enchantments = []
 
     def _repr(self, **kwargs):
-        return entity_message(self, kwargs, prefix='#')
+        __show_cls = kwargs.pop('__show_cls', True)
+        return entity_message(self, kwargs, prefix='#', __show_cls=__show_cls)
 
     def __repr__(self):
         return self._repr()

@@ -41,11 +41,13 @@ class ActiveMixin:
     def is_inside_box(self, x, y):
         return self.get_box().contains(x, y)
 
-    def on_mouse_release(self, x, y, buttons, modifiers):
+    def respond_to_mouse_release(self, x, y, buttons, modifiers):
         if not self.active_invisible and not self.visible:
-            return
+            return False
+        return self.is_inside_box(x, y)
 
-        if self.is_inside_box(x, y) and self.callback is not None:
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        if self.respond_to_mouse_release(x, y, buttons, modifiers) and self.callback is not None:
             if self.activated_effect is not None:
                 self.stop()
                 self.do(self.activated_effect)
@@ -195,7 +197,8 @@ class ActiveLayerMixin:
             return
 
         x, y = director.director.get_virtual_coordinates(x, y)
-        for child in self.get_children():
+        # Iterate from front to back: Sprite of high z-order has high priority.
+        for child in reversed(self.get_children()):
             if hasattr(child, 'on_mouse_release'):
                 if child.on_mouse_release(x, y, buttons, modifiers) is True:
                     return True
@@ -210,7 +213,7 @@ class ActiveLayerMixin:
 
         x, y = director.director.get_virtual_coordinates(x, y)
 
-        for child in self.get_children():
+        for child in reversed(self.get_children()):
             if hasattr(child, 'on_mouse_motion'):
                 child.on_mouse_motion(x, y, dx, dy)
 

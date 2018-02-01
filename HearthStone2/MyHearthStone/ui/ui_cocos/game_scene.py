@@ -9,6 +9,7 @@ from itertools import chain
 from cocos import scene, draw, director, rect, sprite
 from cocos.scenes import transitions
 
+from ...utils.game import Zone
 from ...utils.message import debug
 from ...utils.draw.constants import Colors
 from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label, get_width
@@ -16,6 +17,7 @@ from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveCol
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 from ...utils.draw.cocos_utils.primitives import Rect
 from .card_sprite import CardSprite
+from .selection_manager import SelectionManager
 from ...game.core import Game
 from ...game import player_action as pa
 
@@ -178,6 +180,9 @@ class GameBoardLayer(ActiveLayer):
     def __init__(self, ctrl):
         super().__init__(ctrl)
 
+        # Selection manager.
+        self._sm = SelectionManager(self)
+
         # Start game iterator returned from `Game.start_game`. Sent from select deck layer.
         self.start_game_iter = None
         self._replacement = [None, None]
@@ -241,6 +246,8 @@ class GameBoardLayer(ActiveLayer):
         Registered at `SelectDeckLayer.on_start_game`.
         """
 
+        self._sm.clear_all()
+
         # Run actions according to current event or trigger.
 
         # TODO: Add processing for game end (transition to game end scene, etc).
@@ -293,10 +300,27 @@ class GameBoardLayer(ActiveLayer):
         if not self.enabled:
             return
 
+        def _index(l, e):
+            try:
+                return l.index(e)
+            except ValueError:
+                return None
+
         x, y = director.director.get_virtual_coordinates(x, y)
-        for child in self.get_children():
-            if hasattr(child, 'on_mouse_release'):
-                if child.on_mouse_release(x, y, buttons, modifiers) is True:
+        for child in reversed(self.get_children()):
+            if hasattr(child, 'on_mouse_release') and child.respond_to_mouse_release(x, y, buttons, modifiers):
+                player_id, zone, index = None, None, None
+                for player, hand_sprites, play_sprites in zip(
+                        self._player_list(), self.hand_sprites, self.play_sprites):
+                    for sprite_list, zone_name in zip((hand_sprites, play_sprites), (Zone.Hand, Zone.Play)):
+                        index = _index(sprite_list, child)
+                        if index is not None:
+                            player_id, zone = player.player_id, zone_name
+                            break
+                    if index is not None:
+                        break
+                if player_id is not None and self._sm.click_at(
+                        child, player_id, zone, index, (x, y, buttons, modifiers)) is True:
                     return True
 
         # todo: Add other regions (board, hero, etc).

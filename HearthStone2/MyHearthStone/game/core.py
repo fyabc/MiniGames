@@ -11,7 +11,7 @@ from .events.event import Event
 from ..utils.constants import C
 from ..utils.game import order_of_play, Zone
 from ..utils.message import message, debug, error, info
-from ..utils.package_io import all_cards, all_heroes
+from ..utils.package_io import all_cards
 
 __author__ = 'fyabc'
 
@@ -219,7 +219,7 @@ class Game:
                 if self.game_result is not None:
                     return
             else:
-                raise ValueError('Type {} of {} is not a valid type in the queue'.format(type(e), e))
+                raise ValueError('Type {!r} of {!r} is not a valid type in the queue'.format(type(e), e))
 
             # Finally when the Sequence ends and the player gets control again,
             # Hearthstone checks if the game has ended in a Win, Loss or Draw.
@@ -315,7 +315,12 @@ class Game:
     def end_game(self):
         for player in self.players:
             player.end_game()
-        debug('{} end in result {}.'.format(self, self.game_result))
+        info('{} end in result {} ({}).'.format(self, self.game_result, {
+            None: 'nothing',
+            self.ResultWin0: 'player 0 win',
+            self.ResultWin1: 'player 1 win',
+            self.ResultDraw: 'draw',
+        }[self.game_result]))
         self.running = False
 
     def summon_resolution(self):
