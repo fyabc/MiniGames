@@ -20,6 +20,7 @@ Downloaded files:
             values/
     resources/
         images/
+        fonts/
         sounds/
         values/
 ```

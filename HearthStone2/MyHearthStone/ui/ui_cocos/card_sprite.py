@@ -1,31 +1,53 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos.cocosnode import CocosNode
+"""The card sprite class."""
+
+from cocos import actions, rect, cocosnode, euclid
 from cocos.sprite import Sprite
 from cocos.text import Label, HTMLLabel
-from cocos.euclid import Vector2
-from pyglet import resource
 
 from ...utils.game import Klass, Type
-from ...utils.draw.constants import Colors
-from ...utils.draw.cocos_utils.basic import pos, get_sprite_box, get_label_box, DefaultFont, hs_style_label
+from ...utils.draw.cocos_utils.basic import *
 from ...utils.draw.cocos_utils.active import ActiveMixin
+from ...utils.draw.cocos_utils.primitives import Rect
 
 __author__ = 'fyabc'
 
 
-class CardSprite(ActiveMixin, CocosNode):
+class CardSprite(ActiveMixin, cocosnode.CocosNode):
     """The sprite of a card.
 
     In fact, it is a `CocosNode` that contains multiple sprites.
     """
 
-    # TODO: change the image 'Health-8.png' into 'Health.png' + label '8', etc.
-    # mana done.
-
-    Size = Vector2(300, 450)    # Card size (original).
+    Size = euclid.Vector2(300, 450)    # Card size (original).
     SizeBase = Size // 2        # Coordinate base of children sprites.
+
+    class _SelectEffectManager:
+        def __init__(self):
+            self.orig_pos = None
+            self.orig_scale = None
+
+        def get_selected_eff(self):
+            def _selected_fn(spr):
+                self.orig_scale = spr.scale
+                self.orig_pos = spr.position
+
+                spr.scale *= 2
+                y_ratio = spr.y / get_height()
+                if y_ratio < 0.5:
+                    spr.y = min(y_ratio + 0.13, 0.5) * get_height()
+                else:
+                    spr.y = max(y_ratio - 0.13, 0.5) * get_height()
+            return actions.CallFuncS(_selected_fn)
+
+        def get_unselected_eff(self):
+            def _unselected_fn(spr):
+                spr.scale = self.orig_scale
+                spr.position = self.orig_pos
+                self.orig_scale = self.orig_pos = None
+            return actions.CallFuncS(_unselected_fn)
 
     def __init__(self, card, position=(0, 0), is_front=True, scale=1.0, **kwargs):
         super().__init__()
@@ -39,16 +61,19 @@ class CardSprite(ActiveMixin, CocosNode):
         self.callback_args = kwargs.pop('callback_args', ())
         self.callback_kwargs = kwargs.pop('callback_kwargs', {})
         self.stop_event = kwargs.pop('stop_event', False)
-        self.selected_effect = kwargs.pop('selected_effect', None)
-        self.unselected_effect = kwargs.pop('unselected_effect', None)
+        self._sel_mgr = self._SelectEffectManager()
+        self.selected_effect = kwargs.pop('selected_effect', self._sel_mgr.get_selected_eff())
+        self.unselected_effect = kwargs.pop('unselected_effect', self._sel_mgr.get_unselected_eff())
         self.activated_effect = kwargs.pop('activated_effect', None)
         self.active_invisible = kwargs.pop('active_invisible', False)
         self.self_in_callback = kwargs.pop('self_in_callback', False)
         self.is_selected = False
+        self._is_activated = False
 
         # Dict of front and back labels: name -> [sprite/label, z-order].
         self.front_sprites = {}
         self.back_sprites = {}
+        self.activated_border = None
 
         self._build_components()
 
@@ -107,11 +132,26 @@ class CardSprite(ActiveMixin, CocosNode):
         for sprite, z in to_be_added.values():
             self.add(sprite, z=z)
 
+    @property
+    def is_activated(self):
+        return self._is_activated
+
+    @is_activated.setter
+    def is_activated(self, is_activated: bool):
+        if self._is_activated == is_activated:
+            return
+        self._is_activated = is_activated
+        if is_activated:
+            self.add(self.activated_border, z=3)
+        else:
+            self.remove(self.activated_border)
+
     def toggle_side(self):
         self.is_front = not self._is_front
 
     def _card_clicked(self):
         print('Sprite of {} clicked!'.format(self.card))
+        self.is_activated = not self.is_activated
 
     # Internal methods to build components.
     def _get_image_name(self, name):
@@ -138,12 +178,16 @@ class CardSprite(ActiveMixin, CocosNode):
             raise ValueError('Unknown image name {!r}'.format(name))
 
     def _build_components(self):
+        border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
+        border_rect.center = (0, 0)
+        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=2)
+
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self.card.klass], self.card.type), (0, 0),
                              scale=1.0,)
         mana_sprite = Sprite('Mana.png', pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
         name_label = Label(self.card.name, pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
                            anchor_y='center', bold=True)
-        desc_label = HTMLLabel(self._render_desc(self.card.description, color='black', font_size=5),
+        desc_label = HTMLLabel(self._render_desc(self.card.description),
                                pos(0, -0.58, base=self.SizeBase), anchor_x='center', anchor_y='center',
                                width=main_sprite.width * 0.9, multiline=True)
 
@@ -212,7 +256,7 @@ class CardSprite(ActiveMixin, CocosNode):
             # must set font out of HTML.
             'font_name': kwargs.pop('font_name', DefaultFont),
             # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
-            'font_size': int(kwargs.pop('font_size', 16)),
+            'font_size': int(kwargs.pop('font_size', 5)),
             # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.
             'color': kwargs.pop('color', 'black'),
         }

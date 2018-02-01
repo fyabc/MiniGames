@@ -1,12 +1,13 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Game related scenes (select deck, main game)."""
+
 from functools import partial
 from itertools import chain
 
 from cocos import scene, draw, director, rect, sprite
 from cocos.scenes import transitions
-from pyglet import resource
 
 from ...utils.message import debug
 from ...utils.draw.constants import Colors
@@ -309,6 +310,7 @@ class GameBoardLayer(ActiveLayer):
                 is_front=True, scale=0.6,
                 callback=lambda self_: self_.toggle_side(),
                 self_in_callback=True,
+                selected_effect=None, unselected_effect=None,
             )
             layer_.card_sprites.append(card_sprite)
             layer_.add(card_sprite)
