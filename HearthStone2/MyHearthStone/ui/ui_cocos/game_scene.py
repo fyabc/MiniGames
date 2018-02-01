@@ -197,8 +197,11 @@ class GameBoardLayer(ActiveLayer):
             ), name='label_player_{}'.format(i))
         for i, y in enumerate((.1, .6)):
             self.add(sprite.Sprite(
-                'Health-1.png', pos(self.HeroB + (self.RightB - self.HeroB) * 0.8, y), scale=0.7,
+                'Health.png', pos(self.HeroB + (self.RightB - self.HeroB) * 0.8, y), scale=0.7,
             ), name='sprite_health_{}'.format(i))
+            self.add(hs_style_label(
+                '0', pos(self.HeroB + (self.RightB - self.HeroB) * 0.8, y), font_size=46, anchor_y='center',
+            ), name='label_health_{}'.format(i))
 
         # Card sprites.
         self.hand_sprites = [[], []]
@@ -246,9 +249,7 @@ class GameBoardLayer(ActiveLayer):
                 '' if player.overload_next == 0 else '\n(Overload next {})'.format(player.overload_next),
             )
             self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
-            # TODO: Health-0.png does not exists
-            self.get('sprite_health_{}'.format(i)).image = resource.image(
-                'Health-{}.png'.format(max(1, player.hero.health)))
+            self.get('label_health_{}'.format(i)).element.text = str(player.hero.health)
 
         # Remove all old card sprites, and replace it to new.
         # [NOTE]: Use cache, need more tests.

@@ -34,9 +34,6 @@ class CardSprite(ActiveMixin, CocosNode):
         self.position = position
         self.scale = scale
 
-        # Cache for card data, for update.
-        self._card_cache = dict(card.data)
-
         # For active mixin.
         self.callback = kwargs.pop('callback', self._card_clicked)
         self.callback_args = kwargs.pop('callback_args', ())
@@ -49,48 +46,11 @@ class CardSprite(ActiveMixin, CocosNode):
         self.self_in_callback = kwargs.pop('self_in_callback', False)
         self.is_selected = False
 
-        # Add component sprites.
-        main_sprite = self._build_main_spr()
-        mana_sprite, mana_label = self._build_mana()
-        name_label = Label(card.name, position=pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
-                           anchor_y='center', bold=True)
-        desc_label = HTMLLabel(self._render_desc(card.description, color='black', font_size=5),
-                               position=pos(0, -0.58, base=self.SizeBase), anchor_x='center', anchor_y='center',
-                               width=main_sprite.width * 0.9, multiline=True)
-        back_sprite = Sprite('Card_back-Classic.png', position=(0, 0), scale=1.0,)
-        self.front_sprites = {
-            'main': [main_sprite, 0],
-            'mana-sprite': [mana_sprite, 1],
-            'name': [name_label, 1],
-            'desc': [desc_label, 1],
-        }
-        if mana_label is not None:
-            self.front_sprites['mana-label'] = [mana_label, 2]
-        self.back_sprites = {
-            'back': [back_sprite, 0],
-        }
+        # Dict of front and back labels: name -> [sprite/label, z-order].
+        self.front_sprites = {}
+        self.back_sprites = {}
 
-        if card.type == Type.Minion:
-            atk_sprite = Sprite('Atk-{}.png'.format(card.attack), position=pos(-0.85, -0.86, base=self.SizeBase),
-                                scale=1.08)
-            health_sprite = Sprite('Health-{}.png'.format(card.health), position=pos(0.85, -0.86, base=self.SizeBase),
-                                   scale=1.08)
-            self.front_sprites.update({'attack': [atk_sprite, 1], 'health': [health_sprite, 1]})
-        elif card.type == Type.Spell:
-            name_label.position = pos(0, -0.04, base=self.SizeBase)
-            main_sprite.position = pos(0, -0.07, base=self.SizeBase)
-        elif card.type == Type.Weapon:
-            name_label.position = pos(0, -0.01, base=self.SizeBase)
-            main_sprite.position = pos(0, -0.01, base=self.SizeBase)
-            atk_sprite = Sprite('WeaponAtk-{}.png'.format(card.attack), position=pos(-0.85, -0.86, base=self.SizeBase),
-                                scale=1.08)
-            health_sprite = Sprite('WeaponHealth-{}.png'.format(card.health),
-                                   position=pos(0.85, -0.86, base=self.SizeBase), scale=1.08)
-            self.front_sprites.update({'attack': [atk_sprite, 1], 'health': [health_sprite, 1]})
-        elif card.type == Type.HeroCard:
-            armor_sprite = Sprite('HeroArmor-{}.png'.format(card.armor), position=pos(0.85, -0.86, base=self.SizeBase),
-                                  scale=1.08)
-            self.front_sprites.update({'armor': [armor_sprite, 1]})
+        self._build_components()
 
         self._is_front = None
         self.is_front = is_front
@@ -112,20 +72,16 @@ class CardSprite(ActiveMixin, CocosNode):
         self.is_front = kwargs.pop('is_front', False)
         self.scale = kwargs.pop('scale', 1.0)
 
-        if self._card_cache['CAH'][0] != self.card.cost:
-            # Replace image or replace sprite?
-            self.front_sprites['mana-label'][0].element.text = str(self.card.cost)
+        self.front_sprites['mana-label'][0].element.text = str(self.card.cost)
         if self.card.type in (Type.Minion, Type.Weapon):
-            if self._card_cache['CAH'][1] != self.card.attack:
-                self.front_sprites['attack'][0].image = resource.image(self._get_image_name('attack'))
-            if self._card_cache['CAH'][2] != self.card.health:
-                self.front_sprites['health'][0].image = resource.image(self._get_image_name('health'))
+            self.front_sprites['attack-label'][0].element.text = str(self.card.attack)
+            self.front_sprites['health-label'][0].element.text = str(self.card.health)
         elif self.card.type == Type.HeroCard:
-            if self._card_cache['CAH'][2] == self.card.armor:
-                self.front_sprites['armor'][0].image = resource.image(self._get_image_name('armor'))
-        # TODO: update components according to the cache
-
-        self._card_cache.update(self.card.data)
+            self.front_sprites['armor-label'][0].element.text = str(self.card.armor)
+        self.front_sprites['name'][0].element.text = self.card.name
+        _r_desc = self._render_desc(self.card.description)
+        if self.front_sprites['desc'][0].element.text != _r_desc:
+            self.front_sprites['desc'][0].element.text = _r_desc
 
     @property
     def is_front(self):
@@ -181,20 +137,72 @@ class CardSprite(ActiveMixin, CocosNode):
         else:
             raise ValueError('Unknown image name {!r}'.format(name))
 
-    def _build_spr(self, name):
-        pass
+    def _build_components(self):
+        main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self.card.klass], self.card.type), (0, 0),
+                             scale=1.0,)
+        mana_sprite = Sprite('Mana.png', pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
+        name_label = Label(self.card.name, pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
+                           anchor_y='center', bold=True)
+        desc_label = HTMLLabel(self._render_desc(self.card.description, color='black', font_size=5),
+                               pos(0, -0.58, base=self.SizeBase), anchor_x='center', anchor_y='center',
+                               width=main_sprite.width * 0.9, multiline=True)
 
-    def _build_main_spr(self):
-        return Sprite('{}-{}.png'.format(Klass.Idx2Str[self.card.klass], self.card.type), position=(0, 0), scale=1.0,)
+        self.front_sprites.update({
+            'main': [main_sprite, 0],
+            'mana-sprite': [mana_sprite, 1],
+            'name': [name_label, 1],
+            'desc': [desc_label, 1],
+        })
+        if self.card.type != Type.Permanent:
+            mana_label = hs_style_label(str(self.card.cost), pos(-0.84, 0.8, base=self.SizeBase),
+                                        font_size=64, anchor_y='center', color=Colors['white'])
+            self.front_sprites['mana-label'] = [mana_label, 2]
 
-    def _build_mana(self):
-        mana_sprite = Sprite('Mana.png', position=pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
-        if self.card.type == Type.Permanent:
-            mana_label = None
-        else:
-            mana_label = hs_style_label(str(self.card.cost), position=pos(-0.83, 0.8, base=self.SizeBase),
-                                        font_size=60, anchor_y='center', color=Colors['white'])
-        return mana_sprite, mana_label
+        back_sprite = Sprite('Card_back-Classic.png', (0, 0), scale=1.0, )
+        self.back_sprites['back'] = [back_sprite, 0]
+
+        if self.card.type == Type.Minion:
+            atk_sprite = Sprite('Atk.png', pos(-0.86, -0.81, base=self.SizeBase), scale=1.15)
+            atk_label = hs_style_label(str(self.card.attack), pos(-0.78, -0.8, base=self.SizeBase), anchor_y='center',
+                                       font_size=64)
+            health_sprite = Sprite('Health.png', pos(0.84, -0.81, base=self.SizeBase), scale=1.05)
+            health_label = hs_style_label(str(self.card.health), pos(0.84, -0.8, base=self.SizeBase), anchor_y='center',
+                                          font_size=64)
+            self.front_sprites.update({
+                'attack-sprite': [atk_sprite, 1],
+                'attack-label': [atk_label, 2],
+                'health-sprite': [health_sprite, 1],
+                'health-label': [health_label, 2],
+            })
+        elif self.card.type == Type.Spell:
+            name_label.position = pos(0, -0.04, base=self.SizeBase)
+            main_sprite.position = pos(0, -0.07, base=self.SizeBase)
+        elif self.card.type == Type.Weapon:
+            name_label.position = pos(0, -0.01, base=self.SizeBase)
+            main_sprite.position = pos(0, -0.01, base=self.SizeBase)
+            atk_sprite = Sprite('WeaponAtk.png', pos(-0.81, -0.83, base=self.SizeBase),
+                                scale=0.85)
+            atk_label = hs_style_label(str(self.card.attack), pos(-0.78, -0.8, base=self.SizeBase), anchor_y='center',
+                                       font_size=64)
+            health_sprite = Sprite('WeaponHealth.png'.format(self.card.health), pos(0.82, -0.83, base=self.SizeBase),
+                                   scale=0.85)
+            health_label = hs_style_label(str(self.card.health), pos(0.83, -0.8, base=self.SizeBase), anchor_y='center',
+                                          font_size=64)
+            self.front_sprites.update({
+                'attack-sprite': [atk_sprite, 1],
+                'attack-label': [atk_label, 2],
+                'health-sprite': [health_sprite, 1],
+                'health-label': [health_label, 2],
+            })
+        elif self.card.type == Type.HeroCard:
+            armor_sprite = Sprite('HeroArmor-{}.png'.format(self.card.armor), pos(0.85, -0.86, base=self.SizeBase),
+                                  scale=1.08)
+            armor_label = hs_style_label(str(self.card.armor), pos(0.85, -0.86, base=self.SizeBase), anchor_y='center',
+                                         font_size=64)
+            self.front_sprites.update({
+                'armor-sprite': [armor_sprite, 1],
+                'armor-label': [armor_label, 2],
+            })
 
     @staticmethod
     def _render_desc(desc: str, **kwargs) -> str:
