@@ -240,6 +240,10 @@ class GameBoardLayer(ActiveLayer):
         Registered at `SelectDeckLayer.on_start_game`.
         """
 
+        # TODO: Add processing for game end (transition to game end scene, etc).
+        if not self.ctrl.game.running:
+            pass
+
         # Right border components.
         for i, player in enumerate(self._player_list()):
             self.get('label_deck_{}'.format(i)).element.text = '牌库：{}'.format(len(player.deck))

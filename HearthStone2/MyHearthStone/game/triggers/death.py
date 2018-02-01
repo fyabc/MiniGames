@@ -24,3 +24,13 @@ class StdDeathPhase(StandardBeforeTrigger):
             elif isinstance(death, Weapon):
                 result.append(standard.WeaponDeath(self.game, death))
         return result
+
+
+class StdHeroDeath(StandardBeforeTrigger):
+    """Standard trigger of hero death."""
+
+    respond = [standard.HeroDeath]
+
+    def process(self, event: respond[0]):
+        event.owner.play_state = False
+        return []

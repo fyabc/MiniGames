@@ -73,18 +73,11 @@ class StdDrawCard(StandardBeforeTrigger):
 
 
 def add_standard_triggers(game):
-    game.register_trigger(StdGameBegin(game))
-    game.register_trigger(StdTurnBegin(game))
-    game.register_trigger(StdTurnEnd(game))
-    game.register_trigger(StdDrawCard(game))
-    game.register_trigger(StdOnPlaySpell(game))
-    game.register_trigger(StdSpellBlenderPhase(game))
-    game.register_trigger(StdSpellText(game))
-    game.register_trigger(StdAfterSpell(game))
-    game.register_trigger(StdOnPlayMinion(game))
-    game.register_trigger(StdOnBattlecry(game))
-    game.register_trigger(StdAfterPlayMinion(game))
-    game.register_trigger(StdAfterSummon(game))
-    game.register_trigger(StdPreDamage(game))
-    game.register_trigger(StdDamage(game))
-    game.register_trigger(StdDeathPhase(game))
+    for trigger_type in [
+        StdGameBegin, StdTurnBegin, StdTurnEnd, StdDrawCard,
+        StdOnPlaySpell, StdSpellBlenderPhase, StdSpellText, StdAfterSpell,
+        StdOnPlayMinion, StdOnBattlecry, StdAfterPlayMinion, StdAfterSummon,
+        StdPreDamage, StdDamage,
+        StdDeathPhase, StdHeroDeath,
+    ]:
+        game.register_trigger(trigger_type(game))

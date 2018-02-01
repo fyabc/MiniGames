@@ -221,6 +221,8 @@ class Game:
             else:
                 raise ValueError('Type {} of {} is not a valid type in the queue'.format(type(e), e))
 
+            # Finally when the Sequence ends and the player gets control again,
+            # Hearthstone checks if the game has ended in a Win, Loss or Draw.
             # todo: need test here
             if depth == 0 and i == len(events) - 1 and (not events or events[-1] != 'check_win'):
                 events.append('check_win')
@@ -333,11 +335,14 @@ class Game:
         deaths = set()
 
         for player in self.players:
-            for e in player.play + [player.weapon, player.hero]:
+            for e in player.play + [player.weapon]:
                 if e is None:
                     continue
                 if not e.alive:
                     deaths.add(e)
+            # Special case for hero: if already lose (play_state = False), do not add to deaths.
+            if player.hero.play_state is True and not player.hero.alive:
+                deaths.add(player.hero)
 
         return order_of_play(deaths)
 
@@ -350,7 +355,7 @@ class Game:
         """
 
         # [NOTE]: When remove a hero from play,
-        # we send it into graveyard, but do not delete it from `self.heroes`, just set its `play_state` into `False`.
+        # we send it into graveyard, but do not delete it from `player.hero`, just set its `play_state` into `False`.
         pass
 
     def aura_update_attack_health(self):
