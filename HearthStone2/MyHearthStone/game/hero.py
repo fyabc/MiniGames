@@ -1,13 +1,13 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .game_entity import GameEntity, SetDataMeta
+from .game_entity import GameEntity
 from ..utils.game import Zone
 
 __author__ = 'fyabc'
 
 
-class Hero(GameEntity, metaclass=SetDataMeta):
+class Hero(GameEntity):
     """[NO_DESCRIPTION]"""
 
     _data = {

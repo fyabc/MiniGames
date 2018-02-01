@@ -30,7 +30,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             self.orig_scale = None
 
         def get_selected_eff(self):
-            def _selected_fn(spr):
+            def _selected_fn(spr: cocosnode.CocosNode):
                 self.orig_scale = spr.scale
                 self.orig_pos = spr.position
 
@@ -43,7 +43,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             return actions.CallFuncS(_selected_fn)
 
         def get_unselected_eff(self):
-            def _unselected_fn(spr):
+            def _unselected_fn(spr: cocosnode.CocosNode):
                 spr.scale = self.orig_scale
                 spr.position = self.orig_pos
                 self.orig_scale = self.orig_pos = None

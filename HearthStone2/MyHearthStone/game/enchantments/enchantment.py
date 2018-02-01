@@ -3,12 +3,12 @@
 
 """Base classes of enchantment."""
 
-from ..game_entity import GameEntity, SetDataMeta
+from ..game_entity import GameEntity
 
 __author__ = 'fyabc'
 
 
-class Enchantment(GameEntity, metaclass=SetDataMeta):
+class Enchantment(GameEntity):
     """Base class of enchantment.
 
     Information from <https://hearthstone.gamepedia.com/Enchantment>:

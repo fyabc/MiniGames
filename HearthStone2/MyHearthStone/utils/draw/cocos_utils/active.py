@@ -195,7 +195,6 @@ class ActiveLayerMixin:
             return
 
         x, y = director.director.get_virtual_coordinates(x, y)
-
         for child in self.get_children():
             if hasattr(child, 'on_mouse_release'):
                 if child.on_mouse_release(x, y, buttons, modifiers) is True:

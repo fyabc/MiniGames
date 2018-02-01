@@ -241,6 +241,8 @@ class GameBoardLayer(ActiveLayer):
         Registered at `SelectDeckLayer.on_start_game`.
         """
 
+        # Run actions according to current event or trigger.
+
         # TODO: Add processing for game end (transition to game end scene, etc).
         if not self.ctrl.game.running:
             pass
@@ -260,9 +262,7 @@ class GameBoardLayer(ActiveLayer):
         # [NOTE]: Use cache, need more tests.
         _card_sprite_cache = {card_sprite.card: card_sprite
                               for card_sprite in chain(*self.hand_sprites, *self.play_sprites)}
-        for card_sprite_list in chain(self.hand_sprites, self.play_sprites):
-            # for card_sprite in card_sprite_list:
-            #     self.remove(card_sprite)
+        for card_sprite_list in self.hand_sprites + self.play_sprites:
             card_sprite_list.clear()
         for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.38, .62))):
             num_hand, num_play = len(player.hand), len(player.play)
@@ -288,6 +288,18 @@ class GameBoardLayer(ActiveLayer):
                 self.play_sprites[i].append(card_sprite)
         for card_sprite in _card_sprite_cache.values():
             self.remove(card_sprite)
+
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        if not self.enabled:
+            return
+
+        x, y = director.director.get_virtual_coordinates(x, y)
+        for child in self.get_children():
+            if hasattr(child, 'on_mouse_release'):
+                if child.on_mouse_release(x, y, buttons, modifiers) is True:
+                    return True
+
+        # todo: Add other regions (board, hero, etc).
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""
