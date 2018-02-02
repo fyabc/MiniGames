@@ -44,6 +44,7 @@ def main():
     # [NOTE]: The import of C must after the loading of arg config.
     from .utils.constants import C
     from .utils.message import setup_logging
+    from .utils import monkey_patch
     from .ui import get_frontend
 
     setup_logging(level=C.Logging.Level, scr_log=C.Logging.ScreenLog)
