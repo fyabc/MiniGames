@@ -514,7 +514,7 @@ class Game:
     ###############################################
 
     def __repr__(self):
-        return 'Game(mode={})'.format(self.mode)
+        return 'Game(mode={}, running={})'.format(self.mode, self.running)
 
     def __getstate__(self):
         state = self.__dict__.copy()

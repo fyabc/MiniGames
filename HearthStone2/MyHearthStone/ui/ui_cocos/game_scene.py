@@ -25,11 +25,11 @@ __author__ = 'fyabc'
 
 
 class SelectDeckLayer(ActiveLayer):
-    RightB = 0.7
-    RightC = (1 + RightB) / 2
-    LeftC = RightB / 2
-    P1C, P2C = RightB / 4, RightB * 3 / 4
-    PlayersC = (RightB / 4, RightB * 3 / 4)
+    RightL = 0.7
+    RightC = (1 + RightL) / 2
+    LeftC = RightL / 2
+    P1C, P2C = RightL / 4, RightL * 3 / 4
+    PlayersC = (RightL / 4, RightL * 3 / 4)
 
     DeckListTop = 0.9
     DeckListBottom = 0.25
@@ -56,7 +56,7 @@ class SelectDeckLayer(ActiveLayer):
                     '[ {} ]'.format('↓' if is_down else '↑'),
                     pos(self.PlayersC[player_id] + 0.05 * (1 if is_down else -1), 0.15),
                     callback=lambda player_id_=player_id, is_down_=is_down: self.scroll_decks(player_id_, is_down_),
-                    font_size=28, anchor_x='center',
+                    font_size=28, anchor_x='center', anchor_y='center', bold=True,
                 ), name='button_p{}_decks_{}'.format(player_id, 'down' if is_down else 'up'))
 
     def on_enter(self):
@@ -91,12 +91,13 @@ class SelectDeckLayer(ActiveLayer):
                 self.deck_button_lists[player_id][0].callback(self.deck_button_lists[player_id][0])
 
     def on_exit(self):
-        super().on_exit()
         # Clear deck buttons.
         self._remove_decks_buttons()
         self.deck_button_lists = [[], []]
         self.deck_show_start = [0, 0]
         self.selected_decks = [None, None]
+
+        return super().on_exit()
 
     def _refresh_deck_buttons(self):
         """Refresh deck buttons with given show start."""
@@ -125,7 +126,7 @@ class SelectDeckLayer(ActiveLayer):
         self.ctrl.game.add_resolve_callback(game_board_layer.update_content)
         self.ctrl.game.add_resolve_callback(game_board_layer.log_update_time)
         start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
-        game_board_layer.start_game_iter = start_game_iter
+        game_board_layer.start_game_iter = next(start_game_iter)
 
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=0.5))
 
@@ -141,7 +142,7 @@ class SelectDeckLayer(ActiveLayer):
 
 
 def get_select_deck_bg():
-    right_b = SelectDeckLayer.RightB
+    right_b = SelectDeckLayer.RightL
     left_c = SelectDeckLayer.LeftC
 
     bg = BackgroundLayer()
@@ -170,9 +171,9 @@ class GameBoardLayer(ActiveLayer):
     not player id.
     """
 
-    RightB = 0.88  # Border of right pane
-    RightC = (1 + RightB) / 2  # Center of right pane
-    HeroB = 0.66  # Border of hero pane
+    RightL = 0.88  # Border of right pane
+    RightC = (1 + RightL) / 2  # Center of right pane
+    HeroL = 0.66  # Border of hero pane
     TurnEndBtnWidth = 0.1  # Width of turn end button
     TurnEndBtnTop, TurnEndBtnBottom = 0.5 + TurnEndBtnWidth / 2, 0.5 - TurnEndBtnWidth / 2
     HandRatio = 0.23  # Size ratio of hand cards
@@ -195,7 +196,7 @@ class GameBoardLayer(ActiveLayer):
         for i, y in enumerate((.3, .7)):
             self.add(hs_style_label(
                 '0/0', pos(self.RightC, y), color=Colors['blue'], anchor_y='center', bold=True,
-                font_size=16, multiline=True, width=(1 - self.RightB) * get_width(), align='center',
+                font_size=16, multiline=True, width=(1 - self.RightL) * get_width(), align='center',
             ), name='label_mana_{}'.format(i))
         for i, y in enumerate((.42, .58)):
             self.add(hs_style_label(
@@ -203,10 +204,10 @@ class GameBoardLayer(ActiveLayer):
             ), name='label_player_{}'.format(i))
         for i, y in enumerate((.1, .6)):
             self.add(sprite.Sprite(
-                'Health.png', pos(self.HeroB + (self.RightB - self.HeroB) * 0.8, y), scale=0.7,
+                'Health.png', pos(self.HeroL + (self.RightL - self.HeroL) * 0.8, y), scale=0.7,
             ), name='sprite_health_{}'.format(i))
             self.add(hs_style_label(
-                '0', pos(self.HeroB + (self.RightB - self.HeroB) * 0.8, y), font_size=46, anchor_y='center',
+                '0', pos(self.HeroL + (self.RightL - self.HeroL) * 0.8, y), font_size=46, anchor_y='center',
             ), name='label_health_{}'.format(i))
 
         # Card sprites.
@@ -218,13 +219,7 @@ class GameBoardLayer(ActiveLayer):
 
         assert self.start_game_iter is not None, 'The game is not started correctly!'
 
-        # [NOTE]: With transitions, this function will be called more than once.
-        # Must confirm that the start game iterator is called exactly once.
-        if director.director.scene != self.parent:
-            return
-
         # TODO: Play start game animation, etc.
-        next(self.start_game_iter)
 
         self._replace_dialog(self.ctrl.game.current_player)
 
@@ -274,7 +269,7 @@ class GameBoardLayer(ActiveLayer):
         for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.38, .62))):
             num_hand, num_play = len(player.hand), len(player.play)
             for j, card in enumerate(player.hand):
-                spr_kw = {'position': pos((2 * j + 1) / (2 * num_hand + 1) * self.HeroB, y_hand),
+                spr_kw = {'position': pos((2 * j + 1) / (2 * num_hand + 1) * self.HeroL, y_hand),
                           'is_front': (i == 0), 'scale': 0.35}
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
@@ -284,7 +279,7 @@ class GameBoardLayer(ActiveLayer):
                     self.add(card_sprite)
                 self.hand_sprites[i].append(card_sprite)
             for j, card in enumerate(player.play):
-                spr_kw = {'position': pos((2 * j + 1) / (2 * num_play + 1) * self.HeroB, y_play),
+                spr_kw = {'position': pos((2 * j + 1) / (2 * num_play + 1) * self.HeroL, y_play),
                           'is_front': (i == 0), 'scale': 0.4}
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
@@ -404,8 +399,8 @@ class GameButtonsLayer(ActiveLayer):
 
 
 def get_game_bg():
-    right_b = GameBoardLayer.RightB
-    hero_b = GameBoardLayer.HeroB
+    right_b = GameBoardLayer.RightL
+    hero_b = GameBoardLayer.HeroL
     te_btn_top, te_btn_bottom = GameBoardLayer.TurnEndBtnTop, GameBoardLayer.TurnEndBtnBottom
     hand_ratio = GameBoardLayer.HandRatio
 

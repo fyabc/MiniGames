@@ -94,7 +94,9 @@ class Player(GameEntity):
             try:
                 zone = self.get_zone(zone_id)
                 for card in zone:
-                    card.zone = zone_id
+                    # Weapon may be None.
+                    if card is not None:
+                        card.zone = zone_id
             except ValueError:
                 pass
         self.hero.zone = Zone.Hero
