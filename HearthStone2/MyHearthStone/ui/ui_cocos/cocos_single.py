@@ -1,6 +1,13 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""The Cocos2d-Python frontend for single user.
+
+[NOTE]: About Cocos2d-Python
+    If you use transitions, the `on_exit` of layers of outgoing scene
+    and `on_enter` of layers of incoming scene will be called twice.
+"""
+
 from cocos import director
 
 from .main_scene import get_main_scene

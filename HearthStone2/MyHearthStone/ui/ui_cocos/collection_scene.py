@@ -12,6 +12,20 @@ from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 __author__ = 'fyabc'
 
 
+class CollectionsBBLayer(BasicButtonsLayer):
+    """Wrap the basic buttons layer, modify actions when return in deck edit mode.
+    Current solution: switch to deck selection mode to ensure save.
+    """
+
+    def go_back(self):
+        self.parent.get('deck').switch_to(0)
+        return super().go_back()
+
+    def goto_options(self):
+        self.parent.get('deck').switch_to(0)
+        return super().goto_options()
+
+
 class CollectionsLayer(ActiveLayer):
     CollectionsR = 0.8
 
@@ -119,6 +133,8 @@ class DeckEditLayer(ActiveLayer):
     def on_enter(self):
         super().on_enter()
 
+        assert self.deck_id is not None, 'Deck not selected correctly'
+
         deck = self.ctrl.user.decks[self.deck_id]
 
     def on_exit(self):
@@ -150,7 +166,7 @@ class DeckEditLayer(ActiveLayer):
 def get_collection_scene(controller):
     collection_scene = scene.Scene()
     collection_scene.add(BackgroundLayer(), z=0, name='background')
-    collection_scene.add(BasicButtonsLayer(controller), z=1, name='basic_buttons')
+    collection_scene.add(CollectionsBBLayer(controller), z=1, name='basic_buttons')
     collection_scene.add(CollectionsLayer(controller), z=2, name='collections')
     collection_scene.add(layer.MultiplexLayer(
         DeckSelectLayer(controller),

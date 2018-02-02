@@ -126,7 +126,8 @@ class SelectDeckLayer(ActiveLayer):
         self.ctrl.game.add_resolve_callback(game_board_layer.update_content)
         self.ctrl.game.add_resolve_callback(game_board_layer.log_update_time)
         start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
-        game_board_layer.start_game_iter = next(start_game_iter)
+        next(start_game_iter)
+        game_board_layer.start_game_iter = start_game_iter
 
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=0.5))
 
@@ -217,7 +218,9 @@ class GameBoardLayer(ActiveLayer):
     def on_enter(self):
         super().on_enter()
 
-        assert self.start_game_iter is not None, 'The game is not started correctly!'
+        # Ensure not called by transition scenes (only called once).
+        if isinstance(director.director.scene, transitions.TransitionScene):
+            return
 
         # TODO: Play start game animation, etc.
 
