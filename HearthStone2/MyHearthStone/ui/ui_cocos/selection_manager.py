@@ -17,7 +17,6 @@ class SelectionManager:
             sprite.is_activated = False
 
     def click_at(self, sprite, player_id, zone, index, click_args):
-        # todo:
         print('Click at:', sprite, player_id, Zone.Idx2Str[zone], index)
         return sprite.on_mouse_release(*click_args)
 
