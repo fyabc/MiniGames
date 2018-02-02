@@ -17,8 +17,8 @@ def main():
                              help='Game logging level, default is "%(default)s"')
     group_basic.add_argument('-L', '--scr-log', action='store_true', default=False, dest='screen_log',
                              help='Show logging message into screen, default is %(default)s')
-    group_basic.add_argument('-f', '--frontend', metavar='mode', action='store', default='text-single', dest='frontend',
-                             help='Choose game frontend, default is "%(default)s"')
+    group_basic.add_argument('-f', '--frontend', metavar='mode', action='store', default='cocos-single',
+                             dest='frontend', help='Choose game frontend, default is "%(default)s"')
     group_basic.add_argument('-u', '--user', metavar='name', action='store', default=None, dest='user_id_or_name',
                              help='User name, default is %(default)s, will override value of "--uid"')
     group_basic.add_argument('--uid', metavar='ID', action='store', default=None, type=int, dest='user_id_or_name',

@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     platforms='any',
-    install_requires=['appdirs>=1.0', 'cocos2d>=0.6'],
+    install_requires=['appdirs>=1.0', 'cocos2d>=0.6', 'pyglet>=1.2.0'],
     extras_require={
         'pyqt-frontend': ['PyQt5>=5.6.0'],
         'kivy-frontend': ['kivy>=1.8.0'],

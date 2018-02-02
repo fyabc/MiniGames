@@ -24,6 +24,8 @@ class CocosSingleFrontend(Frontend):
     Width = C.UI.Cocos.WindowSize[0]
     Height = C.UI.Cocos.WindowSize[1]
 
+    # TODO: Cocos2d-Python labels show garbled Chinese characters in Unix.
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
