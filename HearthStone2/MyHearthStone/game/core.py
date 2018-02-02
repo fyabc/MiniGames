@@ -534,6 +534,9 @@ class Game:
     def get_zone(self, zone, player_id):
         return self.players[player_id].get_zone(zone)
 
+    def get_entity(self, zone, player_id, index=0):
+        return self.players[player_id].get_entity(zone, index)
+
     def show_details(self, level='INFO'):
         def _msg(*args, **kwargs):
             message(level, *args, **kwargs)

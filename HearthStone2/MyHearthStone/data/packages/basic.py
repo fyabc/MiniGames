@@ -59,6 +59,7 @@ from MyHearthStone.ext import Minion, Spell, Hero
 from MyHearthStone.ext import blank_minion, blank_weapon
 from MyHearthStone.ext import std_events
 from MyHearthStone.ext import message as msg
+from MyHearthStone.utils.game import Zone
 
 # Load other implementation modules.
 # noinspection PyUnresolvedReferences
@@ -131,6 +132,20 @@ class 火球术(Spell):
 
     def run(self, target):
         return [std_events.damage_events(self.game, self, target, 6)]
+
+
+#############
+# Rogue (6) #
+#############
+
+class 影袭(Spell):
+    _data = {
+        'id': 60002,
+        'type': 1, 'klass': 6, 'CAH': [1],
+    }
+
+    def run(self, target):
+        return [std_events.damage_events(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)]
 
 
 ###############

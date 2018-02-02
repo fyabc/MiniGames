@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from cocos import director
-from pyglet.font import add_file
 
 from .main_scene import get_main_scene
 from .collection_scene import get_collection_scene

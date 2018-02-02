@@ -152,6 +152,8 @@ class Player(GameEntity):
             return False
         if zone == Zone.Weapon:
             return self.weapon is not None
+        if zone == Zone.Hero:
+            return self.hero is not None
         # todo: add warning here?
         return False
 
@@ -166,7 +168,14 @@ class Player(GameEntity):
             return self.play
         if zone == Zone.Graveyard:
             return self.graveyard
+        if zone == Zone.Weapon:
+            return [self.weapon]
+        if zone == Zone.Hero:
+            return [self.hero]
         raise ValueError('Does not have zone {}'.format(zone))
+
+    def get_entity(self, zone, index=0):
+        return self.get_zone(zone)[index]
 
     def add_mana(self, value: int, action: str):
         """Add mana.

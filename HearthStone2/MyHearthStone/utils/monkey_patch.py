@@ -2,7 +2,7 @@
 
 """Monkey patches of some other third-party libraries."""
 
-from pkg_resources import parse_version
+from distutils.version import LooseVersion
 
 from pyglet import version
 from pyglet.compat import asbytes_filename
@@ -11,7 +11,7 @@ from pyglet.font.freetype import *
 __author__ = 'fyabc'
 
 
-if parse_version(version) >= parse_version('1.3'):
+if LooseVersion(version) >= LooseVersion('1.3'):
     def _fixed_from_file(cls, file_name):
         """For pyglet>=1.3.0:
         Bug fixed version of `FreeTypeFont.from_file`.
