@@ -3,7 +3,7 @@
 
 """Classic package."""
 
-from MyHearthStone.ext import Spell
+from MyHearthStone.ext import Minion, Spell
 from MyHearthStone.ext import std_events
 
 __author__ = 'fyabc'
@@ -31,3 +31,10 @@ class 炎爆术(Spell):
 
     def run(self, target):
         return [std_events.damage_events(self.game, self, target, 10)]
+
+
+class 大法师安东尼达斯(Minion):
+    _data = {
+        'id': 1030014, 'package': PackageID,
+        'rarity': 4, 'klass': 3, 'cost': 7, 'attack': 5, 'health': 7,
+    }

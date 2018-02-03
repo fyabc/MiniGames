@@ -8,7 +8,7 @@ from cocos import scene, layer
 from .card_item import CardItem
 from ...utils.message import info
 from ...utils.package_io import all_cards
-from ...utils.draw.cocos_utils.basic import pos, pos_y, hs_style_label
+from ...utils.draw.cocos_utils.basic import pos, pos_y
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 
@@ -182,7 +182,8 @@ class DeckEditLayer(ActiveLayer):
         card_cnt = Counter(self.deck.card_id_list)
         self.card_items = sorted(
             [all_cards()[card_id].data['cost'], card_id,
-             CardItem(card_id, n, pos(self.DeckC, 0), scale=1.0)]
+             CardItem(card_id, n, pos(self.DeckC, 0), scale=1.0,
+                      callback=self.on_card_item_clicked, self_in_callback=True)]
             for card_id, n in card_cnt.items())
 
     def _refresh_card_items(self):
@@ -196,6 +197,11 @@ class DeckEditLayer(ActiveLayer):
                 if card_item in self:
                     self.remove(card_item)
 
+    def _remove_card_item(self, card_item: CardItem):
+        self.card_items.remove([card_item.get_card().data['cost'], card_item.card_id, card_item])
+        if card_item in self:
+            self.remove(card_item)
+
     def _remove_card_items(self):
         for _, _, card_item in self.card_items:
             if card_item in self:
@@ -206,6 +212,17 @@ class DeckEditLayer(ActiveLayer):
 
     def on_edit_done(self):
         self.parent.switch_to(0)
+
+    def on_card_item_clicked(self, card_item: CardItem):
+        """Click an card item, will remove one card."""
+
+        self.deck.card_id_list.remove(card_item.card_id)
+        n = card_item.n
+        if n > 1:
+            card_item.n = n - 1
+        else:
+            self._remove_card_item(card_item)
+        self._refresh_card_items()
 
 
 def get_collection_scene(controller):

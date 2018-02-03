@@ -40,6 +40,9 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
         self.label_n = None
         self._build_components()
 
+    def __repr__(self):
+        return '{}(id={}, n={})'.format(self.__class__.__name__, self.card_id, self.n)
+
     is_inside_box = children_inside_test
 
     @property
@@ -62,6 +65,9 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
             if is_legend:
                 self.add(self.label_legend_star, z=1, name='label_legend_star')
         self._n = n
+
+    def get_card(self):
+        return all_cards()[self.card_id]
 
     def _build_components(self):
         card = all_cards()[self.card_id]
