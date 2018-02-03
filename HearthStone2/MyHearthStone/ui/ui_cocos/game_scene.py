@@ -222,6 +222,8 @@ class GameBoardLayer(ActiveLayer):
         if isinstance(director.director.scene, transitions.TransitionScene):
             return
 
+        assert self.start_game_iter is not None, 'Game not started correctly'
+
         # TODO: Play start game animation, etc.
 
         self._replace_dialog(self.ctrl.game.current_player)

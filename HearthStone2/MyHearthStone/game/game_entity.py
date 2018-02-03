@@ -1,9 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""The base class of game entities."""
+
+# TODO: Change the key 'CAH' into 'cost', 'attack', 'health' and 'armor'.
+
 from collections import ChainMap
 
-from ..utils.constants import C
 from ..utils.message import entity_message
 
 __author__ = 'fyabc'

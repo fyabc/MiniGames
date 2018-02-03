@@ -4,7 +4,7 @@
 from cocos import layer, sprite, text, rect, actions, director
 
 from ..constants import Colors, DefaultFont
-from .basic import get_sprite_box
+from .basic import get_sprite_box, get_label_box
 
 __author__ = 'fyabc'
 
@@ -230,6 +230,26 @@ class ActiveColorLayer(ActiveLayerMixin, layer.ColorLayer):
     """The color layer of active objects."""
 
 
+def children_inside_test(node, x, y):
+    """Test if the point is inside the node according to its children.
+    It will check the box of all labels and sprites in the children list of the node.
+
+    :param node: The node to be tested.
+    :param x: (number) x-value of the position.
+    :param y: (number) y-value of the position.
+    :return: (bool) Point `(x, y)` is inside the box of `node`.
+    """
+
+    for child in node.get_children():
+        if isinstance(child, text.Label):
+            if get_label_box(child).contains(x, y):
+                return True
+        elif isinstance(child, sprite.Sprite):
+            if get_sprite_box(child).contains(x, y):
+                return True
+    return False
+
+
 __all__ = [
     'ActiveMixin',
     'ActiveLabel',
@@ -237,4 +257,5 @@ __all__ = [
     'ActiveLayer',
     'ActiveColorLayer',
     'set_color_action',
+    'children_inside_test',
 ]

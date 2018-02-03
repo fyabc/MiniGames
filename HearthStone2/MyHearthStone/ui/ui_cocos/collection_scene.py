@@ -1,11 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from collections import Counter
+
 from cocos import scene, layer
 
 from .card_item import CardItem
 from ...utils.message import info
-from ...utils.draw.cocos_utils.basic import pos, pos_y
+from ...utils.package_io import all_cards
+from ...utils.draw.cocos_utils.basic import pos, pos_y, hs_style_label
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 
@@ -116,14 +119,27 @@ class DeckSelectLayer(ActiveLayer):
 
 class DeckEditLayer(ActiveLayer):
     DeckL, DeckC = DeckSelectLayer.DeckL, DeckSelectLayer.DeckC
+    DeckTitleY = 0.94
+    CardListTop = 0.88
+    CardListBottom = 0.25
+    CardShowSize = 15
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
         self.deck_id = None
+        self.deck = None    # Local copy of edit deck.
         self.delete_deck = False
 
+        # Sorted card items.
+        # (cost, card_id, card_item)
         self.card_items = []
+        self.card_show_start = None
 
+        self.label_deck_name = ActiveLabel.hs_style(
+            '', pos(self.DeckC, self.DeckTitleY), anchor_x='center', anchor_y='center',
+            bold=True,
+        )
+        self.add(self.label_deck_name, name='label_deck_name')
         self.add(ActiveLabel.hs_style(
             '[完成]', pos(self.DeckC, 0.15),
             callback=self.on_edit_done, anchor_x='center', anchor_y='center',
@@ -135,28 +151,57 @@ class DeckEditLayer(ActiveLayer):
 
         assert self.deck_id is not None, 'Deck not selected correctly'
 
-        deck = self.ctrl.user.decks[self.deck_id]
+        self.deck = self.ctrl.user.decks[self.deck_id].copy()
+        self.card_show_start = 0
+
+        self.label_deck_name.element.text = self.deck.name
+        self._build_card_items()
+        self._refresh_card_items()
 
     def on_exit(self):
         # Store card items into deck
         decks = self.ctrl.user.decks
         if self.delete_deck:
-            info('Deck {} {} deleted.'.format(self.deck_id, decks[self.deck_id]))
             del self.ctrl.user.decks[self.deck_id]
+            info('Deck {} {} deleted.'.format(self.deck_id, decks[self.deck_id]))
         else:
+            decks[self.deck_id] = self.deck
             info('Deck {} {} saved.'.format(self.deck_id, decks[self.deck_id]))
-            # todo
 
         self.deck_id = None
+        self.deck = None
+        self.card_show_start = None
+
+        self.label_deck_name.element.text = ''
         self._remove_card_items()
         self.card_items.clear()
 
         return super().on_exit()
 
+    def _build_card_items(self):
+        card_cnt = Counter(self.deck.card_id_list)
+        self.card_items = sorted(
+            [all_cards()[card_id].data['CAH'][0], card_id,
+             CardItem(card_id, n, pos(self.DeckC, 0), scale=1.0)]
+            for card_id, n in card_cnt.items())
+
     def _refresh_card_items(self):
-        pass
+        for i, (_, _, card_item) in enumerate(self.card_items):
+            card_item.y = pos_y(self.CardListTop - (self.CardListTop - self.CardListBottom) *
+                                (i - self.card_show_start) / (self.CardShowSize - 1))
+            if self.card_show_start <= i < self.card_show_start + self.CardShowSize:
+                if card_item not in self:
+                    self.add(card_item)
+            else:
+                if card_item in self:
+                    self.remove(card_item)
 
     def _remove_card_items(self):
+        for _, _, card_item in self.card_items:
+            if card_item in self:
+                self.remove(card_item)
+
+    def scroll_card_list(self):
         pass
 
     def on_edit_done(self):

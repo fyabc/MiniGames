@@ -9,7 +9,7 @@ from cocos.text import Label, HTMLLabel
 
 from ...utils.game import Klass, Type
 from ...utils.draw.cocos_utils.basic import *
-from ...utils.draw.cocos_utils.active import ActiveMixin
+from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test
 from ...utils.draw.cocos_utils.primitives import Rect
 
 __author__ = 'fyabc'
@@ -83,15 +83,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.card)
 
-    def is_inside_box(self, x, y):
-        for child in self.get_children():
-            if isinstance(child, Label):
-                if get_label_box(child).contains(x, y):
-                    return True
-            elif isinstance(child, Sprite):
-                if get_sprite_box(child).contains(x, y):
-                    return True
-        return False
+    is_inside_box = children_inside_test
 
     def update_content(self, **kwargs):
         """Update content when the card content (not card itself) changed."""

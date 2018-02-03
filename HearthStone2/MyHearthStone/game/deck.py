@@ -31,6 +31,11 @@ class Deck:
     def __repr__(self):
         return 'Deck(class={}, name={!r}, mode={})'.format(Klass.Idx2Str[self.klass], self.name, self.mode)
 
+    def copy(self):
+        """Return a (deep) copy of this deck."""
+
+        return type(self)(self.klass, self.card_id_list[:], self.mode, name=self.name)
+
     def to_code(self, comment=True):
         """Convert deck to code.
 
