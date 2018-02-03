@@ -3,9 +3,11 @@
 
 from collections import Counter
 
-from cocos import scene, layer
+from cocos import scene, layer, director
+from cocos.scenes import transitions
 
 from .card_item import CardItem
+from .card_sprite import CardSprite
 from ...utils.message import info
 from ...utils.package_io import all_cards
 from ...utils.draw.cocos_utils.basic import pos, pos_y
@@ -31,9 +33,80 @@ class CollectionsBBLayer(BasicButtonsLayer):
 
 class CollectionsLayer(ActiveLayer):
     CollectionsR = 0.8
+    PageSize = (4, 2)
+    PageT = 0.9
+    PageB = 0.25
+    PageL = 0.05
+    PageR = CollectionsR - 0.05
+    SwitchY = 0.15
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
+
+        # Card pages (each page contains some card_ids) to show.
+        self.card_id_pages = []
+        self.page_id = 0
+        self.page_card_sprites = []
+
+        # todo: add switch page arrows
+        for is_right in (False, True):
+            self.add(ActiveLabel.hs_style(
+                '[ {} ]'.format('→' if is_right else '←'),
+                pos((self.PageL + self.PageR) / 2 + 0.05 * (1 if is_right else -1), self.SwitchY),
+                callback=lambda is_right_=is_right: self._switch_card_page(1 if is_right_ else -1),
+                font_size=28, anchor_x='center', anchor_y='center', bold=True,
+            ), name='button_page_{}'.format('right' if is_right else 'left'))
+
+    def on_enter(self):
+        super().on_enter()
+
+        # if isinstance(director.director.scene, transitions.TransitionScene):
+        #     return
+
+        self.page_id = 0
+        self._refresh_card_id_pages()
+        
+    def on_exit(self):
+        self._remove_card_page()
+        return super().on_exit()
+
+    def _refresh_card_id_pages(self):
+        """Recalculate card id pages and refresh related sprites."""
+
+        # Add more filters here.
+        card_ids = sorted(all_cards().keys())
+        page_size = self.PageSize[0] * self.PageSize[1]
+        self.card_id_pages = [
+            card_ids[i * page_size: (i + 1) * page_size]
+            for i in range((len(card_ids) + page_size - 1) // page_size)
+        ]
+        self._switch_card_page()
+
+    def _switch_card_page(self, delta_id=0):
+        """Called when switch the card page.
+        Remove old cards, add new cards.
+        """
+        self.page_id = min(max(0, self.page_id + delta_id), len(self.card_id_pages) - 1)
+        current_page = self.card_id_pages[self.page_id]
+
+        self._remove_card_page()
+
+        for i, card_id in enumerate(current_page):
+            x, y = i % self.PageSize[0], i // self.PageSize[0]
+            # todo: Change these static card sprites into original card paintings?
+            card_sprite = CardSprite(card_id, pos(
+                self.PageL + (self.PageR - self.PageL) * (2 * x + 1) / (2 * self.PageSize[0]),
+                self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1])
+            ), is_front=True, scale=0.5)
+            self.page_card_sprites.append(card_sprite)
+            self.add(card_sprite)
+
+    def _remove_card_page(self, clear=True):
+        for card_sprite in self.page_card_sprites:
+            if card_sprite in self:
+                self.remove(card_sprite)
+        if clear:
+            self.page_card_sprites.clear()
 
 
 class DeckSelectLayer(ActiveLayer):
@@ -42,6 +115,7 @@ class DeckSelectLayer(ActiveLayer):
     DeckListTop = 0.9
     DeckListBottom = 0.25
     DeckShowSize = 10
+    UpDownY = 0.11
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
@@ -52,7 +126,7 @@ class DeckSelectLayer(ActiveLayer):
         for is_down in (False, True):
             self.add(ActiveLabel.hs_style(
                 '[ {} ]'.format('↓' if is_down else '↑'),
-                pos(self.DeckC + 0.05 * (1 if is_down else -1), 0.15),
+                pos(self.DeckC + 0.05 * (1 if is_down else -1), self.UpDownY),
                 callback=lambda is_down_=is_down: self.scroll_deck(is_down_),
                 font_size=28, anchor_x='center', anchor_y='center', bold=True,
             ), name='button_decks_{}'.format('down' if is_down else 'up'))
@@ -120,8 +194,10 @@ class DeckSelectLayer(ActiveLayer):
 class DeckEditLayer(ActiveLayer):
     DeckL, DeckC = DeckSelectLayer.DeckL, DeckSelectLayer.DeckC
     DeckTitleY = 0.94
-    CardListTop = 0.88
-    CardListBottom = 0.25
+    UpDownY = 0.19
+    EditDoneY = 0.11
+    CardListT = 0.88
+    CardListB = 0.25
     CardShowSize = 15
 
     def __init__(self, ctrl):
@@ -140,8 +216,16 @@ class DeckEditLayer(ActiveLayer):
             bold=True,
         )
         self.add(self.label_deck_name, name='label_deck_name')
+
+        for is_down in (False, True):
+            self.add(ActiveLabel.hs_style(
+                '[ {} ]'.format('↓' if is_down else '↑'),
+                pos(self.DeckC + 0.05 * (1 if is_down else -1), self.UpDownY),
+                callback=lambda is_down_=is_down: self.scroll_card_list(is_down_),
+                font_size=28, anchor_x='center', anchor_y='center', bold=True,
+            ), name='button_card_{}'.format('down' if is_down else 'up'))
         self.add(ActiveLabel.hs_style(
-            '[完成]', pos(self.DeckC, 0.15),
+            '[完成]', pos(self.DeckC, self.EditDoneY),
             callback=self.on_edit_done, anchor_x='center', anchor_y='center',
             bold=True,
         ), name='edit_done')
@@ -188,7 +272,7 @@ class DeckEditLayer(ActiveLayer):
 
     def _refresh_card_items(self):
         for i, (_, _, card_item) in enumerate(self.card_items):
-            card_item.y = pos_y(self.CardListTop - (self.CardListTop - self.CardListBottom) *
+            card_item.y = pos_y(self.CardListT - (self.CardListT - self.CardListB) *
                                 (i - self.card_show_start) / (self.CardShowSize - 1))
             if self.card_show_start <= i < self.card_show_start + self.CardShowSize:
                 if card_item not in self:
@@ -207,8 +291,15 @@ class DeckEditLayer(ActiveLayer):
             if card_item in self:
                 self.remove(card_item)
 
-    def scroll_card_list(self):
-        pass
+    def scroll_card_list(self, is_down):
+        if is_down:
+            if self.card_show_start + self.CardShowSize >= len(self.card_items):
+                return
+        else:
+            if self.card_show_start == 0:
+                return
+        self.card_show_start += int(is_down) * 2 - 1
+        self._refresh_card_items()
 
     def on_edit_done(self):
         self.parent.switch_to(0)

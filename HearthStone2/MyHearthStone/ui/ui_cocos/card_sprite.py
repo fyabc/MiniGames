@@ -7,7 +7,8 @@ from cocos import actions, rect, cocosnode, euclid
 from cocos.sprite import Sprite
 from cocos.text import Label, HTMLLabel
 
-from ...utils.game import Klass, Type
+from ...utils.game import Klass, Type, Rarity
+from ...utils.package_io import all_cards
 from ...utils.draw.cocos_utils.basic import *
 from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test
 from ...utils.draw.cocos_utils.primitives import Rect
@@ -17,8 +18,10 @@ __author__ = 'fyabc'
 
 class CardSprite(ActiveMixin, cocosnode.CocosNode):
     """The sprite of a card.
-
     In fact, it is a `CocosNode` that contains multiple sprites.
+
+    The card sprite may be static (created by card_id, attributes not changed)
+        or dynamic (created by card instance).
     """
 
     Size = euclid.Vector2(300, 450)    # Card size (original).
@@ -83,7 +86,19 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.card)
 
+    @property
+    def static(self):
+        """This is a static card (only contains card id)."""
+        return isinstance(self.card, int)
+
     is_inside_box = children_inside_test
+
+    def _c_get(self, key):
+        """Get card attributes."""
+        if self.static:
+            return all_cards()[self.card].data[key]
+        else:
+            return getattr(self.card, key)
 
     def update_content(self, **kwargs):
         """Update content when the card content (not card itself) changed."""
@@ -92,14 +107,14 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         self.is_front = kwargs.pop('is_front', False)
         self.scale = kwargs.pop('scale', 1.0)
 
-        self.front_sprites['mana-label'][0].element.text = str(self.card.cost)
-        if self.card.type in (Type.Minion, Type.Weapon):
-            self.front_sprites['attack-label'][0].element.text = str(self.card.attack)
-            self.front_sprites['health-label'][0].element.text = str(self.card.health)
-        elif self.card.type == Type.HeroCard:
-            self.front_sprites['armor-label'][0].element.text = str(self.card.armor)
-        self.front_sprites['name'][0].element.text = self.card.name
-        _r_desc = self._render_desc(self.card.description)
+        self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
+        if self._c_get('type') in (Type.Minion, Type.Weapon):
+            self.front_sprites['attack-label'][0].element.text = str(self._c_get('attack'))
+            self.front_sprites['health-label'][0].element.text = str(self._c_get('health'))
+        elif self._c_get('type') == Type.HeroCard:
+            self.front_sprites['armor-label'][0].element.text = str(self._c_get('armor'))
+        self.front_sprites['name'][0].element.text = self._c_get('name')
+        _r_desc = self._render_desc(self._c_get('description'))
         if self.front_sprites['desc'][0].element.text != _r_desc:
             self.front_sprites['desc'][0].element.text = _r_desc
 
@@ -148,41 +163,17 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         print('{} clicked!'.format(self))
         self.is_activated = not self.is_activated
 
-    # Internal methods to build components.
-    def _get_image_name(self, name):
-        """Get image name of given component."""
-        if name == 'main':
-            return '{}-{}.png'.format(Klass.Idx2Str[self.card.klass], self.card.type)
-        elif name == 'mana-sprite':
-            return 'Mana.png'
-        elif name == 'back':
-            return 'Card_back-Classic.png'
-        elif name == 'attack':
-            if self.card.type == Type.Minion:
-                return 'Atk-{}.png'.format(self.card.attack)
-            if self.card.type == Type.Weapon:
-                return 'WeaponAtk-{}.png'.format(self.card.attack)
-        elif name == 'health':
-            if self.card.type == Type.Minion:
-                return 'Health-{}.png'.format(self.card.health)
-            if self.card.type == Type.Weapon:
-                return 'WeaponHealth-{}.png'.format(self.card.health)
-        elif name == 'armor':
-            return 'HeroArmor-{}.png'.format(self.card.armor)
-        else:
-            raise ValueError('Unknown image name {!r}'.format(name))
-
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
         self.activated_border = Rect(border_rect, Colors['lightgreen'], width=4)
 
-        main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self.card.klass], self.card.type), (0, 0),
+        main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
                              scale=1.0,)
         mana_sprite = Sprite('Mana.png', pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
-        name_label = Label(self.card.name, pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
+        name_label = Label(self._c_get('name'), pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
                            anchor_y='center', bold=True)
-        desc_label = HTMLLabel(self._render_desc(self.card.description),
+        desc_label = HTMLLabel(self._render_desc(self._c_get('description')),
                                pos(0, -0.58, base=self.SizeBase), anchor_x='center', anchor_y='center',
                                width=main_sprite.width * 0.9, multiline=True)
 
@@ -192,52 +183,54 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             'name': [name_label, 1],
             'desc': [desc_label, 1],
         })
-        if self.card.type != Type.Permanent:
-            mana_label = hs_style_label(str(self.card.cost), pos(-0.84, 0.8, base=self.SizeBase),
+        if self._c_get('type') != Type.Permanent:
+            mana_label = hs_style_label(str(self._c_get('cost')), pos(-0.84, 0.8, base=self.SizeBase),
                                         font_size=64, anchor_y='center', color=Colors['white'])
             self.front_sprites['mana-label'] = [mana_label, 2]
 
         back_sprite = Sprite('Card_back-Classic.png', (0, 0), scale=1.0, )
         self.back_sprites['back'] = [back_sprite, 0]
 
-        if self.card.type == Type.Minion:
+        if self._c_get('type') == Type.Minion:
             atk_sprite = Sprite('Atk.png', pos(-0.86, -0.81, base=self.SizeBase), scale=1.15)
-            atk_label = hs_style_label(str(self.card.attack), pos(-0.78, -0.8, base=self.SizeBase), anchor_y='center',
-                                       font_size=64)
+            atk_label = hs_style_label(str(self._c_get('attack')), pos(-0.78, -0.8, base=self.SizeBase),
+                                       anchor_y='center', font_size=64)
             health_sprite = Sprite('Health.png', pos(0.84, -0.81, base=self.SizeBase), scale=1.05)
-            health_label = hs_style_label(str(self.card.health), pos(0.84, -0.8, base=self.SizeBase), anchor_y='center',
-                                          font_size=64)
+            health_label = hs_style_label(str(self._c_get('health')), pos(0.84, -0.8, base=self.SizeBase),
+                                          anchor_y='center', font_size=64)
+            if self._c_get('rarity') not in (Rarity.Basic, Rarity.Derivative):
+                # todo: Download rarity crystals for other card types.
+                self.front_sprites['rarity-sprite'] = [Sprite(
+                    'Rarity-{}-{}.png'.format(0, self._c_get('rarity')), pos(0.0, -0.248, base=self.SizeBase)), 2]
             self.front_sprites.update({
                 'attack-sprite': [atk_sprite, 1],
                 'attack-label': [atk_label, 2],
                 'health-sprite': [health_sprite, 1],
                 'health-label': [health_label, 2],
             })
-        elif self.card.type == Type.Spell:
+        elif self._c_get('type') == Type.Spell:
             name_label.position = pos(0, -0.04, base=self.SizeBase)
             main_sprite.position = pos(0, -0.07, base=self.SizeBase)
-        elif self.card.type == Type.Weapon:
+        elif self._c_get('type') == Type.Weapon:
             name_label.position = pos(0, -0.01, base=self.SizeBase)
             main_sprite.position = pos(0, -0.01, base=self.SizeBase)
             atk_sprite = Sprite('WeaponAtk.png', pos(-0.81, -0.83, base=self.SizeBase),
                                 scale=0.85)
-            atk_label = hs_style_label(str(self.card.attack), pos(-0.78, -0.8, base=self.SizeBase), anchor_y='center',
-                                       font_size=64)
-            health_sprite = Sprite('WeaponHealth.png'.format(self.card.health), pos(0.82, -0.83, base=self.SizeBase),
-                                   scale=0.85)
-            health_label = hs_style_label(str(self.card.health), pos(0.83, -0.8, base=self.SizeBase), anchor_y='center',
-                                          font_size=64)
+            atk_label = hs_style_label(str(self._c_get('attack')), pos(-0.78, -0.8, base=self.SizeBase),
+                                       anchor_y='center', font_size=64)
+            health_sprite = Sprite('WeaponHealth.png', pos(0.82, -0.83, base=self.SizeBase), scale=0.85)
+            health_label = hs_style_label(str(self._c_get('health')), pos(0.83, -0.8, base=self.SizeBase),
+                                          anchor_y='center', font_size=64)
             self.front_sprites.update({
                 'attack-sprite': [atk_sprite, 1],
                 'attack-label': [atk_label, 2],
                 'health-sprite': [health_sprite, 1],
                 'health-label': [health_label, 2],
             })
-        elif self.card.type == Type.HeroCard:
-            armor_sprite = Sprite('HeroArmor-{}.png'.format(self.card.armor), pos(0.85, -0.86, base=self.SizeBase),
-                                  scale=1.08)
-            armor_label = hs_style_label(str(self.card.armor), pos(0.85, -0.86, base=self.SizeBase), anchor_y='center',
-                                         font_size=64)
+        elif self._c_get('type') == Type.HeroCard:
+            armor_sprite = Sprite('HeroArmor.png', pos(0.85, -0.86, base=self.SizeBase), scale=1.08)
+            armor_label = hs_style_label(str(self._c_get('armor')), pos(0.85, -0.86, base=self.SizeBase),
+                                         anchor_y='center', font_size=64)
             self.front_sprites.update({
                 'armor-sprite': [armor_sprite, 1],
                 'armor-label': [armor_label, 2],

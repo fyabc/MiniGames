@@ -175,6 +175,7 @@ class GameBoardLayer(ActiveLayer):
     RightL = 0.88  # Border of right pane
     RightC = (1 + RightL) / 2  # Center of right pane
     HeroL = 0.66  # Border of hero pane
+    BoardL = 0.05
     TurnEndBtnWidth = 0.1  # Width of turn end button
     TurnEndBtnTop, TurnEndBtnBottom = 0.5 + TurnEndBtnWidth / 2, 0.5 - TurnEndBtnWidth / 2
     HandRatio = 0.23  # Size ratio of hand cards
@@ -274,8 +275,9 @@ class GameBoardLayer(ActiveLayer):
         for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.38, .62))):
             num_hand, num_play = len(player.hand), len(player.play)
             for j, card in enumerate(player.hand):
-                spr_kw = {'position': pos((2 * j + 1) / (2 * num_hand + 1) * self.HeroL, y_hand),
-                          'is_front': (i == 0), 'scale': 0.35}
+                spr_kw = {
+                    'position': pos(self.BoardL + (2 * j + 1) / (2 * num_hand) * (self.HeroL - self.BoardL), y_hand),
+                    'is_front': (i == 0), 'scale': 0.35}
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
                     card_sprite.update_content(**spr_kw)
@@ -284,8 +286,9 @@ class GameBoardLayer(ActiveLayer):
                     self.add(card_sprite)
                 self.hand_sprites[i].append(card_sprite)
             for j, card in enumerate(player.play):
-                spr_kw = {'position': pos((2 * j + 1) / (2 * num_play + 1) * self.HeroL, y_play),
-                          'is_front': (i == 0), 'scale': 0.4}
+                spr_kw = {
+                    'position': pos(self.BoardL + (2 * j + 1) / (2 * num_play) * (self.HeroL - self.BoardL), y_play),
+                    'is_front': (i == 0), 'scale': 0.4}
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
                     card_sprite.update_content(**spr_kw)
@@ -358,6 +361,7 @@ class GameBoardLayer(ActiveLayer):
         self.parent.add(layer_, z=max(e[0] for e in self.parent.children) + 1)
 
     def _on_replacement_selected(self, dialog, player_id):
+        """Callback when one replacement selection done."""
         self._replacement[player_id] = [i for i, c in enumerate(dialog.card_sprites) if not c.is_front]
         if any(e is None for e in self._replacement):
             # Replacement for the other player.
@@ -375,7 +379,7 @@ class GameBoardLayer(ActiveLayer):
                 pass
 
     def _player_list(self):
-        """Return the player list, in order (current player, opponent player)."""
+        """Return the player list, in order of (current player, opponent player)."""
         game = self.ctrl.game
         return game.players[game.current_player], game.players[1 - game.current_player]
 

@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Active cocos entities (labels and sprites) and layers, and related utilities."""
+
 from cocos import layer, sprite, text, rect, actions, director
 
 from ..constants import Colors, DefaultFont
@@ -177,6 +179,7 @@ class ActiveLayerMixin:
     """The mixin class of active Cocos2d-Python layers.
 
     It will dispatch the mouse press event to all of its children (if it defined the event handler).
+    More flexible than register event handlers of all of its children: Layers can filter and modify events.
     [NOTE]: This layer will not check if the event is in the box of a child, this check is done by the child itself.
     """
 

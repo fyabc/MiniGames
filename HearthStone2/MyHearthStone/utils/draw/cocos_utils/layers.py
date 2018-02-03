@@ -21,12 +21,14 @@ class BackgroundLayer(layer.Layer):
 class BasicButtonsLayer(active.ActiveLayer):
     """A commonly used active layer that contains some basic buttons."""
 
+    ButtonsY = 0.02
+
     def __init__(self, ctrl, back=True, options=True):
         super(BasicButtonsLayer, self).__init__(ctrl)
 
         if back:
             self.back_label = active.ActiveLabel.hs_style(
-                'Back', pos(0.99, 0.03),
+                'Back', pos(0.99, self.ButtonsY),
                 callback=self.go_back,
                 anchor_x='right',
             )
@@ -34,7 +36,7 @@ class BasicButtonsLayer(active.ActiveLayer):
 
         if options:
             self.options_label = active.ActiveLabel.hs_style(
-                'Options', pos(0.01, 0.03),
+                'Options', pos(0.01, self.ButtonsY),
                 callback=self.goto_options,
                 anchor_x='left',
             )
