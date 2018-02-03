@@ -338,7 +338,7 @@ Syntax: q | quit | exit\
     def do_info(self, arg):
         import textwrap
         for card in all_cards().values():
-            print('{}{}:'.format(card.data['name'], card.data['CAH']))
+            print('{}{}:'.format(card.data['name'], card.get_cahr()))
             print(textwrap.indent(card.data['description'], '    '))
             print()
 

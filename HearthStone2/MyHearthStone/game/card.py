@@ -15,7 +15,7 @@ class Card(GameEntity):
         'rarity': 0,
         'klass': 0,
         'race': [],
-        'CAH': [0, 1, 1],
+        'cost': 0,
         'overload': 0,
         'spell_power': 0,
         'have_target': False,
@@ -26,8 +26,7 @@ class Card(GameEntity):
 
         self.zone = Zone.Invalid
         self.player_id = player_id
-        self._cost = self.data['CAH'][0]
-        self.orig_cost = self.data['CAH'][0]    # The original cost.
+        self._cost = self.data['cost']
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
     def __repr__(self):
@@ -76,6 +75,9 @@ class Minion(Card):
     """The class of minion."""
 
     _data = {
+        'attack': 1,
+        'health': 1,
+
         'taunt': False,
         'charge': False,
         'divine_shield': False,
@@ -92,9 +94,8 @@ class Minion(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        self.attack = self.data['CAH'][1]
-        self.health = self.data['CAH'][2]
-        self.orig_health = self.data['CAH'][2]      # The original health.
+        self.attack = self.data['attack']
+        self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
@@ -133,12 +134,16 @@ class Spell(Card):
 class Weapon(Card):
     """The class of weapon."""
 
+    _data = {
+        'attack': 1,
+        'health': 1,
+    }
+
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        self.attack = self.data['CAH'][1]
-        self.health = self.data['CAH'][2]
-        self.orig_health = self.data['CAH'][2]  # The original health.
+        self.attack = self.data['attack']
+        self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
@@ -150,7 +155,11 @@ class Weapon(Card):
 class HeroCard(Card):
     """The class of hero card."""
 
+    _data = {
+        'armor': 5,
+    }
+
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        self.armor = self.data['CAH'][1]
+        self.armor = self.data['armor']

@@ -21,16 +21,28 @@ Ordered by:
     Class
     Rarity (Basic -> Common -> Rare -> Epic -> Legend -> Derivative
     Type (Minion -> Spell -> Weapon -> HeroCard)
-    Cost (CAH[0]) Ascending
-    Attack (CAH[1]) Ascending
-    Health (CAH[2]) Ascending
+    Cost Ascending
+    Attack Ascending
+    Health Ascending
 
 Default:
     Type = 0
     Rarity = 0
     Klass = 0
     Race = []
-    CAH = [0, 1, 1]
+    Cost = 0
+    Attack = 1
+    Health = 1
+    Armor = 5
+
+Data dict (`_data`) format:
+```
+_data = {
+    'id': 6,                                # id, package
+    'cost': 2, 'attack': 1, 'health': 1,    # type, klass, rarity, cost, attack, health, armor
+    'battlecry': True,                      # other attributes
+}
+```
 
 Hero ID format:
 
@@ -43,7 +55,7 @@ Package ID
 
 Default:
     Klass = 0
-    CAH = [None, None, 30]
+    Health = 30
 
 Enchantment ID format:
 
@@ -59,7 +71,7 @@ from MyHearthStone.ext import Minion, Spell, Hero
 from MyHearthStone.ext import blank_minion, blank_weapon
 from MyHearthStone.ext import std_events
 from MyHearthStone.ext import message as msg
-from MyHearthStone.utils.game import Zone
+from MyHearthStone.utils.game import Zone, Race
 
 # Load other implementation modules.
 # noinspection PyUnresolvedReferences
@@ -77,7 +89,7 @@ PackageID = 0
 class 工程师学徒(Minion):
     _data = {
         'id': 6,
-        'CAH': [2, 1, 1],
+        'cost': 2, 'attack': 1, 'health': 1,
         'battlecry': True,
     }
 
@@ -88,8 +100,8 @@ class 工程师学徒(Minion):
 # 淡水鳄
 blank_minion({
     'id': 11,
-    'CAH': [2, 2, 3],
-    'race': [0],
+    'cost': 2, 'attack': 2, 'health': 3,
+    'race': [Race.Beast],
 })
 
 
@@ -98,7 +110,7 @@ blank_minion({
 class 幸运币(Spell):
     _data = {
         'id': 43,
-        'type': 1, 'rarity': -1, 'CAH': [0],
+        'type': 1, 'rarity': -1, 'cost': 0,
     }
 
     def run(self, target):
@@ -114,7 +126,7 @@ class 幸运币(Spell):
 # 埃隆巴克保护者
 blank_minion({
     'id': 10000,
-    'klass': 1, 'CAH': [8, 8, 8],
+    'klass': 1, 'cost': 8, 'attack': 8, 'health': 8,
     'taunt': True,
 })
 
@@ -126,7 +138,7 @@ blank_minion({
 class 火球术(Spell):
     _data = {
         'id': 30007,
-        'type': 1, 'klass': 3, 'CAH': [4],
+        'type': 1, 'klass': 3, 'cost': 4,
         'have_target': True,
     }
 
@@ -141,7 +153,7 @@ class 火球术(Spell):
 class 影袭(Spell):
     _data = {
         'id': 60002,
-        'type': 1, 'klass': 6, 'CAH': [1],
+        'type': 1, 'klass': 6, 'cost': 1,
     }
 
     def run(self, target):
@@ -155,7 +167,7 @@ class 影袭(Spell):
 # 炽炎战斧
 blank_weapon({
     'id': 90008,
-    'type': 2, 'klass': 9, 'CAH': [3, 3, 2],
+    'type': 2, 'klass': 9, 'cost': 3, 'attack': 3, 'health': 2,
 })
 
 

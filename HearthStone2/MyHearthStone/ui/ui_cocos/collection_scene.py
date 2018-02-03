@@ -181,7 +181,7 @@ class DeckEditLayer(ActiveLayer):
     def _build_card_items(self):
         card_cnt = Counter(self.deck.card_id_list)
         self.card_items = sorted(
-            [all_cards()[card_id].data['CAH'][0], card_id,
+            [all_cards()[card_id].data['cost'], card_id,
              CardItem(card_id, n, pos(self.DeckC, 0), scale=1.0)]
             for card_id, n in card_cnt.items())
 

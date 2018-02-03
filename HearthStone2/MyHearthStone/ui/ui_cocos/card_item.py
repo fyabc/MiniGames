@@ -70,7 +70,7 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
             'Mana.png', pos(-0.9, -0.05, base=self.SizeBase), scale=0.34,
         ), z=0, name='sprite_mana')
         self.add(hs_style_label(
-            str(card.data['CAH'][0]), pos(-0.88, 0.12, base=self.SizeBase), anchor_y='center', font_size=26,
+            str(card.data['cost']), pos(-0.88, 0.12, base=self.SizeBase), anchor_y='center', font_size=26,
         ), z=1, name='label_mana')
 
         name_str = card.data['name']

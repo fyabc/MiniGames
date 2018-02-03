@@ -12,7 +12,7 @@ class Hero(GameEntity):
 
     _data = {
         'klass': 0,
-        'CAH': [None, None, 30],
+        'health': 30,
     }
 
     def __init__(self, game, player_id):
@@ -21,8 +21,7 @@ class Hero(GameEntity):
         self.zone = Zone.Invalid
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
         self.player_id = player_id
-        self.health = self.data['CAH'][2]
-        self.orig_health = self.data['CAH'][2]  # The original health.
+        self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 

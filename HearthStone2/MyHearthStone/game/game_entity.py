@@ -3,8 +3,6 @@
 
 """The base class of game entities."""
 
-# TODO: Change the key 'CAH' into 'cost', 'attack', 'health' and 'armor'.
-
 from collections import ChainMap
 
 from ..utils.message import entity_message
@@ -41,7 +39,12 @@ class SetDataMeta(type):
 
 
 class GameEntity(metaclass=SetDataMeta):
-    """The base class of all game entities."""
+    """The base class of all game entities.
+
+    [NOTE]:
+        Use `CardClass.data['cost'] to access class-level data (original card data, will not be changed).
+        Use `card_object.cost to access object-level data (card-specific data, may be changed in the game).
+    """
 
     data = ChainMap({
         'version': None,
@@ -80,3 +83,17 @@ class GameEntity(metaclass=SetDataMeta):
     def description(self):
         # todo: Apply enchantments that affect description (e.g. spell power) on it.
         return self.data['description']
+
+    @classmethod
+    def get_cahr(cls):
+        """Get cost / attack / health / armor (basic attributes)."""
+        result = []
+        if 'cost' in cls.data:
+            result.append(cls.data['cost'])
+        if 'attack' in cls.data:
+            result.append(cls.data['attack'])
+        if 'health' in cls.data:
+            result.append(cls.data['health'])
+        if 'armor' in cls.data:
+            result.append(cls.data['armor'])
+        return result
