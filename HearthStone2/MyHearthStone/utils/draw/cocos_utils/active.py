@@ -3,7 +3,10 @@
 
 """Active cocos entities (labels and sprites) and layers, and related utilities."""
 
+from collections.abc import MutableMapping
+
 from cocos import layer, sprite, text, rect, actions, director
+from pyglet.window import mouse
 
 from ..constants import Colors, DefaultFont
 from .basic import get_sprite_box, get_label_box
@@ -15,17 +18,16 @@ def set_color_action(color):
     return actions.CallFuncS(lambda label: setattr(label.element, 'color', color))
 
 
-# noinspection PyUnresolvedReferences, PyDunderSlots, PyAttributeOutsideInit
+# noinspection PyArgumentList
 class ActiveMixin:
     """The mixin class of active Cocos2d-Python entities (Labels, Sprites, etc.)
 
     Active entities can handle mouse release and mouse motion events.
     [NOTE]: Active entities must be put in `ActiveLayer`s or other cocos nodes that can send events to them.
 
-    Required instance attributes of subclass:
+    Attributes:
         callback:
         callback_args:
-        callback_kwargs:
         stop_event:
         selected_effect:
         unselected_effect:
@@ -34,32 +36,86 @@ class ActiveMixin:
         self_in_callback:
     """
 
-    __slots__ = ()
+    def __init__(self, *args, **kwargs):
+        callback_args = kwargs.pop('callback_args', ())
+        if not isinstance(callback_args, MutableMapping):
+            callback_args = {mouse.LEFT: callback_args}
+
+        # todo: Support callback kwargs in callback map (how?).
+
+        callback = kwargs.pop('callback', None)
+        if callback is None:
+            self._callback_map = {}
+        elif isinstance(callback, MutableMapping):
+            self._callback_map = {k: (v, callback_args.get(k, ()), {}) for k, v in callback.items()}
+        else:
+            self._callback_map = {
+                mouse.LEFT: (callback, callback_args.get(mouse.LEFT, ()), {}),
+            }
+
+        self.stop_event = kwargs.pop('stop_event', False)
+        self.selected_effect = kwargs.pop('selected_effect', None)
+        self.unselected_effect = kwargs.pop('unselected_effect', None)
+        self.activated_effect = kwargs.pop('activated_effect', None)
+        self.active_invisible = kwargs.pop('active_invisible', False)
+        self.self_in_callback = kwargs.pop('self_in_callback', False)
+        self.is_selected = False
+
+        super().__init__(*args, **kwargs)
 
     def get_box(self):
         """Subclass must implement this method or override `is_inside_box`."""
-        return NotImplemented
+        raise NotImplementedError()
 
     def is_inside_box(self, x, y):
         return self.get_box().contains(x, y)
 
+    def _find_callback_entry(self, buttons):
+        if buttons in self._callback_map:
+            return buttons
+        for b in (0b111, 0b110, 0b101, 0b011, 0b100, 0b010, 0b001):
+            if b in self._callback_map and b & buttons == b:
+                return b
+        return None
+
+    def call(self, buttons=mouse.LEFT):
+        """Call the callback directly."""
+        buttons = self._find_callback_entry(buttons)
+        if buttons is None:
+            return
+
+        func, args, kwargs = self._callback_map[buttons]
+        if self.self_in_callback:
+            return func(self, *args, **kwargs)
+        else:
+            return func(*args, **kwargs)
+
+    # noinspection PyUnresolvedReferences
     def respond_to_mouse_release(self, x, y, buttons, modifiers):
         if not self.active_invisible and not self.visible:
             return False
         return self.is_inside_box(x, y)
 
+    # noinspection PyUnresolvedReferences
     def on_mouse_release(self, x, y, buttons, modifiers):
-        if self.respond_to_mouse_release(x, y, buttons, modifiers) and self.callback is not None:
+        if self.respond_to_mouse_release(x, y, buttons, modifiers):
+            buttons = self._find_callback_entry(buttons)
+            if buttons is None:
+                return
+
             if self.activated_effect is not None:
                 self.stop()
                 self.do(self.activated_effect)
+
+            func, args, kwargs = self._callback_map[buttons]
             if self.self_in_callback:
-                self.callback(self, *self.callback_args, **self.callback_kwargs)
+                func(self, *args, **kwargs)
             else:
-                self.callback(*self.callback_args, **self.callback_kwargs)
+                func(*args, **kwargs)
             if self.stop_event:
                 return True
 
+    # noinspection PyUnresolvedReferences
     def on_mouse_motion(self, x, y, dx, dy):
         if not self.active_invisible and not self.visible:
             return
@@ -81,19 +137,8 @@ class ActiveMixin:
 class ActiveLabel(ActiveMixin, text.Label):
     """The class of active label."""
 
-    def __init__(self, *args, **kwargs):
-        self.callback = kwargs.pop('callback', None)
-        self.callback_args = kwargs.pop('callback_args', ())
-        self.callback_kwargs = kwargs.pop('callback_kwargs', {})
-        self.stop_event = kwargs.pop('stop_event', False)
-        self.selected_effect = kwargs.pop('selected_effect', None)
-        self.unselected_effect = kwargs.pop('unselected_effect', None)
-        self.activated_effect = kwargs.pop('activated_effect', None)
-        self.active_invisible = kwargs.pop('active_invisible', False)
-        self.self_in_callback = kwargs.pop('self_in_callback', False)
-        self.is_selected = False
-
-        super().__init__(*args, **kwargs)
+    _hs_style_selected = set_color_action(Colors['green1'])
+    _hs_style_unselected = set_color_action(Colors['whitesmoke'])
 
     def get_box(self):
         """Get the box of the label.
@@ -136,8 +181,8 @@ class ActiveLabel(ActiveMixin, text.Label):
     def hs_style(cls, *args, **kwargs):
         """The active label with commonly used style in MyHearthStone."""
 
-        selected_effect = kwargs.pop('selected_effect', set_color_action(Colors['green1']))
-        unselected_effect = kwargs.pop('unselected_effect', set_color_action(Colors['whitesmoke']))
+        selected_effect = kwargs.pop('selected_effect', cls._hs_style_selected)
+        unselected_effect = kwargs.pop('unselected_effect', cls._hs_style_unselected)
         font_name = kwargs.pop('font_name', DefaultFont)
         font_size = kwargs.pop('font_size', 28)
         anchor_y = kwargs.pop('anchor_y', 'baseline')
@@ -155,20 +200,6 @@ class ActiveLabel(ActiveMixin, text.Label):
 
 class ActiveSprite(ActiveMixin, sprite.Sprite):
     """The class of active sprite."""
-
-    def __init__(self, *args, **kwargs):
-        self.callback = kwargs.pop('callback', None)
-        self.callback_args = kwargs.pop('callback_args', ())
-        self.callback_kwargs = kwargs.pop('callback_kwargs', {})
-        self.stop_event = kwargs.pop('stop_event', False)
-        self.selected_effect = kwargs.pop('selected_effect', None)
-        self.unselected_effect = kwargs.pop('unselected_effect', None)
-        self.activated_effect = kwargs.pop('activated_effect', None)
-        self.active_invisible = kwargs.pop('active_invisible', False)
-        self.self_in_callback = kwargs.pop('self_in_callback', False)
-        self.is_selected = False
-
-        super().__init__(*args, **kwargs)
 
     def get_box(self):
         return get_sprite_box(self)

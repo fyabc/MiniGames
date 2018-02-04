@@ -3,14 +3,15 @@
 
 from collections import Counter
 
-from cocos import scene, layer, director
-from cocos.scenes import transitions
+from cocos import scene, layer, draw
+# from cocos import director
+# from cocos.scenes import transitions
 
 from .card_item import CardItem
 from .card_sprite import CardSprite
 from ...utils.message import info
 from ...utils.package_io import all_cards
-from ...utils.draw.cocos_utils.basic import pos, pos_y
+from ...utils.draw.cocos_utils.basic import pos, pos_y, Colors
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 
@@ -40,6 +41,8 @@ class CollectionsLayer(ActiveLayer):
     PageR = CollectionsR - 0.05
     SwitchY = 0.15
 
+    # todo: Click (or right click) card sprite to add card?
+
     def __init__(self, ctrl):
         super().__init__(ctrl)
 
@@ -48,7 +51,6 @@ class CollectionsLayer(ActiveLayer):
         self.page_id = 0
         self.page_card_sprites = []
 
-        # todo: add switch page arrows
         for is_right in (False, True):
             self.add(ActiveLabel.hs_style(
                 '[ {} ]'.format('→' if is_right else '←'),
@@ -144,7 +146,7 @@ class DeckSelectLayer(ActiveLayer):
         ]
         self.deck_button_list.append(ActiveLabel.hs_style(
             '[新套牌]', pos(self.DeckC, 1.0),
-            callback=self.on_new_deck, anchor_x='center', anchor_y='center',
+            callback=lambda: self.on_select_deck('new'), anchor_x='center', anchor_y='center',
             bold=True,
         ))
         self._refresh_deck_buttons()
@@ -175,10 +177,6 @@ class DeckSelectLayer(ActiveLayer):
     def on_select_deck(self, deck_id):
         self.parent.layers[1].deck_id = deck_id
         self.parent.switch_to(1)
-
-    def on_new_deck(self):
-        info('Creating new deck')
-        pass
 
     def scroll_deck(self, is_down):
         if is_down:
@@ -235,6 +233,10 @@ class DeckEditLayer(ActiveLayer):
 
         assert self.deck_id is not None, 'Deck not selected correctly'
 
+        if self.deck_id == 'new':
+            # todo: Add new deck
+            self.deck_id = 0
+
         self.deck = self.ctrl.user.decks[self.deck_id].copy()
         self.card_show_start = 0
 
@@ -246,11 +248,18 @@ class DeckEditLayer(ActiveLayer):
         # Store card items into deck
         decks = self.ctrl.user.decks
         if self.delete_deck:
-            del self.ctrl.user.decks[self.deck_id]
-            info('Deck {} {} deleted.'.format(self.deck_id, decks[self.deck_id]))
+            if self.deck_id == 'new':
+                info('New deck {} not saved.'.format(self.deck))
+            else:
+                del self.ctrl.user.decks[self.deck_id]
+                info('Deck {} {} deleted.'.format(self.deck_id, decks[self.deck_id]))
         else:
-            decks[self.deck_id] = self.deck
-            info('Deck {} {} saved.'.format(self.deck_id, decks[self.deck_id]))
+            if self.deck_id == 'new':
+                decks.append(self.deck)
+                info('New deck {} saved.'.format(self.deck))
+            else:
+                decks[self.deck_id] = self.deck
+                info('Deck {} {} saved.'.format(self.deck_id, decks[self.deck_id]))
 
         self.deck_id = None
         self.deck = None
@@ -316,9 +325,19 @@ class DeckEditLayer(ActiveLayer):
         self._refresh_card_items()
 
 
+def get_collection_bg():
+    DeckL = DeckSelectLayer.DeckL
+
+    bg = BackgroundLayer()
+
+    bg.add(draw.Line(pos(DeckL, 0.0), pos(DeckL, 1.0), Colors['white'], 2))
+
+    return bg
+
+
 def get_collection_scene(controller):
     collection_scene = scene.Scene()
-    collection_scene.add(BackgroundLayer(), z=0, name='background')
+    collection_scene.add(get_collection_bg(), z=0, name='background')
     collection_scene.add(CollectionsBBLayer(controller), z=1, name='basic_buttons')
     collection_scene.add(CollectionsLayer(controller), z=2, name='collections')
     collection_scene.add(layer.MultiplexLayer(

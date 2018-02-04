@@ -53,24 +53,19 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             return actions.CallFuncS(_unselected_fn)
 
     def __init__(self, card, position=(0, 0), is_front=True, scale=1.0, **kwargs):
-        super().__init__()
+        # For active mixin.
+        kwargs.setdefault('callback', self._card_clicked)
+        kwargs.setdefault('stop_event', True)
+        self._sel_mgr = self._SelectEffectManager()
+        kwargs.setdefault('selected_effect', self._sel_mgr.get_selected_eff())
+        kwargs.setdefault('unselected_effect', self._sel_mgr.get_unselected_eff())
+
+        super().__init__(**kwargs)
 
         self.card = card
         self.position = position
         self.scale = scale
 
-        # For active mixin.
-        self.callback = kwargs.pop('callback', self._card_clicked)
-        self.callback_args = kwargs.pop('callback_args', ())
-        self.callback_kwargs = kwargs.pop('callback_kwargs', {})
-        self.stop_event = kwargs.pop('stop_event', True)
-        self._sel_mgr = self._SelectEffectManager()
-        self.selected_effect = kwargs.pop('selected_effect', self._sel_mgr.get_selected_eff())
-        self.unselected_effect = kwargs.pop('unselected_effect', self._sel_mgr.get_unselected_eff())
-        self.activated_effect = kwargs.pop('activated_effect', None)
-        self.active_invisible = kwargs.pop('active_invisible', False)
-        self.self_in_callback = kwargs.pop('self_in_callback', False)
-        self.is_selected = False
         self._is_activated = False
 
         # Dict of front and back labels: name -> [sprite/label, z-order].
@@ -91,6 +86,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         """This is a static card (only contains card id)."""
         return isinstance(self.card, int)
 
+    get_box = None
     is_inside_box = children_inside_test
 
     def _c_get(self, key):
@@ -191,6 +187,11 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         back_sprite = Sprite('Card_back-Classic.png', (0, 0), scale=1.0, )
         self.back_sprites['back'] = [back_sprite, 0]
 
+        if self._c_get('rarity') not in (Rarity.Basic, Rarity.Derivative):
+            self.front_sprites['rarity-sprite'] = [Sprite(
+                'Rarity-{}-{}.png'.format(self._c_get('type'), self._c_get('rarity')),
+                pos(0.0, -0.248, base=self.SizeBase)), 2]
+
         if self._c_get('type') == Type.Minion:
             atk_sprite = Sprite('Atk.png', pos(-0.86, -0.81, base=self.SizeBase), scale=1.15)
             atk_label = hs_style_label(str(self._c_get('attack')), pos(-0.78, -0.8, base=self.SizeBase),
@@ -198,10 +199,6 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             health_sprite = Sprite('Health.png', pos(0.84, -0.81, base=self.SizeBase), scale=1.05)
             health_label = hs_style_label(str(self._c_get('health')), pos(0.84, -0.8, base=self.SizeBase),
                                           anchor_y='center', font_size=64)
-            if self._c_get('rarity') not in (Rarity.Basic, Rarity.Derivative):
-                # todo: Download rarity crystals for other card types.
-                self.front_sprites['rarity-sprite'] = [Sprite(
-                    'Rarity-{}-{}.png'.format(0, self._c_get('rarity')), pos(0.0, -0.248, base=self.SizeBase)), 2]
             self.front_sprites.update({
                 'attack-sprite': [atk_sprite, 1],
                 'attack-label': [atk_label, 2],
@@ -221,6 +218,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             health_sprite = Sprite('WeaponHealth.png', pos(0.82, -0.83, base=self.SizeBase), scale=0.85)
             health_label = hs_style_label(str(self._c_get('health')), pos(0.83, -0.8, base=self.SizeBase),
                                           anchor_y='center', font_size=64)
+            desc_label.element.color = Colors['white']
             self.front_sprites.update({
                 'attack-sprite': [atk_sprite, 1],
                 'attack-label': [atk_label, 2],
@@ -244,7 +242,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             # must set font out of HTML.
             'font_name': kwargs.pop('font_name', DefaultFont),
             # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
-            'font_size': int(kwargs.pop('font_size', 5)),
+            'font_size': int(kwargs.pop('font_size', 4)),
             # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.
             'color': kwargs.pop('color', 'black'),
         }

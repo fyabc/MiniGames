@@ -88,7 +88,7 @@ class SelectDeckLayer(ActiveLayer):
         # Default: select first decks if exists (by call callback directly).
         for player_id in (0, 1):
             if self.deck_button_lists[player_id]:
-                self.deck_button_lists[player_id][0].callback(self.deck_button_lists[player_id][0])
+                self.deck_button_lists[player_id][0].call()
 
     def on_exit(self):
         # Clear deck buttons.

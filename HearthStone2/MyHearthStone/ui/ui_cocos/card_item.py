@@ -17,24 +17,15 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
     SizeBase = Size // 2    # Coordinate base of children sprites.
 
     def __init__(self, card_id, n=1, position=(0, 0), scale=1.0, **kwargs):
-        super().__init__()
+        # For active mixin.
+        kwargs.setdefault('stop_event', True)
+
+        super().__init__(**kwargs)
 
         self.card_id = card_id
         self._n = n
         self.position = position
         self.scale = scale
-
-        # For active mixin.
-        self.callback = kwargs.pop('callback', None)
-        self.callback_args = kwargs.pop('callback_args', ())
-        self.callback_kwargs = kwargs.pop('callback_kwargs', {})
-        self.stop_event = kwargs.pop('stop_event', True)
-        self.selected_effect = kwargs.pop('selected_effect', None)
-        self.unselected_effect = kwargs.pop('unselected_effect', None)
-        self.activated_effect = kwargs.pop('activated_effect', None)
-        self.active_invisible = kwargs.pop('active_invisible', False)
-        self.self_in_callback = kwargs.pop('self_in_callback', False)
-        self.is_selected = False
 
         self.label_legend_star = None
         self.label_n = None
@@ -43,6 +34,7 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
     def __repr__(self):
         return '{}(id={}, n={})'.format(self.__class__.__name__, self.card_id, self.n)
 
+    get_box = None
     is_inside_box = children_inside_test
 
     @property
