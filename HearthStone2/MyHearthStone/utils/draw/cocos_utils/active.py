@@ -3,7 +3,7 @@
 
 """Active cocos entities (labels and sprites) and layers, and related utilities."""
 
-from collections.abc import MutableMapping
+from collections.abc import Mapping
 
 from cocos import layer, sprite, text, rect, actions, director
 from pyglet.window import mouse
@@ -38,7 +38,7 @@ class ActiveMixin:
 
     def __init__(self, *args, **kwargs):
         callback_args = kwargs.pop('callback_args', ())
-        if not isinstance(callback_args, MutableMapping):
+        if not isinstance(callback_args, Mapping):
             callback_args = {mouse.LEFT: callback_args}
 
         # todo: Support callback kwargs in callback map (how?).
@@ -46,7 +46,7 @@ class ActiveMixin:
         callback = kwargs.pop('callback', None)
         if callback is None:
             self._callback_map = {}
-        elif isinstance(callback, MutableMapping):
+        elif isinstance(callback, Mapping):
             self._callback_map = {k: (v, callback_args.get(k, ()), {}) for k, v in callback.items()}
         else:
             self._callback_map = {
@@ -73,7 +73,7 @@ class ActiveMixin:
     def _find_callback_entry(self, buttons):
         if buttons in self._callback_map:
             return buttons
-        for b in (0b111, 0b110, 0b101, 0b011, 0b100, 0b010, 0b001):
+        for b in range(1, 1 << 3):
             if b in self._callback_map and b & buttons == b:
                 return b
         return None

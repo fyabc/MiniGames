@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Basic event classes."""
+
 from ...utils.message import info, entity_message
 
 __author__ = 'fyabc'
@@ -18,7 +20,7 @@ class Event:
     skip_5_steps = False
 
     def __init__(self, game, owner):
-        """
+        """Create a new event.
 
         :param game: the game system of this event.
         :param owner: the owner of this event.
@@ -79,4 +81,10 @@ class Event:
 
 
 class Phase(Event):
-    pass
+    """The class of phases.
+
+    Copied from Advanced Rulebook:
+        Definition: Phases are surrounding blocks created whenever one or more triggers/Events are raised.
+        When the outermost Phase resolves, Hearthstone will run several Steps,
+        including processing Deaths and updating Auras.
+    """

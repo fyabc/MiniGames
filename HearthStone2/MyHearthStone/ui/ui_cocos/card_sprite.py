@@ -56,9 +56,9 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         # For active mixin.
         kwargs.setdefault('callback', self._card_clicked)
         kwargs.setdefault('stop_event', True)
-        self._sel_mgr = self._SelectEffectManager()
-        kwargs.setdefault('selected_effect', self._sel_mgr.get_selected_eff())
-        kwargs.setdefault('unselected_effect', self._sel_mgr.get_unselected_eff())
+        self.sel_mgr = self._SelectEffectManager()
+        kwargs.setdefault('selected_effect', self.sel_mgr.get_selected_eff())
+        kwargs.setdefault('unselected_effect', self.sel_mgr.get_unselected_eff())
 
         super().__init__(**kwargs)
 
@@ -84,7 +84,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
     @property
     def static(self):
         """This is a static card (only contains card id)."""
-        return isinstance(self.card, int)
+        return isinstance(self.card, (int, str))
 
     get_box = None
     is_inside_box = children_inside_test

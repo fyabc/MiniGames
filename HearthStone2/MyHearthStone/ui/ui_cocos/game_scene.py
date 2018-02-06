@@ -26,20 +26,20 @@ __author__ = 'fyabc'
 
 class SelectDeckLayer(ActiveLayer):
     RightL = 0.7
-    RightC = (1 + RightL) / 2
-    LeftC = RightL / 2
-    P1C, P2C = RightL / 4, RightL * 3 / 4
-    PlayersC = (RightL / 4, RightL * 3 / 4)
+    RightCX = (1 + RightL) / 2
+    LeftCX = RightL / 2
+    P1CX, P2CX = RightL / 4, RightL * 3 / 4
+    PlayersCX = (RightL / 4, RightL * 3 / 4)
 
-    DeckListTop = 0.9
-    DeckListBottom = 0.25
-    DeckShowSize = 10
+    DeckListT = 0.9
+    DeckListB = 0.25
+    DeckShowS = 10
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
 
         self.add(ActiveLabel.hs_style(
-            'Start Game', pos(self.RightC, 0.15),
+            'Start Game', pos(self.RightCX, 0.15),
             callback=self.on_start_game,
             font_size=36, anchor_x='center',
         ), name='button_start_game')
@@ -54,7 +54,7 @@ class SelectDeckLayer(ActiveLayer):
             for is_down in (False, True):
                 self.add(ActiveLabel.hs_style(
                     '[ {} ]'.format('↓' if is_down else '↑'),
-                    pos(self.PlayersC[player_id] + 0.05 * (1 if is_down else -1), 0.15),
+                    pos(self.PlayersCX[player_id] + 0.05 * (1 if is_down else -1), 0.15),
                     callback=lambda player_id_=player_id, is_down_=is_down: self.scroll_decks(player_id_, is_down_),
                     font_size=28, anchor_x='center', anchor_y='center', bold=True,
                 ), name='button_p{}_decks_{}'.format(player_id, 'down' if is_down else 'up'))
@@ -78,7 +78,7 @@ class SelectDeckLayer(ActiveLayer):
         self.selected_decks = [None, None]
         self.deck_button_lists = [[
             ActiveLabel.hs_style(
-                deck.name, pos(self.PlayersC[player_id], 1.0),
+                deck.name, pos(self.PlayersCX[player_id], 1.0),
                 callback=partial(select_deck, player_id_=player_id, deck_=deck),
                 anchor_x='center', anchor_y='center', self_in_callback=True,)
             for i, deck in enumerate(self.ctrl.user.decks)
@@ -104,9 +104,9 @@ class SelectDeckLayer(ActiveLayer):
         self._remove_decks_buttons()
         for player_id, deck_button_list in enumerate(self.deck_button_lists):
             for i, deck_button in enumerate(deck_button_list):
-                deck_button.y = pos_y(self.DeckListTop - (self.DeckListTop - self.DeckListBottom) *
-                                      (i - self.deck_show_start[player_id]) / (self.DeckShowSize - 1))
-                if self.deck_show_start[player_id] <= i < self.deck_show_start[player_id] + self.DeckShowSize:
+                deck_button.y = pos_y(self.DeckListT - (self.DeckListT - self.DeckListB) *
+                                      (i - self.deck_show_start[player_id]) / (self.DeckShowS - 1))
+                if self.deck_show_start[player_id] <= i < self.deck_show_start[player_id] + self.DeckShowS:
                     self.add(deck_button)
 
     def _remove_decks_buttons(self):
@@ -133,7 +133,7 @@ class SelectDeckLayer(ActiveLayer):
 
     def scroll_decks(self, player_id, is_down):
         if is_down:
-            if self.deck_show_start[player_id] + self.DeckShowSize >= len(self.deck_button_lists[player_id]):
+            if self.deck_show_start[player_id] + self.DeckShowS >= len(self.deck_button_lists[player_id]):
                 return
         else:
             if self.deck_show_start[player_id] == 0:
@@ -143,12 +143,12 @@ class SelectDeckLayer(ActiveLayer):
 
 
 def get_select_deck_bg():
-    right_b = SelectDeckLayer.RightL
-    left_c = SelectDeckLayer.LeftC
+    right_l = SelectDeckLayer.RightL
+    left_cx = SelectDeckLayer.LeftCX
 
     bg = BackgroundLayer()
-    bg.add(draw.Line(pos(right_b, .0), pos(right_b, 1.), Colors['white'], 2))
-    bg.add(draw.Line(pos(left_c, .0), pos(left_c, 1.), Colors['white'], 2))
+    bg.add(draw.Line(pos(right_l, .0), pos(right_l, 1.), Colors['white'], 2))
+    bg.add(draw.Line(pos(left_cx, .0), pos(left_cx, 1.), Colors['white'], 2))
 
     return bg
 
@@ -173,11 +173,11 @@ class GameBoardLayer(ActiveLayer):
     """
 
     RightL = 0.88  # Border of right pane
-    RightC = (1 + RightL) / 2  # Center of right pane
+    RightCX = (1 + RightL) / 2  # Center of right pane
     HeroL = 0.66  # Border of hero pane
     BoardL = 0.05
-    TurnEndBtnWidth = 0.1  # Width of turn end button
-    TurnEndBtnTop, TurnEndBtnBottom = 0.5 + TurnEndBtnWidth / 2, 0.5 - TurnEndBtnWidth / 2
+    TurnEndBtnW = 0.1  # Width of turn end button
+    TurnEndBtnT, TurnEndBtnB = 0.5 + TurnEndBtnW / 2, 0.5 - TurnEndBtnW / 2
     HandRatio = 0.23  # Size ratio of hand cards
 
     def __init__(self, ctrl):
@@ -193,16 +193,16 @@ class GameBoardLayer(ActiveLayer):
         # Right border components (deck info, mana info, etc).
         for i, y in enumerate((.15, .85)):
             self.add(hs_style_label(
-                '牌库：0', pos(self.RightC, y), anchor_y='center', bold=True, font_size=16,
+                '牌库：0', pos(self.RightCX, y), anchor_y='center', bold=True, font_size=16,
             ), name='label_deck_{}'.format(i))
         for i, y in enumerate((.3, .7)):
             self.add(hs_style_label(
-                '0/0', pos(self.RightC, y), color=Colors['blue'], anchor_y='center', bold=True,
+                '0/0', pos(self.RightCX, y), color=Colors['blue'], anchor_y='center', bold=True,
                 font_size=16, multiline=True, width=(1 - self.RightL) * get_width(), align='center',
             ), name='label_mana_{}'.format(i))
         for i, y in enumerate((.42, .58)):
             self.add(hs_style_label(
-                'Player {}'.format(i), pos(self.RightC, y), anchor_y='center', bold=True, font_size=16,
+                'Player {}'.format(i), pos(self.RightCX, y), anchor_y='center', bold=True, font_size=16,
             ), name='label_player_{}'.format(i))
         for i, y in enumerate((.1, .6)):
             self.add(sprite.Sprite(
@@ -389,7 +389,7 @@ class GameButtonsLayer(ActiveLayer):
         super().__init__(ctrl)
 
         self.add(ActiveLabel.hs_style(
-            'End Turn', pos(GameBoardLayer.RightC, 0.5),
+            'End Turn', pos(GameBoardLayer.RightCX, 0.5),
             callback=self.on_turn_end,
             font_size=24, anchor_x='center', anchor_y='center',
         ), name='button_turn_end')
@@ -408,21 +408,21 @@ class GameButtonsLayer(ActiveLayer):
 
 
 def get_game_bg():
-    right_b = GameBoardLayer.RightL
-    hero_b = GameBoardLayer.HeroL
-    te_btn_top, te_btn_bottom = GameBoardLayer.TurnEndBtnTop, GameBoardLayer.TurnEndBtnBottom
+    right_l = GameBoardLayer.RightL
+    hero_l = GameBoardLayer.HeroL
+    te_btn_t, te_btn_b = GameBoardLayer.TurnEndBtnT, GameBoardLayer.TurnEndBtnB
     hand_ratio = GameBoardLayer.HandRatio
 
     bg = BackgroundLayer()
 
     # Lines.
-    bg.add(draw.Line(pos(right_b, .0), pos(right_b, 1.), Colors['white'], 2))
-    bg.add(draw.Line(pos(.0, .5), pos(right_b, .5), Colors['white'], 2))
-    bg.add(draw.Line(pos(right_b, te_btn_top), pos(1.0, te_btn_top), Colors['white'], 2))
-    bg.add(draw.Line(pos(right_b, te_btn_bottom), pos(1.0, te_btn_bottom), Colors['white'], 2))
-    bg.add(draw.Line(pos(.0, hand_ratio), pos(hero_b, hand_ratio), Colors['white'], 2))
-    bg.add(draw.Line(pos(.0, 1 - hand_ratio), pos(hero_b, 1 - hand_ratio), Colors['white'], 2))
-    bg.add(draw.Line(pos(hero_b, .0), pos(hero_b, 1.), Colors['white'], 2))
+    bg.add(draw.Line(pos(right_l, .0), pos(right_l, 1.), Colors['white'], 2))
+    bg.add(draw.Line(pos(.0, .5), pos(right_l, .5), Colors['white'], 2))
+    bg.add(draw.Line(pos(right_l, te_btn_t), pos(1.0, te_btn_t), Colors['white'], 2))
+    bg.add(draw.Line(pos(right_l, te_btn_b), pos(1.0, te_btn_b), Colors['white'], 2))
+    bg.add(draw.Line(pos(.0, hand_ratio), pos(hero_l, hand_ratio), Colors['white'], 2))
+    bg.add(draw.Line(pos(.0, 1 - hand_ratio), pos(hero_l, 1 - hand_ratio), Colors['white'], 2))
+    bg.add(draw.Line(pos(hero_l, .0), pos(hero_l, 1.), Colors['white'], 2))
 
     return bg
 

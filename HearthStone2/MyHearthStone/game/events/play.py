@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .event import Event, Phase
+from .utils import dynamic_pid_prop
 from ...utils.game import Zone
 
 __author__ = 'fyabc'
@@ -21,11 +22,7 @@ class OnPlaySpell(OnPlay):
         self.target = target
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def spell(self):
@@ -45,11 +42,7 @@ class SpellBenderPhase(Phase):
         self.target = target
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def spell(self):
@@ -65,11 +58,7 @@ class SpellText(Phase):
         self.target = target
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def spell(self):
@@ -85,11 +74,7 @@ class AfterSpell(AfterPlay):
         self.target = target
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def spell(self):
@@ -118,11 +103,7 @@ class OnPlayMinion(OnPlay):
         self.target = target
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def minion(self):
@@ -139,11 +120,7 @@ class BattlecryPhase(Phase):
         self.target = target
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def minion(self):
@@ -160,11 +137,7 @@ class AfterPlayMinion(AfterPlay):
         super().__init__(game, minion)
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def minion(self):
@@ -179,11 +152,7 @@ class AfterSummon(Phase):
         super().__init__(game, minion)
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def minion(self):
@@ -198,11 +167,7 @@ class Summon(Event):
         super().__init__(game, minion)
         self._player_id = player_id
 
-    @property
-    def player_id(self):
-        if self._player_id is None:
-            return self.game.current_player
-        return self._player_id
+    player_id = dynamic_pid_prop()
 
     @property
     def minion(self):

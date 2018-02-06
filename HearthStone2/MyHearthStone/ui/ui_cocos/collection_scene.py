@@ -1,11 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import bisect
 from collections import Counter
 
 from cocos import scene, layer, draw
-# from cocos import director
-# from cocos.scenes import transitions
+from pyglet.window import mouse
 
 from .card_item import CardItem
 from .card_sprite import CardSprite
@@ -17,6 +17,8 @@ from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 
 __author__ = 'fyabc'
 
+DeckSelectID, DeckEditID = 0, 1
+
 
 class CollectionsBBLayer(BasicButtonsLayer):
     """Wrap the basic buttons layer, modify actions when return in deck edit mode.
@@ -24,11 +26,11 @@ class CollectionsBBLayer(BasicButtonsLayer):
     """
 
     def go_back(self):
-        self.parent.get('deck').switch_to(0)
+        self.parent.get('deck').switch_to(DeckSelectID)
         return super().go_back()
 
     def goto_options(self):
-        self.parent.get('deck').switch_to(0)
+        self.parent.get('deck').switch_to(DeckSelectID)
         return super().goto_options()
 
 
@@ -96,10 +98,12 @@ class CollectionsLayer(ActiveLayer):
         for i, card_id in enumerate(current_page):
             x, y = i % self.PageSize[0], i // self.PageSize[0]
             # todo: Change these static card sprites into original card paintings?
-            card_sprite = CardSprite(card_id, pos(
-                self.PageL + (self.PageR - self.PageL) * (2 * x + 1) / (2 * self.PageSize[0]),
-                self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1])
-            ), is_front=True, scale=0.5)
+            card_sprite = CardSprite(
+                card_id, pos(self.PageL + (self.PageR - self.PageL) * (2 * x + 1) / (2 * self.PageSize[0]),
+                             self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1]))
+                , is_front=True, scale=0.5, callback=self._get_card_callbacks(card_id),
+                # selected_effect=None, unselected_effect=None,
+            )
             self.page_card_sprites.append(card_sprite)
             self.add(card_sprite)
 
@@ -110,13 +114,29 @@ class CollectionsLayer(ActiveLayer):
         if clear:
             self.page_card_sprites.clear()
 
+    def _get_card_callbacks(self, card_id):
+        def _left():
+            multiplex_layer = self.ctrl.get_node('collection/deck')
+            if multiplex_layer.enabled_layer == DeckSelectID:
+                return
+            else:
+                multiplex_layer.layers[multiplex_layer.enabled_layer].on_card_clicked(card_id)
+                return True
+
+        def _right():
+            print('right')
+        return {
+            mouse.LEFT: _left,
+            mouse.RIGHT: _right,
+        }
+
 
 class DeckSelectLayer(ActiveLayer):
     DeckL = CollectionsLayer.CollectionsR
     DeckC = (1 + DeckL) / 2
-    DeckListTop = 0.9
-    DeckListBottom = 0.25
-    DeckShowSize = 10
+    DeckListT = 0.9
+    DeckListB = 0.25
+    DeckShowS = 10
     UpDownY = 0.11
 
     def __init__(self, ctrl):
@@ -160,9 +180,9 @@ class DeckSelectLayer(ActiveLayer):
 
     def _refresh_deck_buttons(self):
         for i, deck_button in enumerate(self.deck_button_list):
-            deck_button.y = pos_y(self.DeckListTop - (self.DeckListTop - self.DeckListBottom) *
-                                  (i - self.deck_show_start) / (self.DeckShowSize - 1))
-            if self.deck_show_start <= i < self.deck_show_start + self.DeckShowSize:
+            deck_button.y = pos_y(self.DeckListT - (self.DeckListT - self.DeckListB) *
+                                  (i - self.deck_show_start) / (self.DeckShowS - 1))
+            if self.deck_show_start <= i < self.deck_show_start + self.DeckShowS:
                 if deck_button not in self:
                     self.add(deck_button)
             else:
@@ -175,12 +195,12 @@ class DeckSelectLayer(ActiveLayer):
                 self.remove(deck_button)
 
     def on_select_deck(self, deck_id):
-        self.parent.layers[1].deck_id = deck_id
-        self.parent.switch_to(1)
+        self.parent.layers[DeckEditID].deck_id = deck_id
+        self.parent.switch_to(DeckEditID)
 
     def scroll_deck(self, is_down):
         if is_down:
-            if self.deck_show_start + self.DeckShowSize >= len(self.deck_button_list):
+            if self.deck_show_start + self.DeckShowS >= len(self.deck_button_list):
                 return
         else:
             if self.deck_show_start == 0:
@@ -196,7 +216,7 @@ class DeckEditLayer(ActiveLayer):
     EditDoneY = 0.11
     CardListT = 0.88
     CardListB = 0.25
-    CardShowSize = 15
+    CardShowS = 15
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
@@ -282,8 +302,8 @@ class DeckEditLayer(ActiveLayer):
     def _refresh_card_items(self):
         for i, (_, _, card_item) in enumerate(self.card_items):
             card_item.y = pos_y(self.CardListT - (self.CardListT - self.CardListB) *
-                                (i - self.card_show_start) / (self.CardShowSize - 1))
-            if self.card_show_start <= i < self.card_show_start + self.CardShowSize:
+                                (i - self.card_show_start) / (self.CardShowS - 1))
+            if self.card_show_start <= i < self.card_show_start + self.CardShowS:
                 if card_item not in self:
                     self.add(card_item)
             else:
@@ -302,7 +322,7 @@ class DeckEditLayer(ActiveLayer):
 
     def scroll_card_list(self, is_down):
         if is_down:
-            if self.card_show_start + self.CardShowSize >= len(self.card_items):
+            if self.card_show_start + self.CardShowS >= len(self.card_items):
                 return
         else:
             if self.card_show_start == 0:
@@ -311,26 +331,41 @@ class DeckEditLayer(ActiveLayer):
         self._refresh_card_items()
 
     def on_edit_done(self):
-        self.parent.switch_to(0)
+        self.parent.switch_to(DeckSelectID)
 
     def on_card_item_clicked(self, card_item: CardItem):
         """Click an card item, will remove one card."""
 
-        self.deck.card_id_list.remove(card_item.card_id)
         n = card_item.n
         if n > 1:
             card_item.n = n - 1
         else:
             self._remove_card_item(card_item)
         self._refresh_card_items()
+        self.deck.card_id_list.remove(card_item.card_id)
+
+    def on_card_clicked(self, card_id):
+        if card_id in self.deck.card_id_list:
+            for _, c_id, item in self.card_items:
+                if c_id == card_id:
+                    item.n += 1
+                    break
+        else:
+            new_entry = [
+                all_cards()[card_id].data['cost'], card_id,
+                CardItem(card_id, 1, pos(self.DeckC, 0), scale=1.0,
+                         callback=self.on_card_item_clicked, self_in_callback=True)]
+            bisect.insort(self.card_items, new_entry)
+            self.add(new_entry[2])
+        self._refresh_card_items()
+        self.deck.card_id_list.append(card_id)
 
 
 def get_collection_bg():
-    DeckL = DeckSelectLayer.DeckL
+    deck_l = DeckSelectLayer.DeckL
 
     bg = BackgroundLayer()
-
-    bg.add(draw.Line(pos(DeckL, 0.0), pos(DeckL, 1.0), Colors['white'], 2))
+    bg.add(draw.Line(pos(deck_l, 0.0), pos(deck_l, 1.0), Colors['white'], 2))
 
     return bg
 
