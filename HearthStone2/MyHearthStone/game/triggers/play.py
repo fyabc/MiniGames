@@ -50,7 +50,7 @@ class StdOnPlaySpell(StandardBeforeTrigger):
 
         player.spend_mana(event.spell.cost)
 
-        # [NOTE]: move it to ``Game.move``?
+        # [NOTE]: move it to `Game.move`?
         event.spell.oop = self.game.inc_oop()
 
         tz = Zone.Graveyard

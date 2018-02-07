@@ -1,7 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""Active cocos entities (labels and sprites) and layers, and related utilities."""
+"""Active cocos entities (labels and sprites) and layers, and related utilities.
+
+[NOTE]: Because new handler will insert at the top of the pyglet handler stack,
+    so layers with higher z-value will have higher priority to respond events.
+    So they can stop these events by return True.
+"""
 
 from collections.abc import Mapping
 
@@ -28,7 +33,6 @@ class ActiveMixin:
     Attributes:
         callback:
         callback_args:
-        stop_event:
         selected_effect:
         unselected_effect:
         activated_effect:
@@ -53,7 +57,6 @@ class ActiveMixin:
                 mouse.LEFT: (callback, callback_args.get(mouse.LEFT, ()), {}),
             }
 
-        self.stop_event = kwargs.pop('stop_event', False)
         self.selected_effect = kwargs.pop('selected_effect', None)
         self.unselected_effect = kwargs.pop('unselected_effect', None)
         self.activated_effect = kwargs.pop('activated_effect', None)
@@ -101,7 +104,7 @@ class ActiveMixin:
         if self.respond_to_mouse_release(x, y, buttons, modifiers):
             buttons = self._find_callback_entry(buttons)
             if buttons is None:
-                return
+                return False
 
             if self.activated_effect is not None:
                 self.stop()
@@ -109,16 +112,15 @@ class ActiveMixin:
 
             func, args, kwargs = self._callback_map[buttons]
             if self.self_in_callback:
-                func(self, *args, **kwargs)
+                return func(self, *args, **kwargs)
             else:
-                func(*args, **kwargs)
-            if self.stop_event:
-                return True
+                return func(*args, **kwargs)
+        return False
 
     # noinspection PyUnresolvedReferences
     def on_mouse_motion(self, x, y, dx, dy):
         if not self.active_invisible and not self.visible:
-            return
+            return False
 
         inside_box = self.is_inside_box(x, y)
 

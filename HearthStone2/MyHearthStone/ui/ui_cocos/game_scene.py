@@ -179,6 +179,8 @@ class GameBoardLayer(ActiveLayer):
     TurnEndBtnW = 0.1  # Width of turn end button
     TurnEndBtnT, TurnEndBtnB = 0.5 + TurnEndBtnW / 2, 0.5 - TurnEndBtnW / 2
     HandRatio = 0.23  # Size ratio of hand cards
+    PlayAreas = [((BoardL, HandRatio), (HeroL - BoardL, 0.5 - HandRatio)),
+                 ((BoardL, 0.5), (HeroL - BoardL, 0.5 - HandRatio))]
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
@@ -301,32 +303,28 @@ class GameBoardLayer(ActiveLayer):
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         if not self.enabled:
-            return
+            return False
 
-        def _index(l, e):
-            try:
-                return l.index(e)
-            except ValueError:
-                return None
-
+        # Iterate over card sprites.
         x, y = director.director.get_virtual_coordinates(x, y)
-        for child in reversed(self.get_children()):
-            if hasattr(child, 'on_mouse_release') and child.respond_to_mouse_release(x, y, buttons, modifiers):
-                player_id, zone, index = None, None, None
-                for player, hand_sprites, play_sprites in zip(
-                        self._player_list(), self.hand_sprites, self.play_sprites):
-                    for sprite_list, zone_name in zip((hand_sprites, play_sprites), (Zone.Hand, Zone.Play)):
-                        index = _index(sprite_list, child)
-                        if index is not None:
-                            player_id, zone = player.player_id, zone_name
-                            break
-                    if index is not None:
-                        break
-                if player_id is not None and self._sm.click_at(
-                        child, player_id, zone, index, (x, y, buttons, modifiers)) is True:
-                    return True
+        for i, player in enumerate(self._player_list()):
+            player_id = player.player_id
+            for zone, sprite_list in zip((Zone.Hand, Zone.Play), (self.hand_sprites[i], self.play_sprites[i])):
+                for index, child in enumerate(sprite_list):
+                    if hasattr(child, 'on_mouse_release') and child.respond_to_mouse_release(x, y, buttons, modifiers):
+                        # [NOTE]: This will stop all click events event if callback return False.
+                        self._sm.click_at(child, player_id, zone, index, (x, y, buttons, modifiers))
+                        return True
 
         # todo: Add other regions (board, hero, etc).
+        hand_areas = None
+        play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
+        for player, play_area in zip(self._player_list(), play_areas):
+            if play_area.contains(x, y):
+                print('$clicked play area of', player)
+                return True
+
+        return False
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""
@@ -338,16 +336,21 @@ class GameBoardLayer(ActiveLayer):
         layer_.add(hs_style_label('      请选择要替换的卡牌（玩家{}）'.format(player_id),
                                   pos(DW - 0.5, DH - 0.03), anchor_y='top'))
         layer_.add(ActiveLabel.hs_style(
-            '确定', pos(DW - 0.5, 0.03), callback=lambda: self._on_replacement_selected(layer_, player_id)))
+            '确定', pos(DW - 0.5, 0.03), callback=lambda: self._on_replacement_selected(layer_, player_id),
+        ))
         layer_.add(Rect(rect.Rect(*pos(0.0, 0.0), *pos(DW, DH)), Colors['white'], 2))
         layer_.card_sprites = []
+
+        def _cb(self_):
+            self_.toggle_side()
+            return True
 
         num_cards = len(game.players[player_id].hand)
         for i, card in enumerate(game.players[player_id].hand):
             card_sprite = CardSprite(
                 card, pos((2 * i + 1) / (2 * num_cards + 1), DH / 2),
                 is_front=True, scale=0.6,
-                callback=lambda self_: self_.toggle_side(),
+                callback=_cb,
                 self_in_callback=True,
                 selected_effect=None, unselected_effect=None,
             )
@@ -377,6 +380,7 @@ class GameBoardLayer(ActiveLayer):
                 self.start_game_iter.send(self._replacement)
             except StopIteration:
                 pass
+        return True
 
     def _player_list(self):
         """Return the player list, in order of (current player, opponent player)."""
@@ -410,6 +414,7 @@ class GameButtonsLayer(ActiveLayer):
 def get_game_bg():
     right_l = GameBoardLayer.RightL
     hero_l = GameBoardLayer.HeroL
+    board_l = GameBoardLayer.BoardL
     te_btn_t, te_btn_b = GameBoardLayer.TurnEndBtnT, GameBoardLayer.TurnEndBtnB
     hand_ratio = GameBoardLayer.HandRatio
 
@@ -417,12 +422,13 @@ def get_game_bg():
 
     # Lines.
     bg.add(draw.Line(pos(right_l, .0), pos(right_l, 1.), Colors['white'], 2))
-    bg.add(draw.Line(pos(.0, .5), pos(right_l, .5), Colors['white'], 2))
+    bg.add(draw.Line(pos(board_l, .5), pos(right_l, .5), Colors['white'], 2))
     bg.add(draw.Line(pos(right_l, te_btn_t), pos(1.0, te_btn_t), Colors['white'], 2))
     bg.add(draw.Line(pos(right_l, te_btn_b), pos(1.0, te_btn_b), Colors['white'], 2))
-    bg.add(draw.Line(pos(.0, hand_ratio), pos(hero_l, hand_ratio), Colors['white'], 2))
-    bg.add(draw.Line(pos(.0, 1 - hand_ratio), pos(hero_l, 1 - hand_ratio), Colors['white'], 2))
+    bg.add(draw.Line(pos(board_l, hand_ratio), pos(hero_l, hand_ratio), Colors['white'], 2))
+    bg.add(draw.Line(pos(board_l, 1 - hand_ratio), pos(hero_l, 1 - hand_ratio), Colors['white'], 2))
     bg.add(draw.Line(pos(hero_l, .0), pos(hero_l, 1.), Colors['white'], 2))
+    bg.add(draw.Line(pos(board_l, .0), pos(board_l, 1.), Colors['white'], 2))
 
     return bg
 

@@ -17,9 +17,6 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
     SizeBase = Size // 2    # Coordinate base of children sprites.
 
     def __init__(self, card_id, n=1, position=(0, 0), scale=1.0, **kwargs):
-        # For active mixin.
-        kwargs.setdefault('stop_event', True)
-
         super().__init__(**kwargs)
 
         self.card_id = card_id

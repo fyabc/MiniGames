@@ -239,6 +239,9 @@ class Player(GameEntity):
         self.used_mana = self.max_mana
         return result
 
+    def __repr__(self):
+        return super()._repr(player_id=self.player_id)
+
     def displayed_mana(self):
         """Get displayed current mana value. Negative value will be displayed as 0.
 

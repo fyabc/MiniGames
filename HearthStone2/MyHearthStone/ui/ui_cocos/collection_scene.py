@@ -343,6 +343,7 @@ class DeckEditLayer(ActiveLayer):
             self._remove_card_item(card_item)
         self._refresh_card_items()
         self.deck.card_id_list.remove(card_item.card_id)
+        return True
 
     def on_card_clicked(self, card_id):
         if card_id in self.deck.card_id_list:

@@ -55,7 +55,6 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
     def __init__(self, card, position=(0, 0), is_front=True, scale=1.0, **kwargs):
         # For active mixin.
         kwargs.setdefault('callback', self._card_clicked)
-        kwargs.setdefault('stop_event', True)
         self.sel_mgr = self._SelectEffectManager()
         kwargs.setdefault('selected_effect', self.sel_mgr.get_selected_eff())
         kwargs.setdefault('unselected_effect', self.sel_mgr.get_unselected_eff())
@@ -158,6 +157,7 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
     def _card_clicked(self):
         print('{} clicked!'.format(self))
         self.is_activated = not self.is_activated
+        return True
 
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
