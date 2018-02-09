@@ -38,6 +38,7 @@ class Player(GameEntity):
 
         # Zones.
         self.hero = None
+        self.hero_power = None
         self.deck = []
         self.hand = []
         self.play = []
@@ -156,7 +157,8 @@ class Player(GameEntity):
             return self.weapon is not None
         if zone == Zone.Hero:
             return self.hero is not None
-        # todo: add warning here?
+        if zone == Zone.HeroPower:
+            return self.hero_power is not None
         return False
 
     def get_zone(self, zone):
@@ -174,6 +176,8 @@ class Player(GameEntity):
             return [self.weapon]
         if zone == Zone.Hero:
             return [self.hero]
+        if zone == Zone.HeroPower:
+            return [self.hero_power]
         raise ValueError('Does not have zone {}'.format(zone))
 
     def get_entity(self, zone, index=0):

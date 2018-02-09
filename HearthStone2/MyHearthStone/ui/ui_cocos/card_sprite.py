@@ -28,6 +28,8 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
     SizeBase = Size // 2        # Coordinate base of children sprites.
 
     class _SelectEffectManager:
+        """The helper class for select and unselect effects."""
+        # TODO: make this class more configurable.
         def __init__(self):
             self.orig_pos = None
             self.orig_scale = None
@@ -56,10 +58,12 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         # For active mixin.
         kwargs.setdefault('callback', self._card_clicked)
         self.sel_mgr = self._SelectEffectManager()
-        kwargs.setdefault('selected_effect', self.sel_mgr.get_selected_eff())
-        kwargs.setdefault('unselected_effect', self.sel_mgr.get_unselected_eff())
+        kwargs.setdefault('selected_effect', 'default')
+        kwargs.setdefault('unselected_effect', 'default')
 
         super().__init__(**kwargs)
+
+        self._set_sel_eff()
 
         self.card = card
         self.position = position
@@ -85,6 +89,12 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         """This is a static card (only contains card id)."""
         return isinstance(self.card, (int, str))
 
+    @property
+    def entity(self):
+        """The standard interface to get the underlie game entity for all game entity sprites
+        (card sprites, hero sprites, hero power sprites, etc)."""
+        return self.card
+
     get_box = None
     is_inside_box = children_inside_test
 
@@ -95,12 +105,29 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         else:
             return getattr(self.card, key)
 
+    def _set_sel_eff(self):
+        """Set selected and unselected effects, translate string values into actions."""
+        if self.selected_effect == 'default':
+            self.selected_effect = self.sel_mgr.get_selected_eff()
+        if self.unselected_effect == 'default':
+            self.unselected_effect = self.sel_mgr.get_unselected_eff()
+
     def update_content(self, **kwargs):
         """Update content when the card content (not card itself) changed."""
 
         self.position = kwargs.pop('position', (0, 0))
         self.is_front = kwargs.pop('is_front', False)
         self.scale = kwargs.pop('scale', 1.0)
+
+        # Set selected and unselected effects.
+        _sentinel = object()
+        sel_eff = kwargs.pop('selected_effect', _sentinel)
+        if sel_eff != _sentinel:
+            self.selected_effect = sel_eff
+        unsel_eff = kwargs.pop('unselected_effect', _sentinel)
+        if unsel_eff != _sentinel:
+            self.unselected_effect = unsel_eff
+        self._set_sel_eff()
 
         self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
         if self._c_get('type') in (Type.Minion, Type.Weapon):

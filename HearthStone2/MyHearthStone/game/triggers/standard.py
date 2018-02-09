@@ -78,6 +78,6 @@ def add_standard_triggers(game):
         StdOnPlaySpell, StdSpellBlenderPhase, StdSpellText, StdAfterSpell,
         StdOnPlayMinion, StdOnBattlecry, StdAfterPlayMinion, StdAfterSummon,
         StdPreDamage, StdDamage,
-        StdDeathPhase, StdHeroDeath,
+        StdDeathPhase, StdHeroDeath, StdMinionDeath, StdWeaponDeath,
     ]:
         game.register_trigger(trigger_type(game))

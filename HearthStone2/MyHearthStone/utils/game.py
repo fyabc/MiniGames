@@ -28,6 +28,53 @@ def error_and_stop(game, event, msg):
     game.stop_subsequent_phases()
 
 
+def validate_cost(player, card, msg_fn):
+    """Validate the cost of the card.
+
+    :param player:
+    :param card:
+    :param msg_fn: Callable to show the error message on the frontend.
+    :return: The card can be played or not.
+    :rtype: bool
+    """
+
+    if player.displayed_mana() < card.cost:
+        msg_fn('You do not have enough mana!')
+        return False
+    return True
+
+
+def validate_target(card, target, msg_fn):
+    """Validate the target of the card.
+
+    :param card:
+    :param target:
+    :param msg_fn:
+    :return: The target is valid or not.
+    :rtype: bool
+    """
+
+    if not card.check_target(target):
+        msg_fn('This is not a valid target!')
+        return False
+    return True
+
+
+def validate_play_size(player, msg_fn):
+    """Validate the size of the play zone.
+
+    :param player:
+    :param msg_fn:
+    :return: The minion can be put into the play zone.
+    :rtype: bool
+    """
+
+    if player.full(Zone.Play):
+        msg_fn('I cannot have more minions!')
+        return False
+    return True
+
+
 class Type:
     """An enumeration class, contains card types."""
 
@@ -60,6 +107,7 @@ class Zone:
     SetAside = 6
     Weapon = 7
     Hero = 8
+    HeroPower = 9
 
     Str2Idx = {
         'Invalid': Invalid,
@@ -71,6 +119,7 @@ class Zone:
         'SetAside': SetAside,
         'Weapon': Weapon,
         'Hero': Hero,
+        'HeroPower': HeroPower,
     }
 
     Idx2Str = {v: k for k, v in Str2Idx.items()}
@@ -165,10 +214,10 @@ class Condition:
 __all__ = [
     'order_of_play',
     'error_and_stop',
-    'Type',
-    'Zone',
-    'Rarity',
-    'Race',
-    'Klass',
-    'Condition',
+
+    'validate_cost',
+    'validate_target',
+    'validate_play_size',
+
+    'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
 ]

@@ -93,7 +93,7 @@ class 工程师学徒(Minion):
         'battlecry': True,
     }
 
-    def battlecry(self, target):
+    def run_battlecry(self, target):
         return [std_events.DrawCard(self.game, self, self.player_id)]
 
 
@@ -143,7 +143,7 @@ class 火球术(Spell):
     }
 
     def run(self, target):
-        return [std_events.damage_events(self.game, self, target, 6)]
+        return std_events.damage_events(self.game, self, target, 6)
 
 
 #############
@@ -157,7 +157,7 @@ class 影袭(Spell):
     }
 
     def run(self, target):
-        return [std_events.damage_events(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)]
+        return std_events.damage_events(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)
 
 
 ###############

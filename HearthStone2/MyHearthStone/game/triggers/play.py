@@ -29,6 +29,7 @@ class StdOnPlaySpell(StandardBeforeTrigger):
 
         player = self.game.players[event.player_id]
 
+        # todo: Move these checks into frontend code.
         # todo: Add effect of Cho'gall
         if player.displayed_mana() < event.spell.cost:
             error_and_stop(self.game, event, 'You do not have enough mana!')
@@ -136,7 +137,7 @@ class StdOnBattlecry(StandardBeforeTrigger):
     def process(self, event: respond[0]):
         # todo: Add effects of Brann Bronzebeard.
 
-        return event.minion.battlecry(event.target)
+        return event.minion.run_battlecry(event.target)
 
 
 class StdAfterPlayMinion(StandardBeforeTrigger):

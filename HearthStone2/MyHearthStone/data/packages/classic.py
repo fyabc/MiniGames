@@ -16,6 +16,16 @@ PackageID = 1
 ###############
 
 
+class 战利品贮藏者(Minion):
+    _data = {
+        'id': 1000008, 'package': PackageID,
+        'rarity': 1, 'cost': 2, 'attack': 2, 'health': 1,
+    }
+
+    def run_deathrattle(self):
+        return [std_events.DrawCard(self.game, self, self.player_id)]
+
+
 ############
 # Mage (3) #
 ############
@@ -30,7 +40,7 @@ class 炎爆术(Spell):
     }
 
     def run(self, target):
-        return [std_events.damage_events(self.game, self, target, 10)]
+        return std_events.damage_events(self.game, self, target, 10)
 
 
 class 大法师安东尼达斯(Minion):

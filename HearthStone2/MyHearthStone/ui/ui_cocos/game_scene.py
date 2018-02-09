@@ -279,7 +279,9 @@ class GameBoardLayer(ActiveLayer):
             for j, card in enumerate(player.hand):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_hand) * (self.HeroL - self.BoardL), y_hand),
-                    'is_front': (i == 0), 'scale': 0.35}
+                    'is_front': (i == 0), 'scale': 0.35,
+                    'selected_effect': 'default' if i == 0 else None,
+                    'unselected_effect': 'default' if i == 0 else None, }
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
                     card_sprite.update_content(**spr_kw)
@@ -290,7 +292,7 @@ class GameBoardLayer(ActiveLayer):
             for j, card in enumerate(player.play):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_play) * (self.HeroL - self.BoardL), y_play),
-                    'is_front': (i == 0), 'scale': 0.4}
+                    'is_front': True, 'scale': 0.35, 'selected_effect': None, 'unselected_effect': None}
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
                     card_sprite.update_content(**spr_kw)
@@ -308,20 +310,19 @@ class GameBoardLayer(ActiveLayer):
         # Iterate over card sprites.
         x, y = director.director.get_virtual_coordinates(x, y)
         for i, player in enumerate(self._player_list()):
-            player_id = player.player_id
             for zone, sprite_list in zip((Zone.Hand, Zone.Play), (self.hand_sprites[i], self.play_sprites[i])):
                 for index, child in enumerate(sprite_list):
                     if hasattr(child, 'on_mouse_release') and child.respond_to_mouse_release(x, y, buttons, modifiers):
                         # [NOTE]: This will stop all click events event if callback return False.
-                        self._sm.click_at(child, player_id, zone, index, (x, y, buttons, modifiers))
+                        self._sm.click_at(child, player, zone, index, (x, y, buttons, modifiers))
                         return True
 
-        # todo: Add other regions (board, hero, etc).
-        hand_areas = None
+        # todo: Add other regions (hand, hero, etc).
+
         play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
         for player, play_area in zip(self._player_list(), play_areas):
             if play_area.contains(x, y):
-                print('$clicked play area of', player)
+                self._sm.click_at_space(player, 0, (x, y, buttons, modifiers))
                 return True
 
         return False

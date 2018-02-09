@@ -51,7 +51,7 @@
     "UI": {
         "Cocos": {
             // Window width and height.
-            "WindowSize": [1280, 700]
+            "WindowSize": [1360, 700]
         }
     }
 }

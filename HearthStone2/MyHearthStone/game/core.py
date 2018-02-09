@@ -79,6 +79,8 @@ class Game:
         self._stop_subsequent_phases = False
 
         # Death event cache.
+        # See https://hearthstone.gamepedia.com/Advanced_rulebook#Death_Event_Cache for details.
+        # Values: (entity_id, player_id, turn_number)
         self.death_cache = []
 
         # Summon event cache.
@@ -185,28 +187,28 @@ class Game:
 
                 # Only the outermost Phase ending begins the Aura Update and Death Creation Step.
                 if depth == 0 and not e.skip_5_steps:
-                    self.aura_update_attack_health()
+                    self._aura_update_attack_health()
 
                     # Whenever a minion enters play (whether due to being played or summoned),
                     # a 'Summon Event' is created, but not resolved.
                     # Instead, during the Summon Resolution Step, in order of play, we resolve each Summon Event,
                     # Queuing and Resolving triggers.
-                    summons = self.summon_resolution()
+                    summons = self._summon_resolution()
                     if summons:
                         self.resolve_events(summons, depth=depth + 1)
 
                     # After the outermost Phase ends, Hearthstone does an Aura Update (Health/Attack)
-                    self.aura_update_attack_health()
+                    self._aura_update_attack_health()
 
                     # then does the Death Creation Step (Looks for all mortally wounded (0 or less Health) /
                     # pending destroy (hit with a destroy effect) Entities and kills them),
-                    deaths = self.death_creation()
+                    deaths = self._death_creation()
 
                     # remove dead entities simultaneously,
-                    self.remove_from_play(deaths)
+                    self._remove_from_play(deaths)
 
                     # then does an Aura Update (Other).
-                    self.aura_update_other()
+                    self._aura_update_other()
 
                     if deaths:
                         # If one or more Deaths happened after the outermost Phase ended,
@@ -323,7 +325,7 @@ class Game:
         }[self.game_result]))
         self.running = False
 
-    def summon_resolution(self):
+    def _summon_resolution(self):
         """Resolve all summon events in order of play."""
 
         result = order_of_play(self.summon_events)
@@ -331,7 +333,7 @@ class Game:
 
         return result
 
-    def death_creation(self):
+    def _death_creation(self):
         """Looks for all mortally wounded (0 or less Health) / pending destroy (hit with a destroy effect) Entities.
 
         :return: list, all deaths, sorted in order of play.
@@ -351,7 +353,7 @@ class Game:
 
         return order_of_play(deaths)
 
-    def remove_from_play(self, deaths):
+    def _remove_from_play(self, deaths):
         """Kill dead entities, remove them from play simultaneously.
 
         Entities that have been removed from play cannot trigger, be triggered, or emit auras, and do not take up space.
@@ -359,14 +361,13 @@ class Game:
         NOTE: mortally wounded and pending destroy are ONLY converted into dead once the outermost Phase ends!
         """
 
-        # [NOTE]: When remove a hero from play,
-        # we send it into graveyard, but do not delete it from `player.hero`, just set its `play_state` into `False`.
+        for death in deaths:
+            self.move(death.player_id, death.zone, death, death.player_id, Zone.Graveyard, 'last')
+
+    def _aura_update_attack_health(self):
         pass
 
-    def aura_update_attack_health(self):
-        pass
-
-    def aura_update_other(self):
+    def _aura_update_other(self):
         pass
 
     def stop_subsequent_phases(self):
@@ -440,7 +441,7 @@ class Game:
         :param from_player: The source player id.
         :param from_zone: The source zone.
         :param from_index: The source index of the entity.
-            If it is not an integer, the game will search for the from zone.
+            If it is not an integer, it must be the entity itself, then the game will search for the from zone.
         :param to_player: The target player id.
         :param to_zone: The target zone.
         :param to_index: The target index of the entity.

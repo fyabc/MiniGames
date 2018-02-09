@@ -7,7 +7,9 @@ from itertools import chain
 
 from pyglet.window import mouse
 
-from ...utils.game import Zone, Type
+from ...game import player_action as pa
+from ...utils.game import *
+from ...utils.draw.cocos_utils.basic import notice
 
 __author__ = 'fyabc'
 
@@ -42,12 +44,21 @@ class SelectionManager:
             self.sel[k] = None
         self.state = self.C
 
-    def click_at(self, sprite, player_id, zone, index, click_args):
+    def click_at(self, sprite, player, zone, index, click_args):
+        """Click at a sprite that related to a game entity.
+
+        :param sprite: (Sprite) The clicked sprite.
+        :param player: (Player) The owner of the sprite.
+        :param zone: (Zone) can be Zone.Hand, Zone.Play, Zone.Hero or 'HeroPower'.
+        :param index: (int)
+        :param click_args:
+        :return: (bool) The click event is stopped or not.
+        """
+
         _, _, buttons, _ = click_args
 
         game = self.board.ctrl.game
-        card = sprite.card
-        card_type = card.type
+        player_id = player.player_id
 
         # Right click will clear all.
         if buttons & mouse.RIGHT:
@@ -56,12 +67,23 @@ class SelectionManager:
 
         print('$Click at:', sprite, player_id, Zone.Idx2Str[zone], index)
 
+        if self.state != self.C and zone == Zone.HeroPower:
+            # [NOTE]: Hero power can be selected only in common state now.
+            self._msg_fn('This is not a valid target!')
+            return True
+
         # TODO: Add more checks here (target, cost, etc.), put these check functions in a new module.
         if self.state == self.C:
             # If not click on current player, do nothing.
             if player_id != game.current_player:
-                return True
+                return False
             if zone == Zone.Hand:
+                card = sprite.entity
+                card_type = card.type
+                if not validate_cost(player, card, self._msg_fn):
+                    return False
+
+                self.sel['source'] = card
                 if card_type == Type.Spell:
                     if card.have_target:
                         self.state = self.ST
@@ -90,22 +112,87 @@ class SelectionManager:
                         self.state = self.HC
                     sprite.on_mouse_release(*click_args)
                     return True
+                else:
+                    raise ValueError('Unknown card type {!r}'.format(card_type))
             elif zone == Zone.Play:
-                return True
+                return False
             elif zone == Zone.Hero:
-                return True
+                return False
+            elif zone == Zone.HeroPower:
+                return False
+            else:
+                raise ValueError('Unknown zone {!r}'.format(zone))
+        elif self.state == self.SC:
+            # todo: Or change the selection?
+            return False
+        elif self.state == self.ST:
+            card = self.sel['source']
+            target = sprite.entity
+            if not validate_target(card, target, self._msg_fn):
+                return False
+            game.run_player_action(pa.PlaySpell(game, card, target, card.player_id))
+            return True
         else:
-            pass
+            raise ValueError('Unknown state {!r}'.format(self.state))
 
-        return False
+    def click_at_space(self, player, index, click_args):
+        """Click at space in the play zone.
+        This method is usually used for summoning minions.
 
-    def click_at_space(self, player_id, zone, index, click_args):
+        Example::
+
+            Board (play zone) {
+                Player 1: minion_0 minion_1 [*] minion_2
+                Player 0: minion_3 [#] minion_4 minion_5 minion_6
+            }
+            [*] -> (Player 1, 2, click_args)
+            [#] -> (Player 0, 1, click_args)
+
+        :param player:
+        :param index:
+        :type index: int
+        :param click_args: Arguments of the click event.
+        :type click_args: tuple
+        :return: The click event is stopped or not.
+        :rtype: bool
+        """
+
         _, _, buttons, _ = click_args
+
+        game = self.board.ctrl.game
+        player_id = player.player_id
 
         # Right click will clear all.
         if buttons & mouse.RIGHT:
             self.clear_all()
             return
+
+        print('$Click at space:', player_id, index)
+
+        if self.state == self.C:
+            return False
+        elif self.state == self.SC:
+            card = self.sel['source']
+            if not validate_target(card, None, self._msg_fn):
+                return False
+            game.run_player_action(pa.PlaySpell(game, card, None, card.player_id))
+            return True
+        elif self.state == self.ST:
+            self._msg_fn('Must select a target!')
+            return True
+        elif self.state == self.MC:
+            if player_id != game.current_player:
+                return
+            if not validate_play_size(player, self._msg_fn):
+                return False
+            minion = self.sel['source']
+            game.run_player_action(pa.PlayMinion(game, minion, index, None, minion.player_id))
+            return True
+        else:
+            raise ValueError('Unknown state {!r}'.format(self.state))
+
+    def _msg_fn(self, msg: str):
+        notice(self.board, msg)
 
 
 __all__ = [
