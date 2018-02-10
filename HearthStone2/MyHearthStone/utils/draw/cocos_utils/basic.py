@@ -4,7 +4,8 @@
 from cocos import rect, text, actions, director
 from cocos.sprite import Sprite
 
-from ..constants import Colors, DefaultFont
+from ..constants import Colors
+from ...constants import C
 
 __author__ = 'fyabc'
 
@@ -93,20 +94,22 @@ def set_menu_style(self, **kwargs):
     item_size = kwargs.pop('item_size', 32)
     selected_size = kwargs.pop('selected_size', item_size)
 
-    self.font_title['font_name'] = kwargs.pop('font_name', DefaultFont)
+    default_font = C.UI.Cocos.DefaultFont
+
+    self.font_title['font_name'] = kwargs.pop('font_name', default_font)
     self.font_title['font_size'] = title_size
     self.font_title['color'] = Colors['whitesmoke']
 
-    self.font_item['font_name'] = kwargs.pop('font_name', DefaultFont)
+    self.font_item['font_name'] = kwargs.pop('font_name', default_font)
     self.font_item['color'] = Colors['white']
     self.font_item['font_size'] = item_size
-    self.font_item_selected['font_name'] = kwargs.pop('font_name', DefaultFont)
+    self.font_item_selected['font_name'] = kwargs.pop('font_name', default_font)
     self.font_item_selected['color'] = Colors['green1']
     self.font_item_selected['font_size'] = selected_size
 
 
 DefaultLabelStyle = {
-    'font_name': DefaultFont,
+    'font_name': C.UI.Cocos.DefaultFont,
     'font_size': 28,
     'anchor_x': 'center',
     'anchor_y': 'baseline',
@@ -153,7 +156,6 @@ def notice(layer_, text_, **kwargs):
 
 __all__ = [
     'Colors',
-    'DefaultFont',
     'get_width',
     'get_height',
     'pos',

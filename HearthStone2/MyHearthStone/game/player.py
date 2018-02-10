@@ -3,6 +3,7 @@
 
 """The class of player."""
 
+import itertools
 import random
 
 from .game_entity import GameEntity
@@ -21,8 +22,7 @@ class Player(GameEntity):
     SecretMax = C.Game.SecretMax
     ManaMax = C.Game.ManaMax
     TurnMax = C.Game.TurnMax
-    StartCardOffensive = C.Game.StartCardOffensive
-    StartCardDefensive = C.Game.StartCardDefensive
+    StartCardOffensive, StartCardDefensive = C.Game.StartCard
 
     def __init__(self, game):
         super().__init__(game)
@@ -161,6 +161,22 @@ class Player(GameEntity):
             return self.hero_power is not None
         return False
 
+    def get_all_entities(self):
+        """Get all entities in the game.
+
+        Contains:
+            entities in deck, hand, play, hero, weapon, hero_power, secret;
+        Excludes:
+            entities in graveyard;
+            enchantments;
+            ...
+
+        :return: Iterator of all entities.
+        """
+
+        return itertools.chain(
+            self.deck, self.hand, self.secret, self.play, [self.weapon, self.hero, self.hero_power])
+
     def get_zone(self, zone):
         if zone == Zone.Deck:
             return self.deck
@@ -255,6 +271,9 @@ class Player(GameEntity):
         :return: Current mana values for display.
         """
         return max(0, self.max_mana + self.temp_mana - self.used_mana)
+
+    def create_entity(self, entity_id, entity_type, **kwargs):
+        pass
 
     def create_card(self, card_id, **kwargs):
         return all_cards()[card_id](self.game, **kwargs)

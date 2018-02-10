@@ -97,6 +97,18 @@ class 工程师学徒(Minion):
         return [std_events.DrawCard(self.game, self, self.player_id)]
 
 
+class 鱼人猎潮者(Minion):
+    data = {
+        'id': 8,
+        'cost': 2, 'attack': 2, 'health': 1,
+        'race': [Race.Murloc], 'battlecry': True,
+    }
+
+    def run_battlecry(self, target):
+        # todo
+        return []
+
+
 # 淡水鳄
 blank_minion({
     'id': 11,
@@ -117,6 +129,14 @@ class 幸运币(Spell):
         self.game.add_mana(1, 'T', self.player_id)
         msg.verbose('Add 1 mana to player {} in this turn!'.format(self.player_id))
         return []
+
+
+# 鱼人斥候
+blank_minion({
+    'id': 44,
+    'rarity': -1, 'cost': 1, 'attack': 1, 'health': 1,
+    'race': [Race.Murloc],
+})
 
 
 #############
@@ -144,6 +164,33 @@ class 火球术(Spell):
 
     def run(self, target):
         return std_events.damage_events(self.game, self, target, 6)
+
+
+###############
+# Paladin (4) #
+###############
+
+
+class 力量祝福(Spell):
+    data = {
+        'id': 40001,
+        'type': 1, 'klass': 4, 'cost': 1,
+        'have_target': True,
+    }
+
+    def check_target(self, target):
+        # todo: Extract this checker into an utility function.
+        if not super().check_target(target):
+            return False
+
+        if target.zone != Zone.Play:
+            return False
+
+        return True
+
+    def run(self, target):
+        # todo
+        return []
 
 
 #############

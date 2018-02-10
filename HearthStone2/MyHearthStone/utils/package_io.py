@@ -10,7 +10,7 @@ from importlib import import_module
 import json
 
 from .constants import get_package_paths, C
-from .message import error, warning, msg_block
+from .message import info, error, warning, msg_block
 from ..game.game_entity import SetDataMeta
 from ..game.card import Card
 from ..game.hero import Hero
@@ -199,6 +199,8 @@ def _load_packages():
 
             AllGameData[-1].load_strings(AllCards, AllHeroes, AllEnchantments)
 
+    info('Total: {} series, {} cards, {} heroes, {} enchantments.'.format(
+        len(AllGameData), len(AllCards), len(AllHeroes), len(AllEnchantments)))
     return {
         'cards': AllCards,
         'heroes': AllHeroes,

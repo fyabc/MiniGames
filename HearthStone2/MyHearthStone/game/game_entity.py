@@ -43,8 +43,8 @@ class GameEntity(metaclass=SetDataMeta):
     """The base class of all game entities.
 
     [NOTE]:
-        Use `CardClass.data['cost'] to access class-level data (original card data, will not be changed).
-        Use `card_object.cost to access object-level data (card-specific data, may be changed in the game).
+        Use `CardClass.data['cost']` to access class-level data (original card data, will not be changed).
+        Use `card_object.cost` to access object-level data (card-specific data, may be changed in the game).
     """
 
     data = {
@@ -99,6 +99,13 @@ class GameEntity(metaclass=SetDataMeta):
             result.append(cls.data['armor'])
         return result
 
+    def add_enchantment(self, enchantment):
+        # todo: insert it in order of play.
+        self.enchantments.append(enchantment)
+
     def aura_update_attack_health(self):
         """Aura update (attack / health), called by the same method of class `Game`."""
-        pass
+        # todo: Move auras to the end, and more.
+        # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
+        for enchantment in self.enchantments:
+            enchantment.apply()

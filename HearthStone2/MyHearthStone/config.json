@@ -43,15 +43,17 @@
         // If turn number larger than TurnMax, it will be a draw.
         "TurnMax": 89,
 
-        // Start hand card number.
-        "StartCardOffensive": 3,
-        "StartCardDefensive": 4
+        // Start hand card number (offensive, defensive).
+        "StartCard": [3, 4]
     },
 
     "UI": {
         "Cocos": {
             // Window width and height.
-            "WindowSize": [1360, 700]
+            "WindowSize": [1360, 700],
+
+            "DefaultFont": "Belwe Bd BT",
+            "DefaultFontFile": "BelweBdBTBold.ttf"
         }
     }
 }

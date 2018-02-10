@@ -22,6 +22,7 @@ class Hero(GameEntity):
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
         self.player_id = player_id
         self.attack = 0
+        self._raw_health = self.data['health']
         self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
@@ -43,7 +44,11 @@ class Hero(GameEntity):
         return []
 
     def take_damage(self, value):
-        self.health -= value
+        self._raw_health -= value
+
+    def aura_update_attack_health(self):
+        self.health = self._raw_health
+        super().aura_update_attack_health()
 
 
 class HeroPower(GameEntity):

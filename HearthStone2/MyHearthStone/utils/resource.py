@@ -8,7 +8,7 @@ from pyglet.font import add_file
 
 from .message import info
 from .package_io import all_package_data
-from .constants import SystemDataPath
+from .constants import SystemDataPath, C
 
 __author__ = 'fyabc'
 
@@ -29,12 +29,13 @@ def index_resources():
     for rc_path in rc_paths:
         if rc_path not in resource.path:
             resource.path.append(rc_path)
-        resource.reindex()
+    resource.reindex()
     info('Reindex resources in these directories:\n{}\n'.format('\n'.join(map(str, rc_paths))))
 
 
 def load_fonts():
-    add_file(os.path.join(SystemDataPath, 'resources', 'fonts', 'BelweBdBTBold.ttf'))
+    add_file(os.path.join(SystemDataPath, 'resources', 'fonts', C.UI.Cocos.DefaultFontFile))
+    info('Load default font {!r} from file {!r}'.format(C.UI.Cocos.DefaultFont, C.UI.Cocos.DefaultFontFile))
 
 
 def tr(string):

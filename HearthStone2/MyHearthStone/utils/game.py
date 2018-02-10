@@ -75,7 +75,27 @@ def validate_play_size(player, msg_fn):
     return True
 
 
-class Type:
+class EnumMeta(type):
+    @staticmethod
+    def __new__(mcs, name, bases, ns):
+        str2idx = {k: v for k, v in ns.items() if not k.startswith('_')}
+        idx2str = {v: k for k, v in str2idx.items()}
+        ns['Str2Idx'] = str2idx
+        ns['Idx2Str'] = idx2str
+
+        return super().__new__(mcs, name, bases, ns)
+
+
+class EntityType(metaclass=EnumMeta):
+    """An enumeration class, contains entity types."""
+
+    Card = 0
+    Hero = 1
+    Enchantment = 2
+    Player = 3
+
+
+class Type(metaclass=EnumMeta):
     """An enumeration class, contains card types."""
 
     Minion = 0
@@ -84,18 +104,8 @@ class Type:
     HeroCard = 3
     Permanent = 4   # Permanent card, such as the seed of 'Sherazin, Corpse Flower'.
 
-    Str2Idx = {
-        'Minion': Minion,
-        'Spell': Spell,
-        'Weapon': Weapon,
-        'HeroCard': HeroCard,
-        'Permanent': Permanent,
-    }
 
-    Idx2Str = {v: k for k, v in Str2Idx.items()}
-
-
-class Zone:
+class Zone(metaclass=EnumMeta):
     """An enumeration class, contains zones of the card."""
 
     Invalid = 0
@@ -109,23 +119,8 @@ class Zone:
     Hero = 8
     HeroPower = 9
 
-    Str2Idx = {
-        'Invalid': Invalid,
-        'Deck': Deck,
-        'Hand': Hand,
-        'Play': Play,
-        'Secret': Secret,
-        'Graveyard': Graveyard,
-        'SetAside': SetAside,
-        'Weapon': Weapon,
-        'Hero': Hero,
-        'HeroPower': HeroPower,
-    }
 
-    Idx2Str = {v: k for k, v in Str2Idx.items()}
-
-
-class Rarity:
+class Rarity(metaclass=EnumMeta):
     """An enumeration class, contains rarities."""
 
     Derivative = -1
@@ -135,19 +130,8 @@ class Rarity:
     Epic = 3
     Legend = 4
 
-    Str2Idx = {
-        'Derivative': Derivative,
-        'Basic': Basic,
-        'Common': Common,
-        'Rare': Rare,
-        'Epic': Epic,
-        'Legend': Legend,
-    }
 
-    Idx2Str = {v: k for k, v in Str2Idx.items()}
-
-
-class Race:
+class Race(metaclass=EnumMeta):
     """An enumeration class, contains races."""
 
     Beast = 0
@@ -158,20 +142,8 @@ class Race:
     Totem = 5
     Elemental = 6
 
-    Str2Idx = {
-        'Beast': Beast,
-        'Murloc': Murloc,
-        'Mech': Mech,
-        'Demon': Demon,
-        'Dragon': Dragon,
-        'Totem': Totem,
-        'Elemental': Elemental,
-    }
 
-    Idx2Str = {v: k for k, v in Str2Idx.items()}
-
-
-class Klass:
+class Klass(metaclass=EnumMeta):
     """An enumeration class, contains classes."""
 
     Neutral = 0
@@ -186,23 +158,6 @@ class Klass:
     Warrior = 9
     Monk = 10
     DeathKnight = 11
-
-    Str2Idx = {
-        'Neutral': Neutral,
-        'Druid': Druid,
-        'Hunter': Hunter,
-        'Mage': Mage,
-        'Paladin': Paladin,
-        'Priest': Priest,
-        'Rogue': Rogue,
-        'Shaman': Shaman,
-        'Warlock': Warlock,
-        'Warrior': Warrior,
-        'Monk': Monk,
-        'DeathKnight': DeathKnight,
-    }
-
-    Idx2Str = {v: k for k, v in Str2Idx.items()}
 
 
 class Condition:

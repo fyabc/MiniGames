@@ -100,8 +100,9 @@ class CollectionsLayer(ActiveLayer):
             # todo: Change these static card sprites into original card paintings?
             card_sprite = CardSprite(
                 card_id, pos(self.PageL + (self.PageR - self.PageL) * (2 * x + 1) / (2 * self.PageSize[0]),
-                             self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1]))
-                , is_front=True, scale=0.5, callback=self._get_card_callbacks(card_id),
+                             self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1])),
+                is_front=True, scale=0.5, callback=self._get_card_callbacks(card_id),
+                sel_mgr_kwargs={'move_to_top': True},
                 # selected_effect=None, unselected_effect=None,
             )
             self.page_card_sprites.append(card_sprite)

@@ -666,11 +666,6 @@ Colors = {
 }
 
 
-# TODO: Change this into loading font from config.
-DefaultFont = 'Belwe Bd BT'
-
-
 __all__ = [
     'Colors',
-    'DefaultFont',
 ]

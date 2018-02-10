@@ -7,11 +7,13 @@ from cocos import actions, rect, cocosnode, euclid
 from cocos.sprite import Sprite
 from cocos.text import Label, HTMLLabel
 
+from ...utils.constants import C
 from ...utils.game import Klass, Type, Rarity
 from ...utils.package_io import all_cards
 from ...utils.draw.cocos_utils.basic import *
 from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test
 from ...utils.draw.cocos_utils.primitives import Rect
+from ...utils.draw.cocos_utils.node_tree import set_z
 
 __author__ = 'fyabc'
 
@@ -79,9 +81,10 @@ class CardSprite(EntitySprite):
     class _SelectEffectManager:
         """The helper class for select and unselect effects."""
         # TODO: make this class more configurable.
-        def __init__(self):
+        def __init__(self, move_to_top=False):
             self.orig_pos = None
             self.orig_scale = None
+            self.move_to_top = move_to_top
 
         def get_selected_eff(self):
             def _selected_fn(spr: cocosnode.CocosNode):
@@ -94,6 +97,9 @@ class CardSprite(EntitySprite):
                     spr.y = min(y_ratio + 0.13, 0.5) * get_height()
                 else:
                     spr.y = max(y_ratio - 0.13, 0.5) * get_height()
+
+                if self.move_to_top:
+                    set_z(spr, z='top')
             return actions.CallFuncS(_selected_fn)
 
         def get_unselected_eff(self):
@@ -104,8 +110,16 @@ class CardSprite(EntitySprite):
             return actions.CallFuncS(_unselected_fn)
 
     def __init__(self, card, position=(0, 0), is_front=True, scale=1.0, **kwargs):
+        """todo: Add doc here.
+
+        :param card:
+        :param position:
+        :param is_front:
+        :param scale:
+        :param kwargs:
+        """
         # For active mixin.
-        self.sel_mgr = self._SelectEffectManager()
+        self.sel_mgr = self._SelectEffectManager(**kwargs.pop('sel_mgr_kwargs', {}))
         kwargs.setdefault('selected_effect', 'default')
         kwargs.setdefault('unselected_effect', 'default')
 
@@ -274,7 +288,7 @@ class CardSprite(EntitySprite):
             'desc': desc,
             # [NOTE]: There is an encoding bug when parsing the font name in HTML (in `pyglet\font\win32query.py:311`),
             # must set font out of HTML.
-            'font_name': kwargs.pop('font_name', DefaultFont),
+            'font_name': kwargs.pop('font_name', C.UI.Cocos.DefaultFont),
             # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
             'font_size': int(kwargs.pop('font_size', 4)),
             # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.

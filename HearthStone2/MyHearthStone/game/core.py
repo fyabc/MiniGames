@@ -4,6 +4,7 @@
 import random
 from typing import *
 
+from .game_entity import GameEntity
 from .player import Player
 from .triggers.standard import add_standard_triggers
 from .events.standard import game_begin_standard_events, DeathPhase
@@ -374,7 +375,9 @@ class Game:
             (Note that Enchantments like Equality apply immediately, and therefore may briefly apply 'out of order'.)
             Then, every Entity's Health and Attack values are recalculated.
         """
-        pass
+        for i, entity in enumerate(self.get_all_entities()):
+            if isinstance(entity, GameEntity):
+                entity.aura_update_attack_health()
 
     def _aura_update_other(self):
         pass
@@ -540,6 +543,11 @@ class Game:
 
     def full(self, zone, player_id):
         return self.players[player_id].full(zone)
+
+    def get_all_entities(self):
+        for player in self.players:
+            for entity in player.get_all_entities():
+                yield entity
 
     def get_zone(self, zone, player_id):
         return self.players[player_id].get_zone(zone)
