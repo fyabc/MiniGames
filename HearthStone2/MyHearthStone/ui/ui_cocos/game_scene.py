@@ -16,7 +16,7 @@ from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label, 
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveColorLayer
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
 from ...utils.draw.cocos_utils.primitives import Rect
-from .card_sprite import CardSprite
+from .card_sprite import CardSprite, HeroSprite
 from .selection_manager import SelectionManager
 from ...game.core import Game
 from ...game import player_action as pa
@@ -175,6 +175,7 @@ class GameBoardLayer(ActiveLayer):
     RightL = 0.88  # Border of right pane
     RightCX = (1 + RightL) / 2  # Center of right pane
     HeroL = 0.66  # Border of hero pane
+    HeroY = (0.25, 0.75)
     BoardL = 0.05
     TurnEndBtnW = 0.1  # Width of turn end button
     TurnEndBtnT, TurnEndBtnB = 0.5 + TurnEndBtnW / 2, 0.5 - TurnEndBtnW / 2
@@ -206,17 +207,12 @@ class GameBoardLayer(ActiveLayer):
             self.add(hs_style_label(
                 'Player {}'.format(i), pos(self.RightCX, y), anchor_y='center', bold=True, font_size=16,
             ), name='label_player_{}'.format(i))
-        for i, y in enumerate((.1, .6)):
-            self.add(sprite.Sprite(
-                'Health.png', pos(self.HeroL + (self.RightL - self.HeroL) * 0.8, y), scale=0.7,
-            ), name='sprite_health_{}'.format(i))
-            self.add(hs_style_label(
-                '0', pos(self.HeroL + (self.RightL - self.HeroL) * 0.8, y), font_size=46, anchor_y='center',
-            ), name='label_health_{}'.format(i))
 
-        # Card sprites.
+        # Card sprites and hero sprites.
         self.hand_sprites = [[], []]
         self.play_sprites = [[], []]
+        # [NOTE]: `self.hero_sprites[0]` is the hero sprite of player 0, not position index 0.
+        self.hero_sprites = [None, None]
 
     def on_enter(self):
         super().on_enter()
@@ -230,6 +226,10 @@ class GameBoardLayer(ActiveLayer):
         # TODO: Play start game animation, etc.
 
         self._replace_dialog(self.ctrl.game.current_player)
+
+    def on_exit(self):
+        # todo: Clean card and hero sprites.
+        return super().on_exit()
 
     def log_update_time(self, *_):
         """Logging time elapsed since last event/trigger.
@@ -266,7 +266,17 @@ class GameBoardLayer(ActiveLayer):
                 '' if player.overload_next == 0 else '\n(Overload next {})'.format(player.overload_next),
             )
             self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
-            self.get('label_health_{}'.format(i)).element.text = str(player.hero.health)
+
+            hero_spr_name = 'sprite_hero_{}'.format(player.player_id)
+            if hero_spr_name not in self.children_names:
+                hero_sprite = HeroSprite(
+                    player.hero, pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]), scale=0.8)
+                self.hero_sprites[player.player_id] = hero_sprite
+                self.add(hero_sprite, name=hero_spr_name)
+            else:
+                self.hero_sprites[player.player_id].update_content(**{
+                    'position': pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]),
+                    'scale': 0.8})
 
         # Remove all old card sprites, and replace it to new.
         # [NOTE]: Use cache, need more tests.
@@ -312,13 +322,17 @@ class GameBoardLayer(ActiveLayer):
         for i, player in enumerate(self._player_list()):
             for zone, sprite_list in zip((Zone.Hand, Zone.Play), (self.hand_sprites[i], self.play_sprites[i])):
                 for index, child in enumerate(sprite_list):
-                    if hasattr(child, 'on_mouse_release') and child.respond_to_mouse_release(x, y, buttons, modifiers):
+                    if child.respond_to_mouse_release(x, y, buttons, modifiers):
                         # [NOTE]: This will stop all click events event if callback return False.
                         self._sm.click_at(child, player, zone, index, (x, y, buttons, modifiers))
                         return True
 
-        # todo: Add other regions (hand, hero, etc).
+        for player, hero_sprite in zip(self.ctrl.game.players, self.hero_sprites):
+            if hero_sprite.respond_to_mouse_release(x, y, buttons, modifiers):
+                self._sm.click_at(hero_sprite, player, Zone.Hero, None, (x, y, buttons, modifiers))
+                return True
 
+        # todo: Complete this (calculate click index).
         play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
         for player, play_area in zip(self._player_list(), play_areas):
             if play_area.contains(x, y):

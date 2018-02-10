@@ -67,6 +67,11 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
     def _build_components(self):
         raise NotImplementedError()
 
+    def update_content(self, **kwargs):
+        """Update content when the entity content (not entity itself) changed."""
+        self.position = kwargs.pop('position', (0, 0))
+        self.scale = kwargs.pop('scale', 1.0)
+
 
 class CardSprite(EntitySprite):
     """The sprite of a card.
@@ -153,11 +158,8 @@ class CardSprite(EntitySprite):
             self.unselected_effect = self.sel_mgr.get_unselected_eff()
 
     def update_content(self, **kwargs):
-        """Update content when the card content (not card itself) changed."""
-
-        self.position = kwargs.pop('position', (0, 0))
+        super().update_content(**kwargs)
         self.is_front = kwargs.pop('is_front', False)
-        self.scale = kwargs.pop('scale', 1.0)
 
         # Set selected and unselected effects.
         _sentinel = object()
@@ -300,6 +302,9 @@ class CardSprite(EntitySprite):
 class HeroSprite(EntitySprite):
     """The hero sprite."""
 
+    Size = euclid.Vector2(300, 425)  # Card size (original).
+    SizeBase = Size // 2  # Coordinate base of children sprites.
+
     def __init__(self, hero, position=(0, 0), scale=1.0, **kwargs):
         self.attack_label = None
         self.health_label = None
@@ -307,7 +312,19 @@ class HeroSprite(EntitySprite):
         super().__init__(hero, position, scale, **kwargs)
 
     def _build_components(self):
-        pass
+        border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
+        border_rect.center = (0, 0)
+        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=4)
+
+        self.add(Sprite('Hero.png', pos(0, 0, base=self.SizeBase), scale=1.0))
+
+        self.health_label = hs_style_label(str(self.entity.health), pos(0.73, -0.34, base=self.SizeBase),
+                                           font_size=46, anchor_y='center', color=Colors['white'])
+        self.add(self.health_label, z=1)
+
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
+        self.health_label.element.text = str(self.entity.health)
 
 
 __all__ = [

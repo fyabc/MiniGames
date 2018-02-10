@@ -164,10 +164,6 @@ class Game:
                 e.message()
                 self.event_history.append(e)
 
-                # Callback after each event (maybe useless, only need to call after triggers?)
-                for callback in self.resolve_callbacks:
-                    callback(e, None)
-
                 # Get all related triggers, then check their conditions and sort them in order of play.
                 related_triggers = set()
                 for event_type in e.ancestors():
@@ -231,6 +227,12 @@ class Game:
                 events.append('check_win')
 
             i += 1
+
+            # Callback after each event (maybe useless, only need to call after triggers?)
+            # [NOTE]: These calls are after the all processing of events (just before idle),
+            # so user will always see the up-to-date result.
+            for callback in self.resolve_callbacks:
+                callback(e, None)
 
     def resolve_triggers(self, triggers, current_event, depth=0):
         """Resolve all triggers in the queue.
@@ -372,7 +374,7 @@ class Game:
 
             Runs before the Death Creation Step after each outermost Phase resolves, and at a few other timings.
             Health/Attack Auras are recalculated, and moved in each Entity's Enchantment List to the end.
-            (Note that Enchantments like Equality apply immediately, and therefore may briefly apply 'out of order'.)
+            (Note that Enchantments like "Equality" apply immediately, and therefore may briefly apply 'out of order'.)
             Then, every Entity's Health and Attack values are recalculated.
         """
         for i, entity in enumerate(self.get_all_entities()):

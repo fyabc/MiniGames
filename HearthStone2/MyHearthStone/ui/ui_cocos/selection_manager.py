@@ -117,7 +117,9 @@ class SelectionManager:
             elif zone == Zone.Play:
                 return False
             elif zone == Zone.Hero:
-                return False
+                print('#Hero clicked!')
+                sprite.on_mouse_release(*click_args)
+                return True
             elif zone == Zone.HeroPower:
                 return False
             else:

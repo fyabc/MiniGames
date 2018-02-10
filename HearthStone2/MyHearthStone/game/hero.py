@@ -30,7 +30,7 @@ class Hero(GameEntity):
         self.oop = self.game.oop
 
     def __repr__(self):
-        return super()._repr(klass=self.data['klass'], P=self.player_id)
+        return super()._repr(klass=self.data['klass'], P=self.player_id, health=self.health)
 
     @property
     def alive(self):
