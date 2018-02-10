@@ -117,7 +117,7 @@ class Minion(Card):
         super().__init__(game, player_id)
 
         self.attack = self.data['attack']
-        self._orig_health = self.data['health']
+        self._raw_health = self.data['health']
         self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
@@ -147,14 +147,15 @@ class Minion(Card):
         return []
 
     def take_damage(self, value):
+        # todo: Change this into subtract self._raw_health.
         self.health -= value
 
     def aura_update_attack_health(self):
         # todo: Move auras to the end, and more.
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
-        self.health = self._orig_health
+        self.health = self._raw_health
         for enchantment in self.enchantments:
-            pass
+            enchantment.apply()
 
 
 class Spell(Card):

@@ -19,7 +19,14 @@ class Enchantment(GameEntity):
         However, some enchantments affect cards of other types, and some are active while in the player's hand.
         Enchantments may be granted permanently, or temporarily by an aura.
     """
-    pass
+
+    def __init__(self, game, target):
+        super().__init__(game)
+        self.target = target
+
+    def apply(self):
+        """Apply this enchantment to the attached target."""
+        pass
 
 
 class OngoingEffect(Enchantment):
