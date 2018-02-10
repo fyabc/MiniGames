@@ -174,7 +174,7 @@ class SelectionManager:
         elif self.state == self.SC:
             card = self.sel['source']
             if not validate_target(card, None, self._msg_fn):
-                return False
+                return True
             game.run_player_action(pa.PlaySpell(game, card, None, card.player_id))
             return True
         elif self.state == self.ST:
@@ -182,9 +182,9 @@ class SelectionManager:
             return True
         elif self.state == self.MC:
             if player_id != game.current_player:
-                return
-            if not validate_play_size(player, self._msg_fn):
                 return False
+            if not validate_play_size(player, self._msg_fn):
+                return True
             minion = self.sel['source']
             game.run_player_action(pa.PlayMinion(game, minion, index, None, minion.player_id))
             return True

@@ -35,9 +35,9 @@ Default:
     Health = 1
     Armor = 5
 
-Data dict (`_data`) format:
+Data dict (`data`) format:
 ```
-_data = {
+data = {
     'id': 6,                                # id, package
     'cost': 2, 'attack': 1, 'health': 1,    # type, klass, rarity, cost, attack, health, armor
     'battlecry': True,                      # other attributes
@@ -87,7 +87,7 @@ PackageID = 0
 ###############
 
 class 工程师学徒(Minion):
-    _data = {
+    data = {
         'id': 6,
         'cost': 2, 'attack': 1, 'health': 1,
         'battlecry': True,
@@ -108,7 +108,7 @@ blank_minion({
 # Neutral derivations.
 
 class 幸运币(Spell):
-    _data = {
+    data = {
         'id': 43,
         'type': 1, 'rarity': -1, 'cost': 0,
     }
@@ -136,7 +136,7 @@ blank_minion({
 ############
 
 class 火球术(Spell):
-    _data = {
+    data = {
         'id': 30007,
         'type': 1, 'klass': 3, 'cost': 4,
         'have_target': True,
@@ -151,7 +151,7 @@ class 火球术(Spell):
 #############
 
 class 影袭(Spell):
-    _data = {
+    data = {
         'id': 60002,
         'type': 1, 'klass': 6, 'cost': 1,
     }
@@ -176,63 +176,63 @@ blank_weapon({
 ##########
 
 class StdDruid(Hero):
-    _data = {
+    data = {
         'id': 0,
         'klass': 1,
     }
 
 
 class StdHunter(Hero):
-    _data = {
+    data = {
         'id': 1,
         'klass': 2,
     }
 
 
 class StdMage(Hero):
-    _data = {
+    data = {
         'id': 2,
         'klass': 3,
     }
 
 
 class StdPaladin(Hero):
-    _data = {
+    data = {
         'id': 3,
         'klass': 4,
     }
 
 
 class Priest(Hero):
-    _data = {
+    data = {
         'id': 4,
         'klass': 5,
     }
 
 
 class Rogue(Hero):
-    _data = {
+    data = {
         'id': 5,
         'klass': 6,
     }
 
 
 class Shaman(Hero):
-    _data = {
+    data = {
         'id': 6,
         'klass': 7,
     }
 
 
 class Warlock(Hero):
-    _data = {
+    data = {
         'id': 7,
         'klass': 8,
     }
 
 
 class Warrior(Hero):
-    _data = {
+    data = {
         'id': 8,
         'klass': 9,
     }

@@ -1,6 +1,17 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""The base classes of cards.
+
+Notes:
+
+Health rules (copied from https://hearthstone.gamepedia.com/Advanced_rulebook#Health)::
+
+    Rule H1: Any time a minion's maximum Health is increased, its current Health is increased by the same amount.
+    Rule H2: However, when a minion's maximum Health is reduced, its current Health is only reduced
+    if it exceeds the new maximum.
+"""
+
 from .game_entity import GameEntity
 from ..utils.game import Zone
 
@@ -10,7 +21,7 @@ __author__ = 'fyabc'
 class Card(GameEntity):
     """The class of card."""
 
-    _data = {
+    data = {
         'type': 0,
         'rarity': 0,
         'klass': 0,
@@ -85,7 +96,7 @@ class Card(GameEntity):
 class Minion(Card):
     """The class of minion."""
 
-    _data = {
+    data = {
         'attack': 1,
         'health': 1,
 
@@ -106,6 +117,7 @@ class Minion(Card):
         super().__init__(game, player_id)
 
         self.attack = self.data['attack']
+        self._orig_health = self.data['health']
         self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
@@ -134,11 +146,21 @@ class Minion(Card):
         """
         return []
 
+    def take_damage(self, value):
+        self.health -= value
+
+    def aura_update_attack_health(self):
+        # todo: Move auras to the end, and more.
+        # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
+        self.health = self._orig_health
+        for enchantment in self.enchantments:
+            pass
+
 
 class Spell(Card):
     """The class of spell."""
 
-    _data = {
+    data = {
         'secret': False,
         'quest': False,
     }
@@ -156,7 +178,7 @@ class Spell(Card):
 class Weapon(Card):
     """The class of weapon."""
 
-    _data = {
+    data = {
         'attack': 1,
         'health': 1,
     }
@@ -173,11 +195,14 @@ class Weapon(Card):
     def alive(self):
         return self.health > 0 and not self.to_be_destroyed
 
+    def take_damage(self, value):
+        self.health -= value
+
 
 class HeroCard(Card):
     """The class of hero card."""
 
-    _data = {
+    data = {
         'armor': 5,
     }
 

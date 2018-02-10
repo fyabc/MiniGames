@@ -365,6 +365,15 @@ class Game:
             self.move(death.player_id, death.zone, death, death.player_id, Zone.Graveyard, 'last')
 
     def _aura_update_attack_health(self):
+        """Run aura update (attack / health).
+
+        Definition in Advanced Rulebook (<https://hearthstone.gamepedia.com/Advanced_rulebook#Glossary>)::
+
+            Runs before the Death Creation Step after each outermost Phase resolves, and at a few other timings.
+            Health/Attack Auras are recalculated, and moved in each Entity's Enchantment List to the end.
+            (Note that Enchantments like Equality apply immediately, and therefore may briefly apply 'out of order'.)
+            Then, every Entity's Health and Attack values are recalculated.
+        """
         pass
 
     def _aura_update_other(self):

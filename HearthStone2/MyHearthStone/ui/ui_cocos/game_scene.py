@@ -270,7 +270,7 @@ class GameBoardLayer(ActiveLayer):
 
         # Remove all old card sprites, and replace it to new.
         # [NOTE]: Use cache, need more tests.
-        _card_sprite_cache = {card_sprite.card: card_sprite
+        _card_sprite_cache = {card_sprite.entity: card_sprite
                               for card_sprite in chain(*self.hand_sprites, *self.play_sprites)}
         for card_sprite_list in self.hand_sprites + self.play_sprites:
             card_sprite_list.clear()

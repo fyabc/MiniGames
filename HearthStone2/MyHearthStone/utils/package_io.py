@@ -134,7 +134,7 @@ class _GameData:
 
                 var = cards_dict.get(int(k), None)
                 if var is not None:
-                    data = getattr(var, '_data')
+                    data = getattr(var, 'data')
                     data['name'] = v[0]
                     data['description'] = v[1]
             for k, v in values_heroes.items():
@@ -145,7 +145,7 @@ class _GameData:
 
                 var = heroes_dict.get(int(k), None)
                 if var is not None:
-                    data = getattr(var, '_data')
+                    data = getattr(var, 'data')
                     data['name'] = v[0]
                     data['description'] = v[1]
         except (json.JSONDecodeError, ValueError, AssertionError) as e:

@@ -40,7 +40,7 @@ def create_blank(data, name=None, card_type=Minion, module_dict=None):
         else:
             name = '{}_{}'.format(card_type.__name__, data['id'])
 
-    cls_dict = {'_data': data}
+    cls_dict = {'data': data}
 
     result = new_class(name, (card_type,), {}, lambda ns: ns.update(cls_dict))
 

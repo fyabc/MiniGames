@@ -10,7 +10,7 @@ __author__ = 'fyabc'
 class Hero(GameEntity):
     """The class of hero."""
 
-    _data = {
+    data = {
         'klass': 0,
         'health': 30,
     }
@@ -21,6 +21,7 @@ class Hero(GameEntity):
         self.zone = Zone.Invalid
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
         self.player_id = player_id
+        self.attack = 0
         self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
@@ -40,6 +41,9 @@ class Hero(GameEntity):
         :return: list of events.
         """
         return []
+
+    def take_damage(self, value):
+        self.health -= value
 
 
 class HeroPower(GameEntity):

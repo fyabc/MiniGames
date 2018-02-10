@@ -17,7 +17,7 @@ PackageID = 1
 
 
 class 战利品贮藏者(Minion):
-    _data = {
+    data = {
         'id': 1000008, 'package': PackageID,
         'rarity': 1, 'cost': 2, 'attack': 2, 'health': 1,
     }
@@ -33,7 +33,7 @@ class 战利品贮藏者(Minion):
 # 冰枪术(1030002) -> 荣誉室
 
 class 炎爆术(Spell):
-    _data = {
+    data = {
         'id': 1030013, 'package': PackageID,
         'type': 1, 'rarity': 3, 'klass': 3, 'cost': 10,
         'have_target': True,
@@ -44,7 +44,7 @@ class 炎爆术(Spell):
 
 
 class 大法师安东尼达斯(Minion):
-    _data = {
+    data = {
         'id': 1030014, 'package': PackageID,
         'rarity': 4, 'klass': 3, 'cost': 7, 'attack': 5, 'health': 7,
     }
@@ -56,7 +56,7 @@ class 大法师安东尼达斯(Minion):
 
 
 class 血吼(Weapon):
-    _data = {
+    data = {
         'id': 1080013, 'package': PackageID,
         'type': 2, 'rarity': 3, 'klass': 8, 'cost': 7, 'attack': 7, 'health': 1,
     }

@@ -27,7 +27,7 @@ class SetDataMeta(type):
         # assert len(bases) == 1, 'This metaclass requires the class have exactly 1 superclass.'
 
         base_data = getattr(bases[0], 'data', None) if bases else None
-        this_data = ns.get('_data', {})
+        this_data = ns.get('data', {})
         ns['data'] = base_data.new_child(this_data) if base_data is not None else ChainMap(this_data)
 
         return super().__new__(mcs, name, bases, ns)
@@ -47,13 +47,13 @@ class GameEntity(metaclass=SetDataMeta):
         Use `card_object.cost to access object-level data (card-specific data, may be changed in the game).
     """
 
-    _data = ChainMap({
+    data = {
         'version': None,
         'id': None,
         'name': '',
         'package': 0,
         'description': '',
-    })
+    }
 
     def __init__(self, game):
         self.game = game
@@ -98,3 +98,7 @@ class GameEntity(metaclass=SetDataMeta):
         if 'armor' in cls.data:
             result.append(cls.data['armor'])
         return result
+
+    def aura_update_attack_health(self):
+        """Aura update (attack / health), called by the same method of class `Game`."""
+        pass

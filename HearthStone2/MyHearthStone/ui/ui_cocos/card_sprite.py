@@ -16,9 +16,58 @@ from ...utils.draw.cocos_utils.primitives import Rect
 __author__ = 'fyabc'
 
 
-class CardSprite(ActiveMixin, cocosnode.CocosNode):
-    """The sprite of a card.
+class EntitySprite(ActiveMixin, cocosnode.CocosNode):
+    """ABC for entity sprites.
+
     In fact, it is a `CocosNode` that contains multiple sprites.
+    """
+
+    def __init__(self, entity, position=(0, 0), scale=1.0, **kwargs):
+        # For active mixin.
+        kwargs.setdefault('callback', self._on_click)
+
+        super().__init__(**kwargs)
+
+        self.entity = entity
+        self.position = position
+        self.scale = scale
+
+        self.activated_border = None
+        self._is_activated = False
+
+        self._build_components()
+
+    get_box = None
+    is_inside_box = children_inside_test
+
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.entity)
+
+    @property
+    def is_activated(self):
+        return self._is_activated
+
+    @is_activated.setter
+    def is_activated(self, is_activated: bool):
+        if self._is_activated == is_activated:
+            return
+        self._is_activated = is_activated
+        if is_activated:
+            self.add(self.activated_border, z=3)
+        else:
+            self.remove(self.activated_border)
+
+    def _on_click(self):
+        print('{} clicked!'.format(self))
+        self.is_activated = not self.is_activated
+        return True
+
+    def _build_components(self):
+        raise NotImplementedError()
+
+
+class CardSprite(EntitySprite):
+    """The sprite of a card.
 
     The card sprite may be static (created by card_id, attributes not changed)
         or dynamic (created by card instance).
@@ -56,54 +105,31 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
 
     def __init__(self, card, position=(0, 0), is_front=True, scale=1.0, **kwargs):
         # For active mixin.
-        kwargs.setdefault('callback', self._card_clicked)
         self.sel_mgr = self._SelectEffectManager()
         kwargs.setdefault('selected_effect', 'default')
         kwargs.setdefault('unselected_effect', 'default')
 
-        super().__init__(**kwargs)
-
-        self._set_sel_eff()
-
-        self.card = card
-        self.position = position
-        self.scale = scale
-
-        self._is_activated = False
-
         # Dict of front and back labels: name -> [sprite/label, z-order].
         self.front_sprites = {}
         self.back_sprites = {}
-        self.activated_border = None
 
-        self._build_components()
+        super().__init__(card, position, scale, **kwargs)
 
+        self._set_sel_eff()
         self._is_front = None
         self.is_front = is_front
-
-    def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.card)
 
     @property
     def static(self):
         """This is a static card (only contains card id)."""
-        return isinstance(self.card, (int, str))
-
-    @property
-    def entity(self):
-        """The standard interface to get the underlie game entity for all game entity sprites
-        (card sprites, hero sprites, hero power sprites, etc)."""
-        return self.card
-
-    get_box = None
-    is_inside_box = children_inside_test
+        return isinstance(self.entity, (int, str))
 
     def _c_get(self, key):
         """Get card attributes."""
         if self.static:
-            return all_cards()[self.card].data[key]
+            return all_cards()[self.entity].data[key]
         else:
-            return getattr(self.card, key)
+            return getattr(self.entity, key)
 
     def _set_sel_eff(self):
         """Set selected and unselected effects, translate string values into actions."""
@@ -164,27 +190,8 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
         for sprite, z in to_be_added.values():
             self.add(sprite, z=z)
 
-    @property
-    def is_activated(self):
-        return self._is_activated
-
-    @is_activated.setter
-    def is_activated(self, is_activated: bool):
-        if self._is_activated == is_activated:
-            return
-        self._is_activated = is_activated
-        if is_activated:
-            self.add(self.activated_border, z=3)
-        else:
-            self.remove(self.activated_border)
-
     def toggle_side(self):
         self.is_front = not self._is_front
-
-    def _card_clicked(self):
-        print('{} clicked!'.format(self))
-        self.is_activated = not self.is_activated
-        return True
 
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
@@ -274,6 +281,19 @@ class CardSprite(ActiveMixin, cocosnode.CocosNode):
             'color': kwargs.pop('color', 'black'),
         }
         return '<center><font size="{font_size}" color="{color}">{desc}</font></center>'.format_map(format_map)
+
+
+class HeroSprite(EntitySprite):
+    """The hero sprite."""
+
+    def __init__(self, hero, position=(0, 0), scale=1.0, **kwargs):
+        self.attack_label = None
+        self.health_label = None
+
+        super().__init__(hero, position, scale, **kwargs)
+
+    def _build_components(self):
+        pass
 
 
 __all__ = [

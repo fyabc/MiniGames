@@ -31,6 +31,6 @@ class StdDamage(StandardBeforeTrigger):
 
     def process(self, event: respond[0]):
         # todo: need test and add more
-        event.target.health -= event.value
+        event.target.take_damage(event.value)
 
         return []
