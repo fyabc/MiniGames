@@ -11,6 +11,7 @@ class Hero(GameEntity):
     """The class of hero."""
 
     data = {
+        'entity_type': 1,
         'klass': 0,
         'health': 30,
     }
@@ -55,6 +56,7 @@ class HeroPower(GameEntity):
     """The class of hero power."""
 
     _data = {
+        'entity_type': 4,
         'cost': 2,
         'have_target': False,
     }

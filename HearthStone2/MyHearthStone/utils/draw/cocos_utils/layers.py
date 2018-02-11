@@ -1,10 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import layer, director
+from cocos import layer, director, rect
 from cocos.scenes import transitions
 
-from .basic import pos
+from .primitives import Rect
+from .basic import pos, Colors
 from . import active
 
 __author__ = 'fyabc'
@@ -62,7 +63,20 @@ class BasicButtonsLayer(active.ActiveLayer):
 
 
 class DialogLayer(active.ActiveColorLayer):
-    pass
+    def __init__(self, *args, **kwargs):
+        add_border = kwargs.pop('border', False)
+
+        super().__init__(*args, **kwargs)
+
+        if add_border:
+            self.add(Rect(rect.Rect(0, 0, self.width, self.height), Colors['white'], 2))
+
+    def add_to_scene(self, scene):
+        """Add this dialog to the top, and if `stop_event` is True, it will stop related events."""
+        scene.add(self, z=max(e[0] for e in scene.children) + 1)
+
+    def remove_from_scene(self):
+        self.parent.remove(self)
 
 
 __all__ = [

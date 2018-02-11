@@ -75,6 +75,29 @@ def validate_play_size(player, msg_fn):
     return True
 
 
+def validate_attacker(entity, msg_fn):
+    """Validate if the entity can attack or not.
+
+    :param entity:
+    :param msg_fn:
+    :return: The entity can attack.
+    :rtype: bool
+    """
+
+    if entity.attack <= 0:
+        if entity.data['entity_type'] == EntityType.Hero:
+            msg_fn('I cannot attack!')
+        else:
+            msg_fn('This minion cannot attack!')
+        return False
+    # todo: Add check for attack numbers.
+    return True
+
+
+def validate_attacked(source, target, msg_fn):
+    return True
+
+
 class EnumMeta(type):
     @staticmethod
     def __new__(mcs, name, bases, ns):
@@ -93,6 +116,7 @@ class EntityType(metaclass=EnumMeta):
     Hero = 1
     Enchantment = 2
     Player = 3
+    HeroPower = 4
 
 
 class Type(metaclass=EnumMeta):
@@ -173,6 +197,7 @@ __all__ = [
     'validate_cost',
     'validate_target',
     'validate_play_size',
+    'validate_attacker', 'validate_attacked',
 
     'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
 ]

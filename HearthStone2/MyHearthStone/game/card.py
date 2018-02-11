@@ -22,6 +22,7 @@ class Card(GameEntity):
     """The class of card."""
 
     data = {
+        'entity_type': 0,
         'type': 0,
         'rarity': 0,
         'klass': 0,
@@ -107,7 +108,6 @@ class Minion(Card):
         'windfury': False,
         'poisonous': False,
         'lifesteal': False,
-        'spell_power': 0,
 
         'battlecry': False,
         'deathrattle': False,
@@ -116,11 +116,17 @@ class Minion(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
+        # todo: Change these attributes (attack, health, etc) to read-only properties.
+
         self.attack = self.data['attack']
         self._raw_health = self.data['health']
         self.health = self.data['health']
         self.max_health = self.health
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
+
+        # Attack numbers.
+        self.n_attack = 0
+        self.n_total_attack = 2 if self.data['windfury'] else 1
 
     def __repr__(self):
         return self._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
@@ -179,6 +185,13 @@ class Weapon(Card):
     data = {
         'attack': 1,
         'health': 1,
+
+        'windfury': False,
+        'poisonous': False,
+        'lifesteal': False,
+
+        'battlecry': False,
+        'deathrattle': False,
     }
 
     def __init__(self, game, player_id):

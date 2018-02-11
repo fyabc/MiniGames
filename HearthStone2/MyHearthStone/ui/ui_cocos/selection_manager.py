@@ -10,6 +10,7 @@ from pyglet.window import mouse
 from ...game import player_action as pa
 from ...utils.game import *
 from ...utils.draw.cocos_utils.basic import notice
+from .card_sprite import EntitySprite
 
 __author__ = 'fyabc'
 
@@ -38,8 +39,9 @@ class SelectionManager:
         }
 
     def clear_all(self):
-        for sprite in chain(*self.board.hand_sprites, *self.board.play_sprites):
-            sprite.is_activated = False
+        for sprite in chain(*self.board.hand_sprites, *self.board.play_sprites, self.board.hero_sprites):
+            if isinstance(sprite, EntitySprite):
+                sprite.is_activated = False
         for k in self.sel:
             self.sel[k] = None
         self.state = self.C
@@ -49,7 +51,7 @@ class SelectionManager:
 
         :param sprite: (Sprite) The clicked sprite.
         :param player: (Player) The owner of the sprite.
-        :param zone: (Zone) can be Zone.Hand, Zone.Play, Zone.Hero or 'HeroPower'.
+        :param zone: (Zone) can be Zone.Hand, Zone.Play, Zone.Hero or Zone.HeroPower.
         :param index: (int)
         :param click_args:
         :return: (bool) The click event is stopped or not.
@@ -115,9 +117,17 @@ class SelectionManager:
                 else:
                     raise ValueError('Unknown card type {!r}'.format(card_type))
             elif zone == Zone.Play:
-                return False
+                if not validate_attacker(sprite.entity, self._msg_fn):
+                    return False
+                self.sel['source'] = sprite.entity
+                self.state = self.A
+                sprite.on_mouse_release(*click_args)
+                return True
             elif zone == Zone.Hero:
-                print('#Hero clicked!')
+                if not validate_attacker(sprite.entity, self._msg_fn):
+                    return False
+                self.sel['source'] = sprite.entity
+                self.state = self.A
                 sprite.on_mouse_release(*click_args)
                 return True
             elif zone == Zone.HeroPower:
@@ -133,6 +143,13 @@ class SelectionManager:
             if not validate_target(card, target, self._msg_fn):
                 return False
             game.run_player_action(pa.PlaySpell(game, card, target, card.player_id))
+            return True
+        elif self.state == self.A:
+            source = self.sel['source']
+            target = sprite.entity
+            if not validate_attacked(source, target, self._msg_fn):
+                return False
+            # todo
             return True
         else:
             raise ValueError('Unknown state {!r}'.format(self.state))

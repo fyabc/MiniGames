@@ -328,5 +328,7 @@ class HeroSprite(EntitySprite):
 
 
 __all__ = [
+    'EntitySprite',
     'CardSprite',
+    'HeroSprite',
 ]

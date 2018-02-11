@@ -217,13 +217,16 @@ class ActiveLayerMixin:
     [NOTE]: This layer will not check if the event is in the box of a child, this check is done by the child itself.
     """
 
-    __slots__ = ('enabled',)
+    __slots__ = ('enabled', 'stop_event')
 
     is_event_handler = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.enabled = True
+
+        # If this is True, will stop the events from being sent to lower (smaller z-value) layers.
+        self.stop_event = False
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         """Handler for mouse release events.
@@ -239,6 +242,7 @@ class ActiveLayerMixin:
             if hasattr(child, 'on_mouse_release'):
                 if child.on_mouse_release(x, y, buttons, modifiers) is True:
                     return True
+        return self.stop_event
 
     def on_mouse_motion(self, x, y, dx, dy):
         """Handler for mouse motion events.
@@ -252,7 +256,9 @@ class ActiveLayerMixin:
 
         for child in reversed(self.get_children()):
             if hasattr(child, 'on_mouse_motion'):
-                child.on_mouse_motion(x, y, dx, dy)
+                if child.on_mouse_motion(x, y, dx, dy) is True:
+                    return True
+        return self.stop_event
 
 
 class ActiveLayer(ActiveLayerMixin, layer.Layer):
@@ -265,6 +271,11 @@ class ActiveLayer(ActiveLayerMixin, layer.Layer):
 
 class ActiveColorLayer(ActiveLayerMixin, layer.ColorLayer):
     """The color layer of active objects."""
+
+    def __init__(self, color=Colors['black'], width=None, height=None, position=(0, 0), stop_event=False):
+        super().__init__(*color, width, height)
+        self.position = position
+        self.stop_event = stop_event
 
 
 def children_inside_test(node, x, y):

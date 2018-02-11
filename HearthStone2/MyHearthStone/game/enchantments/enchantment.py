@@ -20,6 +20,10 @@ class Enchantment(GameEntity):
         Enchantments may be granted permanently, or temporarily by an aura.
     """
 
+    data = {
+        'entity_type': 3,
+    }
+
     def __init__(self, game, target):
         super().__init__(game)
         self.target = target

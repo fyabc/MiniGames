@@ -6,16 +6,15 @@
 from functools import partial
 from itertools import chain
 
-from cocos import scene, draw, director, rect, sprite
+from cocos import scene, draw, director, rect
 from cocos.scenes import transitions
 
 from ...utils.game import Zone
 from ...utils.message import debug
 from ...utils.draw.constants import Colors
 from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label, get_width
-from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveColorLayer
-from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
-from ...utils.draw.cocos_utils.primitives import Rect
+from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
+from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 from .card_sprite import CardSprite, HeroSprite
 from .selection_manager import SelectionManager
 from ...game.core import Game
@@ -336,6 +335,7 @@ class GameBoardLayer(ActiveLayer):
         play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
         for player, play_area in zip(self._player_list(), play_areas):
             if play_area.contains(x, y):
+                print('$', x, y)
                 self._sm.click_at_space(player, 0, (x, y, buttons, modifiers))
                 return True
 
@@ -346,51 +346,39 @@ class GameBoardLayer(ActiveLayer):
         DW, DH = 0.9, 0.6   # Dialog width / height
         game = self.ctrl.game
 
-        layer_ = ActiveColorLayer(*Colors['black'], *map(int, pos(DW, DH)))
-        layer_.position = pos((1 - DW) / 2, (1 - DH) / 2)
+        layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
+                             position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
         layer_.add(hs_style_label('      请选择要替换的卡牌（玩家{}）'.format(player_id),
                                   pos(DW - 0.5, DH - 0.03), anchor_y='top'))
         layer_.add(ActiveLabel.hs_style(
-            '确定', pos(DW - 0.5, 0.03), callback=lambda: self._on_replacement_selected(layer_, player_id),
+            '确定', pos(0.5 * DW, 0.03 * DH), anchor_x='center',
+            callback=lambda: self._on_replacement_selected(layer_, player_id),
         ))
-        layer_.add(Rect(rect.Rect(*pos(0.0, 0.0), *pos(DW, DH)), Colors['white'], 2))
         layer_.card_sprites = []
-
-        def _cb(self_):
-            self_.toggle_side()
-            return True
 
         num_cards = len(game.players[player_id].hand)
         for i, card in enumerate(game.players[player_id].hand):
             card_sprite = CardSprite(
                 card, pos((2 * i + 1) / (2 * num_cards + 1), DH / 2),
                 is_front=True, scale=0.6,
-                callback=_cb,
+                callback=lambda self_: bool(self_.toggle_side()) or True,
                 self_in_callback=True,
                 selected_effect=None, unselected_effect=None,
             )
             layer_.card_sprites.append(card_sprite)
             layer_.add(card_sprite)
-
-        # Pause all other layers.
-        for other_layer in self.parent.get_children():
-            if hasattr(other_layer, 'enabled'):
-                other_layer.enabled = False
-        self.parent.add(layer_, z=max(e[0] for e in self.parent.children) + 1)
+        layer_.add_to_scene(self.parent)
 
     def _on_replacement_selected(self, dialog, player_id):
         """Callback when one replacement selection done."""
         self._replacement[player_id] = [i for i, c in enumerate(dialog.card_sprites) if not c.is_front]
         if any(e is None for e in self._replacement):
             # Replacement for the other player.
-            self.parent.remove(dialog)
+            dialog.remove_from_scene()
             self._replace_dialog(1 - player_id)
         else:
             # Replacement done, start game.
-            self.parent.remove(dialog)
-            for other_layer in self.parent.get_children():
-                if hasattr(other_layer, 'enabled'):
-                    other_layer.enabled = True
+            dialog.remove_from_scene()
             try:
                 self.start_game_iter.send(self._replacement)
             except StopIteration:
@@ -423,7 +411,26 @@ class GameButtonsLayer(ActiveLayer):
         game.run_player_action(pa.TurnEnd(game))
 
     def on_options(self):
-        print('Options clicked!')
+        game = self.ctrl.game
+        DW, DH = 0.1, 0.4  # Dialog width / height
+        layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
+                             position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
+        # todo
+        layer_.add(ActiveLabel.hs_style(
+            '投降', pos(0.5 * DW, 0.8 * DH), anchor_x='center', anchor_y='center',
+            callback=lambda: game.run_player_action(pa.Concede(game, game.current_player)),
+            color=Colors['red'],
+            unselected_effect=set_color_action(Colors['red']),
+        ))
+        layer_.add(ActiveLabel.hs_style(
+            '设置', pos(0.5 * DW, 0.5 * DH), anchor_x='center', anchor_y='center',
+            callback=lambda: notice(layer_, 'Not supported now!', position=pos(0.5 * DW, 0.5 * DH)),
+        ))
+        layer_.add(ActiveLabel.hs_style(
+            '返回', pos(0.5 * DW, 0.2 * DH), anchor_x='center', anchor_y='center',
+            callback=layer_.remove_from_scene,
+        ))
+        layer_.add_to_scene(self.parent)
 
 
 def get_game_bg():
