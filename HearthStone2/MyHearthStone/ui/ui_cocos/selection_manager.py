@@ -147,7 +147,7 @@ class SelectionManager:
         elif self.state == self.A:
             source = self.sel['source']
             target = sprite.entity
-            if not validate_attacked(source, target, self._msg_fn):
+            if not validate_defender(source, target, self._msg_fn):
                 return False
             # todo
             return True

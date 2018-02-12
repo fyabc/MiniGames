@@ -74,7 +74,7 @@ class Card(GameEntity):
 
     @property
     def have_target(self):
-        # [NOTE]: This attribute may be changed in game, e.g. combo cards. Must calculate this.
+        """[NOTE]: This attribute may be changed in the game, such as combo cards."""
         return self.data['have_target']
 
     def check_target(self, target):
@@ -135,6 +135,15 @@ class Minion(Card):
     @property
     def alive(self):
         return self.health > 0 and not self.to_be_destroyed
+
+    @property
+    def battlecry(self):
+        """Test if this minion has battlecry.
+
+        [NOTE]: This value may be changed in game, such as conditional battlecry.
+        """
+
+        return self.data['battlecry']
 
     def run_battlecry(self, target):
         """Run the battlecry. Implemented in subclasses.

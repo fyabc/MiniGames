@@ -1,6 +1,18 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Play events.
+
+Playing a spell: See https://hearthstone.gamepedia.com/Advanced_rulebook#Playing_a_spell.
+
+Playing a weapon: See https://hearthstone.gamepedia.com/Advanced_rulebook#Playing_a_weapon.
+
+Playing a Death Knight hero: See https://hearthstone.gamepedia.com/Advanced_rulebook#Playing_a_Death_Knight_hero.
+
+Playing/Summoning a minion: See https://hearthstone.gamepedia.com/Advanced_rulebook#Playing.2Fsummoning_a_minion.
+
+"""
+
 from .event import Event, Phase
 from .utils import dynamic_pid_prop
 from ...utils.game import Zone
@@ -96,85 +108,91 @@ class AfterPlayWeapon(AfterPlay):
     pass
 
 
-class OnPlayMinion(OnPlay):
-    def __init__(self, game, minion, loc, target, player_id=None):
+class Summon(Event):
+    def __init__(self, game, minion, loc, player_id=None):
         super().__init__(game, minion)
         self.loc = loc
-        self.target = target
-        self._player_id = player_id
-
-    player_id = dynamic_pid_prop()
+        self.player_id = player_id
 
     @property
     def minion(self):
         return self.owner
 
     def _repr(self):
-        return super()._repr(P=self.player_id, minion=self.owner, loc=self.loc, target=self.target)
+        return super()._repr(P=self.player_id, minion=self.owner, loc=self.loc)
+
+
+class OnPlayMinion(OnPlay):
+    def __init__(self, game, minion, loc, target, player_id=None):
+        super().__init__(game, None)
+        self.target = target
+        self.summon_event = Summon(self.game, minion, loc, player_id)
+
+    @property
+    def player_id(self):
+        return self.summon_event.player_id
+
+    @property
+    def minion(self):
+        return self.summon_event.minion
+
+    def _repr(self):
+        return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion,
+                             loc=self.summon_event.loc, target=self.target)
 
 
 class BattlecryPhase(Phase):
-    def __init__(self, game, minion, loc, target, player_id=None):
-        super().__init__(game, minion)
-        self.loc = loc  # May be useless?
+    def __init__(self, game, summon_event, target):
+        super().__init__(game, summon_event)
+        self.summon_event = summon_event
         self.target = target
-        self._player_id = player_id
 
-    player_id = dynamic_pid_prop()
+    @property
+    def player_id(self):
+        return self.summon_event.player_id
 
     @property
     def minion(self):
-        return self.owner
+        return self.summon_event.minion
 
     def _repr(self):
-        return super()._repr(P=self.player_id, minion=self.owner, target=self.target)
+        return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion, target=self.target)
 
 
 class AfterPlayMinion(AfterPlay):
     skip_5_steps = True
 
-    def __init__(self, game, minion, player_id=None):
-        super().__init__(game, minion)
-        self._player_id = player_id
+    def __init__(self, game, summon_event):
+        super().__init__(game, None)
+        self.summon_event = summon_event
 
-    player_id = dynamic_pid_prop()
+    @property
+    def player_id(self):
+        return self.summon_event.player_id
 
     @property
     def minion(self):
-        return self.owner
+        return self.summon_event.minion
 
     def _repr(self):
-        return super()._repr(P=self.player_id, minion=self.owner)
+        return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion)
 
 
 class AfterSummon(Phase):
-    def __init__(self, game, minion, player_id=None):
-        super().__init__(game, minion)
-        self._player_id = player_id
+    def __init__(self, game, summon_event):
+        super().__init__(game, None)
+        self.summon_event = summon_event
 
-    player_id = dynamic_pid_prop()
+    @property
+    def player_id(self):
+        return self.summon_event.player_id
 
     @property
     def minion(self):
-        return self.owner
+        return self.summon_event.minion
 
     def _repr(self):
-        return super()._repr(P=self.player_id, minion=self.owner)
-
-
-class Summon(Event):
-    def __init__(self, game, minion, player_id=None):
-        super().__init__(game, minion)
-        self._player_id = player_id
-
-    player_id = dynamic_pid_prop()
-
-    @property
-    def minion(self):
-        return self.owner
-
-    def _repr(self):
-        return super()._repr(P=self.player_id, minion=self.owner)
+        return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion)
 
 
 def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone=None):
@@ -195,11 +213,12 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
         minion, success, _ = game.move(from_player, from_zone, minion, to_player, Zone.Play, loc)
 
     if success:
-        game.summon_events.add(Summon(game, minion, to_player))
+        summon_event = Summon(game, minion, loc, to_player)
+        game.summon_events.add(summon_event)
 
         # [NOTE]: move it to ``Game.move``?
         minion.oop = game.inc_oop()
 
-        return AfterSummon(game, minion, to_player)
+        return AfterSummon(game, summon_event)
     else:
         return None

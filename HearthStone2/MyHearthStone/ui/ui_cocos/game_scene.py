@@ -331,12 +331,17 @@ class GameBoardLayer(ActiveLayer):
                 self._sm.click_at(hero_sprite, player, Zone.Hero, None, (x, y, buttons, modifiers))
                 return True
 
-        # todo: Complete this (calculate click index).
+        # Click at space.
         play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
-        for player, play_area in zip(self._player_list(), play_areas):
+        for player, play_area, play_sprites in zip(self._player_list(), play_areas, self.play_sprites):
             if play_area.contains(x, y):
-                print('$', x, y)
-                self._sm.click_at_space(player, 0, (x, y, buttons, modifiers))
+                for i, spr in enumerate(play_sprites):
+                    if x < spr.x - spr.SizeBase[0] * spr.scale:
+                        click_index = i
+                        break
+                else:
+                    click_index = len(play_sprites)
+                self._sm.click_at_space(player, click_index, (x, y, buttons, modifiers))
                 return True
 
         return False
@@ -415,7 +420,6 @@ class GameButtonsLayer(ActiveLayer):
         DW, DH = 0.1, 0.4  # Dialog width / height
         layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
                              position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
-        # todo
         layer_.add(ActiveLabel.hs_style(
             '投降', pos(0.5 * DW, 0.8 * DH), anchor_x='center', anchor_y='center',
             callback=lambda: game.run_player_action(pa.Concede(game, game.current_player)),

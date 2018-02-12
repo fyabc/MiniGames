@@ -94,11 +94,12 @@ class PlayMinion(PlayerAction):
         self.player_id = game.current_player if player_id is None else player_id
 
     def phases(self):
+        opm = standard.OnPlayMinion(self.game, self.minion, self.loc, self.target, self.player_id)
         return [
-            standard.OnPlayMinion(self.game, self.minion, self.loc, self.target, self.player_id),
-            standard.BattlecryPhase(self.game, self.minion, self.loc, self.target, self.player_id),
-            standard.AfterPlayMinion(self.game, self.minion, self.player_id),
-            standard.AfterSummon(self.game, self.minion, self.player_id),
+            opm,
+            standard.BattlecryPhase(self.game, opm.summon_event, opm.target),
+            standard.AfterPlayMinion(self.game, opm.summon_event),
+            standard.AfterSummon(self.game, opm.summon_event),
             'check_win',
         ]
 

@@ -119,12 +119,13 @@ class StdOnPlayMinion(StandardBeforeTrigger):
 
         player.spend_mana(event.minion.cost)
 
-        self.game.summon_events.add(standard.Summon(self.game, event.minion, event.player_id))
+        se = event.summon_event
+        self.game.summon_events.add(se)
 
         # [NOTE]: move it to `Game.move`?
         event.minion.oop = self.game.inc_oop()
 
-        self.game.move(event.player_id, Zone.Hand, event.minion, event.player_id, Zone.Play, event.loc)
+        self.game.move(se.player_id, Zone.Hand, event.minion, se.player_id, Zone.Play, se.loc)
 
         return []
 

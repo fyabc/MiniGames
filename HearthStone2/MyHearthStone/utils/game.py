@@ -94,7 +94,7 @@ def validate_attacker(entity, msg_fn):
     return True
 
 
-def validate_attacked(source, target, msg_fn):
+def validate_defender(attacker, defender, msg_fn):
     return True
 
 
@@ -197,7 +197,7 @@ __all__ = [
     'validate_cost',
     'validate_target',
     'validate_play_size',
-    'validate_attacker', 'validate_attacked',
+    'validate_attacker', 'validate_defender',
 
     'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
 ]
