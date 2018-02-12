@@ -75,6 +75,12 @@ class DialogLayer(active.ActiveColorLayer):
         """Add this dialog to the top, and if `stop_event` is True, it will stop related events."""
         scene.add(self, z=max(e[0] for e in scene.children) + 1)
 
+    def add_ok(self, callback, z=0):
+        self.add(active.ActiveLabel.hs_style(
+            '确定', pos(0.5, 0.03, base=(self.width, self.height)), anchor_x='center',
+            callback=callback,
+        ), z=z)
+
     def remove_from_scene(self):
         self.parent.remove(self)
 

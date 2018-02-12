@@ -63,8 +63,9 @@ class Game:
         # Dict values are sets of triggers.
         self.triggers = {}
 
-        # Resolve callbacks.
+        # Resolve callbacks and game end callbacks.
         self.resolve_callbacks = []
+        self.game_end_callbacks = []
 
         # Current order of play id
         self.current_oop = 1
@@ -119,16 +120,33 @@ class Game:
         for event_type, triggers in self.triggers.items():
             self.triggers[event_type] = {trigger for trigger in triggers if trigger.enable}
 
-    def add_resolve_callback(self, callback):
-        """Add a callback after each resolve.
+    def add_callback(self, callback, when='resolve'):
+        """Add a callback as a hook in the processing of the system.
 
-        :param callback: (function)
-            Callback prototype: (event_or_trigger, current_event) -> Any (return value ignored)
-            If `event_or_trigger` is an event, `current_event` is None;
-            If `event_or_trigger` is a trigger, `current_event` is the trigger's current event.
+        :param callback: Callback to be added.
+
+            Callback prototypes:
+
+            1. Resolve: called after the resolve of each event.
+
+                (event_or_trigger, current_event) -> Any (return value ignored)
+                If `event_or_trigger` is an event, `current_event` is None;
+                If `event_or_trigger` is a trigger, `current_event` is the trigger's current event.
+            2. Game end: called when the game end.
+
+                (game_result) -> Any (return value ignored)
+        :type callback: function
+        :param when: When to call the callback, candidates: ('resolve', 'game_end')
+        :type when: str
         :return: None
         """
-        self.resolve_callbacks.append(callback)
+
+        if when == 'resolve':
+            self.resolve_callbacks.append(callback)
+        elif when == 'game_end':
+            self.game_end_callbacks.append(callback)
+        else:
+            raise ValueError('Unknown when {!r}'.format(when))
 
     def run_player_action(self, player_action):
         if not self.running:
@@ -327,6 +345,8 @@ class Game:
             self.ResultDraw: 'draw',
         }[self.game_result]))
         self.running = False
+        for callback in self.game_end_callbacks:
+            callback(self.game_result)
 
     def _summon_resolution(self):
         """Resolve all summon events in order of play."""

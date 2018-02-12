@@ -119,8 +119,11 @@ class CardSprite(EntitySprite):
 
         :param card:
         :param position:
+        :type position: tuple
         :param is_front:
+        :type is_front: bool
         :param scale:
+        :type scale: float
         :param kwargs:
         """
         # For active mixin.

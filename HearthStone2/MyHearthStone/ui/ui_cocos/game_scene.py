@@ -122,8 +122,9 @@ class SelectDeckLayer(ActiveLayer):
         # Create new game, register callback and start game.
         self.ctrl.game = Game(frontend=self.ctrl)
         game_board_layer = self.ctrl.get_node('game/board')
-        self.ctrl.game.add_resolve_callback(game_board_layer.update_content)
-        self.ctrl.game.add_resolve_callback(game_board_layer.log_update_time)
+        self.ctrl.game.add_callback(game_board_layer.update_content)
+        self.ctrl.game.add_callback(game_board_layer.log_update_time)
+        self.ctrl.game.add_callback(game_board_layer.game_end_dialog, when='game_end')
         start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
         next(start_game_iter)
         game_board_layer.start_game_iter = start_game_iter
@@ -227,7 +228,26 @@ class GameBoardLayer(ActiveLayer):
         self._replace_dialog(self.ctrl.game.current_player)
 
     def on_exit(self):
-        # todo: Clean card and hero sprites.
+        # Ensure not called by transition scenes (only called once).
+        if isinstance(director.director.scene, transitions.TransitionScene):
+            return super().on_exit()
+
+        # Clear sprites and reset labels.
+        for i in range(2):
+            self.get('label_deck_{}'.format(i)).element.text = '牌库：0'
+            self.get('label_mana_{}'.format(i)).element.text = '0/0'
+            self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(i)
+
+        for spr_list in self.hand_sprites + self.play_sprites:
+            for sprite in spr_list:
+                if sprite in self:
+                    self.remove(sprite)
+            spr_list.clear()
+        for i in range(2):
+            self.remove('sprite_hero_{}'.format(i))
+        self.hero_sprites = [None, None]
+
+        self._replacement = [None, None]
         return super().on_exit()
 
     def log_update_time(self, *_):
@@ -251,10 +271,6 @@ class GameBoardLayer(ActiveLayer):
         self._sm.clear_all()
 
         # Run actions according to current event or trigger.
-
-        # TODO: Add processing for game end (transition to game end scene, etc).
-        if not self.ctrl.game.running:
-            pass
 
         # Right border components.
         for i, player in enumerate(self._player_list()):
@@ -348,17 +364,14 @@ class GameBoardLayer(ActiveLayer):
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""
-        DW, DH = 0.9, 0.6   # Dialog width / height
+        DW, DH = 0.9, 0.6
         game = self.ctrl.game
 
         layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
                              position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
-        layer_.add(hs_style_label('      请选择要替换的卡牌（玩家{}）'.format(player_id),
-                                  pos(DW - 0.5, DH - 0.03), anchor_y='top'))
-        layer_.add(ActiveLabel.hs_style(
-            '确定', pos(0.5 * DW, 0.03 * DH), anchor_x='center',
-            callback=lambda: self._on_replacement_selected(layer_, player_id),
-        ))
+        layer_.add(hs_style_label('请选择要替换的卡牌（玩家{}）'.format(player_id),
+                                  pos(DW * 0.5, DH * 0.98), anchor_y='top'))
+        layer_.add_ok(lambda: self._on_replacement_selected(layer_, player_id))
         layer_.card_sprites = []
 
         num_cards = len(game.players[player_id].hand)
@@ -390,6 +403,27 @@ class GameBoardLayer(ActiveLayer):
                 pass
         return True
 
+    def game_end_dialog(self, game_result):
+        DW, DH = 0.6, 0.6
+        layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
+                             position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
+
+        current_player = self.ctrl.game.current_player
+        if game_result == Game.ResultDraw:
+            result_str = '平局'
+        elif (game_result == Game.ResultWin0 and current_player == 0 or
+              game_result == Game.ResultWin1 and current_player == 1):
+            result_str = '胜利'
+        else:
+            result_str = '败北'
+        layer_.add(hs_style_label(result_str, pos(DW * 0.5, DH * 0.6), anchor_y='center'))
+
+        def _back_transition():
+            layer_.remove_from_scene()
+            director.director.replace(transitions.FadeTransition(self.ctrl.get('select_deck'), duration=0.5))
+        layer_.add_ok(_back_transition)
+        layer_.add_to_scene(self.parent)
+
     def _player_list(self):
         """Return the player list, in order of (current player, opponent player)."""
         game = self.ctrl.game
@@ -417,12 +451,16 @@ class GameButtonsLayer(ActiveLayer):
 
     def on_options(self):
         game = self.ctrl.game
-        DW, DH = 0.1, 0.4  # Dialog width / height
+        DW, DH = 0.1, 0.4
         layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
                              position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
+
+        def _concede():
+            layer_.remove_from_scene()
+            game.run_player_action(pa.Concede(game, game.current_player))
         layer_.add(ActiveLabel.hs_style(
             '投降', pos(0.5 * DW, 0.8 * DH), anchor_x='center', anchor_y='center',
-            callback=lambda: game.run_player_action(pa.Concede(game, game.current_player)),
+            callback=_concede,
             color=Colors['red'],
             unselected_effect=set_color_action(Colors['red']),
         ))
