@@ -137,6 +137,14 @@ class Minion(Card):
         return self.health > 0 and not self.to_be_destroyed
 
     @property
+    def charge(self):
+        return self.data['charge']
+
+    @property
+    def exhausted(self):
+        return self.n_attack >= self.n_total_attack
+
+    @property
     def battlecry(self):
         """Test if this minion has battlecry.
 
@@ -163,6 +171,15 @@ class Minion(Card):
 
     def take_damage(self, value):
         self._raw_health -= value
+
+    def inc_n_attack(self):
+        self.n_attack += 1
+
+    def set_exhausted(self):
+        self.n_attack = self.n_total_attack
+
+    def clear_exhausted(self):
+        self.n_attack = 0
 
     def aura_update_attack_health(self):
         self.attack = self.data['attack']

@@ -72,6 +72,16 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
         self.position = kwargs.pop('position', (0, 0))
         self.scale = kwargs.pop('scale', 1.0)
 
+    def _get_health_color(self):
+        _h = self.entity.health
+        _h_m = self.entity.max_health
+        _h_s = self.entity.data['health']
+        if _h < _h_m:
+            return Colors['red']
+        if _h_m > _h_s:
+            return Colors['green']
+        return Colors['white']
+
 
 class CardSprite(EntitySprite):
     """The sprite of a card.
@@ -178,6 +188,7 @@ class CardSprite(EntitySprite):
         if self._c_get('type') in (Type.Minion, Type.Weapon):
             self.front_sprites['attack-label'][0].element.text = str(self._c_get('attack'))
             self.front_sprites['health-label'][0].element.text = str(self._c_get('health'))
+            self.front_sprites['health-label'][0].element.color = self._get_health_color()
         elif self._c_get('type') == Type.HeroCard:
             self.front_sprites['armor-label'][0].element.text = str(self._c_get('armor'))
         self.front_sprites['name'][0].element.text = self._c_get('name')
@@ -251,7 +262,7 @@ class CardSprite(EntitySprite):
                                        anchor_y='center', font_size=64)
             health_sprite = Sprite('Health.png', pos(0.84, -0.81, base=self.SizeBase), scale=1.05)
             health_label = hs_style_label(str(self._c_get('health')), pos(0.84, -0.8, base=self.SizeBase),
-                                          anchor_y='center', font_size=64)
+                                          anchor_y='center', font_size=64, color=self._get_health_color())
             self.front_sprites.update({
                 'attack-sprite': [atk_sprite, 1],
                 'attack-label': [atk_label, 2],
@@ -301,6 +312,11 @@ class CardSprite(EntitySprite):
         }
         return '<center><font size="{font_size}" color="{color}">{desc}</font></center>'.format_map(format_map)
 
+    def _get_health_color(self):
+        if self.static:
+            return Colors['white']
+        return super()._get_health_color()
+
 
 class HeroSprite(EntitySprite):
     """The hero sprite."""
@@ -322,12 +338,13 @@ class HeroSprite(EntitySprite):
         self.add(Sprite('Hero.png', pos(0, 0, base=self.SizeBase), scale=1.0))
 
         self.health_label = hs_style_label(str(self.entity.health), pos(0.73, -0.34, base=self.SizeBase),
-                                           font_size=46, anchor_y='center', color=Colors['white'])
+                                           font_size=46, anchor_y='center', color=self._get_health_color())
         self.add(self.health_label, z=1)
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
         self.health_label.element.text = str(self.entity.health)
+        self.health_label.element.color = self._get_health_color()
 
 
 __all__ = [

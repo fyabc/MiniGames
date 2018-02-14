@@ -127,6 +127,9 @@ class StdOnPlayMinion(StandardBeforeTrigger):
 
         self.game.move(se.player_id, Zone.Hand, event.minion, se.player_id, Zone.Play, se.loc)
 
+        if not event.minion.charge:
+            event.minion.set_exhausted()
+
         return []
 
 

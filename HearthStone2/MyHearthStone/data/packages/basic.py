@@ -117,6 +117,14 @@ blank_minion({
 })
 
 
+# 绿洲钳嘴龟
+blank_minion({
+    'id': 26,
+    'cost': 4, 'attack': 2, 'health': 7,
+    'race': [Race.Beast],
+})
+
+
 # Neutral derivations.
 
 class 幸运币(Spell):

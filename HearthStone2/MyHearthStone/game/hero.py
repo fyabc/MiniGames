@@ -19,6 +19,8 @@ class Hero(GameEntity):
     def __init__(self, game, player_id):
         super().__init__(game)
 
+        # todo: How to assign weapon attributes to hero attributes?
+
         self.zone = Zone.Invalid
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
         self.player_id = player_id
@@ -30,12 +32,20 @@ class Hero(GameEntity):
 
         self.oop = self.game.oop
 
+        # Attack numbers.
+        self.n_attack = 0
+        self.n_total_attack = 1
+
     def __repr__(self):
         return super()._repr(klass=self.data['klass'], P=self.player_id, health=self.health)
 
     @property
     def alive(self):
         return self.health > 0 and not self.to_be_destroyed
+
+    @property
+    def exhausted(self):
+        return self.n_attack >= self.n_total_attack
 
     def run_deathrattle(self):
         """Run the deathrattle. Implemented in subclasses.
@@ -46,6 +56,15 @@ class Hero(GameEntity):
 
     def take_damage(self, value):
         self._raw_health -= value
+
+    def inc_n_attack(self):
+        self.n_attack += 1
+
+    def set_exhausted(self):
+        self.n_attack = self.n_total_attack
+
+    def clear_exhausted(self):
+        self.n_attack = 0
 
     def aura_update_attack_health(self):
         self.health = self._raw_health

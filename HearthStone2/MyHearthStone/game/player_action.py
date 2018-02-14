@@ -113,7 +113,13 @@ class ToAttack(PlayerAction):
         self.defender = defender
 
     def phases(self):
-        return []
+        atk_event = standard.Attack(self.game, self.attacker, self.defender)
+        return [
+            standard.PrepareCombat(self.game, atk_event),
+            'check_win',
+            standard.Combat(self.game, atk_event),
+            'check_win',
+        ]
 
 
 class UseHeroPower(PlayerAction):

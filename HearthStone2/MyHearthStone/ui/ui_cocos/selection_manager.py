@@ -145,11 +145,11 @@ class SelectionManager:
             game.run_player_action(pa.PlaySpell(game, card, target, card.player_id))
             return True
         elif self.state == self.A:
-            source = self.sel['source']
-            target = sprite.entity
-            if not validate_defender(source, target, self._msg_fn):
+            attacker = self.sel['source']
+            defender = sprite.entity
+            if not validate_defender(attacker, defender, self._msg_fn):
                 return False
-            # todo
+            game.run_player_action(pa.ToAttack(game, attacker, defender))
             return True
         else:
             raise ValueError('Unknown state {!r}'.format(self.state))

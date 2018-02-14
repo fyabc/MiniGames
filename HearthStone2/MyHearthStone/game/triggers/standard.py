@@ -11,6 +11,7 @@ These triggers usually have the smallest oop (StandardBeforeTrigger) or largest 
 from .death import *
 from .play import *
 from .damage import *
+from .combat import *
 from .trigger import StandardBeforeTrigger
 from ...utils.constants import C
 from ...utils.message import debug
@@ -79,5 +80,6 @@ def add_standard_triggers(game):
         StdOnPlayMinion, StdOnBattlecry, StdAfterPlayMinion, StdAfterSummon,
         StdPreDamage, StdDamage,
         StdDeathPhase, StdHeroDeath, StdMinionDeath, StdWeaponDeath,
+        StdPrepareCombat, StdCombat,
     ]:
         game.register_trigger(trigger_type(game))

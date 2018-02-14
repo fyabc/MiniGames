@@ -444,6 +444,11 @@ class Game:
         # Refresh mana.
         current_player.add_mana(1, 'N')
 
+        # Refresh attack numbers.
+        for card in current_player.play:
+            card.clear_exhausted()
+        current_player.hero.clear_exhausted()
+
         # todo
 
         pass

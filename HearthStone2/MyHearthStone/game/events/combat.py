@@ -3,38 +3,13 @@
 
 """Combat events.
 
-Copied from https://hearthstone.gamepedia.com/Advanced_rulebook#Combat:
-    When you order a minion to attack another minion, the following Sequence takes place:
-    (As with other Sequences, if the attacker or defender leaves play for any reason,
-    the current Phase will finish resolving but the Sequence will end early afterwards.
+Sequence details: See https://hearthstone.gamepedia.com/Advanced_rulebook#Combat.
 
-        1. If you have Gladiator's Longbow or Candleshot at the start of Combat Sequence,
-        you are Immune in the whole Sequence.
+**Proposed Attack Event**: See https://hearthstone.gamepedia.com/Advanced_rulebook#Proposed_Attack_Event.
 
-        2. **Combat Preparation Phase**: A Proposed Attack Event is resolved. If the defender changes,
-        another Proposed Attack Event is created and placed in this Phase's Event Queue
-        after the current Proposed Attack Event. (It will begin to resolve when the current Proposed Attack Event
-        finishes resolving.) Finally, an Attack Event is resolved. Additionally, the attacker will lose Stealth.
+**Attack Event**: See https://hearthstone.gamepedia.com/Advanced_rulebook#Attack_Event.
 
-        3. Hearthstone checks for win/loss/draw.
-
-        4. **Combat Phase**: Damage is dealt simultaneously in the order (attack, counterattack) and resolved.
-        The attacker's weapon loses durability (unless prevented due to the weapon being Immune).
-        An After Attack Event is resolved even if 0 damage was dealt to the defender.
-        Note that after Patch 9.2.0.21517 after attack triggers can only work if they're valid when the Sequence starts.
-
-        5. Hearthstone checks for win/loss/draw.
-
-    The subjects of Combat are the attacker and defender.
-    Even if the attacker or defender (or both) is mortally wounded or leaves play,
-    triggers that ask what the current attacker/defender is will continue to be able to queue and resolve
-    (assuming their other conditions are satisfied.)
-
-    **Proposed Attack Event**: See https://hearthstone.gamepedia.com/Advanced_rulebook#Proposed_Attack_Event.
-
-    **Attack Event**: See https://hearthstone.gamepedia.com/Advanced_rulebook#Attack_Event.
-
-    **After Attack Event**: See https://hearthstone.gamepedia.com/Advanced_rulebook#After_Attack_Event.
+**After Attack Event**: See https://hearthstone.gamepedia.com/Advanced_rulebook#After_Attack_Event.
 """
 
 from .event import Event, Phase
@@ -45,33 +20,84 @@ __author__ = 'fyabc'
 class PrepareCombat(Phase):
     """The prepare combat phase. It contains ``ProposedAttack`` and ``Attack`` events."""
 
-    def __init__(self, game, combat):
+    def __init__(self, game, attack_event):
         super().__init__(game, None)
-        self.combat = combat
+        self.attack_event = attack_event
+
+    @property
+    def attacker(self):
+        return self.attack_event.attacker
+
+    @property
+    def defender(self):
+        return self.attack_event.defender
 
     def _repr(self):
-        return super()._repr(attacker=self.combat.attacker, defender=self.combat.defender)
+        return super()._repr(attacker=self.attack_event.attacker, defender=self.attack_event.defender)
 
 
 class Combat(Phase):
-    def __init__(self, game, combat):
+    def __init__(self, game, attack_event):
         super().__init__(game, None)
-        self.combat = combat
+        self.attack_event = attack_event
+
+    @property
+    def attacker(self):
+        return self.attack_event.attacker
+
+    @property
+    def defender(self):
+        return self.attack_event.defender
 
     def _repr(self):
-        return super()._repr(attacker=self.combat.attacker, defender=self.combat.defender)
+        return super()._repr(attacker=self.attack_event.attacker, defender=self.attack_event.defender)
 
 
 class ProposedAttack(Event):
-    def __init__(self, game, combat):
+    """The event of proposed attack.
+
+    This event does not have standard triggers.
+
+    Copied from Advanced Rulebook:
+
+        Triggers on the Proposed Attack Event include those that can change the defender, cause the attacker to become
+        mortally wounded or leave play, and so on.
+
+        At the start of resolving a Proposed Attack Event, triggers queue based on the defender at that moment, and
+        will remain in the queue even if the defender changes.
+
+        When the defender changes, a new Proposed Attack Event is inserted into the Combat Preparation Phase's Event
+        Queue after the currently resolving one. (It will therefore resolve once the current Proposed Attack Event
+        finishes resolving, and therefore use the defender at that point in time.)
+
+        (As a reminder: Queuing conditions are only required to be true when the Event they trigger on starts to
+        resolve, whereas trigger conditions are only required to be true when the trigger resolves.)
+    """
+    def __init__(self, game, attack_event):
         super().__init__(game, None)
-        self.combat = combat
+        self.attack_event = attack_event
+
+    @property
+    def attacker(self):
+        return self.attack_event.attacker
+
+    @property
+    def defender(self):
+        return self.attack_event.defender
 
     def _repr(self):
-        return super()._repr(attacker=self.combat.attacker, defender=self.combat.defender)
+        return super()._repr(attacker=self.attack_event.attacker, defender=self.attack_event.defender)
 
 
 class Attack(Event):
+    """The event of attack.
+
+    Copied from Advanced Rulebook:
+
+        Triggers on the Attack Event include those that need to occur only once the final defender is known, or those
+        that do not significantly affect the game state. The Attack Event is only resolved if the previous Proposed
+        Attack Event did not change the defender.
+    """
     def __init__(self, game, attacker, defender):
         super().__init__(game, None)
         self.attacker = attacker
@@ -82,8 +108,29 @@ class Attack(Event):
 
 
 class AfterAttack(Event):
-    pass
+    """The event of after-attack.
 
+    This event does not have standard triggers.
 
-def combat_events(game, attacker, defender):
-    return []
+    Copied from Advanced Rulebook:
+
+        An After Attack Event is resolved as long as the attack was successful, even if it dealt 0 damage.
+
+        (Note that unlike other triggers that go 'after' something, such as Rumbling Elemental and Djinni of Zephyrs,
+        the After Attack Event is resolved in the same Phase, not a later Phase, as the combat damage, meaning death
+        processing is not done in-between.)
+    """
+    def __init__(self, game, attack_event):
+        super().__init__(game, None)
+        self.attack_event = attack_event
+
+    @property
+    def attacker(self):
+        return self.attack_event.attacker
+
+    @property
+    def defender(self):
+        return self.attack_event.defender
+
+    def _repr(self):
+        return super()._repr(attacker=self.attack_event.attacker, defender=self.attack_event.defender)

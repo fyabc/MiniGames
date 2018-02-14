@@ -84,13 +84,20 @@ def validate_attacker(entity, msg_fn):
     :rtype: bool
     """
 
+    e_type = entity.data['entity_type']
+
     if entity.attack <= 0:
-        if entity.data['entity_type'] == EntityType.Hero:
+        if e_type == EntityType.Hero:
             msg_fn('I cannot attack!')
         else:
             msg_fn('This minion cannot attack!')
         return False
-    # todo: Add check for attack numbers.
+    if entity.exhausted:
+        if e_type == EntityType.Hero:
+            msg_fn('I have attacked!')
+        else:
+            msg_fn('This minion has attacked!')
+        return False
     return True
 
 
