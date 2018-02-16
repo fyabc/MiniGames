@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from itertools import chain
 import random
 from typing import *
 
@@ -64,8 +65,12 @@ class Game:
         self.triggers = {}
 
         # Resolve callbacks and game end callbacks.
-        self.resolve_callbacks = []
-        self.game_end_callbacks = []
+        self.callbacks = {
+            'event': [],
+            'trigger': [],
+            'resolve': [],
+            'game_end': [],
+        }
 
         # Current order of play id
         self.current_oop = 1
@@ -127,12 +132,18 @@ class Game:
 
             Callback prototypes:
 
-            1. Resolve: called after the resolve of each event.
+            1. Resolve: called after the resolve of each event and trigger.
 
                 (event_or_trigger, current_event) -> Any (return value ignored)
                 If `event_or_trigger` is an event, `current_event` is None;
                 If `event_or_trigger` is a trigger, `current_event` is the trigger's current event.
-            2. Game end: called when the game end.
+            2. Event: called after the resolve of each event.
+
+                (event) -> Any (return value ignored)
+            3. Trigger: called after the resolve of each trigger.
+
+                (trigger, current_event) -> Any (return type ignored)
+            3. Game end: called when the game end.
 
                 (game_result) -> Any (return value ignored)
         :type callback: function
@@ -141,11 +152,9 @@ class Game:
         :return: None
         """
 
-        if when == 'resolve':
-            self.resolve_callbacks.append(callback)
-        elif when == 'game_end':
-            self.game_end_callbacks.append(callback)
-        else:
+        try:
+            self.callbacks[when].append(callback)
+        except KeyError:
             raise ValueError('Unknown when {!r}'.format(when))
 
     def run_player_action(self, player_action):
@@ -249,7 +258,9 @@ class Game:
             # Callback after each event (maybe useless, only need to call after triggers?)
             # [NOTE]: These calls are after the all processing of events (just before idle),
             # so user will always see the up-to-date result.
-            for callback in self.resolve_callbacks:
+            for callback in self.callbacks['event']:
+                callback(e)
+            for callback in self.callbacks['resolve']:
                 callback(e, None)
 
     def resolve_triggers(self, triggers, current_event, depth=0):
@@ -281,7 +292,7 @@ class Game:
             t.message(current_event)
 
             # Callback after each trigger.
-            for callback in self.resolve_callbacks:
+            for callback in chain(self.callbacks['trigger'], self.callbacks['resolve']):
                 callback(t, current_event)
 
             if new_queue:
@@ -345,7 +356,7 @@ class Game:
             self.ResultDraw: 'draw',
         }[self.game_result]))
         self.running = False
-        for callback in self.game_end_callbacks:
+        for callback in self.callbacks['game_end']:
             callback(self.game_result)
 
     def _summon_resolution(self):

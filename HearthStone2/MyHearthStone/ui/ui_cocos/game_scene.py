@@ -17,6 +17,7 @@ from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 from .card_sprite import CardSprite, HeroSprite
 from .selection_manager import SelectionManager
+from .animations import run_animations
 from ...game.core import Game
 from ...game import player_action as pa
 
@@ -121,13 +122,7 @@ class SelectDeckLayer(ActiveLayer):
             return
         # Create new game, register callback and start game.
         self.ctrl.game = Game(frontend=self.ctrl)
-        game_board_layer = self.ctrl.get_node('game/board')
-        self.ctrl.game.add_callback(game_board_layer.update_content)
-        self.ctrl.game.add_callback(game_board_layer.log_update_time)
-        self.ctrl.game.add_callback(game_board_layer.game_end_dialog, when='game_end')
-        start_game_iter = self.ctrl.game.start_game(self.selected_decks, mode='standard')
-        next(start_game_iter)
-        game_board_layer.start_game_iter = start_game_iter
+        self.ctrl.get_node('game/board').prepare_start_game(self.ctrl.game, self.selected_decks)
 
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=0.5))
 
@@ -250,6 +245,15 @@ class GameBoardLayer(ActiveLayer):
         self._replacement = [None, None]
         return super().on_exit()
 
+    def prepare_start_game(self, game, selected_decks):
+        """Start game preparations. Called by select deck layer before transitions."""
+        game.add_callback(self.update_content, when='trigger')
+        game.add_callback(self.log_update_time, when='trigger')
+        game.add_callback(self.game_end_dialog, when='game_end')
+        start_game_iter = game.start_game(selected_decks, mode='standard')
+        next(start_game_iter)
+        self.start_game_iter = start_game_iter
+
     def log_update_time(self, *_):
         """Logging time elapsed since last event/trigger.
 
@@ -266,11 +270,13 @@ class GameBoardLayer(ActiveLayer):
         """Update the game board content, called by game event engine.
 
         Registered at `SelectDeckLayer.on_start_game`.
+
+        todo: Change all content updates to actions (async scheduled).
         """
 
         self._sm.clear_all()
 
-        # Run actions according to current event or trigger.
+        run_animations(self, event_or_trigger, current_event)
 
         # Right border components.
         for i, player in enumerate(self._player_list()):

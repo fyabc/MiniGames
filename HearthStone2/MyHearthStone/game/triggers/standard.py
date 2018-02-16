@@ -80,6 +80,6 @@ def add_standard_triggers(game):
         StdOnPlayMinion, StdOnBattlecry, StdAfterPlayMinion, StdAfterSummon,
         StdPreDamage, StdDamage,
         StdDeathPhase, StdHeroDeath, StdMinionDeath, StdWeaponDeath,
-        StdPrepareCombat, StdCombat,
+        StdPrepareCombat, StdCombat, StdAttack,
     ]:
         game.register_trigger(trigger_type(game))
