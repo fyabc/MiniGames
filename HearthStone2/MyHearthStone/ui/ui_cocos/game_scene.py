@@ -247,8 +247,8 @@ class GameBoardLayer(ActiveLayer):
 
     def prepare_start_game(self, game, selected_decks):
         """Start game preparations. Called by select deck layer before transitions."""
-        game.add_callback(self.update_content, when='trigger')
-        game.add_callback(self.log_update_time, when='trigger')
+        game.add_callback(self.update_content, when='resolve')
+        game.add_callback(self.log_update_time, when='resolve')
         game.add_callback(self.game_end_dialog, when='game_end')
         start_game_iter = game.start_game(selected_decks, mode='standard')
         next(start_game_iter)
@@ -271,6 +271,7 @@ class GameBoardLayer(ActiveLayer):
 
         Registered at `SelectDeckLayer.on_start_game`.
 
+        todo: Optimize code (performance bottlenecks here).
         todo: Change all content updates to actions (async scheduled).
         """
 

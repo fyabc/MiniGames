@@ -127,9 +127,6 @@ class StdOnPlayMinion(StandardBeforeTrigger):
 
         self.game.move(se.player_id, Zone.Hand, event.minion, se.player_id, Zone.Play, se.loc)
 
-        if not event.minion.charge:
-            event.minion.set_exhausted()
-
         return []
 
 
@@ -148,6 +145,21 @@ class StdAfterPlayMinion(StandardBeforeTrigger):
     """Standard trigger of AfterPlayMinion."""
 
     respond = [standard.AfterPlayMinion]
+
+
+class StdSummon(StandardBeforeTrigger):
+    """Standard trigger of Summon.
+
+    This trigger process something both for played minions or pure-summoned minions, such as set exhaustion.
+    """
+
+    respond = [standard.Summon]
+
+    def process(self, event: respond[0]):
+        minion = event.minion
+        if not minion.charge:
+            minion.set_exhausted()
+        return []
 
 
 class StdAfterSummon(StandardBeforeTrigger):

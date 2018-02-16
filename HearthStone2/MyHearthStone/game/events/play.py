@@ -204,7 +204,7 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
     :param loc: integer, The location of the minion to summon.
     :param from_player: The from player id, None if the minion is generated.
     :param from_zone: The from zone id, None if the minion is generated.
-    :return: after summon event or None.
+    :return: event list.
     """
 
     if from_zone is None:
@@ -219,6 +219,6 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
         # [NOTE]: move it to ``Game.move``?
         minion.oop = game.inc_oop()
 
-        return AfterSummon(game, summon_event)
+        return [AfterSummon(game, summon_event)]
     else:
-        return None
+        return []

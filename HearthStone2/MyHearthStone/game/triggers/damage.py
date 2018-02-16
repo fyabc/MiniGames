@@ -16,7 +16,7 @@ class StdPreDamage(StandardBeforeTrigger):
         if event.damage.value <= 0:
             # [NOTE] May need to remain this event here?
             event.disable()
-            self.game.stop_subsequent_phases()
+            event.damage.disable()
             return []
 
         # todo

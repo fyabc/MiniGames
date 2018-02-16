@@ -105,8 +105,12 @@ class 鱼人猎潮者(Minion):
     }
 
     def run_battlecry(self, target):
-        # todo
-        return []
+        derivative_id = 44  # 鱼人斥候
+        game = self.game
+        loc = 1 + game.get_zone(Zone.Play, self.player_id).index(self)
+        return std_events.pure_summon_events(
+            game, minion=derivative_id, to_player=self.player_id, loc=loc,
+            from_player=None, from_zone=None)
 
 
 # 淡水鳄

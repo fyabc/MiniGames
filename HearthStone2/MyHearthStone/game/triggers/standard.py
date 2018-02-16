@@ -77,7 +77,7 @@ def add_standard_triggers(game):
     for trigger_type in [
         StdGameBegin, StdTurnBegin, StdTurnEnd, StdDrawCard,
         StdOnPlaySpell, StdSpellBlenderPhase, StdSpellText, StdAfterSpell,
-        StdOnPlayMinion, StdOnBattlecry, StdAfterPlayMinion, StdAfterSummon,
+        StdOnPlayMinion, StdOnBattlecry, StdAfterPlayMinion, StdSummon, StdAfterSummon,
         StdPreDamage, StdDamage,
         StdDeathPhase, StdHeroDeath, StdMinionDeath, StdWeaponDeath,
         StdPrepareCombat, StdCombat, StdAttack,
