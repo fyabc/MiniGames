@@ -15,6 +15,7 @@ from ...utils.draw.constants import Colors
 from ...utils.draw.cocos_utils.basic import pos, pos_y, notice, hs_style_label, get_width
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
+from ...utils.draw.cocos_utils.primitives import Rect
 from .card_sprite import CardSprite, HeroSprite
 from .selection_manager import SelectionManager
 from .animations import run_animations
@@ -40,7 +41,7 @@ class SelectDeckLayer(ActiveLayer):
 
         self.add(ActiveLabel.hs_style(
             'Start Game', pos(self.RightCX, 0.15),
-            callback=self.on_start_game,
+            callback=self._on_start_game,
             font_size=36, anchor_x='center',
         ), name='button_start_game')
 
@@ -55,14 +56,14 @@ class SelectDeckLayer(ActiveLayer):
                 self.add(ActiveLabel.hs_style(
                     '[ {} ]'.format('↓' if is_down else '↑'),
                     pos(self.PlayersCX[player_id] + 0.05 * (1 if is_down else -1), 0.15),
-                    callback=lambda player_id_=player_id, is_down_=is_down: self.scroll_decks(player_id_, is_down_),
+                    callback=lambda player_id_=player_id, is_down_=is_down: self._scroll_decks(player_id_, is_down_),
                     font_size=28, anchor_x='center', anchor_y='center', bold=True,
                 ), name='button_p{}_decks_{}'.format(player_id, 'down' if is_down else 'up'))
 
     def on_enter(self):
         super().on_enter()
 
-        def select_deck(label, player_id_, deck_):
+        def _select_deck(label, player_id_, deck_):
             # Undo render of all deck buttons, then render this (selected) label
             for deck_button in self.deck_button_lists[player_id_]:
                 assert isinstance(deck_button, ActiveLabel)
@@ -79,7 +80,7 @@ class SelectDeckLayer(ActiveLayer):
         self.deck_button_lists = [[
             ActiveLabel.hs_style(
                 deck.name, pos(self.PlayersCX[player_id], 1.0),
-                callback=partial(select_deck, player_id_=player_id, deck_=deck),
+                callback=partial(_select_deck, player_id_=player_id, deck_=deck),
                 anchor_x='center', anchor_y='center', self_in_callback=True,)
             for i, deck in enumerate(self.ctrl.user.decks)
         ] for player_id in (0, 1)]
@@ -116,7 +117,7 @@ class SelectDeckLayer(ActiveLayer):
                 if deck_button in self:
                     self.remove(deck_button)
 
-    def on_start_game(self):
+    def _on_start_game(self):
         if any(map(lambda e: e is None, self.selected_decks)):
             notice(self, 'Must select two decks!')
             return
@@ -126,7 +127,7 @@ class SelectDeckLayer(ActiveLayer):
 
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=0.5))
 
-    def scroll_decks(self, player_id, is_down):
+    def _scroll_decks(self, player_id, is_down):
         if is_down:
             if self.deck_show_start[player_id] + self.DeckShowS >= len(self.deck_button_lists[player_id]):
                 return
@@ -245,16 +246,72 @@ class GameBoardLayer(ActiveLayer):
         self._replacement = [None, None]
         return super().on_exit()
 
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        if not self.enabled:
+            return False
+
+        # Iterate over card sprites.
+        x, y = director.director.get_virtual_coordinates(x, y)
+        for i, player in enumerate(self._player_list()):
+            for zone, sprite_list in zip((Zone.Hand, Zone.Play), (self.hand_sprites[i], self.play_sprites[i])):
+                for index, child in enumerate(sprite_list):
+                    if child.respond_to_mouse_release(x, y, buttons, modifiers):
+                        # [NOTE]: This will stop all click events event if callback return False.
+                        self._sm.click_at(child, player, zone, index, (x, y, buttons, modifiers))
+                        return True
+
+        for player, hero_sprite in zip(self.ctrl.game.players, self.hero_sprites):
+            if hero_sprite.respond_to_mouse_release(x, y, buttons, modifiers):
+                self._sm.click_at(hero_sprite, player, Zone.Hero, None, (x, y, buttons, modifiers))
+                return True
+
+        # Click at space.
+        play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
+        for player, play_area, play_sprites in zip(self._player_list(), play_areas, self.play_sprites):
+            if play_area.contains(x, y):
+                for i, spr in enumerate(play_sprites):
+                    if x < spr.x - spr.SizeBase[0] * spr.scale:
+                        click_index = i
+                        break
+                else:
+                    click_index = len(play_sprites)
+                self._sm.click_at_space(player, click_index, (x, y, buttons, modifiers))
+                return True
+
+        return False
+
     def prepare_start_game(self, game, selected_decks):
         """Start game preparations. Called by select deck layer before transitions."""
-        game.add_callback(self.update_content, when='resolve')
-        game.add_callback(self.log_update_time, when='resolve')
-        game.add_callback(self.game_end_dialog, when='game_end')
+        game.add_callback(self._update_content, when='resolve')
+        game.add_callback(self._log_update_time, when='resolve')
+        game.add_callback(self._game_end_dialog, when='game_end')
         start_game_iter = game.start_game(selected_decks, mode='standard')
         next(start_game_iter)
         self.start_game_iter = start_game_iter
 
-    def log_update_time(self, *_):
+    def add_loc_stub(self, player_id, loc):
+        game = self.ctrl.game
+        real_id = 0 if player_id == game.current_player else 1
+        scale = .35
+
+        r = rect.Rect(0, 0, 10, CardSprite.Size[1] * scale)
+
+        num_play = len(game.players[player_id].play)
+        if num_play == 0:
+            x_rel = .5
+        else:
+            x_rel = min(.99, max(.01, loc / num_play))
+        y_rel = (.38, .62)[real_id]
+        r.center = pos(self.BoardL + x_rel * (self.HeroL - self.BoardL), y_rel)
+
+        self.add(Rect(r, Colors['lightblue'], 5), name='loc_stub_{}_{}'.format(real_id, loc))
+
+    def clear_loc_stubs(self):
+        remove_names = [name for name in self.children_names if name.startswith('loc_stub')]
+        for name in remove_names:
+            self.remove(name)
+
+    def _log_update_time(self, *_):
         """Logging time elapsed since last event/trigger.
 
         The time indicates the speed of update function.
@@ -266,7 +323,7 @@ class GameBoardLayer(ActiveLayer):
         debug('Time since last call: {:.6f}s'.format(_time - getattr(self, '_time')))
         setattr(self, '_time', _time)
 
-    def update_content(self, event_or_trigger, current_event):
+    def _update_content(self, event_or_trigger, current_event):
         """Update the game board content, called by game event engine.
 
         Registered at `SelectDeckLayer.on_start_game`.
@@ -335,40 +392,6 @@ class GameBoardLayer(ActiveLayer):
         for card_sprite in _card_sprite_cache.values():
             self.remove(card_sprite)
 
-    def on_mouse_release(self, x, y, buttons, modifiers):
-        if not self.enabled:
-            return False
-
-        # Iterate over card sprites.
-        x, y = director.director.get_virtual_coordinates(x, y)
-        for i, player in enumerate(self._player_list()):
-            for zone, sprite_list in zip((Zone.Hand, Zone.Play), (self.hand_sprites[i], self.play_sprites[i])):
-                for index, child in enumerate(sprite_list):
-                    if child.respond_to_mouse_release(x, y, buttons, modifiers):
-                        # [NOTE]: This will stop all click events event if callback return False.
-                        self._sm.click_at(child, player, zone, index, (x, y, buttons, modifiers))
-                        return True
-
-        for player, hero_sprite in zip(self.ctrl.game.players, self.hero_sprites):
-            if hero_sprite.respond_to_mouse_release(x, y, buttons, modifiers):
-                self._sm.click_at(hero_sprite, player, Zone.Hero, None, (x, y, buttons, modifiers))
-                return True
-
-        # Click at space.
-        play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
-        for player, play_area, play_sprites in zip(self._player_list(), play_areas, self.play_sprites):
-            if play_area.contains(x, y):
-                for i, spr in enumerate(play_sprites):
-                    if x < spr.x - spr.SizeBase[0] * spr.scale:
-                        click_index = i
-                        break
-                else:
-                    click_index = len(play_sprites)
-                self._sm.click_at_space(player, click_index, (x, y, buttons, modifiers))
-                return True
-
-        return False
-
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""
         DW, DH = 0.9, 0.6
@@ -410,7 +433,7 @@ class GameBoardLayer(ActiveLayer):
                 pass
         return True
 
-    def game_end_dialog(self, game_result):
+    def _game_end_dialog(self, game_result):
         DW, DH = 0.6, 0.6
         layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
                              position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
@@ -443,20 +466,20 @@ class GameButtonsLayer(ActiveLayer):
 
         self.add(ActiveLabel.hs_style(
             'End Turn', pos(GameBoardLayer.RightCX, 0.5),
-            callback=self.on_turn_end,
+            callback=self._on_turn_end,
             font_size=24, anchor_x='center', anchor_y='center',
         ), name='button_turn_end')
         self.add(ActiveLabel.hs_style(
             'Options', pos(0.997, 0.01),
-            callback=self.on_options,
+            callback=self._on_options,
             font_size=16, anchor_x='right', anchor_y='bottom',
         ), name='button_options')
 
-    def on_turn_end(self):
+    def _on_turn_end(self):
         game = self.ctrl.game
         game.run_player_action(pa.TurnEnd(game))
 
-    def on_options(self):
+    def _on_options(self):
         game = self.ctrl.game
         DW, DH = 0.1, 0.4
         layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),

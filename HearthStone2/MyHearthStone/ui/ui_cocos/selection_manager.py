@@ -36,9 +36,11 @@ class SelectionManager:
         # Selections.
         self.sel = {
             'source': None,
+            'index': None,
         }
 
     def clear_all(self):
+        self.board.clear_loc_stubs()
         for sprite in chain(*self.board.hand_sprites, *self.board.play_sprites, self.board.hero_sprites):
             if isinstance(sprite, EntitySprite):
                 sprite.is_activated = False
@@ -65,7 +67,7 @@ class SelectionManager:
         # Right click will clear all.
         if buttons & mouse.RIGHT:
             self.clear_all()
-            return
+            return True
 
         print('$Click at:', sprite, player_id, Zone.Idx2Str[zone], index)
 
@@ -144,6 +146,14 @@ class SelectionManager:
                 return False
             game.run_player_action(pa.PlaySpell(game, card, target, card.player_id))
             return True
+        elif self.state == self.MT2:
+            minion = self.sel['source']
+            index = self.sel['index']
+            target = sprite.entity
+            if not validate_target(minion, target, self._msg_fn):
+                return False
+            game.run_player_action(pa.PlayMinion(game, minion, index, target, minion.player_id))
+            return True
         elif self.state == self.A:
             attacker = self.sel['source']
             defender = sprite.entity
@@ -184,7 +194,7 @@ class SelectionManager:
         # Right click will clear all.
         if buttons & mouse.RIGHT:
             self.clear_all()
-            return
+            return True
 
         print('$Click at space:', player_id, index)
 
@@ -206,6 +216,15 @@ class SelectionManager:
                 return True
             minion = self.sel['source']
             game.run_player_action(pa.PlayMinion(game, minion, index, None, minion.player_id))
+            return True
+        elif self.state == self.MT:
+            if player_id != game.current_player:
+                return False
+            if not validate_play_size(player, self._msg_fn):
+                return True
+            self.board.add_loc_stub(player_id, index)
+            self.sel['index'] = index
+            self.state = self.MT2
             return True
         else:
             raise ValueError('Unknown state {!r}'.format(self.state))

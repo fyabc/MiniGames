@@ -3,6 +3,7 @@
 
 """Classic package."""
 
+from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Weapon
 from MyHearthStone.ext import std_events
 
@@ -39,8 +40,7 @@ class 炎爆术(Spell):
         'have_target': True,
     }
 
-    def run(self, target):
-        return std_events.damage_events(self.game, self, target, 10)
+    run = ext.damage_fn(10)
 
 
 class 大法师安东尼达斯(Minion):

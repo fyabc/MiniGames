@@ -233,6 +233,31 @@ class Weapon(Card):
     def alive(self):
         return self.health > 0 and not self.to_be_destroyed
 
+    @property
+    def battlecry(self):
+        """Test if this minion has battlecry.
+
+        [NOTE]: This value may be changed in game, such as conditional battlecry.
+        """
+
+        return self.data['battlecry']
+
+    def run_battlecry(self, target):
+        """Run the battlecry. Implemented in subclasses.
+
+        :param target: Target of the battlecry.
+        :return: list of events.
+        """
+
+        return []
+
+    def run_deathrattle(self):
+        """Run the deathrattle. Implemented in subclasses.
+
+        :return: list of events.
+        """
+        return []
+
     def take_damage(self, value):
         self._raw_health -= value
 

@@ -67,6 +67,7 @@ Enchantment ID format:
 Package ID
 """
 
+from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero
 from MyHearthStone.ext import blank_minion, blank_weapon
 from MyHearthStone.ext import std_events
@@ -86,6 +87,14 @@ PackageID = 0
 # Neutral (0) #
 ###############
 
+# 精灵弓箭手
+ext.create_damage_minion({
+    'id': 0,
+    'cost': 1, 'attack': 1, 'health': 1,
+    'battlecry': True, 'have_target': True,
+}, 1)
+
+
 class 工程师学徒(Minion):
     data = {
         'id': 6,
@@ -93,8 +102,7 @@ class 工程师学徒(Minion):
         'battlecry': True,
     }
 
-    def run_battlecry(self, target):
-        return [std_events.DrawCard(self.game, self, self.player_id)]
+    run_battlecry = ext.draw_card_fn(1)
 
 
 class 鱼人猎潮者(Minion):
@@ -119,7 +127,6 @@ blank_minion({
     'cost': 2, 'attack': 2, 'health': 3,
     'race': [Race.Beast],
 })
-
 
 # 绿洲钳嘴龟
 blank_minion({
@@ -150,7 +157,6 @@ blank_minion({
     'race': [Race.Murloc],
 })
 
-
 #############
 # Druid (1) #
 #############
@@ -174,9 +180,7 @@ class 火球术(Spell):
         'have_target': True,
     }
 
-    def run(self, target):
-        return std_events.damage_events(self.game, self, target, 6)
-
+    run = ext.damage_fn(6)
 
 ###############
 # Paladin (4) #
