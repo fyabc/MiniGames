@@ -15,6 +15,7 @@ from ..game.game_entity import SetDataMeta
 from ..game.card import Card
 from ..game.hero import Hero
 from ..game.enchantments.enchantment import Enchantment
+from ..ext.card_builder import load_file
 
 __author__ = 'fyabc'
 
@@ -99,10 +100,13 @@ class _GameData:
             # Only load top-level Python modules.
             # Python modules in subdirectories (i.e. impl/xxx.py) will not be loaded,
             # so they can be used as implementation files.
+            module_vars = None
             if ext == '.py':
                 module_vars = _load_module_variables(self.path, package_name)
-                if module_vars is not None:
-                    self._package_vars.append(module_vars)
+            elif ext == '.hdl':
+                module_vars = load_file(os.path.join(self.path, filename))
+            if module_vars is not None:
+                self._package_vars.append(module_vars)
 
     def load_strings(self, cards_dict: dict, heroes_dict: dict, enchantments_dict: dict):
         """Load strings of name and description (specific locale) of cards and heroes."""

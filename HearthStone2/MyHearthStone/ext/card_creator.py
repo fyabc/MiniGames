@@ -32,7 +32,14 @@ def _create_card(data, name, card_type, cls_dict_others=None):
 
 
 def _add_to_module(result, module_dict):
-    """Internal function to add the card to the module dict."""
+    """Internal function to add the card to the module dict.
+
+    [NOTE]: This method must be called by other creators directly if `module_dict` is not given.
+    """
+    if module_dict is None:
+        # noinspection PyProtectedMember
+        module_dict = sys._getframe(2).f_globals
+
     # Get the module name of caller.
     result.__module__ = module_dict['__name__']
 
@@ -45,8 +52,8 @@ def create_blank(data, name=None, card_type=Minion, module_dict=None):
     """Create a blank card (without special skills).
 
     Typical Usage:
-        # Give module's global dict.
-        # Or called in module's GLOBAL, without `module_dict` param.
+        1. Give module's global dict.
+        2. Or called in module's GLOBAL, without `module_dict` param.
 
     :param data: Card data.
     :type data: dict
@@ -63,9 +70,6 @@ def create_blank(data, name=None, card_type=Minion, module_dict=None):
 
     result = _create_card(data, name, card_type)
 
-    if module_dict is None:
-        # noinspection PyProtectedMember
-        module_dict = sys._getframe(1).f_globals
     _add_to_module(result, module_dict)
 
     return result
@@ -105,9 +109,6 @@ def create_damage_entity(data, value, name=None, card_type=Minion, module_dict=N
         'run_battlecry': damage_fn(value),
     })
 
-    if module_dict is None:
-        # noinspection PyProtectedMember
-        module_dict = sys._getframe(1).f_globals
     _add_to_module(result, module_dict)
 
     return result

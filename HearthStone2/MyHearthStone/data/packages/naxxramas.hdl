@@ -1,0 +1,15 @@
+package {
+    id: 4,
+}
+
+minion {
+    id: 4000000,
+}
+
+spell {
+
+}
+
+weapon {
+
+}
