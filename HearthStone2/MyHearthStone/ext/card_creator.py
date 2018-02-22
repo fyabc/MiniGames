@@ -6,6 +6,7 @@ from functools import partial
 from types import new_class
 
 from ..utils.message import warning
+from ..utils.game import Zone
 from ..game.card import Minion, Weapon
 from ..game.events import standard as std_events
 
@@ -104,6 +105,28 @@ def damage_fn(value):
     return run_battlecry
 
 
+def summon_fn(summon_id, relative_loc=1):
+    """Get the summon function.
+
+    :param summon_id: The summoned minion id.
+    :type summon_id: int
+    :param relative_loc: The relative location of the summoned minion.
+        +1 means summon in the right of the original minion.
+        -1 means summon in the left of the original minion.
+    :type relative_loc: int
+    :return: Summon function, used as `run` or `battlecry`.
+    """
+
+    def run_battlecry(self, target):
+        derivative_id = summon_id
+        game = self.game
+        loc = relative_loc + game.get_zone(Zone.Play, self.player_id).index(self)
+        return std_events.pure_summon_events(
+            game, minion=derivative_id, to_player=self.player_id, loc=loc,
+            from_player=None, from_zone=None)
+    return run_battlecry
+
+
 def create_damage_entity(data, value, name=None, card_type=Minion, module_dict=None):
     result = _create_card(data, name, card_type, cls_dict_others={
         'run_battlecry': damage_fn(value),
@@ -118,6 +141,16 @@ create_damage_minion = partial(create_damage_entity, card_type=Minion)
 create_damage_weapon = partial(create_damage_entity, card_type=Weapon)
 
 
+def create_summon_minion(data, summon_id, relative_loc, name=None, module_dict=None):
+    result = _create_card(data, name, Minion, cls_dict_others={
+        'run_battlecry': summon_fn(summon_id, relative_loc),
+    })
+
+    _add_to_module(result, module_dict)
+
+    return result
+
+
 __all__ = [
     'create_blank',
     'blank_minion',
@@ -127,4 +160,5 @@ __all__ = [
     'create_damage_entity',
     'create_damage_minion',
     'create_damage_weapon',
+    'create_summon_minion',
 ]

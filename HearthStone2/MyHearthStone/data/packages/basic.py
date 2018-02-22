@@ -94,6 +94,27 @@ ext.create_damage_minion({
     'battlecry': True, 'have_target': True,
 }, 1)
 
+# 石牙野猪
+blank_minion({
+    'id': 2,
+    'cost': 1, 'attack': 1, 'health': 1,
+    'charge': True, 'race': [Race.Beast],
+})
+
+# 闪金镇步兵
+blank_minion({
+    'id': 3,
+    'cost': 1, 'attack': 1, 'health': 2,
+    'taunt': True,
+})
+
+# 鱼人袭击者
+blank_minion({
+    'id': 4,
+    'cost': 1, 'attack': 2, 'health': 1,
+    'race': [Race.Murloc],
+})
+
 
 class 工程师学徒(Minion):
     data = {
@@ -105,21 +126,33 @@ class 工程师学徒(Minion):
     run_battlecry = ext.draw_card_fn(1)
 
 
-class 鱼人猎潮者(Minion):
-    data = {
-        'id': 8,
-        'cost': 2, 'attack': 2, 'health': 1,
-        'race': [Race.Murloc], 'battlecry': True,
-    }
+# 蓝腮战士
+blank_minion({
+    'id': 7,
+    'cost': 2, 'attack': 2, 'health': 1,
+    'charge': True, 'race': [Race.Murloc],
+})
 
-    def run_battlecry(self, target):
-        derivative_id = 44  # 鱼人斥候
-        game = self.game
-        loc = 1 + game.get_zone(Zone.Play, self.player_id).index(self)
-        return std_events.pure_summon_events(
-            game, minion=derivative_id, to_player=self.player_id, loc=loc,
-            from_player=None, from_zone=None)
+# 鱼人猎潮者
+ext.create_summon_minion({
+    'id': 8,
+    'cost': 2, 'attack': 2, 'health': 1,
+    'race': [Race.Murloc], 'battlecry': True,
+}, 44, 1)
 
+# 霜狼步兵
+blank_minion({
+    'id': 9,
+    'cost': 2, 'attack': 2, 'health': 1,
+    'taunt': True,
+})
+
+# 狗头人地卜师
+blank_minion({
+    'id': 10,
+    'cost': 2, 'attack': 2, 'health': 1,
+    'spell_power': 1,
+})
 
 # 淡水鳄
 blank_minion({
@@ -128,10 +161,164 @@ blank_minion({
     'race': [Race.Beast],
 })
 
+# 血沼迅猛龙
+blank_minion({
+    'id': 13,
+    'cost': 2, 'attack': 3, 'health': 2,
+    'race': [Race.Beast],
+})
+
+# 达拉然法师
+blank_minion({
+    'id': 14,
+    'cost': 3, 'attack': 1, 'health': 4,
+    'spell_power': 1,
+})
+
+# 银背族长
+blank_minion({
+    'id': 15,
+    'cost': 3, 'attack': 1, 'health': 4,
+    'taunt': True,
+})
+
+# 铁炉堡火枪手
+ext.create_damage_minion({
+    'id': 16,
+    'cost': 3, 'attack': 2, 'health': 2,
+    'battlecry': True, 'have_target': True,
+}, 1)
+
+# 剃刀猎手
+ext.create_summon_minion({
+    'id': 18,
+    'cost': 3, 'attack': 2, 'health': 3,
+    'battlecry': True,
+}, 45, 1)
+
+# 狼骑兵
+blank_minion({
+    'id': 19,
+    'cost': 3, 'attack': 3, 'health': 1,
+    'charge': True,
+})
+
+# 铁鬃灰熊
+blank_minion({
+    'id': 21,
+    'cost': 3, 'attack': 3, 'health': 3,
+    'taunt': True, 'race': [Race.Beast],
+})
+
+# 岩浆暴怒者
+blank_minion({
+    'id': 22,
+    'cost': 3, 'attack': 5, 'health': 1,
+})
+
+# 机械幼龙技工
+ext.create_summon_minion({
+    'id': 23,
+    'cost': 4, 'attack': 2, 'health': 4,
+    'battlecry': True,
+}, 46, 1)
+
+
+class 侏儒发明家(Minion):
+    data = {
+        'id': 24,
+        'cost': 4, 'attack': 2, 'health': 4,
+        'battlecry': True,
+    }
+
+    run_battlecry = ext.draw_card_fn(1)
+
+
+# 暴风城骑士
+blank_minion({
+    'id': 25,
+    'cost': 4, 'attack': 2, 'health': 5,
+    'charge': True,
+})
+
 # 绿洲钳嘴龟
 blank_minion({
     'id': 26,
     'cost': 4, 'attack': 2, 'health': 7,
+    'race': [Race.Beast],
+})
+
+# 森金持盾卫士
+blank_minion({
+    'id': 27,
+    'cost': 4, 'attack': 3, 'health': 5,
+    'taunt': True,
+})
+
+# 食人魔法师
+blank_minion({
+    'id': 28,
+    'cost': 4, 'attack': 4, 'health': 4,
+    'spell_power': 1,
+})
+
+# 冰风雪人
+blank_minion({
+    'id': 29,
+    'cost': 4, 'attack': 4, 'health': 5,
+})
+
+# 雷矛特种兵
+ext.create_damage_minion({
+    'id': 31,
+    'cost': 5, 'attack': 4, 'health': 2,
+    'battlecry': True, 'have_target': True,
+}, 2)
+
+# 藏宝海湾保镖
+blank_minion({
+    'id': 35,
+    'cost': 5, 'attack': 5, 'health': 4,
+    'taunt': True,
+})
+
+# 大法师
+blank_minion({
+    'id': 36,
+    'cost': 6, 'attack': 4, 'health': 7,
+    'spell_power': 1,
+})
+
+# 鲁莽火箭兵
+blank_minion({
+    'id': 37,
+    'cost': 6, 'attack': 5, 'health': 2,
+    'charge': True,
+})
+
+# 竞技场主宰
+blank_minion({
+    'id': 38,
+    'cost': 6, 'attack': 6, 'health': 5,
+    'taunt': True,
+})
+
+# 石拳食人魔
+blank_minion({
+    'id': 39,
+    'cost': 6, 'attack': 6, 'health': 7,
+})
+
+# 作战傀儡
+blank_minion({
+    'id': 41,
+    'cost': 7, 'attack': 7, 'health': 7,
+})
+
+# 熔火恶犬
+blank_minion({
+    'id': 42,
+    'cost': 7, 'attack': 9, 'health': 5,
     'race': [Race.Beast],
 })
 
@@ -155,6 +342,20 @@ blank_minion({
     'id': 44,
     'rarity': -1, 'cost': 1, 'attack': 1, 'health': 1,
     'race': [Race.Murloc],
+})
+
+# 野猪
+blank_minion({
+    'id': 45,
+    'rarity': -1, 'cost': 1, 'attack': 1, 'health': 1,
+    'race': [Race.Beast],
+})
+
+# 机械幼龙
+blank_minion({
+    'id': 46,
+    'rarity': -1, 'cost': 1, 'attack': 2, 'health': 1,
+    'race': [Race.Mech],
 })
 
 #############
