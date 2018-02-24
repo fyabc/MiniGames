@@ -101,7 +101,22 @@ def validate_attacker(entity, msg_fn):
     return True
 
 
-def validate_defender(attacker, defender, msg_fn):
+def validate_defender(game, zone, player_id, attacker, defender, msg_fn):
+    """Validate the defender."""
+
+    if player_id == game.current_player:
+        msg_fn('Must select an enemy!')
+        return False
+    if zone not in (Zone.Play, Zone.Hero):
+        msg_fn('This is not a valid target!')
+        return False
+
+    if not defender.taunt:
+        defender_player = defender.game.players[defender.player_id]
+        if any(e.taunt for e in defender_player.play + [defender_player.hero]):
+            msg_fn('I must attack the target with taunt!')
+            return False
+
     return True
 
 

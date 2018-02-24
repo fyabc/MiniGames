@@ -240,7 +240,9 @@ class GameBoardLayer(ActiveLayer):
                     self.remove(sprite)
             spr_list.clear()
         for i in range(2):
-            self.remove('sprite_hero_{}'.format(i))
+            s_h_name = 'sprite_hero_{}'.format(i)
+            if s_h_name in self.children_names:
+                self.remove(s_h_name)
         self.hero_sprites = [None, None]
 
         self._replacement = [None, None]

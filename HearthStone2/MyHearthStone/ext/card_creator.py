@@ -112,7 +112,7 @@ def summon_fn(summon_id, relative_loc=1):
     :type summon_id: int
     :param relative_loc: The relative location of the summoned minion.
         +1 means summon in the right of the original minion.
-        -1 means summon in the left of the original minion.
+        0 means summon in the left of the original minion.
     :type relative_loc: int
     :return: Summon function, used as `run` or `battlecry`.
     """

@@ -13,6 +13,7 @@ Health rules (copied from https://hearthstone.gamepedia.com/Advanced_rulebook#He
 """
 
 from .game_entity import GameEntity
+from .alive_mixin import AliveMixin
 from ..utils.game import Zone
 
 __author__ = 'fyabc'
@@ -94,7 +95,7 @@ class Card(GameEntity):
         return True
 
 
-class Minion(Card):
+class Minion(AliveMixin, Card):
     """The class of minion."""
 
     data = {
@@ -116,16 +117,7 @@ class Minion(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        # todo: Change these attributes (attack, health, etc) to read-only properties.
-
         self.attack = self.data['attack']
-        self._raw_health = self.data['health']
-        self.health = self.data['health']
-        self.max_health = self.health
-        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
-
-        # Attack numbers.
-        self.n_attack = 0
         self.n_total_attack = 2 if self.data['windfury'] else 1
 
     def __repr__(self):
@@ -133,16 +125,12 @@ class Minion(Card):
                           oop=self.oop, __show_cls=False)
 
     @property
-    def alive(self):
-        return self.health > 0 and not self.to_be_destroyed
-
-    @property
     def charge(self):
         return self.data['charge']
 
     @property
-    def exhausted(self):
-        return self.n_attack >= self.n_total_attack
+    def taunt(self):
+        return self.data['taunt']
 
     @property
     def battlecry(self):
@@ -168,18 +156,6 @@ class Minion(Card):
         :return: list of events.
         """
         return []
-
-    def take_damage(self, value):
-        self._raw_health -= value
-
-    def inc_n_attack(self):
-        self.n_attack += 1
-
-    def set_exhausted(self):
-        self.n_attack = self.n_total_attack
-
-    def clear_exhausted(self):
-        self.n_attack = 0
 
     def aura_update_attack_health(self):
         self.attack = self.data['attack']

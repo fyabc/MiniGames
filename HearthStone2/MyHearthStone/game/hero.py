@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from .game_entity import GameEntity
+from .alive_mixin import AliveMixin
 from ..utils.game import Zone
 
 __author__ = 'fyabc'
 
 
-class Hero(GameEntity):
+class Hero(AliveMixin, GameEntity):
     """The class of hero."""
 
     data = {
@@ -24,28 +25,11 @@ class Hero(GameEntity):
         self.zone = Zone.Invalid
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
         self.player_id = player_id
-        self.attack = 0
-        self._raw_health = self.data['health']
-        self.health = self.data['health']
-        self.max_health = self.health
-        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
         self.oop = self.game.oop
 
-        # Attack numbers.
-        self.n_attack = 0
-        self.n_total_attack = 1
-
     def __repr__(self):
         return super()._repr(klass=self.data['klass'], P=self.player_id, health=self.health)
-
-    @property
-    def alive(self):
-        return self.health > 0 and not self.to_be_destroyed
-
-    @property
-    def exhausted(self):
-        return self.n_attack >= self.n_total_attack
 
     def run_deathrattle(self):
         """Run the deathrattle. Implemented in subclasses.
@@ -53,18 +37,6 @@ class Hero(GameEntity):
         :return: list of events.
         """
         return []
-
-    def take_damage(self, value):
-        self._raw_health -= value
-
-    def inc_n_attack(self):
-        self.n_attack += 1
-
-    def set_exhausted(self):
-        self.n_attack = self.n_total_attack
-
-    def clear_exhausted(self):
-        self.n_attack = 0
 
     def aura_update_attack_health(self):
         self.health = self._raw_health

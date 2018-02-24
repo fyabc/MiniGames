@@ -157,7 +157,7 @@ class SelectionManager:
         elif self.state == self.A:
             attacker = self.sel['source']
             defender = sprite.entity
-            if not validate_defender(attacker, defender, self._msg_fn):
+            if not validate_defender(game, zone, player_id, attacker, defender, self._msg_fn):
                 return False
             game.run_player_action(pa.ToAttack(game, attacker, defender))
             return True
@@ -226,6 +226,8 @@ class SelectionManager:
             self.sel['index'] = index
             self.state = self.MT2
             return True
+        elif self.state == self.A:
+            return False
         else:
             raise ValueError('Unknown state {!r}'.format(self.state))
 
