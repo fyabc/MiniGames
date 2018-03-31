@@ -347,8 +347,16 @@ class HeroSprite(EntitySprite):
         self.health_label.element.color = self._get_health_color()
 
 
+class HeroPowerSprite(EntitySprite):
+    """The hero power sprite."""
+
+    def _build_components(self):
+        pass
+
+
 __all__ = [
     'EntitySprite',
     'CardSprite',
     'HeroSprite',
+    'HeroPowerSprite',
 ]

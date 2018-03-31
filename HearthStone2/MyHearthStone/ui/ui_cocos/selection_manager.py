@@ -174,8 +174,8 @@ class SelectionManager:
                 Player 1: minion_0 minion_1 [*] minion_2
                 Player 0: minion_3 [#] minion_4 minion_5 minion_6
             }
-            [*] -> (Player 1, 2, click_args)
-            [#] -> (Player 0, 1, click_args)
+            Space [*] -> (Player 1, 2, click_args)
+            Space [#] -> (Player 0, 1, click_args)
 
         :param player:
         :param index:

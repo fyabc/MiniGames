@@ -64,7 +64,7 @@ def setup_logging(file='log.txt', level=_logging.INFO, scr_log=False, scr_level=
 
     info('Start the app')
     info('Process ID: {}'.format(_os.getpid()))
-    info('App config: {}'.format(C))
+    info('App config: {}'.format(C.to_dict()))
 
 
 message = _logging.log

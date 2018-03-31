@@ -209,6 +209,7 @@ class GameBoardLayer(ActiveLayer):
         self.play_sprites = [[], []]
         # [NOTE]: `self.hero_sprites[0]` is the hero sprite of player 0, not position index 0.
         self.hero_sprites = [None, None]
+        self.hero_power_sprites = [None, None]
 
     def on_enter(self):
         super().on_enter()
@@ -239,11 +240,18 @@ class GameBoardLayer(ActiveLayer):
                 if sprite in self:
                     self.remove(sprite)
             spr_list.clear()
+
         for i in range(2):
             s_h_name = 'sprite_hero_{}'.format(i)
             if s_h_name in self.children_names:
                 self.remove(s_h_name)
         self.hero_sprites = [None, None]
+
+        for i in range(2):
+            s_hp_name = 'sprite_hero_power_{}'.format(i)
+            if s_hp_name in self.children_names:
+                self.remove(s_hp_name)
+        self.hero_power_sprites = [None, None]
 
         self._replacement = [None, None]
         return super().on_exit()
@@ -252,6 +260,7 @@ class GameBoardLayer(ActiveLayer):
         if not self.enabled:
             return False
 
+        # Click at an item.
         # Iterate over card sprites.
         x, y = director.director.get_virtual_coordinates(x, y)
         for i, player in enumerate(self._player_list()):
@@ -262,10 +271,13 @@ class GameBoardLayer(ActiveLayer):
                         self._sm.click_at(child, player, zone, index, (x, y, buttons, modifiers))
                         return True
 
+        # Iterate over hero sprites.
         for player, hero_sprite in zip(self.ctrl.game.players, self.hero_sprites):
             if hero_sprite.respond_to_mouse_release(x, y, buttons, modifiers):
                 self._sm.click_at(hero_sprite, player, Zone.Hero, None, (x, y, buttons, modifiers))
                 return True
+
+        # todo: Iterate over hero power sprites.
 
         # Click at space.
         play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
@@ -292,6 +304,7 @@ class GameBoardLayer(ActiveLayer):
         self.start_game_iter = start_game_iter
 
     def add_loc_stub(self, player_id, loc):
+        """Add a location stub rect sprite."""
         game = self.ctrl.game
         real_id = 0 if player_id == game.current_player else 1
         scale = .35
@@ -309,6 +322,7 @@ class GameBoardLayer(ActiveLayer):
         self.add(Rect(r, Colors['lightblue'], 5), name='loc_stub_{}_{}'.format(real_id, loc))
 
     def clear_loc_stubs(self):
+        """Clear location stub sprites."""
         remove_names = [name for name in self.children_names if name.startswith('loc_stub')]
         for name in remove_names:
             self.remove(name)
@@ -340,6 +354,7 @@ class GameBoardLayer(ActiveLayer):
 
         # Right border components.
         for i, player in enumerate(self._player_list()):
+            # Update labels.
             self.get('label_deck_{}'.format(i)).element.text = '牌库：{}'.format(len(player.deck))
             self.get('label_mana_{}'.format(i)).element.text = '{}/{}{}{}'.format(
                 player.displayed_mana(), player.max_mana,
@@ -348,6 +363,7 @@ class GameBoardLayer(ActiveLayer):
             )
             self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
 
+            # Create or update hero sprites.
             hero_spr_name = 'sprite_hero_{}'.format(player.player_id)
             if hero_spr_name not in self.children_names:
                 hero_sprite = HeroSprite(
@@ -358,6 +374,8 @@ class GameBoardLayer(ActiveLayer):
                 self.hero_sprites[player.player_id].update_content(**{
                     'position': pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]),
                     'scale': 0.8})
+
+            # todo: Create or update hero power sprites.
 
         # Remove all old card sprites, and replace it to new.
         # [NOTE]: Use cache, need more tests.
