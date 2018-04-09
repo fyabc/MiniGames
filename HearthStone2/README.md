@@ -8,9 +8,10 @@ Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gameped
 
 ## Download Resource Files
 
-TODO
+1. Download data file **data.zip** from <https://pan.baidu.com/s/1CHqkxGY2WaqmKV0nNc-3dw>, password: sbxc
+    Then unzip it.
 
-Downloaded files:
+2. Downloaded files:
 ```
 <root>/
     packages/
@@ -25,8 +26,8 @@ Downloaded files:
         values/
 ```
 
-Move the `packages/resources` directory under `MyHearthStone/data/packages`,
-and move the `resources` directory under `MyHearthStone/data`.
+3. Move the `packages/resources` directory under `MyHearthStone/data/packages`,
+    and move the `resources` directory under `MyHearthStone/data`.
 
 ## Installation
 
