@@ -109,6 +109,9 @@ class Minion(AliveMixin, Card):
         'windfury': False,
         'poisonous': False,
         'lifesteal': False,
+        'recruit': False,
+        'echo': False,
+        'rush': False,
 
         'battlecry': False,
         'deathrattle': False,

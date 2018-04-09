@@ -18,9 +18,13 @@ def _get_int(v):
 
 
 def _auto_label(rects):
-    for rect in rects:
+    ratios = [rect.get_height() for rect in rects]
+    _sum_height = sum(ratios)
+    ratios = [ratio / _sum_height for ratio in ratios]
+
+    for rect, ratio in zip(rects, ratios):
         height = rect.get_height()
-        plt.text(rect.get_x() + rect.get_width() / 2., 1.02 * height, str(int(height)),
+        plt.text(rect.get_x() + rect.get_width() * 0.5, 1.02 * height, '{}, {:.1f}%'.format(int(height), 100 * ratio),
                  horizontalalignment='center', verticalalignment='bottom')
 
 
@@ -148,16 +152,23 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    main([
-        '../doc/BasicClassic.md',
-        '../doc/Naxxramas.md',
-        '../doc/GVG.md',
-        '../doc/BlackMountain.md',
-        '../doc/TGT.md',
-        '../doc/LOE.md',
-        '../doc/OldGods.md',
-        '../doc/Karazhan.md',
-        '../doc/Gadgetzan.md',
-        '../doc/JUG.md',
-        '../doc/ICC.md',
-    ])
+    # packages = [
+    #     '../doc/BasicClassic.md',
+    #     '../doc/Naxxramas.md',
+    #     '../doc/GVG.md',
+    #     '../doc/BlackMountain.md',
+    #     '../doc/TGT.md',
+    #     '../doc/LOE.md',
+    #     '../doc/OldGods.md',
+    #     '../doc/Karazhan.md',
+    #     '../doc/Gadgetzan.md',
+    #     '../doc/JUG.md',
+    #     '../doc/ICC.md',
+    # ]
+
+    packages = [
+        '../doc/MyExtension.md',
+        '../doc/MyExtension2.md',
+    ]
+
+    main(packages)
