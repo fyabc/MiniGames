@@ -236,6 +236,9 @@ class CardSprite(EntitySprite):
         desc_label = HTMLLabel(self._render_desc(self._c_get('description')),
                                pos(0, -0.58, base=self.SizeBase), anchor_x='center', anchor_y='center',
                                width=main_sprite.width * 0.9, multiline=True)
+        # [NOTE]: There is an encoding bug when parsing the font name in HTML (in `pyglet\font\win32query.py:311`),
+        # must set font out of HTML.
+        desc_label.element.set_style('font_name', C.UI.Cocos.Fonts.Description.Name)
 
         self.front_sprites.update({
             'main': [main_sprite, 0],
@@ -302,11 +305,8 @@ class CardSprite(EntitySprite):
     def _render_desc(desc: str, **kwargs) -> str:
         format_map = {
             'desc': desc,
-            # [NOTE]: There is an encoding bug when parsing the font name in HTML (in `pyglet\font\win32query.py:311`),
-            # must set font out of HTML.
-            'font_name': kwargs.pop('font_name', C.UI.Cocos.DefaultFont),
             # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
-            'font_size': int(kwargs.pop('font_size', 4)),
+            'font_size': int(kwargs.pop('font_size', 5)),
             # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.
             'color': kwargs.pop('color', 'black'),
         }

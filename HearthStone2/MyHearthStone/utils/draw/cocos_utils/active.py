@@ -186,7 +186,7 @@ class ActiveLabel(ActiveMixin, text.Label):
 
         selected_effect = kwargs.pop('selected_effect', cls._hs_style_selected)
         unselected_effect = kwargs.pop('unselected_effect', cls._hs_style_unselected)
-        font_name = kwargs.pop('font_name', C.UI.Cocos.DefaultFont)
+        font_name = kwargs.pop('font_name', C.UI.Cocos.Fonts.Default.Name)
         font_size = kwargs.pop('font_size', 28)
         anchor_y = kwargs.pop('anchor_y', 'baseline')
         color = kwargs.pop('color', Colors['whitesmoke'])

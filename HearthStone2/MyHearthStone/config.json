@@ -52,8 +52,16 @@
             // Window width and height.
             "WindowSize": [1360, 700],
 
-            "DefaultFont": "Belwe Bd BT",
-            "DefaultFontFile": "BelweBdBTBold.ttf"
+            "Fonts": {
+                "Default": {
+                    "Name": "Belwe Bd BT",
+                    "File": "BelweBdBTBold.ttf"
+                },
+                "Description": {
+                    "Name": "SimHei",
+                    "File": "SimHei.ttf"
+                }
+            }
         }
     }
 }

@@ -94,7 +94,7 @@ def set_menu_style(self, **kwargs):
     item_size = kwargs.pop('item_size', 32)
     selected_size = kwargs.pop('selected_size', item_size)
 
-    default_font = C.UI.Cocos.DefaultFont
+    default_font = C.UI.Cocos.Fonts.Default.Name
 
     self.font_title['font_name'] = kwargs.pop('font_name', default_font)
     self.font_title['font_size'] = title_size
@@ -109,7 +109,7 @@ def set_menu_style(self, **kwargs):
 
 
 DefaultLabelStyle = {
-    'font_name': C.UI.Cocos.DefaultFont,
+    'font_name': C.UI.Cocos.Fonts.Default.Name,
     'font_size': 28,
     'anchor_x': 'center',
     'anchor_y': 'baseline',

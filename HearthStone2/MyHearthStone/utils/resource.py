@@ -34,8 +34,9 @@ def index_resources():
 
 
 def load_fonts():
-    add_file(os.path.join(SystemDataPath, 'resources', 'fonts', C.UI.Cocos.DefaultFontFile))
-    info('Load default font {!r} from file {!r}'.format(C.UI.Cocos.DefaultFont, C.UI.Cocos.DefaultFontFile))
+    for name, d in C.UI.Cocos.Fonts.to_dict().items():
+        add_file(os.path.join(SystemDataPath, 'resources', 'fonts', d['File']))
+        info('Load {!r} font {!r} from file {!r}'.format(name, d['Name'], d['File']))
 
 
 def tr(string):
