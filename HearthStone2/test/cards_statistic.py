@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
+import glob
 import sys
 import re
 
@@ -134,41 +135,31 @@ class CardRecord:
 
 
 def main(args=None):
-    # Usage: python cards_statistic.py [filename of package Markdown files]
+    # Usage: python cards_statistic.py [pattern of package Markdown files]
     if args is None:
         args = sys.argv[1:]
 
-    filenames = args
+    patterns = args
 
-    for filename in filenames:
-        with open(filename, 'r', encoding='utf-8') as f:
-            for line in f:
-                match = CardRecord.Pattern.match(line)
-                if match:
-                    CardRecord(match)
+    for pattern in patterns:
+        for filename in glob.glob(pattern):
+            with open(filename, 'r', encoding='utf-8') as f:
+                for line in f:
+                    match = CardRecord.Pattern.match(line)
+                    if match:
+                        CardRecord(match)
 
     # CardRecord.print_all()
     CardRecord.plot_over(['cost', 'attack', 'health', 'klass', 'rarity', 'type'], True)
 
 
 if __name__ == '__main__':
-    # packages = [
-    #     '../doc/BasicClassic.md',
-    #     '../doc/Naxxramas.md',
-    #     '../doc/GVG.md',
-    #     '../doc/BlackMountain.md',
-    #     '../doc/TGT.md',
-    #     '../doc/LOE.md',
-    #     '../doc/OldGods.md',
-    #     '../doc/Karazhan.md',
-    #     '../doc/Gadgetzan.md',
-    #     '../doc/JUG.md',
-    #     '../doc/ICC.md',
-    # ]
-
     packages = [
-        '../doc/MyExtension.md',
-        '../doc/MyExtension2.md',
+        '../doc/official/*.md',
     ]
+
+    # packages = [
+    #     '../doc/diy/MyExtension*.md',
+    # ]
 
     main(packages)
