@@ -154,12 +154,12 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    packages = [
-        '../doc/official/*.md',
-    ]
-
     # packages = [
-    #     '../doc/diy/MyExtension*.md',
+    #     '../doc/official/*.md',
     # ]
+
+    packages = [
+        '../doc/diy/MyExtension*.md',
+    ]
 
     main(packages)
