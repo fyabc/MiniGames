@@ -31,7 +31,7 @@ def _auto_label(rects):
 
 class CardRecord:
     Pattern = re.compile(r'\d+\. (?P<name>\S+) (?P<class>\w+) (?P<type>\w+) (?P<rarity>\w+)(?: (?P<race>\w+))? '
-                         r'(?P<cost>\d+)(?: (?P<attack>\d+) (?P<health>\d+))? - ?(?P<description>.*?)(?:#.*)?$')
+                         r'(?P<cost>\d+)(?: (?P<attack>\d+) (?P<health>\d+))? - ?(?P<description>.*?)(?://.*)?$')
 
     AllCards = []
 
@@ -73,6 +73,10 @@ class CardRecord:
         print('{} cards total'.format(len(cls.AllCards)))
         for card in cls.AllCards:
             print(card)
+
+    @classmethod
+    def print_brief(cls):
+        print('{} cards total'.format(len(cls.AllCards)))
 
     @classmethod
     def sort_key(cls, field):
@@ -149,7 +153,7 @@ def main(args=None):
                     if match:
                         CardRecord(match)
 
-    # CardRecord.print_all()
+    CardRecord.print_brief()
     CardRecord.plot_over(['cost', 'attack', 'health', 'klass', 'rarity', 'type'], True)
 
 
@@ -160,6 +164,7 @@ if __name__ == '__main__':
 
     packages = [
         '../doc/diy/MyExtension*.md',
+        '../doc/diy/MonkExtension.md',
     ]
 
     main(packages)
