@@ -75,3 +75,6 @@ Shift_pygame/Shift_pygame/data/records/
 
 # HearthStone2 resource files
 /HearthStone2/MyHearthStone/data/**/resources
+
+# HearthStone doc images
+/HearthStone2/doc/images/
