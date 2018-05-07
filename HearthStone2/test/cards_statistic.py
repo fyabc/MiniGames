@@ -159,7 +159,7 @@ def main(args=None):
 
 if __name__ == '__main__':
     packages = [
-        '../doc/official/BasicClassic.md',
+        '../doc/official/TGT.md',
     ]
 
     # packages = [
