@@ -158,13 +158,13 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    packages = [
-        '../doc/official/TGT.md',
-    ]
-
     # packages = [
-    #     '../doc/diy/MyExtension*.md',
-    #     '../doc/diy/MonkExtension.md',
+    #     '../doc/official/TGT.md',
     # ]
+
+    packages = [
+        '../doc/diy/MyExtension2.md',
+        # '../doc/diy/MonkExtension.md',
+    ]
 
     main(packages)
