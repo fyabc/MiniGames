@@ -163,7 +163,7 @@ if __name__ == '__main__':
     # ]
 
     packages = [
-        '../doc/diy/MyExtension2.md',
+        '../doc/diy/MyExtension.md',
         # '../doc/diy/MonkExtension.md',
     ]
 
