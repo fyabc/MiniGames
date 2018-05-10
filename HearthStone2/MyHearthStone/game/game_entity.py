@@ -79,6 +79,10 @@ class GameEntity(metaclass=SetDataMeta):
         return self.data['name']
 
     @property
+    def entity_type(self):
+        return self.data['entity_type']
+
+    @property
     def description(self):
         # todo: Apply enchantments that affect description (e.g. spell power) on it.
         return self.data['description']

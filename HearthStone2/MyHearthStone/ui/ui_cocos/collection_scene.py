@@ -7,8 +7,8 @@ from collections import Counter
 from cocos import scene, layer, draw
 from pyglet.window import mouse
 
-from .collection_sprites import CardItem
-from .card_sprite import CardSprite
+from .collection_sprites import StaticCardSprite, CardItem
+from .card_sprite import HandSprite
 from ...utils.message import info
 from ...utils.package_io import all_cards
 from ...utils.draw.cocos_utils.basic import pos, pos_y, Colors
@@ -43,7 +43,8 @@ class CollectionsLayer(ActiveLayer):
     PageR = CollectionsR - 0.05
     SwitchY = 0.15
 
-    # todo: Click (or right click) card sprite to add card?
+    # Use ``StaticCardSprite`` or ``HandSprite``.
+    UseStaticSprite = False
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
@@ -74,11 +75,40 @@ class CollectionsLayer(ActiveLayer):
         self._remove_card_page()
         return super().on_exit()
 
+    def _create_card_sprite(self, card_id, x, y):
+        """Create a card sprite from card image, or create a \"blank\" sprite if image not exists."""
+        from pyglet.resource import ResourceNotFoundException
+        position = pos(self.PageL + (self.PageR - self.PageL) * (2 * x + 1) / (2 * self.PageSize[0]),
+                       self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1]))
+        callback = self._get_card_callbacks(card_id)
+        sel_mgr_kwargs = {'move_to_top': True}
+
+        def _mk_hand_sprite():
+            return HandSprite(
+                card_id, position,
+                is_front=True, scale=0.5, callback=callback,
+                sel_mgr_kwargs=sel_mgr_kwargs,
+            )
+
+        if not self.UseStaticSprite:
+            return _mk_hand_sprite()
+
+        try:
+            card_sprite = StaticCardSprite(
+                card_id, position,
+                scale=0.61, callback=callback,
+                sel_mgr_kwargs=sel_mgr_kwargs,
+            )
+        except ResourceNotFoundException:
+            card_sprite = _mk_hand_sprite()
+        return card_sprite
+
     def _refresh_card_id_pages(self):
         """Recalculate card id pages and refresh related sprites."""
 
         # Add more filters here.
-        card_ids = sorted(all_cards().keys())
+        card_ids = (k for k, v in all_cards().items() if v.data['derivative'] is False)
+        card_ids = sorted(card_ids)
         page_size = self.PageSize[0] * self.PageSize[1]
         self.card_id_pages = [
             card_ids[i * page_size: (i + 1) * page_size]
@@ -97,14 +127,7 @@ class CollectionsLayer(ActiveLayer):
 
         for i, card_id in enumerate(current_page):
             x, y = i % self.PageSize[0], i // self.PageSize[0]
-            # todo: Change these static card sprites into original card paintings?
-            card_sprite = CardSprite(
-                card_id, pos(self.PageL + (self.PageR - self.PageL) * (2 * x + 1) / (2 * self.PageSize[0]),
-                             self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1])),
-                is_front=True, scale=0.5, callback=self._get_card_callbacks(card_id),
-                sel_mgr_kwargs={'move_to_top': True},
-                # selected_effect=None, unselected_effect=None,
-            )
+            card_sprite = self._create_card_sprite(card_id, x, y)
             self.page_card_sprites.append(card_sprite)
             self.add(card_sprite)
 

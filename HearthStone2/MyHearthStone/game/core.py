@@ -147,7 +147,7 @@ class Game:
 
                 (game_result) -> Any (return value ignored)
         :type callback: function
-        :param when: When to call the callback, candidates: ('resolve', 'game_end')
+        :param when: When to call the callback, candidates: ('resolve', 'event', 'trigger', 'game_end')
         :type when: str
         :return: None
         """
@@ -457,8 +457,8 @@ class Game:
 
         # Refresh attack numbers.
         for card in current_player.play:
-            card.clear_exhausted()
-        current_player.hero.clear_exhausted()
+            card.reset_attack_status()
+        current_player.hero.reset_attack_status()
 
         # todo
 

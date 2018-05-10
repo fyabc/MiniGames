@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""Game related scenes (select deck, main game)."""
+"""Game scene."""
 
 from itertools import chain
 
@@ -15,7 +15,7 @@ from ...utils.draw.cocos_utils.basic import pos, notice, hs_style_label, get_wid
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, DialogLayer
 from ...utils.draw.cocos_utils.primitives import Rect
-from .card_sprite import CardSprite, HeroSprite
+from .card_sprite import HandSprite, HeroSprite
 from .selection_manager import SelectionManager
 from .animations import run_animations
 from ...game.core import Game
@@ -176,7 +176,7 @@ class GameBoardLayer(ActiveLayer):
         real_id = 0 if player_id == game.current_player else 1
         scale = .35
 
-        r = rect.Rect(0, 0, 10, CardSprite.Size[1] * scale)
+        r = rect.Rect(0, 0, 10, HandSprite.Size[1] * scale)
 
         num_play = len(game.players[player_id].play)
         if num_play == 0:
@@ -256,24 +256,23 @@ class GameBoardLayer(ActiveLayer):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_hand) * (self.HeroL - self.BoardL), y_hand),
                     'is_front': (i == 0), 'scale': 0.35,
-                    'selected_effect': 'default' if i == 0 else None,
-                    'unselected_effect': 'default' if i == 0 else None, }
+                    'sel_mgr_kwargs': {'set_default': i == 0}, }
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
                     card_sprite.update_content(**spr_kw)
                 else:
-                    card_sprite = CardSprite(card, **spr_kw)
+                    card_sprite = HandSprite(card, **spr_kw)
                     self.add(card_sprite)
                 self.hand_sprites[i].append(card_sprite)
             for j, card in enumerate(player.play):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_play) * (self.HeroL - self.BoardL), y_play),
-                    'is_front': True, 'scale': 0.35, 'selected_effect': None, 'unselected_effect': None}
+                    'is_front': True, 'scale': 0.35, 'sel_mgr_kwargs': {'set_default': False}, }
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
                     card_sprite.update_content(**spr_kw)
                 else:
-                    card_sprite = CardSprite(card, **spr_kw)
+                    card_sprite = HandSprite(card, **spr_kw)
                     self.add(card_sprite)
                 self.play_sprites[i].append(card_sprite)
         for card_sprite in _card_sprite_cache.values():
@@ -293,12 +292,12 @@ class GameBoardLayer(ActiveLayer):
 
         num_cards = len(game.players[player_id].hand)
         for i, card in enumerate(game.players[player_id].hand):
-            card_sprite = CardSprite(
+            card_sprite = HandSprite(
                 card, pos((2 * i + 1) / (2 * num_cards + 1), DH / 2),
                 is_front=True, scale=0.6,
                 callback=lambda self_: bool(self_.toggle_side()) or True,
                 self_in_callback=True,
-                selected_effect=None, unselected_effect=None,
+                sel_mgr_kwargs={'set_default': False},
             )
             layer_.card_sprites.append(card_sprite)
             layer_.add(card_sprite)

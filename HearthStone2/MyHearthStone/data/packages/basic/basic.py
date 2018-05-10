@@ -139,7 +139,7 @@ ext.create_summon_minion({
 # 霜狼步兵
 blank_minion({
     'id': 9,
-    'cost': 2, 'attack': 2, 'health': 1,
+    'cost': 2, 'attack': 2, 'health': 2,
     'taunt': True,
 })
 
@@ -325,6 +325,7 @@ class 幸运币(Spell):
     data = {
         'id': 43,
         'type': 1, 'rarity': -1, 'cost': 0,
+        'derivative': True,
     }
 
     def run(self, target):
@@ -337,21 +338,21 @@ class 幸运币(Spell):
 blank_minion({
     'id': 44,
     'rarity': -1, 'cost': 1, 'attack': 1, 'health': 1,
-    'race': [Race.Murloc],
+    'race': [Race.Murloc], 'derivative': True,
 })
 
 # 野猪
 blank_minion({
     'id': 45,
     'rarity': -1, 'cost': 1, 'attack': 1, 'health': 1,
-    'race': [Race.Beast],
+    'race': [Race.Beast], 'derivative': True,
 })
 
 # 机械幼龙
 blank_minion({
     'id': 46,
     'rarity': -1, 'cost': 1, 'attack': 2, 'health': 1,
-    'race': [Race.Mech],
+    'race': [Race.Mech], 'derivative': True,
 })
 
 #############
@@ -421,8 +422,27 @@ class 影袭(Spell):
 
 
 ###############
+# Warlock (8) #
+###############
+
+# 虚空行者
+blank_minion({
+    'id': 80000,
+    'klass': 8, 'cost': 1, 'attack': 1, 'health': 3,
+    'taunt': True, 'race': [Race.Demon],
+})
+
+
+###############
 # Warrior (9) #
 ###############
+
+# 库卡隆精英卫士
+blank_minion({
+    'id': 90001,
+    'klass': 9, 'cost': 4, 'attack': 4, 'health': 3,
+    'charge': True,
+})
 
 # 炽炎战斧
 blank_weapon({

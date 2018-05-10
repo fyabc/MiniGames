@@ -6,6 +6,7 @@
 from cocos import cocosnode, euclid
 from cocos.sprite import Sprite
 
+from .select_effect import SelectEffectManager
 from ...utils.package_io import all_cards
 from ...utils.game import Rarity
 from ...utils.draw.cocos_utils.basic import hs_style_label, pos
@@ -15,7 +16,20 @@ __author__ = 'fyabc'
 
 
 class StaticCardSprite(ActiveSprite):
-    pass
+    """Static card sprite shown in collection scene."""
+
+    Size = euclid.Vector2(286, 395)  # Item size (original).
+    SizeBase = Size // 2  # Coordinate base of children sprites.
+
+    def __init__(self, card_id, *args, **kwargs):
+        card_image_name = all_cards()[card_id].get_image_name()
+
+        sel_mgr_kwargs = kwargs.pop('sel_mgr_kwargs', {})
+
+        super().__init__(card_image_name, *args, **kwargs)
+
+        # For active mixin.
+        self.sel_mgr = SelectEffectManager(self, **sel_mgr_kwargs)
 
 
 class CardItem(ActiveMixin, cocosnode.CocosNode):
@@ -94,5 +108,6 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
 
 
 __all__ = [
+    'StaticCardSprite',
     'CardItem',
 ]

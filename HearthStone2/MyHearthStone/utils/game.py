@@ -86,29 +86,46 @@ def validate_attacker(entity, msg_fn):
 
     e_type = entity.data['entity_type']
 
-    if entity.attack <= 0:
+    attack_status = entity.attack_status
+    if attack_status == 'sleep':
         if e_type == EntityType.Hero:
-            msg_fn('I cannot attack!')
+            msg_fn('I am not ready!')
         else:
-            msg_fn('This minion cannot attack!')
+            msg_fn('This minion is not ready!')
         return False
-    if entity.exhausted:
-        if e_type == EntityType.Hero:
-            msg_fn('I have attacked!')
+    else:
+        if entity.attack <= 0:
+            if e_type == EntityType.Hero:
+                msg_fn('I cannot attack!')
+            else:
+                msg_fn('This minion cannot attack!')
+            return False
         else:
-            msg_fn('This minion has attacked!')
-        return False
+            if attack_status == 'exhausted':
+                if e_type == EntityType.Hero:
+                    msg_fn('I have attacked!')
+                else:
+                    msg_fn('This minion has attacked!')
+                return False
+            else:
+                assert attack_status == 'ready'
     return True
 
 
 def validate_defender(game, zone, player_id, attacker, defender, msg_fn):
     """Validate the defender."""
 
+    # TODO: Check zone from ``zone`` or ``defender.zone``?
+
     if player_id == game.current_player:
         msg_fn('Must select an enemy!')
         return False
     if zone not in (Zone.Play, Zone.Hero):
         msg_fn('This is not a valid target!')
+        return False
+
+    if zone == Zone.Hero and not attacker.can_attack_hero:
+        msg_fn('Cannot attack hero!')
         return False
 
     if not defender.taunt:
@@ -221,5 +238,5 @@ __all__ = [
     'validate_play_size',
     'validate_attacker', 'validate_defender',
 
-    'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
+    'EntityType', 'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
 ]

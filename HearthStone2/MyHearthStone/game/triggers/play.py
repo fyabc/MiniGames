@@ -104,7 +104,7 @@ class StdOnPlayMinion(StandardBeforeTrigger):
 
         player = self.game.players[event.player_id]
 
-        # todo: Add effect of Seadevil Stinger
+        # todo: Add effect of "Seadevil Stinger"
         if player.displayed_mana() < event.minion.cost:
             error_and_stop(self.game, event, 'You do not have enough mana!')
             return []
@@ -157,8 +157,7 @@ class StdSummon(StandardBeforeTrigger):
 
     def process(self, event: respond[0]):
         minion = event.minion
-        if not minion.charge:
-            minion.set_exhausted()
+        minion.init_attack_status()
         return []
 
 

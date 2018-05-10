@@ -3,17 +3,18 @@
 
 """The card sprite class."""
 
-from cocos import actions, rect, cocosnode, euclid
+from cocos import rect, cocosnode, euclid
 from cocos.sprite import Sprite
 from cocos.text import Label, HTMLLabel
+from pyglet.resource import ResourceNotFoundException
 
+from .select_effect import SelectEffectManager
 from ...utils.constants import C
 from ...utils.game import Klass, Type, Rarity
 from ...utils.package_io import all_cards
 from ...utils.draw.cocos_utils.basic import *
 from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test
 from ...utils.draw.cocos_utils.primitives import Rect
-from ...utils.draw.cocos_utils.node_tree import set_z
 
 __author__ = 'fyabc'
 
@@ -83,7 +84,7 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
         return Colors['white']
 
 
-class CardSprite(EntitySprite):
+class HandSprite(EntitySprite):
     """The sprite of a card.
 
     The card sprite may be static (created by card_id, attributes not changed)
@@ -92,37 +93,6 @@ class CardSprite(EntitySprite):
 
     Size = euclid.Vector2(300, 450)    # Card size (original).
     SizeBase = Size // 2        # Coordinate base of children sprites.
-
-    class _SelectEffectManager:
-        """The helper class for select and unselect effects."""
-        # TODO: make this class more configurable.
-        def __init__(self, move_to_top=False):
-            self.orig_pos = None
-            self.orig_scale = None
-            self.move_to_top = move_to_top
-
-        def get_selected_eff(self):
-            def _selected_fn(spr: cocosnode.CocosNode):
-                self.orig_scale = spr.scale
-                self.orig_pos = spr.position
-
-                spr.scale *= 2
-                y_ratio = spr.y / get_height()
-                if y_ratio < 0.5:
-                    spr.y = min(y_ratio + 0.13, 0.5) * get_height()
-                else:
-                    spr.y = max(y_ratio - 0.13, 0.5) * get_height()
-
-                if self.move_to_top:
-                    set_z(spr, z='top')
-            return actions.CallFuncS(_selected_fn)
-
-        def get_unselected_eff(self):
-            def _unselected_fn(spr: cocosnode.CocosNode):
-                spr.scale = self.orig_scale
-                spr.position = self.orig_pos
-                self.orig_scale = self.orig_pos = None
-            return actions.CallFuncS(_unselected_fn)
 
     def __init__(self, card, position=(0, 0), is_front=True, scale=1.0, **kwargs):
         """todo: Add doc here.
@@ -136,10 +106,8 @@ class CardSprite(EntitySprite):
         :type scale: float
         :param kwargs:
         """
-        # For active mixin.
-        self.sel_mgr = self._SelectEffectManager(**kwargs.pop('sel_mgr_kwargs', {}))
-        kwargs.setdefault('selected_effect', 'default')
-        kwargs.setdefault('unselected_effect', 'default')
+
+        sel_mgr_kwargs = kwargs.pop('sel_mgr_kwargs', {})
 
         # Dict of front and back labels: name -> [sprite/label, z-order].
         self.front_sprites = {}
@@ -147,7 +115,9 @@ class CardSprite(EntitySprite):
 
         super().__init__(card, position, scale, **kwargs)
 
-        self._set_sel_eff()
+        # For active mixin.
+        self.sel_mgr = SelectEffectManager(self, **sel_mgr_kwargs)
+
         self._is_front = None
         self.is_front = is_front
 
@@ -163,13 +133,6 @@ class CardSprite(EntitySprite):
         else:
             return getattr(self.entity, key)
 
-    def _set_sel_eff(self):
-        """Set selected and unselected effects, translate string values into actions."""
-        if self.selected_effect == 'default':
-            self.selected_effect = self.sel_mgr.get_selected_eff()
-        if self.unselected_effect == 'default':
-            self.unselected_effect = self.sel_mgr.get_unselected_eff()
-
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
         self.is_front = kwargs.pop('is_front', False)
@@ -182,7 +145,7 @@ class CardSprite(EntitySprite):
         unsel_eff = kwargs.pop('unselected_effect', _sentinel)
         if unsel_eff != _sentinel:
             self.unselected_effect = unsel_eff
-        self._set_sel_eff()
+        self.sel_mgr.set_sel_eff()
 
         self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
         if self._c_get('type') in (Type.Minion, Type.Weapon):
@@ -230,6 +193,16 @@ class CardSprite(EntitySprite):
 
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
                              scale=1.0,)
+        if self.static:
+            card_cls = all_cards()[self.entity]
+        else:
+            card_cls = self.entity
+        image_name = card_cls.get_image_name()
+        try:
+            image_sprite = Sprite(image_name, pos(0.0, 0.02, base=self.SizeBase), scale=1.2,)
+        except ResourceNotFoundException:
+            image_sprite = None
+
         mana_sprite = Sprite('Mana.png', pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
         name_label = Label(self._c_get('name'), pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
                            anchor_y='center', bold=True)
@@ -241,23 +214,25 @@ class CardSprite(EntitySprite):
         desc_label.element.set_style('font_name', C.UI.Cocos.Fonts.Description.Name)
 
         self.front_sprites.update({
-            'main': [main_sprite, 0],
-            'mana-sprite': [mana_sprite, 1],
-            'name': [name_label, 1],
-            'desc': [desc_label, 1],
+            'main': [main_sprite, 1],
+            'mana-sprite': [mana_sprite, 2],
+            'name': [name_label, 2],
+            'desc': [desc_label, 2],
         })
+        if image_sprite is not None:
+            self.front_sprites['image'] = [image_sprite, 0]
         if self._c_get('type') != Type.Permanent:
             mana_label = hs_style_label(str(self._c_get('cost')), pos(-0.84, 0.8, base=self.SizeBase),
                                         font_size=64, anchor_y='center', color=Colors['white'])
-            self.front_sprites['mana-label'] = [mana_label, 2]
+            self.front_sprites['mana-label'] = [mana_label, 3]
 
         back_sprite = Sprite('Card_back-Classic.png', (0, 0), scale=1.0, )
-        self.back_sprites['back'] = [back_sprite, 0]
+        self.back_sprites['back'] = [back_sprite, 1]
 
         if self._c_get('rarity') not in (Rarity.Basic, Rarity.Derivative):
             self.front_sprites['rarity-sprite'] = [Sprite(
                 'Rarity-{}-{}.png'.format(self._c_get('type'), self._c_get('rarity')),
-                pos(0.0, -0.248, base=self.SizeBase)), 2]
+                pos(0.0, -0.248, base=self.SizeBase)), 3]
 
         if self._c_get('type') == Type.Minion:
             atk_sprite = Sprite('Atk.png', pos(-0.86, -0.81, base=self.SizeBase), scale=1.15)
@@ -267,10 +242,10 @@ class CardSprite(EntitySprite):
             health_label = hs_style_label(str(self._c_get('health')), pos(0.84, -0.8, base=self.SizeBase),
                                           anchor_y='center', font_size=64, color=self._get_health_color())
             self.front_sprites.update({
-                'attack-sprite': [atk_sprite, 1],
-                'attack-label': [atk_label, 2],
-                'health-sprite': [health_sprite, 1],
-                'health-label': [health_label, 2],
+                'attack-sprite': [atk_sprite, 2],
+                'attack-label': [atk_label, 3],
+                'health-sprite': [health_sprite, 2],
+                'health-label': [health_label, 3],
             })
         elif self._c_get('type') == Type.Spell:
             name_label.position = pos(0, -0.04, base=self.SizeBase)
@@ -287,18 +262,18 @@ class CardSprite(EntitySprite):
                                           anchor_y='center', font_size=64)
             desc_label.element.color = Colors['white']
             self.front_sprites.update({
-                'attack-sprite': [atk_sprite, 1],
-                'attack-label': [atk_label, 2],
-                'health-sprite': [health_sprite, 1],
-                'health-label': [health_label, 2],
+                'attack-sprite': [atk_sprite, 2],
+                'attack-label': [atk_label, 3],
+                'health-sprite': [health_sprite, 2],
+                'health-label': [health_label, 3],
             })
         elif self._c_get('type') == Type.HeroCard:
             armor_sprite = Sprite('HeroArmor.png', pos(0.85, -0.86, base=self.SizeBase), scale=1.08)
             armor_label = hs_style_label(str(self._c_get('armor')), pos(0.85, -0.86, base=self.SizeBase),
                                          anchor_y='center', font_size=64)
             self.front_sprites.update({
-                'armor-sprite': [armor_sprite, 1],
-                'armor-label': [armor_label, 2],
+                'armor-sprite': [armor_sprite, 2],
+                'armor-label': [armor_label, 3],
             })
 
     @staticmethod
@@ -372,7 +347,7 @@ class HeroPowerSprite(EntitySprite):
 
 __all__ = [
     'EntitySprite',
-    'CardSprite',
+    'HandSprite',
     'HeroSprite',
     'HeroPowerSprite',
 ]

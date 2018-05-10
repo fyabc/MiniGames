@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from ..utils.game import EntityType
+
 __author__ = 'fyabc'
 
 
@@ -20,8 +22,12 @@ class AliveMixin:
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
         # Attack numbers.
-        self.n_attack = 0
+        self.n_attack = None
         self.n_total_attack = 1
+
+        # TODO: Some minions or weapons may change this attribute?
+        # Or remove this attribute?
+        self.can_attack_hero = True
 
     @property
     def alive(self):
@@ -35,17 +41,40 @@ class AliveMixin:
     def exhausted(self):
         return self.n_attack >= self.n_total_attack
 
+    @property
+    def attack_status(self):
+        if self.n_attack is None:
+            return 'sleep'
+        if self.n_attack >= self.n_total_attack:
+            return 'exhausted'
+        return 'ready'
+
     def take_damage(self, value):
         self._raw_health -= value
 
     def inc_n_attack(self):
         self.n_attack += 1
 
-    def set_exhausted(self):
-        self.n_attack = self.n_total_attack
+    def init_attack_status(self):
+        """Initialize attack state when the object."""
 
-    def clear_exhausted(self):
+        if self.entity_type == EntityType.Hero:
+            self.n_attack = 0
+            return
+
+        # This is a minion
+        if self.charge:
+            self.n_attack = 0
+            return
+
+        if self.rush:
+            self.n_attack = 0
+            self.can_attack_hero = False
+        self.n_attack = None
+
+    def reset_attack_status(self):
         self.n_attack = 0
+        self.can_attack_hero = True
 
 
 __all__ = [
