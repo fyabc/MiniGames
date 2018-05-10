@@ -40,6 +40,7 @@ class TestPackageIO(unittest.TestCase):
 
         self.assertTrue(issubclass(Fireball, Spell))
         self.assertEqual(Fireball.data['name'], '火球术')
+        self.assertEqual(Fireball.data['package'], 0)
         self.assertListEqual(Fireball.get_cahr(), [4])
 
     def testAllHeroes(self):
@@ -54,6 +55,7 @@ class TestPackageIO(unittest.TestCase):
         self.assertTrue(issubclass(Druid, Hero))
         self.assertEqual(Druid.data['klass'], 1)
         self.assertEqual(Druid.data['name'], '玛法里奥·怒风')
+        self.assertEqual(Druid.data['package'], 0)
         self.assertEqual(Druid.data['health'], 30)
 
     def testSearchByName(self):

@@ -67,6 +67,20 @@ class _GameData:
     def __init__(self, path):
         self.path = path
         self._package_vars = None
+        self._package_id = None
+
+        self._load_metadata()
+
+    def _load_metadata(self):
+        meta_filename = os.path.join(self.path, 'meta.json')
+        if not os.path.exists(meta_filename):
+            error('Cannot found "meta.json" of package {}, this package may not be loaded correctly.'.format(self.path))
+            return
+
+        with open(meta_filename, 'r') as meta_f:
+            meta_dict = json.load(meta_f)
+
+            self._package_id = meta_dict.get('PackageID', None)
 
     @property
     def resource_path(self):
@@ -107,6 +121,61 @@ class _GameData:
                 module_vars = load_file(os.path.join(self.path, filename))
             if module_vars is not None:
                 self._package_vars.append(module_vars)
+
+    def _set_package(self, var):
+        if self._package_id is None:
+            return
+        getattr(var, 'data')['package'] = self._package_id
+
+    def load_objects(self, cards_dict: dict, heroes_dict: dict, enchantents_dict: dict, data_dict: dict):
+        if self._package_id is None:
+            self._package_id = 'unknown-{}'.format(len(data_dict))
+            warning('Package ID not specified, automatically set to "{}"'.format(self._package_id))
+
+        if self._package_id in data_dict:
+            new_id = 'unknown-{}'.format(len(data_dict))
+            warning('The package ID "{}" already exists, automatically set to "{}"'.format(self._package_id, new_id))
+            self._package_id = new_id
+
+        data_dict[self._package_id] = self
+
+        for vars_ in self.vars_list:
+            for var in vars_.values():
+                if isinstance(var, SetDataMeta) and issubclass(var, Card):
+                    data = var.data
+                    card_id = data.get('id', None)
+                    if card_id is None:  # Do not load base classes (id = None).
+                        continue
+                    if card_id in cards_dict:
+                        if cards_dict[card_id] == var:
+                            continue
+                        warning('The card id {} already exists, overwrite it'.format(card_id))
+                    self._set_package(var)
+                    cards_dict[card_id] = var
+                elif isinstance(var, SetDataMeta) and issubclass(var, Hero):
+                    data = var.data
+                    hero_id = data.get('id', None)
+                    if hero_id is None:     # Do not load base classes (id = None).
+                        continue
+                    if hero_id in heroes_dict:
+                        if heroes_dict[hero_id] == var:
+                            continue
+                        warning('The hero id {} already exists, overwrite it'.format(hero_id))
+                    self._set_package(var)
+                    heroes_dict[hero_id] = var
+                elif isinstance(var, SetDataMeta) and issubclass(var, Enchantment):
+                    data = var.data
+                    enchantment_id = data.get('id', None)
+                    if enchantment_id is None:  # Do not load base classes (id = None).
+                        continue
+                    if enchantment_id in enchantents_dict:
+                        if enchantents_dict[enchantment_id] == var:
+                            continue
+                        warning('The enchantment id {} already exists, overwrite it'.format(enchantment_id))
+                    self._set_package(var)
+                    enchantents_dict[enchantment_id] = var
+
+        self.load_strings(cards_dict, heroes_dict, enchantents_dict)
 
     def load_strings(self, cards_dict: dict, heroes_dict: dict, enchantments_dict: dict):
         """Load strings of name and description (specific locale) of cards and heroes."""
@@ -162,48 +231,21 @@ def _load_packages():
     AllCards = {}
     AllHeroes = {}
     AllEnchantments = {}
-    AllGameData = []
+    AllGameData = {}
 
     with msg_block('Loading cards and heroes'):
-        for package_path in get_package_paths():
-            AllGameData.append(_GameData(package_path))
+        for package_dir in get_package_paths():
+            for package_path in os.listdir(package_dir):
+                # Skip all directories started with '_'
+                if package_path.startswith('_'):
+                    continue
 
-            for vars_ in AllGameData[-1].vars_list:
-                for var in vars_.values():
-                    if isinstance(var, SetDataMeta) and issubclass(var, Card):
-                        data = var.data
-                        card_id = data.get('id', None)
-                        if card_id is None:     # Do not load base classes (id = None).
-                            continue
-                        if card_id in AllCards:
-                            if AllCards[card_id] == var:
-                                continue
-                            warning('The card id {} already exists, overwrite it'.format(card_id))
-                        AllCards[card_id] = var
-                    elif isinstance(var, SetDataMeta) and issubclass(var, Hero):
-                        data = var.data
-                        hero_id = data.get('id', None)
-                        if hero_id is None:     # Do not load base classes (id = None).
-                            continue
-                        if hero_id in AllHeroes:
-                            if AllHeroes[hero_id] == var:
-                                continue
-                            warning('The hero id {} already exists, overwrite it'.format(hero_id))
-                        AllHeroes[hero_id] = var
-                    elif isinstance(var, SetDataMeta) and issubclass(var, Enchantment):
-                        data = var.data
-                        enchantment_id = data.get('id', None)
-                        if enchantment_id is None:  # Do not load base classes (id = None).
-                            continue
-                        if enchantment_id in AllEnchantments:
-                            if AllEnchantments[enchantment_id] == var:
-                                continue
-                            warning('The enchantment id {} already exists, overwrite it'.format(enchantment_id))
-                        AllEnchantments[enchantment_id] = var
+                abs_package_path = os.path.join(package_dir, package_path)
 
-            AllGameData[-1].load_strings(AllCards, AllHeroes, AllEnchantments)
+                game_data = _GameData(abs_package_path)
+                game_data.load_objects(AllCards, AllHeroes, AllEnchantments, AllGameData)
 
-    info('Total: {} series, {} cards, {} heroes, {} enchantments.'.format(
+    info('Total: {} packages, {} cards, {} heroes, {} enchantments.'.format(
         len(AllGameData), len(AllCards), len(AllHeroes), len(AllEnchantments)))
     return {
         'cards': AllCards,

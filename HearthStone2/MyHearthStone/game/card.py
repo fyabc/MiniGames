@@ -94,6 +94,12 @@ class Card(GameEntity):
 
         return True
 
+    @classmethod
+    def get_image_name(cls):
+        """Get the image filename of this card."""
+
+        return '{}.png'.format(cls.data['id'])
+
 
 class Minion(AliveMixin, Card):
     """The class of minion."""

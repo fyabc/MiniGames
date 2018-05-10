@@ -1,18 +1,26 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Sprites used for collection scene."""
+
 from cocos import cocosnode, euclid
 from cocos.sprite import Sprite
 
 from ...utils.package_io import all_cards
 from ...utils.game import Rarity
 from ...utils.draw.cocos_utils.basic import hs_style_label, pos
-from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test
+from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test, ActiveSprite
 
 __author__ = 'fyabc'
 
 
+class StaticCardSprite(ActiveSprite):
+    pass
+
+
 class CardItem(ActiveMixin, cocosnode.CocosNode):
+    """Card item sprite shown in decks."""
+
     Size = euclid.Vector2(200, 50)  # Item size (original).
     SizeBase = Size // 2    # Coordinate base of children sprites.
 

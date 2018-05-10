@@ -7,7 +7,7 @@ from collections import Counter
 from cocos import scene, layer, draw
 from pyglet.window import mouse
 
-from .card_item import CardItem
+from .collection_sprites import CardItem
 from .card_sprite import CardSprite
 from ...utils.message import info
 from ...utils.package_io import all_cards

@@ -74,10 +74,6 @@ from MyHearthStone.ext import std_events
 from MyHearthStone.ext import message as msg
 from MyHearthStone.utils.game import Zone, Race
 
-# Load other implementation modules.
-# noinspection PyUnresolvedReferences
-from impl.basic_enchantments import *
-
 __author__ = 'fyabc'
 
 PackageID = 0

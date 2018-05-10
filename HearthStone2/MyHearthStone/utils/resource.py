@@ -15,7 +15,7 @@ __author__ = 'fyabc'
 
 def get_resource_paths():
     return [
-        path for package_data in all_package_data()
+        path for package_data in all_package_data().values()
         for path in package_data.resource_directories(include_values=False)
     ] + [
         os.path.join(SystemDataPath, 'resources', 'images'),

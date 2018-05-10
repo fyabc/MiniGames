@@ -318,6 +318,22 @@ class CardSprite(EntitySprite):
         return super()._get_health_color()
 
 
+class MinionSprite(EntitySprite):
+    Size = euclid.Vector2(300, 425)  # Card size (original).
+    SizeBase = Size // 2  # Coordinate base of children sprites.
+
+    def __init__(self, minion, position=(0, 0), scale=1.0, **kwargs):
+        super().__init__(minion, position, scale, **kwargs)
+
+        # Show enchantments of this minion.
+        self.enchantments = []
+
+    def _build_components(self):
+        border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
+        border_rect.center = (0, 0)
+        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=4)
+
+
 class HeroSprite(EntitySprite):
     """The hero sprite."""
 
