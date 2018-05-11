@@ -148,18 +148,20 @@ class Minion(AliveMixin, Card):
 
         return self.data['battlecry']
 
-    def run_battlecry(self, target):
+    def run_battlecry(self, target, **kwargs):
         """Run the battlecry. Implemented in subclasses.
 
         :param target: Target of the battlecry.
+        :param kwargs: Other arguments, such as location.
         :return: list of events.
         """
 
         return []
 
-    def run_deathrattle(self):
+    def run_deathrattle(self, **kwargs):
         """Run the deathrattle. Implemented in subclasses.
 
+        :param kwargs: Other arguments, such as location.
         :return: list of events.
         """
         return []

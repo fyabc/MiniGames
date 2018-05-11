@@ -84,7 +84,7 @@ class Deck:
                 return None
 
             klass = int(klass)
-            card_id_list = [int(e) for e in card_id_list]
+            card_id_list = [str(e) for e in card_id_list]
 
             return cls(klass, card_id_list, mode, name=name)
         except binascii.Error as e:

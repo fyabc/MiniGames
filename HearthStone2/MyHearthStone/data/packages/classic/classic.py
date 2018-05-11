@@ -11,8 +11,6 @@ from MyHearthStone.utils.game import Race
 
 __author__ = 'fyabc'
 
-PackageID = 1
-
 
 ###############
 # Neutral (0) #
@@ -54,38 +52,3 @@ class 战利品贮藏者(Minion):
 
     def run_deathrattle(self):
         return [std_events.DrawCard(self.game, self, self.player_id)]
-
-
-############
-# Mage (3) #
-############
-
-# 冰枪术(1030002) -> 荣誉室
-
-class 炎爆术(Spell):
-    data = {
-        'id': 1030013,
-        'type': 1, 'rarity': 3, 'klass': 3, 'cost': 10,
-        'have_target': True,
-    }
-
-    run = ext.damage_fn(10)
-
-
-class 大法师安东尼达斯(Minion):
-    data = {
-        'id': 1030014,
-        'rarity': 4, 'klass': 3, 'cost': 7, 'attack': 5, 'health': 7,
-    }
-
-
-###############
-# Warrior (8) #
-###############
-
-
-class 血吼(Weapon):
-    data = {
-        'id': 1080013,
-        'type': 2, 'rarity': 3, 'klass': 8, 'cost': 7, 'attack': 7, 'health': 1,
-    }

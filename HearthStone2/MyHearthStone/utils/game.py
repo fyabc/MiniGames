@@ -4,14 +4,21 @@
 __author__ = 'fyabc'
 
 
-def order_of_play(objects):
+def order_of_play(objects, key=None):
     """Sort objects by the order of play.
 
     :param objects: Entities or events or triggers.
+    :param key: User-defined key function.
     :return: List of objects, sorted by order of play.
     """
 
-    return sorted(objects, key=lambda o: o.oop)
+    def _default_key(o):
+        return o.oop
+
+    if key is None:
+        key = _default_key
+
+    return sorted(objects, key=key)
 
 
 def error_and_stop(game, event, msg):

@@ -125,9 +125,9 @@ class StdOnPlayMinion(StandardBeforeTrigger):
         # [NOTE]: move it to `Game.move`?
         event.minion.oop = self.game.inc_oop()
 
-        self.game.move(se.player_id, Zone.Hand, event.minion, se.player_id, Zone.Play, se.loc)
+        _, status = self.game.move(se.player_id, Zone.Hand, event.minion, se.player_id, Zone.Play, se.loc)
 
-        return []
+        return status['events']
 
 
 class StdOnBattlecry(StandardBeforeTrigger):

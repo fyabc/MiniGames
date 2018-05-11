@@ -8,7 +8,7 @@ from typing import *
 from .game_entity import GameEntity
 from .player import Player
 from .triggers.standard import add_standard_triggers
-from .events.standard import game_begin_standard_events, DeathPhase
+from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
 from ..utils.constants import C
 from ..utils.game import order_of_play, Zone
@@ -226,20 +226,18 @@ class Game:
 
                     # then does the Death Creation Step (Looks for all mortally wounded (0 or less Health) /
                     # pending destroy (hit with a destroy effect) Entities and kills them),
-                    deaths = self._death_creation()
-
                     # remove dead entities simultaneously,
-                    self._remove_from_play(deaths)
+                    death_events = self._death_creation_step()
 
                     # then does an Aura Update (Other).
                     self._aura_update_other()
 
-                    if deaths:
+                    if death_events:
                         # If one or more Deaths happened after the outermost Phase ended,
                         # a new Phase (called a “Death Phase”) begins, where Deaths are Queued in order of play.
                         # For each Death, all Death Event triggers (Deathrattles, on-Death Secrets and on-Death
                         # triggered effects) are Queued and resolved in order of play, then the Death is resolved.
-                        events.insert(i + 1, DeathPhase(self, deaths))
+                        events.insert(i + 1, DeathPhase(self, death_events))
             elif e == 'check_win':
                 self.check_win()
                 if self.game_result is not None:
@@ -367,36 +365,52 @@ class Game:
 
         return result
 
-    def _death_creation(self):
-        """Looks for all mortally wounded (0 or less Health) / pending destroy (hit with a destroy effect) Entities.
+    def _death_creation_step(self):
+        """Death creation step.
+        Looks for all mortally wounded (0 or less Health) / pending destroy (hit with a destroy effect) Entities.
+        Then kill dead entities, remove them from play simultaneously.
 
-        :return: list, all deaths, sorted in order of play.
+        [NOTE]: Minion death event need to remember the location of the death.
+        See <https://hearthstone.gamepedia.com/Advanced_rulebook#Where_do_Minions_summoned_by_Deathrattles_spawn.3F>
+        for details.
+
+        :return: list, all death events, sorted in order of play.
         """
 
-        deaths = set()
+        # Collect all deaths.
+        death_minions = [[], []]
+        deaths = []
 
-        for player in self.players:
-            for e in player.play + [player.weapon]:
-                if e is None:
-                    continue
+        for player, death_minion in zip(self.players, death_minions):
+            for location, e in enumerate(player.play):
                 if not e.alive:
-                    deaths.add(e)
+                    death_minion.append([e, location])
+            if player.weapon is None:
+                continue
+            if not player.weapon.alive:
+                deaths.append([player.weapon, None])
             # Special case for hero: if already lose (play_state = False), do not add to deaths.
             if player.hero.play_state is True and not player.hero.alive:
-                deaths.add(player.hero)
+                deaths.append([player.hero, None])
 
-        return order_of_play(deaths)
+        # Recalculate minion death locations by order-of-play.
+        # TODO: Need test here.
+        for death_minion in death_minions:
+            for i, death_pair in enumerate(death_minion):
+                # Number of minions died before this minion that will affect the location
+                n_pre_died = sum(int(d[0].oop < death_pair[0].oop) for d in death_minion[:i])
+                death_pair[1] -= n_pre_died
+            deaths.extend(death_minion)
 
-    def _remove_from_play(self, deaths):
-        """Kill dead entities, remove them from play simultaneously.
+        death_events = [
+            create_death_event(self, death, location)
+            for (death, location) in order_of_play(deaths, key=lambda o: o[0].oop)]
 
-        Entities that have been removed from play cannot trigger, be triggered, or emit auras, and do not take up space.
-
-        NOTE: mortally wounded and pending destroy are ONLY converted into dead once the outermost Phase ends!
-        """
-
-        for death in deaths:
+        for death_event in death_events:
+            death = death_event.owner
             self.move(death.player_id, death.zone, death, death.player_id, Zone.Graveyard, 'last')
+
+        return death_events
 
     def _aura_update_attack_health(self):
         """Run aura update (attack / health).
@@ -496,10 +510,13 @@ class Game:
         :param to_zone: The target zone.
         :param to_index: The target index of the entity.
             if it is 'last', means append.
-        :return: a tuple of (entity, bool, list)
+        :return: a tuple of (entity, dict)
             The moved entity (even when failed).
-            The bool indicate success or not.
-            The list contains consequence events.
+            The dict contains:
+                'success': The bool indicate success or not.
+                'events': The list contains consequence events.
+                'from_index': The final from index.
+                'to_index': The final insert index.
         """
 
         fz = self.get_zone(from_zone, from_player)
@@ -507,9 +524,10 @@ class Game:
         if not isinstance(from_index, int):
             try:
                 entity = from_index
-                fz.remove(entity)
+                from_index = fz.index(entity)
+                del fz[from_index]
             except ValueError:
-                error('{} does not exist in the zone {} of player {}!'.format(from_index, from_zone, from_player))
+                error('{} does not exist in the zone {} of player {}!'.format(entity, from_zone, from_player))
                 raise
         else:
             entity = fz[from_index]
@@ -526,11 +544,21 @@ class Game:
             entity.zone = Zone.Graveyard
             self.get_zone(Zone.Graveyard, from_player).append(entity)
 
-            return entity, False, []
+            return entity, {
+                'success': False,
+                'events': [],
+                'from_index': from_index,
+                'to_index': None,
+            }
 
-        self._insert_entity(entity, to_zone, to_player, to_index)
+        index = self._insert_entity(entity, to_zone, to_player, to_index)
 
-        return entity, True, []
+        return entity, {
+            'success': True,
+            'events': [],
+            'from_index': from_index,
+            'to_index': index,
+        }
 
     def generate(self, to_player, to_zone, to_index, entity):
         """Generate an entity into a zone.
@@ -540,16 +568,19 @@ class Game:
         :param entity: The entity id to be generated, or the entity object.
         :param to_index: The target index of the entity.
             if it is 'last', means append.
-        :return: a tuple of (entity, bool, list)
+        :return: a tuple of (entity, dict)
             The generated entity (None when failed).
-            The bool indicate success or not.
-            The list contains consequence events.
+            The dict contains:
+                'success': The bool indicate success or not.
+                'events': The list contains consequence events.
+                'from_index': None.
+                'to_index': The final insert index.
         """
 
         return self.players[to_player].generate(to_zone, to_index, entity)
 
     def _insert_entity(self, entity, to_zone, to_player, to_index):
-        self.players[to_player].insert_entity(entity, to_zone, to_index)
+        return self.players[to_player].insert_entity(entity, to_zone, to_index)
 
     def add_mana(self, value, action, player_id):
         """Add mana. See details for `Player.add_mana`."""

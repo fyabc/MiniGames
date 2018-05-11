@@ -100,7 +100,7 @@ def damage_fn(value):
     :type value: int
     :return: Damage function, used as `run` or `battlecry`.
     """
-    def run_battlecry(self, target):
+    def run_battlecry(self, target, **kwargs):
         return std_events.damage_events(self.game, self, target, value)
     return run_battlecry
 
@@ -117,7 +117,7 @@ def summon_fn(summon_id, relative_loc=1):
     :return: Summon function, used as `run` or `battlecry`.
     """
 
-    def run_battlecry(self, target):
+    def run_battlecry(self, target, **kwargs):
         derivative_id = summon_id
         game = self.game
         loc = relative_loc + game.get_zone(Zone.Play, self.player_id).index(self)

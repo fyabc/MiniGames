@@ -3,7 +3,7 @@
 
 """Basic package, include basic cards and heroes.
 
-All ID start from 0.
+All ID can be set as int or string, but will be stored as string.
 
 Card ID format:
 
@@ -65,6 +65,8 @@ Enchantment ID format:
 |  Enchantment ID
 |
 Package ID
+
+DIY cards / heroes / enchantments can add 'D' or other prefixes before the ID format.
 """
 
 from MyHearthStone import ext
@@ -75,8 +77,6 @@ from MyHearthStone.ext import message as msg
 from MyHearthStone.utils.game import Zone, Race
 
 __author__ = 'fyabc'
-
-PackageID = 0
 
 
 ###############
@@ -353,101 +353,6 @@ blank_minion({
     'id': 46,
     'rarity': -1, 'cost': 1, 'attack': 2, 'health': 1,
     'race': [Race.Mech], 'derivative': True,
-})
-
-#############
-# Druid (1) #
-#############
-
-# 埃隆巴克保护者
-blank_minion({
-    'id': 10000,
-    'klass': 1, 'cost': 8, 'attack': 8, 'health': 8,
-    'taunt': True,
-})
-
-
-############
-# Mage (3) #
-############
-
-class 火球术(Spell):
-    data = {
-        'id': 30007,
-        'type': 1, 'klass': 3, 'cost': 4,
-        'have_target': True,
-    }
-
-    run = ext.damage_fn(6)
-
-###############
-# Paladin (4) #
-###############
-
-
-class 力量祝福(Spell):
-    data = {
-        'id': 40001,
-        'type': 1, 'klass': 4, 'cost': 1,
-        'have_target': True,
-    }
-
-    def check_target(self, target):
-        # todo: Extract this checker into an utility function.
-        if not super().check_target(target):
-            return False
-
-        if target.zone != Zone.Play:
-            return False
-
-        return True
-
-    def run(self, target):
-        # todo
-        return []
-
-
-#############
-# Rogue (6) #
-#############
-
-class 影袭(Spell):
-    data = {
-        'id': 60002,
-        'type': 1, 'klass': 6, 'cost': 1,
-    }
-
-    def run(self, target):
-        return std_events.damage_events(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)
-
-
-###############
-# Warlock (8) #
-###############
-
-# 虚空行者
-blank_minion({
-    'id': 80000,
-    'klass': 8, 'cost': 1, 'attack': 1, 'health': 3,
-    'taunt': True, 'race': [Race.Demon],
-})
-
-
-###############
-# Warrior (9) #
-###############
-
-# 库卡隆精英卫士
-blank_minion({
-    'id': 90001,
-    'klass': 9, 'cost': 4, 'attack': 4, 'health': 3,
-    'charge': True,
-})
-
-# 炽炎战斧
-blank_weapon({
-    'id': 90008,
-    'type': 2, 'klass': 9, 'cost': 3, 'attack': 3, 'health': 2,
 })
 
 

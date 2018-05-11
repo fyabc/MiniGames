@@ -20,15 +20,7 @@ class StdDeathPhase(StandardBeforeTrigger):
     respond = [standard.DeathPhase]
 
     def process(self, event: respond[0]):
-        result = []
-        for death in event.deaths:
-            if isinstance(death, Hero):
-                result.append(standard.HeroDeath(self.game, death))
-            elif isinstance(death, Minion):
-                result.append(standard.MinionDeath(self.game, death))
-            elif isinstance(death, Weapon):
-                result.append(standard.WeaponDeath(self.game, death))
-        return result
+        return event.deaths
 
 
 def _push_death_event(game, event_owner):
@@ -60,7 +52,7 @@ class StdMinionDeath(StandardBeforeTrigger):
 
     def process(self, event: respond[0]):
         _push_death_event(self.game, event.owner)
-        return event.owner.run_deathrattle()
+        return event.owner.run_deathrattle(location=event.location)
 
 
 class StdWeaponDeath(StandardBeforeTrigger):

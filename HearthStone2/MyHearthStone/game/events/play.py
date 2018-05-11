@@ -201,19 +201,21 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
     :param game: The game of the minion.
     :param minion: Minion id (generate) or ``Minion`` instance (forced play from hand or deck).
     :param to_player: The to player id.
-    :param loc: integer, The location of the minion to summon.
+    :param loc: integer or 'last', The location of the minion to summon.
     :param from_player: The from player id, None if the minion is generated.
     :param from_zone: The from zone id, None if the minion is generated.
     :return: event list.
     """
 
     if from_zone is None:
-        minion, success, _ = game.generate(to_player, Zone.Play, loc, minion)
+        minion, status = game.generate(to_player, Zone.Play, loc, minion)
     else:
-        minion, success, _ = game.move(from_player, from_zone, minion, to_player, Zone.Play, loc)
+        minion, status = game.move(from_player, from_zone, minion, to_player, Zone.Play, loc)
+    success = status['success']
+    to_index = status['to_index']
 
     if success:
-        summon_event = Summon(game, minion, loc, to_player)
+        summon_event = Summon(game, minion, to_index, to_player)
         game.summon_events.add(summon_event)
 
         # [NOTE]: move it to ``Game.move``?

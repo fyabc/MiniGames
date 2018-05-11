@@ -127,6 +127,12 @@ class _GameData:
             return
         getattr(var, 'data')['package'] = self._package_id
 
+    @staticmethod
+    def _set_str_id(var, var_id):
+        str_var_id = str(var_id)
+        getattr(var, 'data')['id'] = str_var_id
+        return str_var_id
+
     def load_objects(self, cards_dict: dict, heroes_dict: dict, enchantents_dict: dict, data_dict: dict):
         if self._package_id is None:
             self._package_id = 'unknown-{}'.format(len(data_dict))
@@ -146,6 +152,7 @@ class _GameData:
                     card_id = data.get('id', None)
                     if card_id is None:  # Do not load base classes (id = None).
                         continue
+                    card_id = self._set_str_id(var, card_id)
                     if card_id in cards_dict:
                         if cards_dict[card_id] == var:
                             continue
@@ -157,6 +164,7 @@ class _GameData:
                     hero_id = data.get('id', None)
                     if hero_id is None:     # Do not load base classes (id = None).
                         continue
+                    # hero_id = self._set_str_id(var, hero_id)
                     if hero_id in heroes_dict:
                         if heroes_dict[hero_id] == var:
                             continue
@@ -168,6 +176,7 @@ class _GameData:
                     enchantment_id = data.get('id', None)
                     if enchantment_id is None:  # Do not load base classes (id = None).
                         continue
+                    enchantment_id = self._set_str_id(var, enchantment_id)
                     if enchantment_id in enchantents_dict:
                         if enchantents_dict[enchantment_id] == var:
                             continue
@@ -205,7 +214,7 @@ class _GameData:
                 assert isinstance(v[0], str)
                 assert isinstance(v[1], str)
 
-                var = cards_dict.get(int(k), None)
+                var = cards_dict.get(k, None)
                 if var is not None:
                     data = getattr(var, 'data')
                     data['name'] = v[0]
@@ -216,7 +225,7 @@ class _GameData:
                 assert isinstance(v[0], str)
                 assert isinstance(v[1], str)
 
-                var = heroes_dict.get(int(k), None)
+                var = heroes_dict.get(k, None)
                 if var is not None:
                     data = getattr(var, 'data')
                     data['name'] = v[0]

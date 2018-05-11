@@ -24,6 +24,8 @@ class Player(GameEntity):
     TurnMax = C.Game.TurnMax
     StartCardOffensive, StartCardDefensive = C.Game.StartCard
 
+    CoinCardID = "43"
+
     def __init__(self, game):
         super().__init__(game)
 
@@ -76,7 +78,7 @@ class Player(GameEntity):
 
         # Add coin into defensive hand
         if player_id != start_player:
-            self.hand.append(cards[43](self.game, 1 - start_player))
+            self.hand.append(cards[self.CoinCardID](self.game, 1 - start_player))
 
         self._init_card_zones()
 
@@ -109,36 +111,62 @@ class Player(GameEntity):
         :param entity: The entity id to be generated, or the entity object.
         :param to_index: The target index of the entity.
             if it is 'last', means append.
-        :return: a tuple of (entity, bool, list)
+        :return: a tuple of (entity, dict)
             The generated entity (None when failed).
-            The bool indicate success or not.
-            The list contains consequence events.
+            The dict contains:
+                'success': The bool indicate success or not.
+                'events': The list contains consequence events.
+                'from_index': None.
+                'to_index': The final insert index.
         """
 
         # If the play board is full, do nothing.
         if self.full(to_zone):
             debug('{} full!'.format(Zone.Idx2Str[to_zone]))
-            return None, False, []
+            return None, {
+                'success': False,
+                'events': [],
+                'from_index': None,
+                'to_index': None,
+            }
 
         if isinstance(entity, int):
+            # Convert integer to string for backward compatibility.
+            entity = str(entity)
+        if isinstance(entity, str):
             entity = self.create_card(entity, player_id=self.player_id)
 
-        self.insert_entity(entity, to_zone, to_index)
+        index = self.insert_entity(entity, to_zone, to_index)
 
-        return entity, True, []
+        return entity, {
+            'success': True,
+            'events': [],
+            'to_index': index,
+        }
 
     def insert_entity(self, entity, to_zone, to_index):
+        """Insert an entity.
+
+        :param entity:
+        :param to_zone:
+        :param to_index:
+        :return:
+        """
         tz = self.get_zone(to_zone)
 
         # todo: set oop when moving to play zone.
         # todo: set other things
+        # todo: fix the problems of hero, weapons, and other unique zones
 
         if to_index == 'last':
             tz.append(entity)
+            to_index = len(tz) - 1
         else:
             tz.insert(to_index, entity)
         entity.zone = to_zone
         entity.player_id = self.player_id
+
+        return to_index
 
     def full(self, zone):
         if zone == Zone.Deck:

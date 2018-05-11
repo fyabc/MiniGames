@@ -63,7 +63,8 @@ class StdDrawCard(StandardBeforeTrigger):
             player.tire_counter += 1
             return standard.damage_events(self.game, self.owner, player.hero, player.tire_counter)
 
-        card, success, new_events = self.game.move(event.player_id, Zone.Deck, 0, event.player_id, Zone.Hand, 'last')
+        card, status = self.game.move(event.player_id, Zone.Deck, 0, event.player_id, Zone.Hand, 'last')
+        success, new_events = status['success'], status['events']
 
         if success:
             event.card = card

@@ -106,9 +106,15 @@ class CollectionsLayer(ActiveLayer):
     def _refresh_card_id_pages(self):
         """Recalculate card id pages and refresh related sprites."""
 
+        id_card_list = ((k, v) for k, v in all_cards().items() if v.data['derivative'] is False)
         # Add more filters here.
-        card_ids = (k for k, v in all_cards().items() if v.data['derivative'] is False)
-        card_ids = sorted(card_ids)
+
+        def _key(e):
+            data = e[1].data
+            return data['klass'], data['cost'], data['type'], data.get('attack', 0), data.get('health', 0)
+        id_card_list = sorted(id_card_list, key=_key)
+        card_ids = [k for k, v in id_card_list]
+
         page_size = self.PageSize[0] * self.PageSize[1]
         self.card_id_pages = [
             card_ids[i * page_size: (i + 1) * page_size]
