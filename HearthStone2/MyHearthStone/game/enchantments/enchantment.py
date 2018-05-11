@@ -4,6 +4,7 @@
 """Base classes of enchantment."""
 
 from ..game_entity import GameEntity
+from ...utils.game import Type
 
 __author__ = 'fyabc'
 
@@ -21,7 +22,7 @@ class Enchantment(GameEntity):
     """
 
     data = {
-        'entity_type': 3,
+        'type': Type.Enchantment,
     }
 
     def __init__(self, game, target):

@@ -84,25 +84,25 @@ def validate_attacker(entity, msg_fn):
     :rtype: bool
     """
 
-    e_type = entity.data['entity_type']
+    type_ = entity.type
 
     attack_status = entity.attack_status
     if attack_status == 'sleep':
-        if e_type == EntityType.Hero:
+        if type_ == Type.Hero:
             msg_fn('I am not ready!')
         else:
             msg_fn('This minion is not ready!')
         return False
     else:
         if entity.attack <= 0:
-            if e_type == EntityType.Hero:
+            if type_ == Type.Hero:
                 msg_fn('I cannot attack!')
             else:
                 msg_fn('This minion cannot attack!')
             return False
         else:
             if attack_status == 'exhausted':
-                if e_type == EntityType.Hero:
+                if type_ == Type.Hero:
                     msg_fn('I have attacked!')
                 else:
                     msg_fn('This minion has attacked!')
@@ -148,24 +148,22 @@ class EnumMeta(type):
         return super().__new__(mcs, name, bases, ns)
 
 
-class EntityType(metaclass=EnumMeta):
-    """An enumeration class, contains entity types."""
-
-    Card = 0
-    Hero = 1
-    Enchantment = 2
-    Player = 3
-    HeroPower = 4
-
-
 class Type(metaclass=EnumMeta):
     """An enumeration class, contains card types."""
 
+    Invalid = -1
     Minion = 0
     Spell = 1
     Weapon = 2
     HeroCard = 3
     Permanent = 4   # Permanent card, such as the seed of 'Sherazin, Corpse Flower'.
+    Game = 5
+    Hero = 6
+    Player = 7      # TODO: Differences between hero, player and weapon?
+    Enchantment = 8
+    Item = 9
+    Token = 10
+    HeroPower = 11
 
 
 class Zone(metaclass=EnumMeta):
@@ -238,5 +236,5 @@ __all__ = [
     'validate_play_size',
     'validate_attacker', 'validate_defender',
 
-    'EntityType', 'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
+    'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
 ]

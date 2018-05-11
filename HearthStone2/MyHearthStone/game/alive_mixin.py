@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ..utils.game import EntityType
+from ..utils.game import Type
 
 __author__ = 'fyabc'
 
@@ -12,7 +12,7 @@ class AliveMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # todo: Change these attributes (attack, health, etc) to read-only properties.
+        # todo: Change these attributes (attack, health, etc) to values in data.
 
         self.attack = 0
         self._raw_health = self.data['health']
@@ -58,7 +58,7 @@ class AliveMixin:
     def init_attack_status(self):
         """Initialize attack state when the object."""
 
-        if self.entity_type == EntityType.Hero:
+        if self.type == Type.Hero:
             self.n_attack = 0
             return
 
@@ -75,6 +75,11 @@ class AliveMixin:
     def reset_attack_status(self):
         self.n_attack = 0
         self.can_attack_hero = True
+
+    def aura_update_attack_health(self):
+        self.attack = self.data.get('attack', 0)
+        self.health = self._raw_health
+        super().aura_update_attack_health()
 
 
 __all__ = [

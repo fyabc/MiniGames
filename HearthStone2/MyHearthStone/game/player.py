@@ -272,9 +272,6 @@ class Player(GameEntity):
         """
         return max(0, self.max_mana + self.temp_mana - self.used_mana)
 
-    def create_entity(self, entity_id, entity_type, **kwargs):
-        pass
-
     def create_card(self, card_id, **kwargs):
         return all_cards()[card_id](self.game, **kwargs)
 

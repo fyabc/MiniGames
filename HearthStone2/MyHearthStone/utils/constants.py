@@ -56,12 +56,7 @@ def _load_config(config_filename):
         return {}
 
     with open(config_filename, 'r') as config_file:
-        _lines = list(config_file)
-
-        for _i, _line in enumerate(_lines):
-            _lines[_i] = _re.sub(r'//.*\n', '\n', _line)
-
-        return _json.loads(''.join(_lines))
+        return _json.loads(''.join(_re.sub(r'//.*\n', '\n', _line) for _line in config_file))
 
 
 # Project config.

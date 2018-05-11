@@ -256,7 +256,7 @@ class GameBoardLayer(ActiveLayer):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_hand) * (self.HeroL - self.BoardL), y_hand),
                     'is_front': (i == 0), 'scale': 0.35,
-                    'sel_mgr_kwargs': {'set_default': i == 0}, }
+                    'sel_mgr_kwargs': {'set_default': i == 0}, 'selected_effect': None, 'unselected_effect': None}
                 if card in _card_sprite_cache:
                     card_sprite = _card_sprite_cache.pop(card)
                     card_sprite.update_content(**spr_kw)

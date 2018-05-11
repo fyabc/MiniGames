@@ -14,7 +14,7 @@ Health rules (copied from https://hearthstone.gamepedia.com/Advanced_rulebook#He
 
 from .game_entity import GameEntity
 from .alive_mixin import AliveMixin
-from ..utils.game import Zone
+from ..utils.game import Zone, Type
 
 __author__ = 'fyabc'
 
@@ -23,8 +23,6 @@ class Card(GameEntity):
     """The class of card."""
 
     data = {
-        'entity_type': 0,
-        'type': 0,
         'rarity': 0,
         'derivative': False,
         'klass': 0,
@@ -38,9 +36,8 @@ class Card(GameEntity):
     def __init__(self, game, player_id):
         super().__init__(game)
 
-        self.zone = Zone.Invalid
         self.player_id = player_id
-        self._cost = self.data['cost']
+        self.data['cost'] = self.data['cost']
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
     def __repr__(self):
@@ -72,7 +69,7 @@ class Card(GameEntity):
             Rule M7: When an effect refers to the cost of casting a spell (such as Summoning Stone or Gazlowe),
                 it means the amount of mana you paid to cast it, not the base mana cost.
         """
-        return max(self._cost, 0)
+        return max(self.data['cost'], 0)
 
     @property
     def have_target(self):
@@ -106,6 +103,7 @@ class Minion(AliveMixin, Card):
     """The class of minion."""
 
     data = {
+        'type': Type.Minion,
         'attack': 1,
         'health': 1,
 
@@ -127,8 +125,8 @@ class Minion(AliveMixin, Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        self.attack = self.data['attack']
-        self.n_total_attack = 2 if self.data['windfury'] else 1
+        self.attack = self.cls_data['attack']
+        self.n_total_attack = 2 if self.cls_data['windfury'] else 1
 
     def __repr__(self):
         return self._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
@@ -173,16 +171,13 @@ class Minion(AliveMixin, Card):
         """
         return []
 
-    def aura_update_attack_health(self):
-        self.attack = self.data['attack']
-        self.health = self._raw_health
-        super().aura_update_attack_health()
-
 
 class Spell(Card):
     """The class of spell."""
 
     data = {
+        'type': Type.Spell,
+
         'secret': False,
         'quest': False,
     }
@@ -201,6 +196,8 @@ class Weapon(Card):
     """The class of weapon."""
 
     data = {
+        'type': Type.Weapon,
+
         'attack': 1,
         'health': 1,
 
@@ -263,6 +260,8 @@ class HeroCard(Card):
     """The class of hero card."""
 
     data = {
+        'type': Type.HeroCard,
+
         'armor': 5,
     }
 

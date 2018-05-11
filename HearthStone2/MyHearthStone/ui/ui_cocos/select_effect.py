@@ -15,14 +15,19 @@ class SelectEffectManager:
     """The helper class for select and unselect effects."""
 
     # TODO: make this class more configurable.
-    def __init__(self, sprite, move_to_top=False, set_default=True):
+    def __init__(self, sprite, **kwargs):
         self.sprite = sprite
         self.orig_pos = None
         self.orig_scale = None
-        self.move_to_top = move_to_top
-        self.set_default = set_default
+        self.move_to_top = None
+        self.set_default = None
 
+        self.update_kwargs(kwargs)
         self.set_sel_eff()
+
+    def update_kwargs(self, kwargs):
+        self.move_to_top = kwargs.pop('move_to_top', False)
+        self.set_default = kwargs.pop('set_default', True)
 
     def set_sel_eff(self):
         if self.set_default:

@@ -56,8 +56,8 @@ def _load_module_variables(root_package_path, package_name):
 class _GameData:
     """The game data object, may be useful in future (load card images, etc.).
 
-    Game data contains some packages and resources.
-    A package is a Python file, contains some cards and heroes.
+    Game data contains a package and its resources.
+    A package is a directory with several Python files, contains some cards and heroes.
     """
     ResourcePathName = 'resources'
     ImagesPathName = 'images'

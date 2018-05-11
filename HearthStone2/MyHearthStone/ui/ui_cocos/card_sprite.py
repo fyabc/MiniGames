@@ -138,6 +138,7 @@ class HandSprite(EntitySprite):
         self.is_front = kwargs.pop('is_front', False)
 
         # Set selected and unselected effects.
+        self.sel_mgr.update_kwargs(kwargs.pop('sel_mgr_kwargs', {}))
         _sentinel = object()
         sel_eff = kwargs.pop('selected_effect', _sentinel)
         if sel_eff != _sentinel:

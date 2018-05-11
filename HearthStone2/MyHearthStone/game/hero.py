@@ -3,7 +3,7 @@
 
 from .game_entity import GameEntity
 from .alive_mixin import AliveMixin
-from ..utils.game import Zone
+from ..utils.game import Zone, Type
 
 __author__ = 'fyabc'
 
@@ -12,7 +12,7 @@ class Hero(AliveMixin, GameEntity):
     """The class of hero."""
 
     data = {
-        'entity_type': 1,
+        'type': Type.Hero,
         'klass': 0,
         'health': 30,
     }
@@ -22,7 +22,6 @@ class Hero(AliveMixin, GameEntity):
 
         # todo: How to assign weapon attributes to hero attributes?
 
-        self.zone = Zone.Invalid
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
         self.player_id = player_id
 
@@ -38,16 +37,12 @@ class Hero(AliveMixin, GameEntity):
         """
         return []
 
-    def aura_update_attack_health(self):
-        self.health = self._raw_health
-        super().aura_update_attack_health()
-
 
 class HeroPower(GameEntity):
     """The class of hero power."""
 
     _data = {
-        'entity_type': 4,
+        'type': Type.HeroPower,
         'cost': 2,
         'have_target': False,
     }
@@ -55,7 +50,6 @@ class HeroPower(GameEntity):
     def __init__(self, game, player_id):
         super().__init__(game)
 
-        self.zone = Zone.Invalid
         self.player_id = player_id
         self._cost = self.data['cost']
 

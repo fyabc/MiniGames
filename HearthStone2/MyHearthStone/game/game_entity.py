@@ -5,6 +5,7 @@
 
 from collections import ChainMap
 
+from ..utils.game import Zone, Type
 from ..utils.message import entity_message
 
 __author__ = 'fyabc'
@@ -27,6 +28,7 @@ class SetDataMeta(type):
         base_data = getattr(bases[-1], 'data', None) if bases else None
         this_data = ns.get('data', {})
         ns['data'] = base_data.new_child(this_data) if base_data is not None else ChainMap(this_data)
+        ns['cls_data'] = ns['data']
 
         return super().__new__(mcs, name, bases, ns)
 
@@ -41,17 +43,23 @@ class GameEntity(metaclass=SetDataMeta):
     """The base class of all game entities.
 
     [NOTE]:
-        Use `CardClass.data['cost']` to access class-level data (original card data, will not be changed).
+        Use `CardClass.data['cost']` or `card_object.cls_data['cost']` to access class-level data
+            (original card data, will not be changed).
         Use `card_object.cost` to access object-level data (card-specific data, may be changed in the game).
     """
 
+    # TODO: Extract all these keys of ``data`` into a new enumeration ``GameTags``.
     data = {
         'version': None,
         'id': None,
+        'type': Type.Invalid,
         'name': '',
         'package': 0,
         'description': '',
     }
+
+    # Class-level data.
+    cls_data = {}
 
     def __init__(self, game):
         self.game = game
@@ -59,6 +67,15 @@ class GameEntity(metaclass=SetDataMeta):
         # oop(Order Of Play).
         # All game entities have this attribute, and share the same oop list.
         self.oop = None
+
+        # Entity-level data dict (highest priority, commonly variable between different entities).
+        self.data = self.data.new_child({
+            # 'zone': Zone.Invalid,
+            # 'controller': None,
+        })
+
+        self.init_zone = Zone.Invalid
+        self._init_controller = None
 
         # Enchantment list of this entity.
         self.enchantments = []
@@ -70,6 +87,14 @@ class GameEntity(metaclass=SetDataMeta):
     def __repr__(self):
         return self._repr()
 
+    def get_data(self, tag, default_value=None):
+        return self.data.get(tag, default_value)
+
+    def set_data(self, tag, value):
+        if tag == 'controller' and not self._init_controller:
+            self._init_controller = self.data.get('controller', value)
+        self.data[tag] = value
+
     @property
     def id(self):
         return self.data['id']
@@ -79,8 +104,16 @@ class GameEntity(metaclass=SetDataMeta):
         return self.data['name']
 
     @property
-    def entity_type(self):
-        return self.data['entity_type']
+    def zone(self):
+        return self.data.get('zone', Zone.Invalid)
+
+    @zone.setter
+    def zone(self, value):
+        self.data['zone'] = value
+
+    @property
+    def type(self):
+        return self.data['type']
 
     @property
     def description(self):
