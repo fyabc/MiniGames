@@ -20,10 +20,13 @@ class Hero(AliveMixin, GameEntity):
     def __init__(self, game, player_id):
         super().__init__(game)
 
+        self.data.update({
+            'player_id': player_id,
+        })
+
         # todo: How to assign weapon attributes to hero attributes?
 
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
-        self.player_id = player_id
 
         self.oop = self.game.oop
 
@@ -50,8 +53,10 @@ class HeroPower(GameEntity):
     def __init__(self, game, player_id):
         super().__init__(game)
 
-        self.player_id = player_id
-        self.data['cost'] = self.cls_data['cost']
+        self.data.update({
+            'cost': self.cls_data['cost'],
+            'player_id': player_id,
+        })
 
     @property
     def cost(self):

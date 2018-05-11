@@ -12,7 +12,7 @@ Health rules (copied from https://hearthstone.gamepedia.com/Advanced_rulebook#He
     if it exceeds the new maximum.
 """
 
-from .game_entity import GameEntity
+from .game_entity import GameEntity, make_property
 from .alive_mixin import AliveMixin
 from ..utils.game import Zone, Type
 
@@ -36,24 +36,17 @@ class Card(GameEntity):
     def __init__(self, game, player_id):
         super().__init__(game)
 
-        self.player_id = player_id
-        self.data['cost'] = self.cls_data['cost']
-        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
+        self.data.update({
+            'cost': self.cls_data['cost'],
+            'player_id': player_id,
+        })
 
     def __repr__(self):
         return self._repr(name=self.data['name'], P=self.player_id, oop=self.oop, __show_cls=False)
 
-    @property
-    def type(self):
-        return self.data['type']
-
-    @property
-    def klass(self):
-        return self.data['klass']
-
-    @property
-    def rarity(self):
-        return self.data['rarity']
+    type = make_property('type', setter=False)
+    klass = make_property('klass', setter=False)
+    rarity = make_property('rarity', setter=False)
 
     @property
     def cost(self):
@@ -212,11 +205,26 @@ class Weapon(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        self.attack = self.data['attack']
-        self._raw_health = self.data['health']
-        self.health = self.data['health']
-        self.max_health = self.health
-        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
+        self.data.update({
+            'attack': self.cls_data['attack'],
+            '_raw_health': self.cls_data['health'],
+            'health': self.cls_data['health'],
+            'max_health': self.cls_data['health'],
+            'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
+
+            # Attack related attributes.
+            'n_attack': None,
+            'n_total_attack': 1,
+            'can_attack_hero': True,
+        })
+
+    attack = make_property('attack')
+    health = make_property('health')
+    max_health = make_property('max_health')
+    to_be_destroyed = make_property('to_be_destroyed')
+    n_attack = make_property('n_attack')
+    n_total_attack = make_property('n_total_attack')
+    can_attack_hero = make_property('can_attack_hero')
 
     @property
     def alive(self):
@@ -248,11 +256,11 @@ class Weapon(Card):
         return []
 
     def take_damage(self, value):
-        self._raw_health -= value
+        self.data['_raw_health'] -= value
 
     def aura_update_attack_health(self):
-        self.attack = self.data['attack']
-        self.health = self._raw_health
+        self.data['attack'] = self.cls_data['attack']
+        self.data['health'] = self.data['_raw_health']
         super().aura_update_attack_health()
 
 
@@ -268,4 +276,8 @@ class HeroCard(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        self.armor = self.data['armor']
+        self.data.update({
+            'armor': self.cls_data['armor'],
+        })
+
+    armor = make_property('armor')

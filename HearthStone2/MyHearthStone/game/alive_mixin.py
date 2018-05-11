@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from .game_entity import make_property
 from ..utils.game import Type
 
 __author__ = 'fyabc'
@@ -20,41 +21,21 @@ class AliveMixin:
             '_raw_health': self.cls_data['health'],
             'health': self.cls_data['health'],
             'max_health': self.cls_data['health'],
+            'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
+
+            # Attack related attributes.
+            'n_attack': None,
+            'n_total_attack': 1,
+            'can_attack_hero': True,
         })
 
-        self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
-
-        # Attack numbers.
-        self.n_attack = None
-        self.n_total_attack = 1
-
-        # TODO: Some minions or weapons may change this attribute?
-        # Or remove this attribute?
-        self.can_attack_hero = True
-
-    @property
-    def attack(self):
-        return self.data['attack']
-
-    @attack.setter
-    def attack(self, value):
-        self.data['attack'] = value
-
-    @property
-    def health(self):
-        return self.data['health']
-
-    @health.setter
-    def health(self, value):
-        self.data['health'] = value
-
-    @property
-    def max_health(self):
-        return self.data['max_health']
-
-    @max_health.setter
-    def max_health(self, value):
-        self.data['max_health'] = value
+    attack = make_property('attack')
+    health = make_property('health')
+    max_health = make_property('max_health')
+    to_be_destroyed = make_property('to_be_destroyed')
+    n_attack = make_property('n_attack')
+    n_total_attack = make_property('n_total_attack')
+    can_attack_hero = make_property('can_attack_hero')
 
     @property
     def alive(self):

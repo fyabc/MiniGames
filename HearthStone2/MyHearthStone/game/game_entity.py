@@ -158,3 +158,20 @@ class GameEntity(metaclass=SetDataMeta):
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
         for enchantment in self.enchantments:
             enchantment.apply()
+
+
+def make_property(name, setter=True, deleter=False):
+    def _getter(self):
+        return self.data[name]
+
+    def _setter(self, value):
+        self.data[name] = value
+
+    def _deleter(self):
+        del self.data[name]
+
+    return property(
+        _getter,
+        _setter if setter else None,
+        _deleter if deleter else None,
+        doc='The card attribute of {}'.format(name))
