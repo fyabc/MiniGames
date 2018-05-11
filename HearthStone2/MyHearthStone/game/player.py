@@ -27,8 +27,6 @@ class Player(GameEntity):
     def __init__(self, game):
         super().__init__(game)
 
-        self.player_id = None
-
         # Mana and overloads.
         self.max_mana = 0
         self.temp_mana = 0

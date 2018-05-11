@@ -37,7 +37,7 @@ class Card(GameEntity):
         super().__init__(game)
 
         self.player_id = player_id
-        self.data['cost'] = self.data['cost']
+        self.data['cost'] = self.cls_data['cost']
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
     def __repr__(self):

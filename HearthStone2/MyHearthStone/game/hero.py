@@ -51,11 +51,11 @@ class HeroPower(GameEntity):
         super().__init__(game)
 
         self.player_id = player_id
-        self._cost = self.data['cost']
+        self.data['cost'] = self.cls_data['cost']
 
     @property
     def cost(self):
-        return max(self._cost, 0)
+        return max(self.data['cost'], 0)
 
     @property
     def have_target(self):

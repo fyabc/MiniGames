@@ -6,18 +6,21 @@ from ..utils.game import Type
 __author__ = 'fyabc'
 
 
+# noinspection PyUnresolvedReferences
 class AliveMixin:
     """The mixin class of alive entities (minions and heroes)."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # todo: Change these attributes (attack, health, etc) to values in data.
+        self.data.update({
+            'attack': 0,
 
-        self.attack = 0
-        self._raw_health = self.data['health']
-        self.health = self.data['health']
-        self.max_health = self.health
+            # Raw health before any enchantments (need it?)
+            '_raw_health': self.cls_data['health'],
+            'health': self.cls_data['health'],
+            'max_health': self.cls_data['health'],
+        })
 
         self.to_be_destroyed = False  # The destroy tag for instant kill enchantments.
 
@@ -28,6 +31,30 @@ class AliveMixin:
         # TODO: Some minions or weapons may change this attribute?
         # Or remove this attribute?
         self.can_attack_hero = True
+
+    @property
+    def attack(self):
+        return self.data['attack']
+
+    @attack.setter
+    def attack(self, value):
+        self.data['attack'] = value
+
+    @property
+    def health(self):
+        return self.data['health']
+
+    @health.setter
+    def health(self, value):
+        self.data['health'] = value
+
+    @property
+    def max_health(self):
+        return self.data['max_health']
+
+    @max_health.setter
+    def max_health(self, value):
+        self.data['max_health'] = value
 
     @property
     def alive(self):
@@ -50,7 +77,7 @@ class AliveMixin:
         return 'ready'
 
     def take_damage(self, value):
-        self._raw_health -= value
+        self.data['_raw_health'] -= value
 
     def inc_n_attack(self):
         self.n_attack += 1
@@ -77,8 +104,8 @@ class AliveMixin:
         self.can_attack_hero = True
 
     def aura_update_attack_health(self):
-        self.attack = self.data.get('attack', 0)
-        self.health = self._raw_health
+        self.data['attack'] = self.cls_data.get('attack', 0)
+        self.data['health'] = self.data['_raw_health']
         super().aura_update_attack_health()
 
 

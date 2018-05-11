@@ -71,11 +71,11 @@ class GameEntity(metaclass=SetDataMeta):
         # Entity-level data dict (highest priority, commonly variable between different entities).
         self.data = self.data.new_child({
             # 'zone': Zone.Invalid,
-            # 'controller': None,
+            # 'player_id': None,  # Same as 'controller'.
         })
 
         self.init_zone = Zone.Invalid
-        self._init_controller = None
+        self._init_player_id = None
 
         # Enchantment list of this entity.
         self.enchantments = []
@@ -91,8 +91,8 @@ class GameEntity(metaclass=SetDataMeta):
         return self.data.get(tag, default_value)
 
     def set_data(self, tag, value):
-        if tag == 'controller' and not self._init_controller:
-            self._init_controller = self.data.get('controller', value)
+        if tag == 'player_id' and not self._init_player_id:
+            self._init_player_id = self.data.get('player_id', value)
         self.data[tag] = value
 
     @property
@@ -110,6 +110,20 @@ class GameEntity(metaclass=SetDataMeta):
     @zone.setter
     def zone(self, value):
         self.data['zone'] = value
+
+    @property
+    def player_id(self):
+        return self.data.get('player_id', None)
+
+    @player_id.setter
+    def player_id(self, value):
+        self.data['player_id'] = value
+
+    @property
+    def init_player_id(self):
+        if self._init_player_id is not None:
+            return self._init_player_id
+        return self.data.get('player_id', None)
 
     @property
     def type(self):
