@@ -8,7 +8,7 @@ Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gameped
 
 ## Download Resource Files
 
-1. Download data file **data.zip** from <https://pan.baidu.com/s/1w0WamBuM8lJr9QV5iQGTOg>, password: a38v
+1. Download data file **data.zip** from <https://pan.baidu.com/s/1OsQsjGi_j9dd1E8wDfjB-w>, password: xlge
     Then unzip it.
 
 2. Downloaded files:

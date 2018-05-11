@@ -10,6 +10,29 @@ from ..utils.message import entity_message
 
 __author__ = 'fyabc'
 
+_sentinel = object()
+
+
+def make_property(name, setter=True, deleter=False, default=_sentinel):
+    if default is _sentinel:
+        def _getter(self):
+            return self.data[name]
+    else:
+        def _getter(self):
+            return self.data.get(name, default)
+
+    def _setter(self, value):
+        self.data[name] = value
+
+    def _deleter(self):
+        del self.data[name]
+
+    return property(
+        _getter,
+        _setter if setter else None,
+        _deleter if deleter else None,
+        doc='The card attribute of {}'.format(name))
+
 
 class SetDataMeta(type):
     """This metaclass is used for setting `data` attribute of cards automatically.
@@ -95,39 +118,17 @@ class GameEntity(metaclass=SetDataMeta):
             self._init_player_id = self.data.get('player_id', value)
         self.data[tag] = value
 
-    @property
-    def id(self):
-        return self.data['id']
-
-    @property
-    def name(self):
-        return self.data['name']
-
-    @property
-    def zone(self):
-        return self.data.get('zone', Zone.Invalid)
-
-    @zone.setter
-    def zone(self, value):
-        self.data['zone'] = value
-
-    @property
-    def player_id(self):
-        return self.data.get('player_id', None)
-
-    @player_id.setter
-    def player_id(self, value):
-        self.data['player_id'] = value
+    id = make_property('id', setter=False)
+    name = make_property('name', setter=False)
+    zone = make_property('zone', default=Zone.Invalid)
+    player_id = make_property('player_id', default=None)
+    type = make_property('type', setter=False)
 
     @property
     def init_player_id(self):
         if self._init_player_id is not None:
             return self._init_player_id
         return self.data.get('player_id', None)
-
-    @property
-    def type(self):
-        return self.data['type']
 
     @property
     def description(self):
@@ -158,20 +159,3 @@ class GameEntity(metaclass=SetDataMeta):
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
         for enchantment in self.enchantments:
             enchantment.apply()
-
-
-def make_property(name, setter=True, deleter=False):
-    def _getter(self):
-        return self.data[name]
-
-    def _setter(self, value):
-        self.data[name] = value
-
-    def _deleter(self):
-        del self.data[name]
-
-    return property(
-        _getter,
-        _setter if setter else None,
-        _deleter if deleter else None,
-        doc='The card attribute of {}'.format(name))
