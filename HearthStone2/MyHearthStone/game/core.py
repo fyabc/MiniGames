@@ -7,6 +7,7 @@ from typing import *
 
 from .game_entity import GameEntity
 from .player import Player
+from .player_action import process_special_pa
 from .triggers.standard import add_standard_triggers
 from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
@@ -26,6 +27,12 @@ class Game:
     ResultWin1 = -1
     ResultDraw = 0
 
+    class GameState:
+        Invalid = -1
+        WaitReplace = 0
+        Main = 1
+        Finished = 2
+
     def __init__(self, **kwargs):
         #############
         # Game data #
@@ -35,6 +42,9 @@ class Game:
 
         # Game mode: 'standard', 'wild', 'arena', 'brawl'
         self.mode = None
+
+        # Game state.
+        self.state = self.GameState.Invalid
 
         self.n_turns = 0
 
@@ -54,6 +64,9 @@ class Game:
 
         # Players.
         self.players = [None, None]     # type: List[Player]
+
+        # Contains arbitrary data (need it?)
+        self.data = self._init_data()
 
         ################
         # Event engine #
@@ -163,6 +176,12 @@ class Game:
         if not self.running:
             error('The game is not running.')
             return
+
+        # Check special player actions here.
+        stop = process_special_pa(self, player_action)
+        if stop:
+            return
+
         self.resolve_events(player_action.phases(), 0)
 
         if self.game_result is not None:
@@ -179,6 +198,8 @@ class Game:
         :return:
         """
 
+        if self.state != self.GameState.Main:
+            return
         if self.game_result is not None:
             return
 
@@ -304,17 +325,19 @@ class Game:
     # Game system methods #
     #######################
 
-    def start_game(self, decks, mode='standard'):
+    @staticmethod
+    def _init_data():
+        return {
+            'replaces': [None, None],
+        }
+
+    def start_game2(self, decks, mode='standard'):
         """Start the game.
 
-        :param decks: List of 2 players' decks.
-        :param mode: Game mode, default is 'standard'.
-        :return: iterator
-            1. yield None, send list of indices of changed cards
+        :param decks:
+        :param mode:
+        :return:
         """
-
-        # TODO: Change this generator into normal function.
-        # Add 'StartGame', 'ReplaceCard' into player actions. Add game states.
 
         self.mode = mode
         self.running = True
@@ -331,22 +354,19 @@ class Game:
         self._stop_subsequent_phases = False
         self.player_buffer = [None]
         self.players = [Player(self) for _ in range(2)]
+        self.data = self._init_data()
 
-        player_start_game_iters = [
-            player.start_game(deck, player_id, start_player)
-            for player_id, (player, deck) in enumerate(zip(self.players, decks))]
-        for it in player_start_game_iters:
-            next(it)
+        for player_id, (player, deck) in enumerate(zip(self.players, decks)):
+            player.start_game2(deck, player_id, start_player)
 
-        replaces = yield
-        for player_id, replace in enumerate(replaces):
-            try:
-                player_start_game_iters[player_id].send(replace)
-            except StopIteration:
-                pass
+        self.state = self.GameState.WaitReplace
 
+    def on_replace_done(self):
+        for player, replace in zip(self.players, self.data['replaces']):
+            player.on_replace_done(replace)
+
+        self.state = self.GameState.Main
         add_standard_triggers(self)
-
         self.resolve_events(game_begin_standard_events(self))
 
     def end_game(self):
@@ -359,6 +379,7 @@ class Game:
             self.ResultDraw: 'draw',
         }[self.game_result]))
         self.running = False
+        self.state = self.GameState.Invalid
         for callback in self.callbacks['game_end']:
             callback(self.game_result)
 
@@ -525,8 +546,8 @@ class Game:
         fz = self.get_zone(from_zone, from_player)
 
         if not isinstance(from_index, int):
+            entity = from_index
             try:
-                entity = from_index
                 from_index = fz.index(entity)
                 del fz[from_index]
             except ValueError:

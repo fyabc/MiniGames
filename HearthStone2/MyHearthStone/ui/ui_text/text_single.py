@@ -305,32 +305,28 @@ Syntax: q | quit | exit\
 
         # Start game processing.
         game = self.frontend.game = Game(frontend=self.frontend, error_stub=self.frontend.game_error)
-        start_game_iter = game.start_game([deck1, deck2], mode=args.mode)
-        try:
-            next(start_game_iter)
+        game.start_game2([deck1, deck2], mode=args.mode)
 
-            def _get_replace(p=0):
-                prompt = 'P{}: {}\nSelect card to replace: '.format(p, game.format_zone(Zone.Hand, p))
-                hand_len = len(game.get_zone(Zone.Hand, p))
-                while True:
-                    r_s = input(prompt).strip().split()
-                    try:
-                        r = [int(e) for e in r_s]
-                        for i in r:
-                            if not -hand_len <= i < hand_len:
-                                print('Index {} out of range.'.format(i))
-                                break
-                        else:
-                            return r
-                    except ValueError:
-                        print('Please input list of indices.')
+        def _get_replace(p=0):
+            prompt = 'P{}: {}\nSelect card to replace: '.format(p, game.format_zone(Zone.Hand, p))
+            hand_len = len(game.get_zone(Zone.Hand, p))
+            while True:
+                r_s = input(prompt).strip().split()
+                try:
+                    r = [int(e) for e in r_s]
+                    for i in r:
+                        if not -hand_len <= i < hand_len:
+                            print('Index {} out of range.'.format(i))
+                            break
+                    else:
+                        return r
+                except ValueError:
+                    print('Please input list of indices.')
 
-            r0 = _get_replace(0)
-            r1 = _get_replace(1)
-
-            start_game_iter.send([r0, r1])
-        except StopIteration:
-            pass
+        r0 = _get_replace(0)
+        game.run_player_action(pa.ReplaceStartCard(game, 0, r0))
+        r1 = _get_replace(1)
+        game.run_player_action(pa.ReplaceStartCard(game, 1, r1))
 
         # Now in game main loop.
         self.state = self.StateGame

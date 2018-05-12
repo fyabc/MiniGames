@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from MyHearthStone.game.core import Game
 from MyHearthStone.game.player import Player
 from MyHearthStone.game.deck import Deck
+from MyHearthStone.game.player_action import ReplaceStartCard
 from MyHearthStone.utils.game import Klass
 
 __author__ = 'fyabc'
@@ -41,12 +42,9 @@ class TestCore(unittest.TestCase):
 
     def setUp(self):
         self.game = Game()
-        start_game_iter = self.game.start_game(self.test_decks, mode='standard')
-        try:
-            next(start_game_iter)
-            start_game_iter.send([[], []])
-        except StopIteration:
-            pass
+        self.game.start_game2(self.test_decks, mode='standard')
+        self.game.run_player_action(ReplaceStartCard(self.game, 0, []))
+        self.game.run_player_action(ReplaceStartCard(self.game, 1, []))
 
         self.p0, self.p1 = self.game.players[self.game.current_player], self.game.players[1 - self.game.current_player]
 
@@ -56,6 +54,7 @@ class TestCore(unittest.TestCase):
     # Game basic tests.
 
     def testBasic(self):
+        self.assertEqual(self.game.state, self.game.GameState.Main, 'Game is not in main state')
         self.assertIsInstance(self.p0, Player, 'Offensive player is not successfully created')
         self.assertIsInstance(self.p1, Player, 'Defensive player is not successfully created')
 

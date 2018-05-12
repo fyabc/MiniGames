@@ -46,11 +46,14 @@ class Player(GameEntity):
         self.weapon = None
         self.graveyard = []
 
+        # Misc.
         self.tire_counter = 0
+        self.start_player = None
 
-    def start_game(self, deck, player_id: int, start_player: int):
+    def start_game2(self, deck, player_id: int, start_player: int):
         info('Deck of player {}: {}'.format(player_id, deck))
         self.player_id = player_id
+        self.start_player = start_player
 
         cards = all_cards()
         heroes = all_heroes()
@@ -68,17 +71,17 @@ class Player(GameEntity):
 
         self.tire_counter = 0
 
-        replace = yield
+    def on_replace_done(self, replace):
         replace = sorted(set(replace))  # Get sorted unique elements
-        info('Replace hand {} of player {}'.format(replace, player_id))
+        info('Replace hand {} of player {}'.format(replace, self.player_id))
         replace_index = random.sample(list(range(len(self.deck))), k=len(replace))
         for hand_index, deck_index in zip(replace, replace_index):
             self.deck[deck_index], self.hand[hand_index] = self.hand[hand_index], self.deck[deck_index]
         random.shuffle(self.deck)
 
         # Add coin into defensive hand
-        if player_id != start_player:
-            self.hand.append(cards[self.CoinCardID](self.game, 1 - start_player))
+        if self.player_id != self.start_player:
+            self.hand.append(all_cards()[self.CoinCardID](self.game, 1 - self.start_player))
 
         self._init_card_zones()
 
@@ -156,7 +159,7 @@ class Player(GameEntity):
 
         # todo: set oop when moving to play zone.
         # todo: set other things
-        # todo: fix the problems of hero, weapons, and other unique zones
+        # todo: fix the problems of hero, weapons, and other unique zones (how to insert?)
 
         if to_index == 'last':
             tz.append(entity)

@@ -18,6 +18,18 @@ class PlayerAction:
         raise NotImplementedError('implemented by subclasses')
 
 
+class ReplaceStartCard(PlayerAction):
+    """"""
+
+    def __init__(self, game, player_id, replace_list):
+        super().__init__(game)
+        self.player_id = player_id
+        self.replace_list = replace_list
+
+    def phases(self):
+        return []
+
+
 class TurnEnd(PlayerAction):
     """"""
 
@@ -132,3 +144,22 @@ class UseHeroPower(PlayerAction):
 
     def phases(self):
         return []
+
+
+def process_special_pa(game, player_action):
+    """Process special player actions.
+
+    :param game:
+    :param player_action:
+    :return: Stop the processing of this action?
+    """
+    if not isinstance(player_action, ReplaceStartCard):
+        return False
+    if game.state != game.GameState.WaitReplace:
+        return
+    game.data['replaces'][player_action.player_id] = player_action.replace_list[:]
+    if all(l is not None for l in game.data['replaces']):
+        game.on_replace_done()
+        return True
+    else:
+        return False

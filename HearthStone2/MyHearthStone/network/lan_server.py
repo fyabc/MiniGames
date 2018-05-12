@@ -10,6 +10,7 @@ import socketserver
 
 from . import utils
 from ..game.core import Game
+from ..game.player_action import ReplaceStartCard
 from ..game.deck import Deck
 from ..utils.message import info, warning
 
@@ -79,19 +80,15 @@ class LanServer(socketserver.ThreadingTCPServer):
 
             self.game = Game()
 
-            start_game_iter = self.game.start_game(
+            self.game.start_game2(
                 decks=[
                     Deck.from_code(users[0].deck_code),
                     Deck.from_code(users[1].deck_code),
                 ],
                 mode='standard',
             )
-
-            try:
-                next(start_game_iter)
-                start_game_iter.send([[], []])
-            except StopIteration:
-                pass
+            self.game.run_player_action(ReplaceStartCard(self.game, 0, []))
+            self.game.run_player_action(ReplaceStartCard(self.game, 1, []))
 
             self.broadcast_text('Game ({} vs {}) start!'.format(users[0].nickname, users[1].nickname), locked=False)
             self.broadcast('game_status', self.game.game_status(), locked=False)

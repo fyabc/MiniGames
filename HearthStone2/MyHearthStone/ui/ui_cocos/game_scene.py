@@ -33,8 +33,6 @@ class GameBoardLayer(ActiveLayer):
     not player id.
     """
 
-    # TODO: use MinionSprite instead of CardSprite to represent minions on the board.
-
     RightL = 0.88  # Border of right pane
     RightCX = (1 + RightL) / 2  # Center of right pane
     HeroL = 0.66  # Border of hero pane
@@ -51,10 +49,6 @@ class GameBoardLayer(ActiveLayer):
 
         # Selection manager.
         self._sm = SelectionManager(self)
-
-        # Start game iterator returned from `Game.start_game`. Sent from select deck layer.
-        self.start_game_iter = None
-        self._replacement = [None, None]
 
         # Right border components (deck info, mana info, etc).
         for i, y in enumerate((.15, .85)):
@@ -84,8 +78,6 @@ class GameBoardLayer(ActiveLayer):
         # Ensure not called by transition scenes (only called once).
         if isinstance(director.director.scene, transitions.TransitionScene):
             return
-
-        assert self.start_game_iter is not None, 'Game not started correctly'
 
         # TODO: Play start game animation, etc.
 
@@ -120,7 +112,6 @@ class GameBoardLayer(ActiveLayer):
                 self.remove(s_hp_name)
         self.hero_power_sprites = [None, None]
 
-        self._replacement = [None, None]
         return super().on_exit()
 
     def on_mouse_release(self, x, y, buttons, modifiers):
@@ -134,7 +125,7 @@ class GameBoardLayer(ActiveLayer):
             for zone, sprite_list in zip((Zone.Hand, Zone.Play), (self.hand_sprites[i], self.play_sprites[i])):
                 for index, child in enumerate(sprite_list):
                     if child.respond_to_mouse_release(x, y, buttons, modifiers):
-                        # [NOTE]: This will stop all click events event if callback return False.
+                        # [NOTE]: This will stop all click events if callback return False.
                         self._sm.click_at(child, player, zone, index, (x, y, buttons, modifiers))
                         return True
 
@@ -166,9 +157,7 @@ class GameBoardLayer(ActiveLayer):
         game.add_callback(self._update_content, when='resolve')
         game.add_callback(self._log_update_time, when='resolve')
         game.add_callback(self._game_end_dialog, when='game_end')
-        start_game_iter = game.start_game(selected_decks, mode='standard')
-        next(start_game_iter)
-        self.start_game_iter = start_game_iter
+        game.start_game2(selected_decks, mode='standard')
 
     def add_loc_stub(self, player_id, loc):
         """Add a location stub rect sprite."""
@@ -307,18 +296,15 @@ class GameBoardLayer(ActiveLayer):
 
     def _on_replacement_selected(self, dialog, player_id):
         """Callback when one replacement selection done."""
-        self._replacement[player_id] = [i for i, c in enumerate(dialog.card_sprites) if not c.is_front]
-        if any(e is None for e in self._replacement):
+
+        game = self.ctrl.game
+        game.run_player_action(pa.ReplaceStartCard(
+            game, player_id, [i for i, c in enumerate(dialog.card_sprites) if not c.is_front]))
+
+        dialog.remove_from_scene()
+        if game.state != game.GameState.Main:
             # Replacement for the other player.
-            dialog.remove_from_scene()
             self._replace_dialog(1 - player_id)
-        else:
-            # Replacement done, start game.
-            dialog.remove_from_scene()
-            try:
-                self.start_game_iter.send(self._replacement)
-            except StopIteration:
-                pass
         return True
 
     def _game_end_dialog(self, game_result):
