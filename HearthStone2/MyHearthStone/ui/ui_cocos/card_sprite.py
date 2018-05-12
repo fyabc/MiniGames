@@ -78,10 +78,17 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
     def _get_health_color(self):
         _h = self.entity.health
         _h_m = self.entity.max_health
-        _h_s = self.entity.data['health']
+        _h_s = self.entity.cls_data['health']
         if _h < _h_m:
             return Colors['red']
         if _h_m > _h_s:
+            return Colors['green']
+        return Colors['white']
+
+    def _get_attack_color(self):
+        _a = self.entity.attack
+        _a_s = self.entity.cls_data['attack']
+        if _a > _a_s:
             return Colors['green']
         return Colors['white']
 
@@ -154,6 +161,7 @@ class HandSprite(EntitySprite):
         if self._c_get('type') in (Type.Minion, Type.Weapon):
             self.front_sprites['attack-label'][0].element.text = str(self._c_get('attack'))
             self.front_sprites['health-label'][0].element.text = str(self._c_get('health'))
+            self.front_sprites['attack-label'][0].element.color = self._get_attack_color()
             self.front_sprites['health-label'][0].element.color = self._get_health_color()
         elif self._c_get('type') == Type.HeroCard:
             self.front_sprites['armor-label'][0].element.text = str(self._c_get('armor'))
@@ -246,7 +254,7 @@ class HandSprite(EntitySprite):
         if self._c_get('type') == Type.Minion:
             atk_sprite = Sprite('Atk.png', pos(-0.86, -0.81, base=self.SizeBase), scale=1.15)
             atk_label = hs_style_label(str(self._c_get('attack')), pos(-0.78, -0.8, base=self.SizeBase),
-                                       anchor_y='center', font_size=64)
+                                       anchor_y='center', font_size=64, color=self._get_attack_color())
             health_sprite = Sprite('Health.png', pos(0.84, -0.81, base=self.SizeBase), scale=1.05)
             health_label = hs_style_label(str(self._c_get('health')), pos(0.84, -0.8, base=self.SizeBase),
                                           anchor_y='center', font_size=64, color=self._get_health_color())
@@ -305,6 +313,11 @@ class HandSprite(EntitySprite):
             return Colors['white']
         return super()._get_health_color()
 
+    def _get_attack_color(self):
+        if self.static:
+            return Colors['white']
+        return super()._get_attack_color()
+
 
 class MinionSprite(EntitySprite):
     ImagePart = 0.40, 0.38
@@ -338,7 +351,9 @@ class MinionSprite(EntitySprite):
 
         if self.entity.type == Type.Minion:
             self.atk_label.element.text = str(self.entity.attack)
+            self.atk_label.element.color = self._get_attack_color()
             self.health_label.element.text = str(self.entity.health)
+            self.health_label.element.color = self._get_health_color()
         else:   # self.entity.type == Type.Permanent
             # Anything to do?
             pass
@@ -364,7 +379,7 @@ class MinionSprite(EntitySprite):
         if self.entity.type == Type.Minion:
             atk_sprite = Sprite('Atk.png', pos(-0.92, -0.81, base=self.SizeBase), scale=0.6)
             self.atk_label = hs_style_label(str(self.entity.attack), pos(-0.84, -0.8, base=self.SizeBase),
-                                            anchor_y='center', font_size=32)
+                                            anchor_y='center', font_size=32, color=self._get_attack_color())
             health_sprite = Sprite('Health.png', pos(0.88, -0.81, base=self.SizeBase), scale=0.56)
             self.health_label = hs_style_label(str(self.entity.health), pos(0.86, -0.8, base=self.SizeBase),
                                                anchor_y='center', font_size=32, color=self._get_health_color())

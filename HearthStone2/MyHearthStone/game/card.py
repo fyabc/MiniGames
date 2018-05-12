@@ -69,7 +69,7 @@ class Card(GameEntity):
         """[NOTE]: This attribute may be changed in the game, such as combo cards."""
         return self.data['have_target']
 
-    def check_target(self, target):
+    def check_target(self, target: GameEntity):
         """Check the validity of the target."""
 
         if not self.have_target:
@@ -148,7 +148,7 @@ class Minion(AliveMixin, Card):
 
         return self.data['battlecry']
 
-    def run_battlecry(self, target, **kwargs):
+    def run_battlecry(self, target: GameEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
 
         :param target: Target of the battlecry.
@@ -177,7 +177,7 @@ class Spell(Card):
         'quest': False,
     }
 
-    def run(self, target, **kwargs):
+    def run(self, target: GameEntity, **kwargs):
         """Run the spell.
 
         :param target:
@@ -242,7 +242,7 @@ class Weapon(Card):
 
         return self.data['battlecry']
 
-    def run_battlecry(self, target, **kwargs):
+    def run_battlecry(self, target: GameEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
 
         :param target: Target of the battlecry.

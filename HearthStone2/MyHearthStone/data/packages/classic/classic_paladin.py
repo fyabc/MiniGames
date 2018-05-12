@@ -12,25 +12,22 @@ __author__ = 'fyabc'
 ###############
 
 
-class 力量祝福(Spell):
+class 受祝福的勇士(Spell):
     data = {
-        'id': 40001,
-        'type': 1, 'klass': 4, 'cost': 1,
+        'id': 1040010,
+        'type': 1, 'rarity': 2, 'klass': 4, 'cost': 5,
         'have_target': True,
     }
 
     class Enc(Enchantment):
         data = {
-            'id': 40000,
+            'id': 1040000,
         }
 
-        # TODO: Enchantment name, description, and display.
-
         def apply(self):
-            self.target.data['attack'] += 3
+            self.target.data['attack'] *= 2
 
     def check_target(self, target):
-        # todo: Extract this checker into an utility function.
         if not super().check_target(target):
             return False
 
