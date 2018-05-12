@@ -122,7 +122,6 @@ class ActiveMixin:
 
     # noinspection PyUnresolvedReferences
     def on_mouse_motion(self, x, y, dx, dy):
-        # TODO: Support focus time.
         if not self.active_invisible and not self.visible:
             return False
 

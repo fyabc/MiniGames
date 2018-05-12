@@ -318,19 +318,20 @@ class MinionSprite(EntitySprite):
     CommonColor = Colors['gray30']
 
     def __init__(self, minion, position=(0, 0), scale=1.0, **kwargs):
-        super().__init__(minion, position, scale, **kwargs)
-
-        # Show enchantments of this minion.
-        self.enchantments = []
-
         self.common_border = None
         self.atk_label = None
         self.health_label = None
 
+        # Show enchantments of this minion.
+        self.enchantments = []
+
         # TODO: Taunt label, windfury label, etc.
 
         # TODO: Show the related card when mouse on it over N seconds.
+        # TODO: (Need support of focus time in ``ActiveMixin``.)
         self.related_card = None
+
+        super().__init__(minion, position, scale, **kwargs)
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
@@ -339,7 +340,7 @@ class MinionSprite(EntitySprite):
             self.atk_label.element.text = str(self.entity.attack)
             self.health_label.element.text = str(self.entity.health)
         else:   # self.entity.type == Type.Permanent
-            # TODO: Anything to do?
+            # Anything to do?
             pass
 
     def _build_components(self):

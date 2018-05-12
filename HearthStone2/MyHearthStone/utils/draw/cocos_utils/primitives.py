@@ -7,6 +7,7 @@ __author__ = 'fyabc'
 
 
 class Rect(Canvas):
+    """The CocosNode to draw a rectangle."""
     # todo: Support filled rect.
 
     rect = parameter()

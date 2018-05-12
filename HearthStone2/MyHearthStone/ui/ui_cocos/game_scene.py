@@ -15,7 +15,7 @@ from ...utils.draw.cocos_utils.basic import pos, notice, hs_style_label, get_wid
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, DialogLayer
 from ...utils.draw.cocos_utils.primitives import Rect
-from .card_sprite import HandSprite, HeroSprite
+from .card_sprite import HandSprite, HeroSprite, MinionSprite
 from .selection_manager import SelectionManager
 from .animations import run_animations
 from ...game.core import Game
@@ -86,11 +86,6 @@ class GameBoardLayer(ActiveLayer):
             return
 
         assert self.start_game_iter is not None, 'Game not started correctly'
-
-        # from ...utils.package_io import all_cards
-        # from .card_sprite import MinionSprite
-        #
-        # self.add(MinionSprite(all_cards()['0'](None, 0), pos(0.5, 0.5)), z=100)
 
         # TODO: Play start game animation, etc.
 
@@ -251,8 +246,10 @@ class GameBoardLayer(ActiveLayer):
 
         # Remove all old card sprites, and replace it to new.
         # [NOTE]: Use cache, need more tests.
-        _card_sprite_cache = {card_sprite.entity: card_sprite
-                              for card_sprite in chain(*self.hand_sprites, *self.play_sprites)}
+        _hand_sprite_cache = {hand_sprite.entity: hand_sprite
+                              for hand_sprite in chain(*self.hand_sprites)}
+        _minion_sprite_cache = {minion_sprite.entity: minion_sprite
+                                for minion_sprite in chain(*self.play_sprites)}
         for card_sprite_list in self.hand_sprites + self.play_sprites:
             card_sprite_list.clear()
         for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.38, .62))):
@@ -262,25 +259,25 @@ class GameBoardLayer(ActiveLayer):
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_hand) * (self.HeroL - self.BoardL), y_hand),
                     'is_front': (i == 0), 'scale': 0.35,
                     'sel_mgr_kwargs': {'set_default': i == 0}, 'selected_effect': None, 'unselected_effect': None}
-                if card in _card_sprite_cache:
-                    card_sprite = _card_sprite_cache.pop(card)
-                    card_sprite.update_content(**spr_kw)
+                if card in _hand_sprite_cache:
+                    hand_sprite = _hand_sprite_cache.pop(card)
+                    hand_sprite.update_content(**spr_kw)
                 else:
-                    card_sprite = HandSprite(card, **spr_kw)
-                    self.add(card_sprite)
-                self.hand_sprites[i].append(card_sprite)
+                    hand_sprite = HandSprite(card, **spr_kw)
+                    self.add(hand_sprite)
+                self.hand_sprites[i].append(hand_sprite)
             for j, card in enumerate(player.play):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_play) * (self.HeroL - self.BoardL), y_play),
-                    'is_front': True, 'scale': 0.35, 'sel_mgr_kwargs': {'set_default': False}, }
-                if card in _card_sprite_cache:
-                    card_sprite = _card_sprite_cache.pop(card)
-                    card_sprite.update_content(**spr_kw)
+                    'scale': 1.0}
+                if card in _minion_sprite_cache:
+                    minion_sprite = _minion_sprite_cache.pop(card)
+                    minion_sprite.update_content(**spr_kw)
                 else:
-                    card_sprite = HandSprite(card, **spr_kw)
-                    self.add(card_sprite)
-                self.play_sprites[i].append(card_sprite)
-        for card_sprite in _card_sprite_cache.values():
+                    minion_sprite = MinionSprite(card, **spr_kw)
+                    self.add(minion_sprite)
+                self.play_sprites[i].append(minion_sprite)
+        for card_sprite in chain(_hand_sprite_cache.values(), _minion_sprite_cache.values()):
             self.remove(card_sprite)
 
     def _replace_dialog(self, player_id):
