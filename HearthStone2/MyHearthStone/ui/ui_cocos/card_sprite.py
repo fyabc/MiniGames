@@ -323,8 +323,24 @@ class MinionSprite(EntitySprite):
         # Show enchantments of this minion.
         self.enchantments = []
 
+        self.common_border = None
+        self.atk_label = None
+        self.health_label = None
+
+        # TODO: Taunt label, windfury label, etc.
+
         # TODO: Show the related card when mouse on it over N seconds.
         self.related_card = None
+
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
+
+        if self.entity.type == Type.Minion:
+            self.atk_label.element.text = str(self.entity.attack)
+            self.health_label.element.text = str(self.entity.health)
+        else:   # self.entity.type == Type.Permanent
+            # TODO: Anything to do?
+            pass
 
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
@@ -344,7 +360,19 @@ class MinionSprite(EntitySprite):
         except ResourceNotFoundException:
             pass
 
-        # TODO
+        if self.entity.type == Type.Minion:
+            atk_sprite = Sprite('Atk.png', pos(-0.92, -0.81, base=self.SizeBase), scale=0.6)
+            self.atk_label = hs_style_label(str(self.entity.attack), pos(-0.84, -0.8, base=self.SizeBase),
+                                            anchor_y='center', font_size=32)
+            health_sprite = Sprite('Health.png', pos(0.88, -0.81, base=self.SizeBase), scale=0.56)
+            self.health_label = hs_style_label(str(self.entity.health), pos(0.86, -0.8, base=self.SizeBase),
+                                               anchor_y='center', font_size=32, color=self._get_health_color())
+            self.add(atk_sprite, z=1)
+            self.add(self.atk_label, z=2)
+            self.add(health_sprite, z=1)
+            self.add(self.health_label, z=2)
+        else:   # self.entity.type == Type.Permanent
+            pass
 
 
 class HeroSprite(EntitySprite):

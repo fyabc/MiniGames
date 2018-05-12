@@ -243,5 +243,6 @@ __all__ = [
     'validate_play_size',
     'validate_attacker', 'validate_defender',
 
+    'EnumMeta',
     'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
 ]

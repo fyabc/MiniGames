@@ -19,7 +19,7 @@ __author__ = 'fyabc'
 
 
 class Game:
-    """The core game system. Include an event engine and some game data."""
+    """The core game system in the server. Include an event engine and some game data."""
 
     TurnMax = C.Game.TurnMax
     ResultWin0 = 1
@@ -158,6 +158,8 @@ class Game:
             raise ValueError('Unknown when {!r}'.format(when))
 
     def run_player_action(self, player_action):
+        # TODO: Change this, return final event list, executed by clients (with animations) slowly.
+        # May each client maintains a copy of the game core?
         if not self.running:
             error('The game is not running.')
             return
@@ -310,6 +312,9 @@ class Game:
         :return: iterator
             1. yield None, send list of indices of changed cards
         """
+
+        # TODO: Change this generator into normal function.
+        # Add 'StartGame', 'ReplaceCard' into player actions. Add game states.
 
         self.mode = mode
         self.running = True

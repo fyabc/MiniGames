@@ -87,6 +87,11 @@ class GameBoardLayer(ActiveLayer):
 
         assert self.start_game_iter is not None, 'Game not started correctly'
 
+        # from ...utils.package_io import all_cards
+        # from .card_sprite import MinionSprite
+        #
+        # self.add(MinionSprite(all_cards()['0'](None, 0), pos(0.5, 0.5)), z=100)
+
         # TODO: Play start game animation, etc.
 
         self._replace_dialog(self.ctrl.game.current_player)

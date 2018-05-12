@@ -10,32 +10,11 @@ Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gameped
 
 1. Download data file **data.zip** from <https://pan.baidu.com/s/1EoOrkqJUp7s5PBZl_CQ_uw>, password: 5stb
 
-    Then unzip it.
+2. Run `copy_data.py` to copy data into the project.
 
-2. Downloaded files:
+```bash
+python copy_data.py data.zip
 ```
-<root>/
-    packages/
-        package1/
-            resources/
-                images/
-                sounds/
-                values/
-            meta.json
-            package1_part1.py
-            package1_part2.py
-            ...
-        package2/
-            ...
-    resources/
-        images/
-        fonts/
-        sounds/
-        values/
-```
-
-3. Move the `packages/` directory under `MyHearthStone/data` (overwrite old `packages/` directory),
-    and move the `resources` directory under `MyHearthStone/data`.
 
 ## Installation
 
