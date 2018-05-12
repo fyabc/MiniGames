@@ -11,7 +11,7 @@
     // The locale to use when "Locale" does not exists.
     "DefaultLocale": "zh_CN",
 
-    "Frontend": "text-single",
+    "Frontend": "cocos-single",
 
     /// User extension
     "EnableUserExtension": true,

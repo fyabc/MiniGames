@@ -6,7 +6,7 @@
 from cocos import rect, cocosnode, euclid
 from cocos.sprite import Sprite
 from cocos.text import Label, HTMLLabel
-from pyglet.resource import ResourceNotFoundException
+from pyglet.resource import ResourceNotFoundException, image as pyglet_image
 
 from .select_effect import SelectEffectManager
 from ...utils.constants import C
@@ -24,6 +24,8 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
 
     In fact, it is a `CocosNode` that contains multiple sprites.
     """
+
+    ActivatedColor = Colors['orange']
 
     def __init__(self, entity, position=(0, 0), scale=1.0, **kwargs):
         # For active mixin.
@@ -56,7 +58,7 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
             return
         self._is_activated = is_activated
         if is_activated:
-            self.add(self.activated_border, z=3)
+            self.add(self.activated_border, z=10)
         else:
             self.remove(self.activated_border)
 
@@ -190,17 +192,16 @@ class HandSprite(EntitySprite):
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
-        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=4)
+        self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
 
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
                              scale=1.0,)
-        if self.static:
-            card_cls = all_cards()[self.entity]
-        else:
-            card_cls = self.entity
-        image_name = card_cls.get_image_name()
         try:
-            image_sprite = Sprite(image_name, pos(0.0, 0.02, base=self.SizeBase), scale=1.2,)
+            if self.static:
+                card_cls = all_cards()[self.entity]
+            else:
+                card_cls = self.entity
+            image_sprite = Sprite(card_cls.get_image_name(), pos(0.0, 0.02, base=self.SizeBase), scale=1.2,)
         except ResourceNotFoundException:
             image_sprite = None
 
@@ -306,8 +307,15 @@ class HandSprite(EntitySprite):
 
 
 class MinionSprite(EntitySprite):
-    Size = euclid.Vector2(300, 425)  # Card size (original).
+    ImagePart = 0.40, 0.38
+    ImageScale = 0.9
+
+    ImageSize = euclid.Vector2(286, 395)    # Card size (original).
+    Size = euclid.Vector2(                  # Sprite size.
+        int(ImageSize[0] * ImagePart[0] * ImageScale), int(ImageSize[1] * ImagePart[1] * ImageScale))
     SizeBase = Size // 2  # Coordinate base of children sprites.
+
+    CommonColor = Colors['gray30']
 
     def __init__(self, minion, position=(0, 0), scale=1.0, **kwargs):
         super().__init__(minion, position, scale, **kwargs)
@@ -315,10 +323,28 @@ class MinionSprite(EntitySprite):
         # Show enchantments of this minion.
         self.enchantments = []
 
+        # TODO: Show the related card when mouse on it over N seconds.
+        self.related_card = None
+
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
-        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=4)
+        self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
+
+        self.common_border = Rect(border_rect, self.CommonColor, width=2)
+        self.add(self.common_border, z=1)
+
+        # Get the part of card image.
+        try:
+            image = pyglet_image(self.entity.get_image_name()).get_region(
+                x=int(self.ImageSize[0] * (1 - self.ImagePart[0]) / 2), y=int(self.ImageSize[1] * 0.51),
+                width=int(self.ImageSize[0] * self.ImagePart[0]), height=int(self.ImageSize[1] * self.ImagePart[1]))
+            image_sprite = Sprite(image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale,)
+            self.add(image_sprite, z=0)
+        except ResourceNotFoundException:
+            pass
+
+        # TODO
 
 
 class HeroSprite(EntitySprite):
@@ -336,7 +362,7 @@ class HeroSprite(EntitySprite):
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
-        self.activated_border = Rect(border_rect, Colors['lightgreen'], width=4)
+        self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
 
         self.add(Sprite('Hero.png', pos(0, 0, base=self.SizeBase), scale=1.0))
 
@@ -360,6 +386,7 @@ class HeroPowerSprite(EntitySprite):
 __all__ = [
     'EntitySprite',
     'HandSprite',
+    'MinionSprite',
     'HeroSprite',
     'HeroPowerSprite',
 ]

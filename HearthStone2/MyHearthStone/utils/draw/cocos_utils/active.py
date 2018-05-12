@@ -60,6 +60,8 @@ class ActiveMixin:
 
         self.selected_effect = kwargs.pop('selected_effect', None)
         self.unselected_effect = kwargs.pop('unselected_effect', None)
+        self.focus_timeout = kwargs.pop('focus_timeout', None)
+        self.focus_start_time = None
         self.activated_effect = kwargs.pop('activated_effect', None)
         self.active_invisible = kwargs.pop('active_invisible', False)
         self.self_in_callback = kwargs.pop('self_in_callback', False)
@@ -120,6 +122,7 @@ class ActiveMixin:
 
     # noinspection PyUnresolvedReferences
     def on_mouse_motion(self, x, y, dx, dy):
+        # TODO: Support focus time.
         if not self.active_invisible and not self.visible:
             return False
 

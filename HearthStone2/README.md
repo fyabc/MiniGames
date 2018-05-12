@@ -34,7 +34,7 @@ Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gameped
         values/
 ```
 
-3. Move the `packages/` directory to `MyHearthStone/data/packages`,
+3. Move the `packages/` directory under `MyHearthStone/data` (overwrite old `packages/` directory),
     and move the `resources` directory under `MyHearthStone/data`.
 
 ## Installation
