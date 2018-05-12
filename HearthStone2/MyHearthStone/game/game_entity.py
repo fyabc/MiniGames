@@ -123,6 +123,7 @@ class GameEntity(metaclass=SetDataMeta):
     zone = make_property('zone', default=Zone.Invalid)
     player_id = make_property('player_id', default=None)
     type = make_property('type', setter=False)
+    package = make_property('package', setter=False)
 
     @property
     def init_player_id(self):

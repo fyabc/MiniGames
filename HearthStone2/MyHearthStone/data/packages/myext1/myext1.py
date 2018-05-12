@@ -20,4 +20,3 @@ class 蓝腮骑士(Minion):
     def run_deathrattle(self, **kwargs):
         location = kwargs.pop('location', 'last')
         return std_events.pure_summon_events(self.game, 7, self.player_id, loc=location)
-

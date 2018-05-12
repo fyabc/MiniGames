@@ -205,6 +205,11 @@ class HandSprite(EntitySprite):
             image_sprite = None
 
         mana_sprite = Sprite('Mana.png', pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
+        try:
+            mark_sprite = Sprite('Mark-{}.png'.format(self._c_get('package')),
+                                 pos(0, -0.6, base=self.SizeBase), scale=1.0)
+        except ResourceNotFoundException:
+            mark_sprite = None
         name_label = Label(self._c_get('name'), pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
                            anchor_y='center', bold=True)
         desc_label = HTMLLabel(self._render_desc(self._c_get('description')),
@@ -217,15 +222,17 @@ class HandSprite(EntitySprite):
         self.front_sprites.update({
             'main': [main_sprite, 1],
             'mana-sprite': [mana_sprite, 2],
-            'name': [name_label, 2],
-            'desc': [desc_label, 2],
+            'name': [name_label, 3],
+            'desc': [desc_label, 3],
         })
         if image_sprite is not None:
             self.front_sprites['image'] = [image_sprite, 0]
+        if mark_sprite is not None:
+            self.front_sprites['mark-sprite'] = [mark_sprite, 2]
         if self._c_get('type') != Type.Permanent:
             mana_label = hs_style_label(str(self._c_get('cost')), pos(-0.84, 0.8, base=self.SizeBase),
                                         font_size=64, anchor_y='center', color=Colors['white'])
-            self.front_sprites['mana-label'] = [mana_label, 3]
+            self.front_sprites['mana-label'] = [mana_label, 4]
 
         back_sprite = Sprite('Card_back-Classic.png', (0, 0), scale=1.0, )
         self.back_sprites['back'] = [back_sprite, 1]
@@ -233,7 +240,7 @@ class HandSprite(EntitySprite):
         if self._c_get('rarity') not in (Rarity.Basic, Rarity.Derivative):
             self.front_sprites['rarity-sprite'] = [Sprite(
                 'Rarity-{}-{}.png'.format(self._c_get('type'), self._c_get('rarity')),
-                pos(0.0, -0.248, base=self.SizeBase)), 3]
+                pos(0.0, -0.248, base=self.SizeBase)), 4]
 
         if self._c_get('type') == Type.Minion:
             atk_sprite = Sprite('Atk.png', pos(-0.86, -0.81, base=self.SizeBase), scale=1.15)
@@ -251,9 +258,13 @@ class HandSprite(EntitySprite):
         elif self._c_get('type') == Type.Spell:
             name_label.position = pos(0, -0.04, base=self.SizeBase)
             main_sprite.position = pos(0, -0.07, base=self.SizeBase)
+            if mark_sprite is not None:
+                mark_sprite.position = pos(0, -0.57, base=self.SizeBase)
         elif self._c_get('type') == Type.Weapon:
             name_label.position = pos(0, -0.01, base=self.SizeBase)
             main_sprite.position = pos(0, -0.01, base=self.SizeBase)
+            if mark_sprite is not None:
+                mark_sprite.position = pos(0, -0.55, base=self.SizeBase)
             atk_sprite = Sprite('WeaponAtk.png', pos(-0.81, -0.83, base=self.SizeBase),
                                 scale=0.85)
             atk_label = hs_style_label(str(self._c_get('attack')), pos(-0.78, -0.8, base=self.SizeBase),

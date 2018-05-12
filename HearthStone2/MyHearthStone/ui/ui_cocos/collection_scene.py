@@ -9,11 +9,13 @@ from pyglet.window import mouse
 
 from .collection_sprites import StaticCardSprite, CardItem
 from .card_sprite import HandSprite
+from ...game.deck import Deck
+from ...utils.game import Klass
 from ...utils.message import info
 from ...utils.package_io import all_cards
-from ...utils.draw.cocos_utils.basic import pos, pos_y, Colors
+from ...utils.draw.cocos_utils.basic import pos, pos_y, Colors, hs_style_label
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel
-from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
+from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 
 __author__ = 'fyabc'
 
@@ -259,6 +261,7 @@ class DeckEditLayer(ActiveLayer):
         self.card_items = []
         self.card_show_start = None
 
+        # TODO: Click deck name label to edit name, delete, etc.
         self.label_deck_name = ActiveLabel.hs_style(
             '', pos(self.DeckC, self.DeckTitleY), anchor_x='center', anchor_y='center',
             bold=True,
@@ -284,19 +287,50 @@ class DeckEditLayer(ActiveLayer):
         assert self.deck_id is not None, 'Deck not selected correctly'
 
         if self.deck_id == 'new':
-            # todo: Add new deck
-            self.deck_id = 0
+            # New deck dialog.
+            DW, DH = 0.7, 0.7
+            layer_ = DialogLayer(Colors['black'], *map(int, pos(DW, DH)),
+                                 position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
+            layer_.add(hs_style_label('选择职业', pos(DW * 0.5, DH * 0.98), anchor_y='top'))
 
-        self.deck = self.ctrl.user.decks[self.deck_id].copy()
-        self.card_show_start = 0
+            def _on_done(klass):
+                layer_.remove_from_scene()
+                self.deck = Deck(klass=klass, card_id_list=[], mode='standard')
+                self._on_deck_opened()
 
-        self.label_deck_name.element.text = self.deck.name
-        self._build_card_items()
-        self._refresh_card_items()
+            def _on_canceled():
+                layer_.remove_from_scene()
+                self.on_edit_done()
+
+            NColumns = 3
+            NRows = (len(Klass.Idx2Str) - 1) // NColumns + 1
+            for i, (kls, name) in enumerate(Klass.Idx2Str.items()):
+                y, x = divmod(i, NColumns)
+                layer_.add(ActiveLabel.hs_style(
+                    name, pos((2 * x + 1) / (2 * NColumns) * DW,
+                              (0.04 + 0.92 * (2 * y + 1) / (2 * NRows)) * DH),
+                    anchor_x='center', anchor_y='center', callback=lambda kls_=kls: _on_done(kls_),
+                ))
+
+            layer_.add(ActiveLabel.hs_style(
+                '取消', pos(0.5 * DW, 0.02 * DH), anchor_x='center', anchor_y='bottom',
+                callback=_on_canceled,
+            ))
+            layer_.add_to_scene(self.parent)
+        else:
+            # Open an exist deck.
+            self.deck = self.ctrl.user.decks[self.deck_id].copy()
+            self._on_deck_opened()
 
     def on_exit(self):
         # Store card items into deck
         decks = self.ctrl.user.decks
+
+        # If new deck operation is canceled, ``self.deck`` will be ``None``.
+        if self.deck is None:
+            self.deck_id = None
+            return super().on_exit()
+
         if self.delete_deck:
             if self.deck_id == 'new':
                 info('New deck {} not saved.'.format(self.deck))
@@ -320,6 +354,15 @@ class DeckEditLayer(ActiveLayer):
         self.card_items.clear()
 
         return super().on_exit()
+
+    def _on_deck_opened(self):
+        """Callback called when deck completely opened or created."""
+
+        self.card_show_start = 0
+
+        self.label_deck_name.element.text = self.deck.name
+        self._build_card_items()
+        self._refresh_card_items()
 
     def _build_card_items(self):
         card_cnt = Counter(self.deck.card_id_list)
