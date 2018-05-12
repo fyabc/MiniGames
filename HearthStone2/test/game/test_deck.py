@@ -19,10 +19,10 @@ class TestDeck(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_deck = Deck(klass=Klass.Str2Idx['Druid'], card_id_list=[
-            6, 6, 6, 6,
-            11, 11, 11, 11,
-            10000, 10000, 10000, 10000,
-            30007, 30007, 30007, 30007,
+            "6", "6", "6", "6",
+            "11", "11", "11", "11",
+            "10000", "10000", "10000", "10000",
+            "30007", "30007", "30007", "30007",
         ], name='Test Druid')
 
     @classmethod

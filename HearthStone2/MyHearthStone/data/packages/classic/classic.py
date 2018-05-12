@@ -50,5 +50,5 @@ class 战利品贮藏者(Minion):
         'rarity': 1, 'cost': 2, 'attack': 2, 'health': 1,
     }
 
-    def run_deathrattle(self):
+    def run_deathrattle(self, **kwargs):
         return [std_events.DrawCard(self.game, self, self.player_id)]

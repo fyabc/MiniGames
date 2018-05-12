@@ -385,9 +385,7 @@ class Game:
             for location, e in enumerate(player.play):
                 if not e.alive:
                     death_minion.append([e, location])
-            if player.weapon is None:
-                continue
-            if not player.weapon.alive:
+            if player.weapon is not None and not player.weapon.alive:
                 deaths.append([player.weapon, None])
             # Special case for hero: if already lose (play_state = False), do not add to deaths.
             if player.hero.play_state is True and not player.hero.alive:

@@ -18,5 +18,5 @@ class 影袭(Spell):
         'type': 1, 'klass': 6, 'cost': 1,
     }
 
-    def run(self, target):
+    def run(self, target, **kwargs):
         return std_events.damage_events(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)

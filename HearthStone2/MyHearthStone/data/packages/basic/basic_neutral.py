@@ -71,10 +71,9 @@ DIY cards / heroes / enchantments can add 'D' or other prefixes before the ID fo
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero
-from MyHearthStone.ext import blank_minion, blank_weapon
-from MyHearthStone.ext import std_events
+from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import message as msg
-from MyHearthStone.utils.game import Zone, Race
+from MyHearthStone.utils.game import Race
 
 __author__ = 'fyabc'
 

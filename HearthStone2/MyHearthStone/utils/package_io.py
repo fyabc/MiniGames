@@ -225,7 +225,7 @@ class _GameData:
                 assert isinstance(v[0], str)
                 assert isinstance(v[1], str)
 
-                var = heroes_dict.get(k, None)
+                var = heroes_dict.get(int(k), None)
                 if var is not None:
                     data = getattr(var, 'data')
                     data['name'] = v[0]

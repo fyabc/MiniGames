@@ -29,6 +29,6 @@ class 力量祝福(Spell):
 
         return True
 
-    def run(self, target):
+    def run(self, target, **kwargs):
         # todo
         return []

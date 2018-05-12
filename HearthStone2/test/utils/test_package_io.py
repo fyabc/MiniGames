@@ -30,13 +30,13 @@ class TestPackageIO(unittest.TestCase):
     def testAllCards(self):
         all_cards = pio.all_cards()
 
-        self.assertIn(43, all_cards)        # 幸运币
-        self.assertIn(6, all_cards)         # 工程师学徒
-        self.assertIn(30007, all_cards)     # 火球术
-        self.assertIn(90008, all_cards)     # 炽炎战斧
+        self.assertIn("43", all_cards)        # 幸运币
+        self.assertIn("6", all_cards)         # 工程师学徒
+        self.assertIn("30007", all_cards)     # 火球术
+        self.assertIn("90008", all_cards)     # 炽炎战斧
 
     def testOneCard(self):
-        Fireball = pio.all_cards()[30007]
+        Fireball = pio.all_cards()["30007"]
 
         self.assertTrue(issubclass(Fireball, Spell))
         self.assertEqual(Fireball.data['name'], '火球术')

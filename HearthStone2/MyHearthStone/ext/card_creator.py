@@ -87,7 +87,7 @@ def draw_card_fn(n=1):
     :type n: int
     :return: Draw card function, used as `run` or `battlecry`.
     """
-    def run_battlecry(self, target):
+    def run_battlecry(self, target, **kwargs):
         return [std_events.DrawCard(self.game, self, self.player_id)
                 for _ in range(n)]
     return run_battlecry

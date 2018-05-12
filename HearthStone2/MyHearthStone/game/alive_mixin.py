@@ -29,9 +29,9 @@ class AliveMixin:
             'can_attack_hero': True,
         })
 
-    attack = make_property('attack')
-    health = make_property('health')
-    max_health = make_property('max_health')
+    attack = make_property('attack', setter=False)
+    health = make_property('health', setter=False)
+    max_health = make_property('max_health', setter=False)
     to_be_destroyed = make_property('to_be_destroyed')
     n_attack = make_property('n_attack')
     n_total_attack = make_property('n_total_attack')
