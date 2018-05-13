@@ -3,7 +3,7 @@
 
 """Base classes of enchantment."""
 
-from ..game_entity import GameEntity
+from ..game_entity import GameEntity, make_property
 from ...utils.game import Type
 
 __author__ = 'fyabc'
@@ -23,23 +23,46 @@ class Enchantment(GameEntity):
 
     data = {
         'type': Type.Enchantment,
+        'aura': False,
     }
 
     def __init__(self, game, target):
         super().__init__(game)
         self.target = target
 
+    aura = make_property('aura', setter=False)
+
+    @property
+    def order(self):
+        """The order in enchantment list. Sorted in increase order."""
+        return (1 if self.aura else 0), self.oop
+
     def apply(self):
         """Apply this enchantment to the attached target."""
         pass
 
+    @classmethod
+    def from_card(cls, creator: GameEntity, *args, **kwargs):
+        """Create an enchantment from the creator.
 
-class OngoingEffect(Enchantment):
-    """Ongoing enchantment.
+        This method will set the oop of enchantment as the enchantment of the creator.
+        """
 
-    Information from <https://hearthstone.gamepedia.com/Enchantment>:
+        enc = cls(*args, **kwargs)
+        enc.oop = creator.oop
+
+        return enc
+
+
+class Aura(Enchantment):
+    """Aura (also called ongoing effect).
+
+    Information from <https://hearthstone.gamepedia.com/Ongoing_effect>:
         Ongoing effects are minion, weapon, and boss Hero Power abilities which grant special effects
         on an ongoing basis. Ongoing effects are often referred to as auras, particularly those which grant
         temporary enchantments to other targets.
     """
-    pass
+
+    data = {
+        'aura': True,
+    }

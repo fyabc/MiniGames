@@ -21,20 +21,6 @@ def order_of_play(objects, key=None):
     return sorted(objects, key=key)
 
 
-def error_and_stop(game, event, msg):
-    """Show an error message and stop the event.
-
-    :param game:
-    :param event:
-    :param msg:
-    :return:
-    """
-
-    game.error_stub(msg)
-    event.disable()
-    game.stop_subsequent_phases()
-
-
 def validate_cost(player, card, msg_fn):
     """Validate the cost of the card.
 
@@ -236,7 +222,6 @@ class Condition:
 
 __all__ = [
     'order_of_play',
-    'error_and_stop',
 
     'validate_cost',
     'validate_target',

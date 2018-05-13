@@ -221,6 +221,8 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
         # [NOTE]: move it to ``Game.move``?
         minion.oop = game.inc_oop()
 
+        # [NOTE] ``AfterSummon`` phase appears before ``Summon`` event.
+        # Is this a bug or not?
         return [AfterSummon(game, summon_event)]
     else:
         return []

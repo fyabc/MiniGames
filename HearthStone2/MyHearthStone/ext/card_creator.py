@@ -168,6 +168,19 @@ def checker_minion(self, target):
     return True
 
 
+def checker_friendly_minion(self, target):
+    if not super(type(self), self).check_target(target):
+        return False
+
+    if target.zone != Zone.Play:
+        return False
+
+    if target.player_id != self.player_id:
+        return False
+
+    return True
+
+
 # Enchantment creation.
 
 def create_enchantment(data, apply_fn, name=None, module_dict=None, add_to_module=False):
@@ -201,6 +214,7 @@ __all__ = [
     'create_summon_minion',
 
     'checker_minion',
+    'checker_friendly_minion',
 
     'create_enchantment',
 ]

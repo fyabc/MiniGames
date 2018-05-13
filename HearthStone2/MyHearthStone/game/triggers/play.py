@@ -5,7 +5,7 @@
 
 from ..events import standard
 from .trigger import StandardBeforeTrigger
-from ...utils.game import error_and_stop, Zone
+from ...utils.game import Zone
 
 __author__ = 'fyabc'
 
@@ -28,27 +28,6 @@ class StdOnPlaySpell(StandardBeforeTrigger):
         """
 
         player = self.game.players[event.player_id]
-
-        # todo: Move these checks into frontend code.
-        # todo: Add effect of Cho'gall
-        if player.displayed_mana() < event.spell.cost:
-            error_and_stop(self.game, event, 'You do not have enough mana!')
-            return []
-
-        if not event.spell.check_target(event.target):
-            error_and_stop(self.game, event, 'This is not a valid target!')
-            return []
-
-        if event.spell.data['secret']:
-            if player.full(Zone.Secret):
-                error_and_stop(self.game, event, 'I cannot have more secrets!')
-                return []
-
-            for card in player.get_zone(Zone.Secret):
-                if card.data['id'] == event.spell.data['id']:
-                    error_and_stop(self.game, event, 'I already have this secret!')
-                    return []
-
         player.spend_mana(event.spell.cost)
 
         # [NOTE]: move it to `Game.move`?
@@ -103,20 +82,6 @@ class StdOnPlayMinion(StandardBeforeTrigger):
         """
 
         player = self.game.players[event.player_id]
-
-        # todo: Add effect of "Seadevil Stinger"
-        if player.displayed_mana() < event.minion.cost:
-            error_and_stop(self.game, event, 'You do not have enough mana!')
-            return []
-
-        if not event.minion.check_target(event.target):
-            error_and_stop(self.game, event, 'This is not a valid target!')
-            return []
-
-        if player.full(Zone.Play):
-            error_and_stop(self.game, event, 'You cannot have more minions!')
-            return []
-
         player.spend_mana(event.minion.cost)
 
         se = event.summon_event

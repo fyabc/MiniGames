@@ -66,13 +66,16 @@ class Card(GameEntity):
 
     @property
     def have_target(self):
-        """[NOTE]: This attribute may be changed in the game, such as combo cards."""
+        """[NOTE]: This attribute may be changed in the game, such as combo cards.
+
+        See card 破碎残阳祭司(20) for more details.
+        """
         return self.data['have_target']
 
     def check_target(self, target: GameEntity):
         """Check the validity of the target."""
 
-        if not self.have_target:
+        if target is None:
             return True
 
         # Default valid target zones.

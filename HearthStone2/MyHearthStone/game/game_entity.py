@@ -4,6 +4,7 @@
 """The base class of game entities."""
 
 from collections import ChainMap
+import itertools
 
 from ..utils.game import Zone, Type
 from ..utils.message import entity_message
@@ -89,6 +90,7 @@ class GameEntity(metaclass=SetDataMeta):
 
         # oop(Order Of Play).
         # All game entities have this attribute, and share the same oop list.
+        # TODO: Check the oop settings in all situations.
         self.oop = None
 
         # Entity-level data dict (highest priority, commonly variable between different entities).
@@ -101,6 +103,7 @@ class GameEntity(metaclass=SetDataMeta):
         self._init_player_id = None
 
         # Enchantment list of this entity.
+        # Order: Enchantments in order of oop + auras in order of oop.
         self.enchantments = []
 
     def _repr(self, **kwargs):
@@ -151,12 +154,29 @@ class GameEntity(metaclass=SetDataMeta):
         return result
 
     def add_enchantment(self, enchantment):
-        # todo: insert it in order of play.
-        self.enchantments.append(enchantment)
+        """Add an enchantment, insert in order."""
+        a = self.enchantments
+        lo, hi = 0, len(a)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if a[mid].order < enchantment.order:
+                lo = mid + 1
+            else:
+                hi = mid
+        a.insert(lo, enchantment)
+
+    def remove_enchantments(self, enchantment):
+        """Recalculate enchantments.
+
+        Move auras to the end.
+        Enchantments are sorted in order of play.
+        """
+        # TODO
+        pass
 
     def aura_update_attack_health(self):
         """Aura update (attack / health), called by the same method of class `Game`."""
-        # todo: Move auras to the end, and more.
+
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
         for enchantment in self.enchantments:
             enchantment.apply()
