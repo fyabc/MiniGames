@@ -68,6 +68,8 @@ class Event:
         :param kwargs: Keyword arguments to be shown in string representation.
         :return:
         """
+        if not self.enable:
+            kwargs['enabled'] = False
         return entity_message(self, kwargs, prefix='@')
 
     def __str__(self):

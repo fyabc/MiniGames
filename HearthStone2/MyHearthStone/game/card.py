@@ -266,6 +266,7 @@ class Weapon(Card):
     def aura_update_attack_health(self):
         self.data['attack'] = self.cls_data['attack']
         self.data['health'] = self.data['_raw_health']
+        self.data['max_health'] = self.cls_data['health']
         super().aura_update_attack_health()
 
 

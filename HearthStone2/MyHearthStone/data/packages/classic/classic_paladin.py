@@ -1,9 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from MyHearthStone.ext import Spell, Enchantment
-from MyHearthStone.utils.game import Zone
-
+from MyHearthStone import ext
+from MyHearthStone.ext import Spell
 __author__ = 'fyabc'
 
 
@@ -11,31 +10,23 @@ __author__ = 'fyabc'
 # Paladin (4) #
 ###############
 
+def _apply(self):
+    self.target.data['attack'] *= 2
+
+
+Enc_受祝福的勇士 = ext.create_enchantment({'id': 1040010}, apply_fn=_apply)
+
 
 class 受祝福的勇士(Spell):
+    """<https://hearthstone.gamepedia.com/Blessed_Champion>"""
     data = {
         'id': 1040010,
         'type': 1, 'rarity': 2, 'klass': 4, 'cost': 5,
         'have_target': True,
     }
 
-    class Enc(Enchantment):
-        data = {
-            'id': 1040000,
-        }
-
-        def apply(self):
-            self.target.data['attack'] *= 2
-
-    def check_target(self, target):
-        if not super().check_target(target):
-            return False
-
-        if target.zone != Zone.Play:
-            return False
-
-        return True
+    check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        target.add_enchantment(self.Enc(self.game, target))
+        target.add_enchantment(Enc_受祝福的勇士(self.game, target))
         return []

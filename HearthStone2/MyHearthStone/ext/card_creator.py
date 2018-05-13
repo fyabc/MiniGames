@@ -7,6 +7,7 @@ from types import new_class
 
 from ..utils.message import warning
 from ..utils.game import Zone
+from ..game.enchantments.enchantment import Enchantment
 from ..game.card import Minion, Weapon
 from ..game.events import standard as std_events
 
@@ -49,6 +50,8 @@ def _add_to_module(result, module_dict):
     module_dict[result.__name__] = result
 
 
+# Blank card creation.
+
 def create_blank(data, name=None, card_type=Minion, module_dict=None):
     """Create a blank card (without special skills).
 
@@ -79,6 +82,8 @@ def create_blank(data, name=None, card_type=Minion, module_dict=None):
 blank_minion = partial(create_blank, card_type=Minion)
 blank_weapon = partial(create_blank, card_type=Weapon)
 
+
+# Cards with some basic skills.
 
 def draw_card_fn(n=1):
     """Get the draw card function.
@@ -151,14 +156,51 @@ def create_summon_minion(data, summon_id, relative_loc, name=None, module_dict=N
     return result
 
 
+# Common used target checkers.
+
+def checker_minion(self, target):
+    if not super(type(self), self).check_target(target):
+        return False
+
+    if target.zone != Zone.Play:
+        return False
+
+    return True
+
+
+# Enchantment creation.
+
+def create_enchantment(data, apply_fn, name=None, module_dict=None, add_to_module=False):
+    assert 'id' in data, 'Data must contain value of key "id".'
+
+    if name is None:
+        if 'name' in data:
+            name = data['name']
+        else:
+            name = '{}_{}'.format(Enchantment.__name__, data['id'])
+
+    cls_dict = {'data': data, 'apply': apply_fn}
+
+    cls = new_class(name, (Enchantment,), {}, lambda ns: ns.update(cls_dict))
+    if add_to_module:
+        _add_to_module(cls, module_dict)
+
+    return cls
+
+
 __all__ = [
     'create_blank',
     'blank_minion',
     'blank_weapon',
+
     'draw_card_fn',
     'damage_fn',
     'create_damage_entity',
     'create_damage_minion',
     'create_damage_weapon',
     'create_summon_minion',
+
+    'checker_minion',
+
+    'create_enchantment',
 ]

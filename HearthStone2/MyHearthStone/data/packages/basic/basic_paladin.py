@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from MyHearthStone.ext import Spell, Enchantment
-from MyHearthStone.utils.game import Zone
+from MyHearthStone import ext
+from MyHearthStone.ext import Spell
 
 __author__ = 'fyabc'
 
@@ -10,6 +10,13 @@ __author__ = 'fyabc'
 ###############
 # Paladin (4) #
 ###############
+
+def _apply(self):
+    self.target.data['attack'] += 3
+
+
+# [NOTE]: Must assign this to a global variable, or use ``add_to_module`` argument.
+Enc_力量祝福 = ext.create_enchantment({'id': 40000}, apply_fn=_apply)
 
 
 class 力量祝福(Spell):
@@ -19,26 +26,30 @@ class 力量祝福(Spell):
         'have_target': True,
     }
 
-    class Enc(Enchantment):
-        data = {
-            'id': 40000,
-        }
-
-        # TODO: Enchantment name, description, and display.
-
-        def apply(self):
-            self.target.data['attack'] += 3
-
-    def check_target(self, target):
-        # todo: Extract this checker into an utility function.
-        if not super().check_target(target):
-            return False
-
-        if target.zone != Zone.Play:
-            return False
-
-        return True
+    check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        target.add_enchantment(self.Enc(self.game, target))
+        target.add_enchantment(Enc_力量祝福(self.game, target))
+        return []
+
+
+def _apply(self):
+    self.target.data['attack'] += 4
+    self.targer.inc_health(4)
+
+
+Enc_王者祝福 = ext.create_enchantment({'id': 40003}, apply_fn=_apply)
+
+
+class 王者祝福(Spell):
+    data = {
+        'id': 40005,
+        'type': 1, 'klass': 4, 'cost': 4,
+        'have_target': True
+    }
+
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        target.add_enchantment(Enc_王者祝福(self.game, target))
         return []

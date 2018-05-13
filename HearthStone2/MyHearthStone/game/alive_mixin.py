@@ -60,6 +60,11 @@ class AliveMixin:
     def take_damage(self, value):
         self.data['_raw_health'] -= value
 
+    def inc_health(self, value):
+        """Increase health and max-health."""
+        self.data['health'] += value
+        self.data['max_health'] += value
+
     def inc_n_attack(self):
         self.n_attack += 1
 
@@ -87,6 +92,7 @@ class AliveMixin:
     def aura_update_attack_health(self):
         self.data['attack'] = self.cls_data.get('attack', 0)
         self.data['health'] = self.data['_raw_health']
+        self.data['max_health'] = self.cls_data['health']
         super().aura_update_attack_health()
 
 
