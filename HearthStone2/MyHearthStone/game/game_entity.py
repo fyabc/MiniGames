@@ -4,7 +4,6 @@
 """The base class of game entities."""
 
 from collections import ChainMap
-import itertools
 
 from ..utils.game import Zone, Type
 from ..utils.message import entity_message
@@ -33,6 +32,17 @@ def make_property(name, setter=True, deleter=False, default=_sentinel):
         _setter if setter else None,
         _deleter if deleter else None,
         doc='The card attribute of {}'.format(name))
+
+
+def _bisect(a, enchantment):
+    lo, hi = 0, len(a)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if a[mid].order < enchantment.order:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
 
 
 class SetDataMeta(type):
@@ -106,6 +116,9 @@ class GameEntity(metaclass=SetDataMeta):
         # Order: Enchantments in order of oop + auras in order of oop.
         self.enchantments = []
 
+        # Triggers of this entity.
+        self.triggers = set()
+
     def _repr(self, **kwargs):
         __show_cls = kwargs.pop('__show_cls', True)
         return entity_message(self, kwargs, prefix='#', __show_cls=__show_cls)
@@ -153,26 +166,54 @@ class GameEntity(metaclass=SetDataMeta):
             result.append(cls.data['armor'])
         return result
 
+    def add_trigger(self, trigger):
+        """Add a trigger."""
+        self.triggers.add(trigger)
+
     def add_enchantment(self, enchantment):
         """Add an enchantment, insert in order."""
         a = self.enchantments
-        lo, hi = 0, len(a)
-        while lo < hi:
-            mid = (lo + hi) // 2
-            if a[mid].order < enchantment.order:
-                lo = mid + 1
-            else:
-                hi = mid
+        lo = _bisect(a, enchantment)
         a.insert(lo, enchantment)
 
-    def remove_enchantments(self, enchantment):
+    def remove_enchantment(self, enchantment):
         """Recalculate enchantments.
 
         Move auras to the end.
         Enchantments are sorted in order of play.
         """
-        # TODO
-        pass
+        a = self.enchantments
+        lo = _bisect(a, enchantment)
+        if a[lo] != enchantment:
+            raise ValueError('Enchantment {} not found in the enchantment list'.format(enchantment))
+        else:
+            del a[lo]
+
+    def update_triggers(self, from_zone, to_zone):
+        """Update triggers according to its active zones."""
+
+        for trigger in self.triggers:
+            from_ = from_zone in trigger.zones
+            to_ = to_zone in trigger.zones
+            if not from_ and to_:
+                self.game.register_trigger(trigger)
+            elif from_ and not to_:
+                self.game.remove_trigger(trigger)
+            else:
+                pass
+
+    def removed_from_play(self, to_zone):
+        """Called when this entity is removed from play.
+        This method is usually called by ``Game.move``.
+
+        Detach all enchantments (with some exceptions)
+        Reset attributes to default value.
+        """
+        # Detach all enchantments.
+        for enchantment in self.enchantments:
+            enchantment.detach(remove_from_target=False)
+        self.enchantments.clear()
+        # TODO: Reset other attributes, may need to override by subclasses.
 
     def aura_update_attack_health(self):
         """Aura update (attack / health), called by the same method of class `Game`."""

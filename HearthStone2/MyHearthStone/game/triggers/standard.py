@@ -12,7 +12,7 @@ from .death import *
 from .play import *
 from .damage import *
 from .combat import *
-from .trigger import StandardBeforeTrigger
+from .trigger import *
 from ...utils.constants import C
 from ...utils.message import debug
 

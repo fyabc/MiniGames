@@ -2,15 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from ...utils.message import info, entity_message
+from ...utils.game import Zone
 
 __author__ = 'fyabc'
 
 
 class Trigger:
-    """"""
+    """The base trigger class.
+
+    TODO: More docstring.
+    """
 
     # Event types for this class of trigger to respond.
     respond = []
+
+    # Zones that this trigger is active.
+    zones = [Zone.Play]
 
     def __init__(self, game, owner):
         """
@@ -22,6 +29,9 @@ class Trigger:
         self.game = game
         self.owner = owner
         self.enable = True
+
+        # Automatically add it to its owner.
+        owner.add_trigger(self)
 
         # The event to be resolved (may be useless?)
         # self.event = None
@@ -67,10 +77,11 @@ class Trigger:
         # todo: complete logging of events and triggers
         info('{} processing {}'.format(self, event))
 
-    def __str__(self):
+    def __repr__(self):
         return self._repr()
 
     def _repr(self, **kwargs):
+        kwargs['owner'] = self.owner
         return entity_message(self, kwargs, prefix='^')
 
 
@@ -78,7 +89,7 @@ class StandardBeforeTrigger(Trigger):
     """Class of standard triggers that run before any other triggers."""
 
     def __init__(self, game):
-        super().__init__(game, game)
+        super().__init__(game, game.entity)
 
 
 class StandardAfterTrigger(Trigger):
@@ -87,9 +98,16 @@ class StandardAfterTrigger(Trigger):
     OopMax = 1 << 31
 
     def __init__(self, game):
-        super().__init__(game, game)
+        super().__init__(game, game.entity)
         self._oop = self.OopMax
 
     @property
     def oop(self):
         return self._oop
+
+
+__all__ = [
+    'Trigger',
+    'StandardBeforeTrigger',
+    'StandardAfterTrigger',
+]

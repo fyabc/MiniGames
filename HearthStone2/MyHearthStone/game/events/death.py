@@ -28,6 +28,10 @@ class MinionDeath(Event):
         super().__init__(game, death)
         self.location = location
 
+    # TODO: OOP exception:
+    # Most things use the oop order of ``self.owner``, but Kel'Thuzad use the oop order of the death event self.
+    # So need to create own oop of this event? Or implement it use death event cache?
+
     def _repr(self):
         return super()._repr(minion=self.owner, loc=self.location)
 

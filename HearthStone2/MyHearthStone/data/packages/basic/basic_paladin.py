@@ -30,14 +30,14 @@ class 力量祝福(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        target.add_enchantment(Enc_力量祝福.from_card(self, self.game, target))
+        Enc_力量祝福.from_card(self, self.game, target)
         return []
 
 
 # 王者祝福 (40005)
 def _apply(self):
     self.target.data['attack'] += 4
-    self.targer.inc_health(4)
+    self.target.inc_health(4)
 
 
 Enc_王者祝福 = ext.create_enchantment({'id': 40003}, apply_fn=_apply)
@@ -53,5 +53,5 @@ class 王者祝福(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        target.add_enchantment(Enc_王者祝福.from_card(self, self.game, target))
+        Enc_王者祝福.from_card(self, self.game, target)
         return []

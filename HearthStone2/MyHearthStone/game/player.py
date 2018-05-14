@@ -7,6 +7,7 @@ import itertools
 import random
 
 from .game_entity import GameEntity
+from .zone_movement import move_map
 from ..utils.constants import C
 from ..utils.game import Zone
 from ..utils.message import info, debug
@@ -90,8 +91,10 @@ class Player(GameEntity):
         pass
 
     def _init_card_zones(self):
-        """Initialize cards' zones when the game start."""
-        # fixme: merge this method into `generate`?
+        """Initialize cards' zones when the game start.
+
+        This will call ``move_map`` to do some other initializing (such as triggers)
+        """
         # Need to init hero zone?
 
         for zone_id in Zone.Idx2Str.keys():
@@ -100,12 +103,12 @@ class Player(GameEntity):
                 for card in zone:
                     # Weapon may be None.
                     if card is not None:
-                        card.zone = zone_id
+                        move_map(Zone.Invalid, zone_id, entity=card)(card)
             except ValueError:
                 pass
-        self.hero.zone = Zone.Hero
+        move_map(Zone.Invalid, Zone.Hero, entity=self.hero)(self.hero)
         if self.weapon is not None:
-            self.weapon.zone = Zone.Weapon
+            move_map(Zone.Invalid, Zone.Weapon, entity=self.weapon)(self.weapon)
 
     def generate(self, to_zone, to_index, entity):
         """Generate an entity into a zone.
@@ -139,6 +142,7 @@ class Player(GameEntity):
         if isinstance(entity, str):
             entity = self.create_card(entity, player_id=self.player_id)
 
+        move_map(Zone.Invalid, to_zone, entity=entity)(entity)
         index = self.insert_entity(entity, to_zone, to_index)
 
         return entity, {

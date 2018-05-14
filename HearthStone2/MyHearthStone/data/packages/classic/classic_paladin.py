@@ -28,5 +28,5 @@ class 受祝福的勇士(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        target.add_enchantment(Enc_受祝福的勇士.from_card(self, self.game, target))
+        Enc_受祝福的勇士.from_card(self, self.game, target)
         return []

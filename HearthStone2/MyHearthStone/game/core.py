@@ -5,9 +5,10 @@ from itertools import chain
 import random
 from typing import *
 
-from .game_entity import GameEntity
+from .game_entity import GameEntity, make_property
 from .player import Player
 from .player_action import process_special_pa
+from .zone_movement import move_map
 from .triggers.standard import add_standard_triggers
 from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
@@ -88,9 +89,6 @@ class Game:
         # Current order of play id
         self.current_oop = 1
 
-        # The game itself have the lowest oop.
-        self.oop = 0
-
         # Current event queue and trigger queue (may be useless?).
         self.current_events = None
         self.current_triggers = None
@@ -127,11 +125,13 @@ class Game:
         for event_type in trigger.respond:
             if event_type not in self.triggers:
                 self.triggers[event_type] = set()
+            debug('Register trigger {} to event type {}'.format(trigger, event_type.__name__))
             self.triggers[event_type].add(trigger)
 
     def remove_trigger(self, trigger):
         for event_type in trigger.respond:
             if event_type in self.triggers:
+                debug('Remove trigger {} from event type {}'.format(trigger, event_type.__name__))
                 self.triggers[event_type].discard(trigger)
 
     def _remove_dead_triggers(self):
@@ -325,10 +325,17 @@ class Game:
     # Game system methods #
     #######################
 
-    @staticmethod
-    def _init_data():
+    entity = make_property('entity', setter=False)
+
+    def _init_data(self):
         return {
-            'replaces': [None, None],
+            'replaces': [None, None],       # Start replace cards.
+            'instant_death_events': [],     # Instant death events.
+
+            # The entity of the game itself. It may contain some triggers and enchantments.
+            # [NOTE]: It is too hard to change this class into the subclass of ``GameEntity``,
+            # so use this.
+            'entity': GameEntity(self),
         }
 
     def start_game2(self, decks, mode='standard'):
@@ -355,6 +362,7 @@ class Game:
         self.player_buffer = [None]
         self.players = [Player(self) for _ in range(2)]
         self.data = self._init_data()
+        self.entity.oop = 0
 
         for player_id, (player, deck) in enumerate(zip(self.players, decks)):
             player.start_game2(deck, player_id, start_player)
@@ -366,6 +374,9 @@ class Game:
             player.on_replace_done(replace)
 
         self.state = self.GameState.Main
+        # TODO: Change this into:
+        # add standard triggers into ``self.entity``
+        # then move ``self.entity`` into ``Zone.Play`` (use ``move_map``)
         add_standard_triggers(self)
         self.resolve_events(game_begin_standard_events(self))
 
@@ -428,11 +439,15 @@ class Game:
 
         death_events = [
             create_death_event(self, death, location)
-            for (death, location) in order_of_play(deaths, key=lambda o: o[0].oop)]
+            for (death, location) in deaths]
 
         for death_event in death_events:
             death = death_event.owner
             self.move(death.player_id, death.zone, death, death.player_id, Zone.Graveyard, 'last')
+
+        # Add instant removal death events.
+        death_events = order_of_play(death_events + self.data['instant_death_events'], key=lambda o: o.owner.oop)
+        self.data['instant_death_events'].clear()
 
         return death_events
 
@@ -560,13 +575,17 @@ class Game:
         if (from_zone, from_index) != (to_zone, to_index) and self.full(to_zone, to_player):
             debug('{} full!'.format(Zone.Idx2Str[to_zone]))
 
+            # Full zone instant removal:
+            # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Full_Zone_Instant_Removal> for details.
             if from_zone == Zone.Play:
-                # todo: trigger some events, such as minion death, etc.
-                pass
+                self.data['instant_death_events'].append(create_death_event(self, entity, location=from_index))
+
+            to_zone = Zone.Graveyard
+            move_map(from_zone, to_zone, entity=entity)(entity)
 
             # Move it to graveyard.
-            entity.zone = Zone.Graveyard
-            self.get_zone(Zone.Graveyard, from_player).append(entity)
+            entity.zone = to_zone
+            self.get_zone(to_zone, from_player).append(entity)
 
             return entity, {
                 'success': False,
@@ -575,6 +594,7 @@ class Game:
                 'to_index': None,
             }
 
+        move_map(from_zone, to_zone, entity=entity)(entity)
         index = self._insert_entity(entity, to_zone, to_player, to_index)
 
         return entity, {

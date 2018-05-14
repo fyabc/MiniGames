@@ -231,7 +231,7 @@ class 破碎残阳祭司(Minion):
 
     def run_battlecry(self, target, **kwargs):
         if target is not None:
-            target.add_enchantment(Enc_破碎残阳祭司.from_card(self, self.game, target))
+            Enc_破碎残阳祭司.from_card(self, self.game, target)
         return []
 
 
@@ -317,8 +317,8 @@ class Enc_霜狼督军(Enchantment):
         'id': 4,
     }
 
-    def __init__(self, game, target, n):
-        super().__init__(game, target)
+    def __init__(self, game, target, n, **kwargs):
+        super().__init__(game, target, **kwargs)
         self.n = n
 
     def apply(self):
@@ -337,7 +337,7 @@ class 霜狼督军(Minion):
         n = len(self.game.get_zone(Zone.Play, self.player_id)) - 1
         assert n >= 0
         if n > 0:
-            self.add_enchantment(Enc_霜狼督军.from_card(self, self.game, self, n))
+            Enc_霜狼督军.from_card(self, self.game, self, n)
         return []
 
 

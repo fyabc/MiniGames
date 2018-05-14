@@ -208,28 +208,22 @@ class _GameData:
                 values_dict = json.load(f)
             values_cards = values_dict['Cards']
             values_heroes = values_dict['Heroes']
-            for k, v in values_cards.items():
-                assert isinstance(v, list)
-                assert len(v) == 2
-                assert isinstance(v[0], str)
-                assert isinstance(v[1], str)
+            values_enchantments = values_dict['Enchantments']
+            for values, entities in ((values_cards, cards_dict), (values_heroes, heroes_dict),
+                                     (values_enchantments, enchantments_dict)):
+                for k, v in values.items():
+                    assert isinstance(v, list)
+                    assert len(v) == 2
+                    assert isinstance(v[0], str)
+                    assert isinstance(v[1], str)
 
-                var = cards_dict.get(k, None)
-                if var is not None:
-                    data = getattr(var, 'data')
-                    data['name'] = v[0]
-                    data['description'] = v[1]
-            for k, v in values_heroes.items():
-                assert isinstance(v, list)
-                assert len(v) == 2
-                assert isinstance(v[0], str)
-                assert isinstance(v[1], str)
-
-                var = heroes_dict.get(int(k), None)
-                if var is not None:
-                    data = getattr(var, 'data')
-                    data['name'] = v[0]
-                    data['description'] = v[1]
+                    if entities == heroes_dict:
+                        k = int(k)
+                    var = entities.get(k, None)
+                    if var is not None:
+                        data = getattr(var, 'data')
+                        data['name'] = v[0]
+                        data['description'] = v[1]
         except (json.JSONDecodeError, ValueError, AssertionError) as e:
             error('Error when loading locale of game data in "{}"'.format(self.path))
             return

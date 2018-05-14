@@ -72,7 +72,7 @@ class Event:
             kwargs['enabled'] = False
         return entity_message(self, kwargs, prefix='@')
 
-    def __str__(self):
+    def __repr__(self):
         return self._repr()
 
     def message(self):

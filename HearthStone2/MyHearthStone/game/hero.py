@@ -28,7 +28,7 @@ class Hero(AliveMixin, GameEntity):
 
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
 
-        self.oop = self.game.oop
+        self.oop = self.game.entity.oop
 
     def __repr__(self):
         return super()._repr(klass=self.data['klass'], P=self.player_id, health=self.health)

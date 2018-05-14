@@ -173,6 +173,10 @@ class Zone(metaclass=EnumMeta):
     Hero = 8
     HeroPower = 9
 
+    # Removed From Game Zone, holds enchantments that have expired, been detached or been silenced off.
+    # TODO: Implement this zone.
+    RFG = 10
+
 
 class Rarity(metaclass=EnumMeta):
     """An enumeration class, contains rarities."""
