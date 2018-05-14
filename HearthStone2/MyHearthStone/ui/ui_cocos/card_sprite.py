@@ -339,6 +339,7 @@ class MinionSprite(EntitySprite):
         self.enchantments = []
 
         # TODO: Taunt label, windfury label, etc.
+        self.divine_shield_sprite = None
 
         # TODO: Show the related card when mouse on it over N seconds.
         # TODO: (Need support of focus time in ``ActiveMixin``.)
@@ -354,9 +355,27 @@ class MinionSprite(EntitySprite):
             self.atk_label.element.color = self._get_attack_color()
             self.health_label.element.text = str(self.entity.health)
             self.health_label.element.color = self._get_health_color()
+            if self.entity.divine_shield:
+                ds_sprite = self._get_ds_sprite()
+                if ds_sprite not in self:
+                    self.add(ds_sprite, z=3)
+            else:
+                ds_sprite = self._get_ds_sprite()
+                if ds_sprite in self:
+                    self.remove(ds_sprite)
+
         else:   # self.entity.type == Type.Permanent
             # Anything to do?
             pass
+
+    def _get_ds_sprite(self):
+        if self.divine_shield_sprite is None:
+            self.divine_shield_sprite = Sprite(
+                'DivineShield.png', pos(0.0, 0.0, base=self.SizeBase),
+                opacity=80)
+            self.divine_shield_sprite.scale_x = self.ImageScale * self.ImagePart[0] * 1.1
+            self.divine_shield_sprite.scale_y = self.ImageScale * self.ImagePart[1] * 1.1
+        return self.divine_shield_sprite
 
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
@@ -387,6 +406,9 @@ class MinionSprite(EntitySprite):
             self.add(self.atk_label, z=2)
             self.add(health_sprite, z=1)
             self.add(self.health_label, z=2)
+
+            if self.entity.divine_shield:
+                self.add(self._get_ds_sprite(), z=3)
         else:   # self.entity.type == Type.Permanent
             pass
 

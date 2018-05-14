@@ -9,6 +9,7 @@ from .damage import *
 from .death import *
 from .combat import *
 from .hero_power import *
+from .misc import *
 from .utils import dynamic_pid_prop
 
 __author__ = 'fyabc'

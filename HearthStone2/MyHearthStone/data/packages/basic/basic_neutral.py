@@ -113,6 +113,8 @@ blank_minion({
     'race': [Race.Murloc],
 })
 
+# 巫医 (5)
+
 
 # 工程师学徒 (6)
 class 工程师学徒(Minion):

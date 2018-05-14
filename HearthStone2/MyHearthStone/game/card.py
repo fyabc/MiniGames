@@ -142,6 +142,8 @@ class Minion(AliveMixin, Card):
     def taunt(self):
         return self.data['taunt']
 
+    divine_shield = make_property('divine_shield')
+
     @property
     def battlecry(self):
         """Test if this minion has battlecry.

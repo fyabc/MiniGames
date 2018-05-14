@@ -32,6 +32,7 @@ class Event:
 
     @property
     def oop(self):
+        # TODO: Change this into its own oop?
         return self.owner.oop
 
     @classmethod
