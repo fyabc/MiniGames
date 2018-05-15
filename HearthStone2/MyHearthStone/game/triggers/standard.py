@@ -11,6 +11,7 @@ These triggers usually have the smallest oop (StandardBeforeTrigger) or largest 
 from .death import *
 from .play import *
 from .damage import *
+from .healing import *
 from .combat import *
 from .trigger import *
 from ...utils.constants import C
@@ -80,6 +81,7 @@ def add_standard_triggers(game):
         StdOnPlaySpell, StdSpellBlenderPhase, StdSpellText, StdAfterSpell,
         StdOnPlayMinion, StdOnBattlecry, StdAfterPlayMinion, StdSummon, StdAfterSummon,
         StdPreDamage, StdDamage,
+        StdHealing, StdAreaHealing,
         StdDeathPhase, StdHeroDeath, StdMinionDeath, StdWeaponDeath,
         StdPrepareCombat, StdCombat, StdAttack,
     ]:

@@ -121,8 +121,10 @@ class Minion(AliveMixin, Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        self.data['attack'] = self.cls_data['attack']
-        self.n_total_attack = 2 if self.cls_data['windfury'] else 1
+        self.data.update({
+            'attack': self.cls_data['attack'],
+            'n_total_attack': 2 if self.cls_data['windfury'] else 1,
+        })
 
     def __repr__(self):
         return self._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,

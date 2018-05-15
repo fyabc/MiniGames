@@ -65,6 +65,17 @@ class AliveMixin:
     def take_damage(self, value):
         self.data['_raw_health'] -= value
 
+    def restore_health(self, value):
+        """
+
+        :param value: The proposed heal value
+        :return: The real heal value
+        """
+        real_heal = min(value, self.data['max_health'] - self.data['health'])
+        self.data['_raw_health'] += real_heal
+
+        return real_heal
+
     def inc_health(self, value):
         """Increase health and max-health."""
         self.data['health'] += value

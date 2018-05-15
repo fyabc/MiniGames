@@ -113,7 +113,17 @@ blank_minion({
     'race': [Race.Murloc],
 })
 
+
 # 巫医 (5)
+class 巫医(Minion):
+    data = {
+        'id': 5,
+        'cost': 1, 'attack': 2, 'health': 1,
+        'have_target': True, 'battlecry': True,
+    }
+
+    def run_battlecry(self, target, **kwargs):
+        return [std_events.Healing(self.game, self, target, 2)]
 
 
 # 工程师学徒 (6)
@@ -226,7 +236,6 @@ class 破碎残阳祭司(Minion):
 
     @property
     def have_target(self):
-        # TODO: Conditional ``have_target`` need more test here.
         return bool(self.game.get_zone(Zone.Play, self.player_id))
 
     check_target = ext.checker_friendly_minion
@@ -376,6 +385,7 @@ class 夜刃刺客(Minion):
     data = {
         'id': 33,
         'cost': 5, 'attack': 4, 'health': 4,
+        'battlecry': True,
     }
 
     def run_battlecry(self, target, **kwargs):
@@ -383,6 +393,17 @@ class 夜刃刺客(Minion):
 
 
 # 暗鳞治愈者 (34)
+class 暗鳞治愈者(Minion):
+    data = {
+        'id': 34,
+        'cost': 5, 'attack': 4, 'health': 5,
+        'battlecry': True
+    }
+
+    def run_battlecry(self, target, **kwargs):
+        targets = self.game.get_zone(Zone.Play, self.player_id) + self.game.get_zone(Zone.Hero, self.player_id)
+        return [std_events.AreaHealing(self.game, self, targets, [2 for _ in targets])]
+
 
 # 藏宝海湾保镖 (35)
 blank_minion({

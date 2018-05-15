@@ -56,6 +56,8 @@ class Player(GameEntity):
         self.player_id = player_id
         self.start_player = start_player
 
+        self._init_mana()
+
         cards = all_cards()
         heroes = all_heroes()
 
@@ -109,6 +111,13 @@ class Player(GameEntity):
         move_map(Zone.Invalid, Zone.Hero, entity=self.hero)(self.hero)
         if self.weapon is not None:
             move_map(Zone.Invalid, Zone.Weapon, entity=self.weapon)(self.weapon)
+
+    def _init_mana(self):
+        self.max_mana = 0
+        self.temp_mana = 0
+        self.used_mana = 0
+        self.overload = 0
+        self.overload_next = 0
 
     def generate(self, to_zone, to_index, entity):
         """Generate an entity into a zone.
