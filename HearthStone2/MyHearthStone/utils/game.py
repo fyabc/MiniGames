@@ -47,6 +47,10 @@ def validate_target(card, target, msg_fn):
     :rtype: bool
     """
 
+    if target is not None and card.player_id != target.player_id and target.stealth:
+        msg_fn('Character with stealth cannot be targeted!')
+        return False
+
     if not card.check_target(target):
         msg_fn('This is not a valid target!')
         return False
@@ -115,6 +119,10 @@ def validate_defender(game, zone, player_id, attacker, defender, msg_fn):
         return False
     if zone not in (Zone.Play, Zone.Hero):
         msg_fn('This is not a valid target!')
+        return False
+
+    if defender.stealth:
+        msg_fn('Character with stealth cannot be attacked!')
         return False
 
     if zone == Zone.Hero and not attacker.can_attack_hero:

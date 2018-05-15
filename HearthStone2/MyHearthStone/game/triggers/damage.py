@@ -8,6 +8,7 @@ See <https://hearthstone.gamepedia.com/Advanced_rulebook#Damage_and_Healing> for
 
 from ..events import standard
 from .trigger import StandardBeforeTrigger
+from ...utils.constants import version_le
 
 __author__ = 'fyabc'
 
@@ -43,5 +44,11 @@ class StdDamage(StandardBeforeTrigger):
     def process(self, event: respond[0]):
         # todo: need test and add more
         event.target.take_damage(event.value)
+
+        # Lose stealth (before patch 11.0.0).
+        if not version_le("11.0.0"):
+            if event.owner.stealth:
+                event.owner.stealth = False
+                # FIXME: Need to add a ``LoseStealth`` event?
 
         return []

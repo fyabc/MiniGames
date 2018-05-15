@@ -7,6 +7,7 @@ import os as _os
 import json as _json
 import re as _re
 from collections import namedtuple as _namedtuple
+from distutils.version import StrictVersion as _StrictVersion
 
 from appdirs import AppDirs as _AppDirs
 
@@ -85,12 +86,20 @@ def get_package_paths():
 
 
 # Game version.
-_GameVersionClass = _namedtuple('_GameVersionClass', ['major', 'minor', 'micro'])
 _GameVersion = None
 
 
-def get_game_version():
+def global_game_version():
     global _GameVersion
     if _GameVersion is None:
-        _GameVersion = _GameVersionClass(*C.Game.Version)
+        _GameVersion = _StrictVersion(C.Game.Version)
     return _GameVersion
+
+
+def get_game_version(vstring):
+    return _StrictVersion(vstring)
+
+
+def version_le(vstring):
+    """Test if current game version is larger or equals to given vstring."""
+    return global_game_version() >= get_game_version(vstring)

@@ -3,6 +3,7 @@
 
 from ..events import standard
 from .trigger import StandardBeforeTrigger
+from ...utils.constants import version_le
 
 __author__ = 'fyabc'
 
@@ -29,6 +30,14 @@ class StdPrepareCombat(StandardBeforeTrigger):
     def process(self, event: respond[0]):
         ae = event.attack_event
         pae = standard.ProposedAttack(event.game, ae)
+
+        # Remove stealth.
+        if version_le("11.0.0"):
+            # After patch 11.0.0, Minions now only break Stealth when attacking.
+            # Damage dealt by card abilities, such as Knife Juggler's knife throw, no longer breaks Stealth.
+            if ae.attacker.stealth:
+                ae.attacker.stealth = False
+            # FIXME: Need to add a ``LoseStealth`` event?
 
         return [
             pae,

@@ -14,6 +14,9 @@ class AliveMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Data of alive entities.
+        # [NOTE]: Attributes like "divine_shield" and "stealth" must NOT be set in it,
+        # since it is called after initializer, it will overwrite the card specific value.
         self.data.update({
             'attack': 0,
 
@@ -33,6 +36,12 @@ class AliveMixin:
     health = make_property('health', setter=False)
     max_health = make_property('max_health', setter=False)
     to_be_destroyed = make_property('to_be_destroyed')
+
+    # Other attributes.
+    divine_shield = make_property('divine_shield', default=False)
+    stealth = make_property('stealth', default=False)
+    taunt = make_property('taunt', default=False)
+
     n_attack = make_property('n_attack')
     n_total_attack = make_property('n_total_attack')
     can_attack_hero = make_property('can_attack_hero')
@@ -40,10 +49,6 @@ class AliveMixin:
     @property
     def alive(self):
         return self.health > 0 and not self.to_be_destroyed
-
-    @property
-    def taunt(self):
-        return False
 
     @property
     def exhausted(self):

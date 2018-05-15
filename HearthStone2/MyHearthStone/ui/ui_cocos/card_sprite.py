@@ -332,6 +332,7 @@ class MinionSprite(EntitySprite):
 
     def __init__(self, minion, position=(0, 0), scale=1.0, **kwargs):
         self.common_border = None
+        self.image_sprite = None
         self.atk_label = None
         self.health_label = None
 
@@ -351,6 +352,7 @@ class MinionSprite(EntitySprite):
         super().update_content(**kwargs)
 
         if self.entity.type == Type.Minion:
+            self.image_sprite.opacity = self._stealth_opacity()
             self.atk_label.element.text = str(self.entity.attack)
             self.atk_label.element.color = self._get_attack_color()
             self.health_label.element.text = str(self.entity.health)
@@ -377,6 +379,9 @@ class MinionSprite(EntitySprite):
             self.divine_shield_sprite.scale_y = self.ImageScale * self.ImagePart[1] * 1.1
         return self.divine_shield_sprite
 
+    def _stealth_opacity(self):
+        return 50 if self.entity.stealth else 255
+
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
@@ -390,8 +395,9 @@ class MinionSprite(EntitySprite):
             image = pyglet_image(self.entity.get_image_name()).get_region(
                 x=int(self.ImageSize[0] * (1 - self.ImagePart[0]) / 2), y=int(self.ImageSize[1] * 0.51),
                 width=int(self.ImageSize[0] * self.ImagePart[0]), height=int(self.ImageSize[1] * self.ImagePart[1]))
-            image_sprite = Sprite(image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale,)
-            self.add(image_sprite, z=0)
+            self.image_sprite = Sprite(
+                image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale, opacity=self._stealth_opacity())
+            self.add(self.image_sprite, z=0)
         except ResourceNotFoundException:
             pass
 

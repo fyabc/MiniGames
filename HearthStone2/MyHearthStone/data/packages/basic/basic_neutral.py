@@ -72,7 +72,7 @@ DIY cards / heroes / enchantments can add 'D' or other prefixes before the ID fo
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, Enchantment
 from MyHearthStone.ext import blank_minion
-from MyHearthStone.ext import std_events
+from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import message as msg
 from MyHearthStone.utils.game import Race, Zone
 
@@ -303,7 +303,35 @@ blank_minion({
     'cost': 4, 'attack': 4, 'health': 5,
 })
 
+
 # 古拉巴什狂暴者 (30)
+def _apply(self):
+    self.target.data['attack'] += 3
+
+
+Enc_古拉巴什狂暴者 = ext.create_enchantment({'id': 3}, apply_fn=_apply)
+
+
+class 古拉巴什狂暴者(Minion):
+    data = {
+        'id': 30,
+        'cost': 5, 'attack': 2, 'health': 7,
+    }
+
+    class Trig_古拉巴什狂暴者(std_triggers.Trigger):
+        respond = [std_events.Damage]
+
+        def process(self, event: respond[0]):
+            if event.target != self.owner:
+                return []
+            # The oop of the enchantment is the oop of damage event.
+            Enc_古拉巴什狂暴者.from_card(event, self.game, self.owner)
+            return []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Trig_古拉巴什狂暴者(self.game, self)
+
 
 # 雷矛特种兵 (31)
 ext.create_damage_minion({

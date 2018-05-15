@@ -128,30 +128,11 @@ class Minion(AliveMixin, Card):
         return self._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
                           oop=self.oop, __show_cls=False)
 
-    # TODO: Attributes below may be changed in game.
+    # TODO: Move these properties into ``AliveMixin``.
+    charge = make_property('charge')
+    rush = make_property('rush')
 
-    @property
-    def charge(self):
-        return self.data['charge']
-
-    @property
-    def rush(self):
-        return self.data['rush']
-
-    @property
-    def taunt(self):
-        return self.data['taunt']
-
-    divine_shield = make_property('divine_shield')
-
-    @property
-    def battlecry(self):
-        """Test if this minion has battlecry.
-
-        [NOTE]: This value may be changed in game, such as conditional battlecry.
-        """
-
-        return self.data['battlecry']
+    battlecry = make_property('battlecry', setter=False)
 
     def run_battlecry(self, target: GameEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.

@@ -82,6 +82,13 @@ blank_minion({
     'windfury': True, 'race': [Race.Beast],
 })
 
+# 狼人渗透者 (1000007)
+blank_minion({
+    'id': 1000007,
+    'rarity': 1, 'cost': 1, 'attack': 2, 'health': 1,
+    'stealth': True,
+})
+
 
 # 战利品贮藏者 (1000008)
 class 战利品贮藏者(Minion):
@@ -92,3 +99,11 @@ class 战利品贮藏者(Minion):
 
     def run_deathrattle(self, **kwargs):
         return [std_events.DrawCard(self.game, self, self.player_id)]
+
+
+# 血色十字军战士 (1000021)
+blank_minion({
+    'id': 1000021,
+    'rarity': 1, 'cost': 3, 'attack': 3, 'health': 1,
+    'divine_shield': True,
+})
