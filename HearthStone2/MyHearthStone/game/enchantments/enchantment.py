@@ -20,6 +20,10 @@ class Enchantment(GameEntity):
         Most enchantments belong to minions while on the battlefield.
         However, some enchantments affect cards of other types, and some are active while in the player's hand.
         Enchantments may be granted permanently, or temporarily by an aura.
+
+    Some notes:
+    1. Copied from <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras>:
+        Despite not visually updating, enchantments take effect the moment they are created.
     """
 
     # [NOTE]: It seems that the movement of enchantments are different from other entities.
@@ -62,6 +66,8 @@ class Enchantment(GameEntity):
     def order(self):
         """The order in enchantment list. Sorted in increase order."""
         return (1 if self.aura else 0), self.oop
+
+    # TODO: Add ``apply_imm``?
 
     def apply(self):
         """Apply this enchantment to the attached target."""

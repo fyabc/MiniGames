@@ -20,6 +20,7 @@ class AliveMixin:
         self.data.update({
             'attack': 0,
 
+            # TODO: Change this into '_damage' to fix the bug of "Hunter's Mark".
             # Raw health before any enchantments (need it?)
             '_raw_health': self.cls_data['health'],
             'health': self.cls_data['health'],

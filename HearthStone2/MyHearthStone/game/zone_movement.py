@@ -30,6 +30,8 @@ def _removed_from_play(entity, to_zone):
 def move_map(from_zone, to_zone, entity=None):
     """Get the correct move function to call."""
 
+    # TODO: Add arguments of ``from_player`` and ``to_player``.
+
     if from_zone == Zone.Play:
         return partial(_removed_from_play, to_zone=to_zone)
 

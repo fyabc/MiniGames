@@ -141,6 +141,10 @@ class GameEntity(metaclass=SetDataMeta):
     type = make_property('type', setter=False)
     package = make_property('package', setter=False)
 
+    def move_to(self, player_id, zone):
+        # TODO: Move ``Game.move`` to here.
+        pass
+
     @property
     def init_player_id(self):
         if self._init_player_id is not None:

@@ -11,6 +11,8 @@ __author__ = 'fyabc'
 # Paladin (4) #
 ###############
 
+# 列王守卫 (40000)
+
 # 力量祝福 (40001)
 def _apply(self):
     self.target.data['attack'] += 3
@@ -34,6 +36,12 @@ class 力量祝福(Spell):
         return []
 
 
+# 保护之手 (40002)
+
+# 谦逊 (40003)
+
+# 圣光术 (40004)
+
 # 王者祝福 (40005)
 def _apply(self):
     self.target.data['attack'] += 4
@@ -55,3 +63,11 @@ class 王者祝福(Spell):
     def run(self, target, **kwargs):
         Enc_王者祝福.from_card(self, self.game, target)
         return []
+
+# 奉献 (40006)
+
+# 愤怒之锤 (40007)
+
+# 圣光的正义 (40008)
+
+# 真银圣剑 (40009)

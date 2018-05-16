@@ -76,6 +76,10 @@ class Event:
     def __repr__(self):
         return self._repr()
 
+    def do(self):
+        # TODO: Move code of standard triggers to here.
+        return []
+
     def message(self):
         info(self._repr())
 
