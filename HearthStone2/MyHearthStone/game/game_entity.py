@@ -6,7 +6,7 @@
 from collections import ChainMap
 
 from ..utils.game import Zone, Type
-from ..utils.message import entity_message
+from ..utils.message import entity_message, warning, info, debug
 
 __author__ = 'fyabc'
 
@@ -136,14 +136,48 @@ class GameEntity(metaclass=SetDataMeta):
 
     id = make_property('id', setter=False)
     name = make_property('name', setter=False)
-    zone = make_property('zone', default=Zone.Invalid)
     player_id = make_property('player_id', default=None)
     type = make_property('type', setter=False)
     package = make_property('package', setter=False)
 
-    def move_to(self, player_id, zone):
-        # TODO: Move ``Game.move`` to here.
-        pass
+    def _get_zone(self):
+        """Get the zone value.
+
+        See ``_set_zone`` for more details.
+        """
+        return self.data.get('zone', Zone.Invalid)
+
+    def _set_zone(self, zone):
+        """Change the zone of the entity.
+
+        Subclasses should overwrite this method to implement their zone movement behaviour.
+        """
+
+        # FIXME: For debug.
+        RAISE_STUB = False
+        if RAISE_STUB:
+            raise RuntimeError('Method `_set_zone` called here!')
+
+        old_zone = self.zone
+        if old_zone == zone:
+            warning('Try to move {} from {!r} to the same zone.'.format(self, Zone.Idx2Str[zone]))
+            return
+
+        # Update triggers.
+        self.update_triggers(old_zone, zone)
+
+        # Removed from play.
+        # Detach all enchantments (with some exceptions), reset attributes to default value.
+        if old_zone == Zone.Play:
+            for enchantment in self.enchantments:
+                enchantment.detach(remove_from_target=False)
+            self.enchantments.clear()
+            # TODO: Reset other attributes, may need to override by subclasses.
+
+        debug('Move {} from {!r} to {!r}.'.format(self, Zone.Idx2Str[old_zone], Zone.Idx2Str[zone]))
+        self.data['zone'] = zone
+
+    zone = property(_get_zone, _set_zone)
 
     @property
     def init_player_id(self):
@@ -205,19 +239,6 @@ class GameEntity(metaclass=SetDataMeta):
                 self.game.remove_trigger(trigger)
             else:
                 pass
-
-    def removed_from_play(self, to_zone):
-        """Called when this entity is removed from play.
-        This method is usually called by ``Game.move``.
-
-        Detach all enchantments (with some exceptions)
-        Reset attributes to default value.
-        """
-        # Detach all enchantments.
-        for enchantment in self.enchantments:
-            enchantment.detach(remove_from_target=False)
-        self.enchantments.clear()
-        # TODO: Reset other attributes, may need to override by subclasses.
 
     def aura_update_attack_health(self):
         """Aura update (attack / health), called by the same method of class `Game`."""

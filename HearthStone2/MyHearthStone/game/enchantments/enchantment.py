@@ -4,7 +4,6 @@
 """Base classes of enchantment."""
 
 from ..game_entity import GameEntity, make_property
-from ..zone_movement import move_map
 from ...utils.game import Type, Zone
 
 __author__ = 'fyabc'
@@ -55,12 +54,12 @@ class Enchantment(GameEntity):
 
         target.add_enchantment(self)
 
-    aura = make_property('aura', setter=False)
+    def _set_zone(self, zone):
+        # TODO: Specific behaviour of enchantment: (or needn't?)
+        # Only have two zones: Play & RFG.
+        super()._set_zone(zone)
 
-    @property
-    def zone(self):
-        real_zone = self.data.get('zone')
-        return real_zone if real_zone is not None else self.target.zone
+    aura = make_property('aura', setter=False)
 
     @property
     def order(self):
@@ -86,7 +85,7 @@ class Enchantment(GameEntity):
 
         kwargs['oop'] = creator.oop
         enc = cls(*args, **kwargs)
-        move_map(Zone.Invalid, enc.zone)(enc)
+        enc.zone = Zone.Play
 
         return enc
 
@@ -97,7 +96,7 @@ class Enchantment(GameEntity):
         This method or target itself will remove this enchantment from its target,
         decided by kwarg ``remove_from_target``.
         """
-        move_map(self.data['zone'], Zone.RFG)(self)
+        self.zone = Zone.RFG
         if remove_from_target:
             self.target.remove_enchantment(self)
 
@@ -110,6 +109,8 @@ class Aura(Enchantment):
         on an ongoing basis. Ongoing effects are often referred to as auras, particularly those which grant
         temporary enchantments to other targets.
     """
+
+    # TODO: or not subclass of Enchantment?
 
     data = {
         'aura': True,

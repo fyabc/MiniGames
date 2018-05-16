@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .events import standard
+from ..utils.message import entity_message
 
 __author__ = 'fyabc'
 
@@ -11,6 +12,13 @@ class PlayerAction:
 
     def __init__(self, game):
         self.game = game
+
+    def _repr(self, **kwargs):
+        __show_cls = kwargs.pop('__show_cls', True)
+        return entity_message(self, kwargs, prefix='*', __show_cls=__show_cls)
+
+    def __repr__(self):
+        return self._repr()
 
     def phases(self):
         """Extract phases from this player action."""
@@ -29,6 +37,9 @@ class ReplaceStartCard(PlayerAction):
     def phases(self):
         return []
 
+    def _repr(self):
+        return super()._repr(P=self.player_id, replace=self.replace_list)
+
 
 class TurnEnd(PlayerAction):
     """"""
@@ -44,6 +55,9 @@ class TurnEnd(PlayerAction):
             standard.DrawCard(self.game, None), 'check_win',    # The card drawer is determined by the next player.
         ]
 
+    def _repr(self):
+        return super()._repr(P=self.player_id)
+
 
 class Concede(PlayerAction):
     """May be useless?"""
@@ -56,6 +70,9 @@ class Concede(PlayerAction):
         return [
             standard.HeroDeath(self.game, self.game.players[self.player_id].hero), 'check_win',
         ]
+
+    def _repr(self):
+        return super()._repr(P=self.player_id)
 
 
 class PlaySpell(PlayerAction):
@@ -76,6 +93,9 @@ class PlaySpell(PlayerAction):
             'check_win',
         ]
 
+    def _repr(self):
+        return super()._repr(P=self.player_id, spell=self.spell, target=self.target)
+
 
 class PlayWeapon(PlayerAction):
     """"""
@@ -88,6 +108,9 @@ class PlayWeapon(PlayerAction):
 
     def phases(self):
         return []
+
+    def _repr(self):
+        return super()._repr(P=self.player_id, weapon=self.weapon, target=self.target)
 
 
 class PlayMinion(PlayerAction):
@@ -115,6 +138,9 @@ class PlayMinion(PlayerAction):
             'check_win',
         ]
 
+    def _repr(self):
+        return super()._repr(P=self.player_id, minion=self.minion, loc=self.loc, target=self.target)
+
 
 class ToAttack(PlayerAction):
     """"""
@@ -133,6 +159,9 @@ class ToAttack(PlayerAction):
             'check_win',
         ]
 
+    def _repr(self):
+        return super()._repr(attacker=self.attacker, defender=self.defender)
+
 
 class UseHeroPower(PlayerAction):
     """"""
@@ -144,6 +173,9 @@ class UseHeroPower(PlayerAction):
 
     def phases(self):
         return []
+
+    def _repr(self):
+        return super()._repr(P=self.player_id, target=self.target)
 
 
 def process_special_pa(game, player_action):

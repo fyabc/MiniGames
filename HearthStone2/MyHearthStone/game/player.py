@@ -7,7 +7,6 @@ import itertools
 import random
 
 from .game_entity import GameEntity
-from .zone_movement import move_map
 from ..utils.constants import C
 from ..utils.game import Zone
 from ..utils.message import info, debug
@@ -105,12 +104,12 @@ class Player(GameEntity):
                 for card in zone:
                     # Weapon may be None.
                     if card is not None:
-                        move_map(Zone.Invalid, zone_id, entity=card)(card)
+                        card.zone = zone_id
             except ValueError:
                 pass
-        move_map(Zone.Invalid, Zone.Hero, entity=self.hero)(self.hero)
+        self.hero.zone = Zone.Hero
         if self.weapon is not None:
-            move_map(Zone.Invalid, Zone.Weapon, entity=self.weapon)(self.weapon)
+            self.weapon.zone = Zone.Weapon
 
     def _init_mana(self):
         self.max_mana = 0
@@ -151,7 +150,6 @@ class Player(GameEntity):
         if isinstance(entity, str):
             entity = self.create_card(entity, player_id=self.player_id)
 
-        move_map(Zone.Invalid, to_zone, entity=entity)(entity)
         index = self.insert_entity(entity, to_zone, to_index)
 
         return entity, {
@@ -236,7 +234,7 @@ class Player(GameEntity):
             return [self.hero]
         if zone == Zone.HeroPower:
             return [self.hero_power]
-        raise ValueError('Does not have zone {}'.format(zone))
+        raise ValueError('Does not have zone {!r}'.format(Zone.Idx2Str.get(zone, zone)))
 
     def get_entity(self, zone, index=0):
         return self.get_zone(zone)[index]

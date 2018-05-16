@@ -8,7 +8,6 @@ from typing import *
 from .game_entity import GameEntity, make_property
 from .player import Player
 from .player_action import process_special_pa
-from .zone_movement import move_map
 from .triggers.trigger import Trigger
 from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
@@ -182,6 +181,7 @@ class Game:
         # Check special player actions here.
         stop = process_special_pa(self, player_action)
         if stop:
+            info('Player action {} is special and does not resolve events.'.format(player_action))
             return
 
         self.resolve_events(player_action.phases(), 0)
@@ -590,12 +590,10 @@ class Game:
             if from_zone == Zone.Play:
                 self.data['instant_death_events'].append(create_death_event(self, entity, location=from_index))
 
-            to_zone = Zone.Graveyard
-            move_map(from_zone, to_zone, entity=entity)(entity)
-
             # Move it to graveyard.
-            entity.zone = to_zone
+            to_zone = Zone.Graveyard
             self.get_zone(to_zone, from_player).append(entity)
+            entity.zone = to_zone
 
             return entity, {
                 'success': False,
@@ -604,7 +602,6 @@ class Game:
                 'to_index': None,
             }
 
-        move_map(from_zone, to_zone, entity=entity)(entity)
         index = self._insert_entity(entity, to_zone, to_player, to_index)
 
         return entity, {
