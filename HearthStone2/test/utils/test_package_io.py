@@ -22,6 +22,7 @@ class TestPackageIO(unittest.TestCase):
     def setUpClass(cls):
         cls._old_locale = C.Locale
         C.Locale = 'zh-CN'
+        pio.reload_packages()
 
     @classmethod
     def tearDownClass(cls):
@@ -39,6 +40,7 @@ class TestPackageIO(unittest.TestCase):
         Fireball = pio.all_cards()["30007"]
 
         self.assertTrue(issubclass(Fireball, Spell))
+        self.assertEqual(Fireball.data['id'], '30007')
         self.assertEqual(Fireball.data['name'], '火球术')
         self.assertEqual(Fireball.data['package'], 0)
         self.assertListEqual(Fireball.get_cahr(), [4])
@@ -58,5 +60,14 @@ class TestPackageIO(unittest.TestCase):
         self.assertEqual(Druid.data['package'], 0)
         self.assertEqual(Druid.data['health'], 30)
 
+    def testPackageData(self):
+        all_packages = pio.all_package_data()
+
+        for package_id, package in all_packages.items():
+            self.assertEqual(package_id, package.package_id)
+
     def testSearchByName(self):
-        pass
+        card_id = pio.search_by_name('火球术')
+        self.assertEqual(card_id, '30007')
+
+        self.assertEqual(pio.search_by_name('some-non-exist-card-name'), None)

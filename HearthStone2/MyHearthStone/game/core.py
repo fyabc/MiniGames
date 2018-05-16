@@ -227,14 +227,12 @@ class Game:
                 # Resolve triggers before the event.
                 self._collect_resolve_triggers(e, Trigger.Before, depth)
 
-                # Do the event.
+                # Do the event and log history.
                 cons_events = e.do()
-                if cons_events:
-                    self.resolve_events(cons_events, depth=depth + 1)
-
-                # Log history.
                 e.message()
                 self.event_history.append(e)
+                if cons_events:
+                    self.resolve_events(cons_events, depth=depth + 1)
 
                 # Resolve triggers after the event.
                 if e.enable:
@@ -353,7 +351,7 @@ class Game:
             'entity': GameEntity(self),
         }
 
-    def start_game2(self, decks, mode='standard'):
+    def start_game(self, decks, mode='standard'):
         """Start the game.
 
         :param decks:
@@ -380,7 +378,7 @@ class Game:
         self.entity.oop = 0
 
         for player_id, (player, deck) in enumerate(zip(self.players, decks)):
-            player.start_game2(deck, player_id, start_player)
+            player.start_game(deck, player_id, start_player)
 
         self.state = self.GameState.WaitReplace
 

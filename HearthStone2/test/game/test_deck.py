@@ -44,6 +44,9 @@ class TestDeck(unittest.TestCase):
     def testBasic(self):
         self.assertEqual(str(self.test_deck), "Deck(class=Druid, name='Test Druid', mode=standard)")
 
+    def testCopy(self):
+        self._assertDeckSame(self.test_deck.copy())
+
     def testCodeIO(self):
         new_deck = Deck.from_code(self.test_deck.to_code())
         self._assertDeckSame(new_deck)

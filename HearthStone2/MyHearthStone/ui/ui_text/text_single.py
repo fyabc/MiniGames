@@ -305,7 +305,7 @@ Syntax: q | quit | exit\
 
         # Start game processing.
         game = self.frontend.game = Game(frontend=self.frontend, error_stub=self.frontend.game_error)
-        game.start_game2([deck1, deck2], mode=args.mode)
+        game.start_game([deck1, deck2], mode=args.mode)
 
         def _get_replace(p=0):
             prompt = 'P{}: {}\nSelect card to replace: '.format(p, game.format_zone(Zone.Hand, p))

@@ -80,7 +80,7 @@ class LanServer(socketserver.ThreadingTCPServer):
 
             self.game = Game()
 
-            self.game.start_game2(
+            self.game.start_game(
                 decks=[
                     Deck.from_code(users[0].deck_code),
                     Deck.from_code(users[1].deck_code),

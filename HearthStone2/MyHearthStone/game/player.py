@@ -51,7 +51,7 @@ class Player(GameEntity):
         self.tire_counter = 0
         self.start_player = None
 
-    def start_game2(self, deck, player_id: int, start_player: int):
+    def start_game(self, deck, player_id: int, start_player: int):
         info('Deck of player {}: {}'.format(player_id, deck))
         self.player_id = player_id
         self.start_player = start_player

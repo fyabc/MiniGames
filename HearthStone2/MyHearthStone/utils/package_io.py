@@ -86,6 +86,10 @@ class _GameData:
     def resource_path(self):
         return os.path.join(self.path, self.ResourcePathName)
 
+    @property
+    def package_id(self):
+        return self._package_id
+
     def resource_directories(self, include_values=False):
         """Get resource directories.
 

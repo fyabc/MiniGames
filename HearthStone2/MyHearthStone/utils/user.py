@@ -85,9 +85,8 @@ class AppUser:
                                      'please give use id'.format(user_id_or_name))
                 user_id = users[user_names.index(user_id_or_name)][0]
             elif user_id_or_name is None:
-                # If user_id_or_name is None:
-                #     If there isn't any users, create a new default user
-                #     Otherwise, return the last user (the first entry in the user list)
+                # If there isn't any users, create a new default user
+                # Otherwise, return the last user (the first entry in the user list)
                 users = cls.get_user_list()
                 if users is None:
                     user_id = 0
@@ -111,7 +110,7 @@ class AppUser:
     def dump(self):
         """Dump the user and update the user list.
 
-        **NOTE**: This method will update the user list and put the current user as the first element.
+        [NOTE]: This method will update the user list and put the current user as the first element.
 
         :return: None
         """

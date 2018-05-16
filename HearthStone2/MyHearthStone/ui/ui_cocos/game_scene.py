@@ -157,7 +157,7 @@ class GameBoardLayer(ActiveLayer):
         game.add_callback(self._update_content, when='resolve')
         game.add_callback(self._log_update_time, when='resolve')
         game.add_callback(self._game_end_dialog, when='game_end')
-        game.start_game2(selected_decks, mode='standard')
+        game.start_game(selected_decks, mode='standard')
 
     def add_loc_stub(self, player_id, loc):
         """Add a location stub rect sprite."""
