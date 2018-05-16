@@ -9,7 +9,7 @@ from .game_entity import GameEntity, make_property
 from .player import Player
 from .player_action import process_special_pa
 from .zone_movement import move_map
-from .triggers.standard import add_standard_triggers
+from .triggers.trigger import Trigger
 from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
 from ..utils.constants import C
@@ -122,21 +122,23 @@ class Game:
     ########################
 
     def register_trigger(self, trigger):
-        for event_type in trigger.respond:
+        for event_type, timing in zip(trigger.respond, trigger.timing):
             if event_type not in self.triggers:
-                self.triggers[event_type] = set()
-            debug('Register trigger {} to event type {}'.format(trigger, event_type.__name__))
-            self.triggers[event_type].add(trigger)
+                self.triggers[event_type, timing] = set()
+            debug('Register trigger {} to event type {} and timing "{}"'.format(
+                trigger, event_type.__name__, 'Before' if timing == trigger.Before else 'After'))
+            self.triggers[event_type, timing].add(trigger)
 
     def remove_trigger(self, trigger):
-        for event_type in trigger.respond:
+        for event_type, timing in zip(trigger.respond, trigger.timing):
             if event_type in self.triggers:
-                debug('Remove trigger {} from event type {}'.format(trigger, event_type.__name__))
-                self.triggers[event_type].discard(trigger)
+                debug('Remove trigger {} from event type {} and timing "{}"'.format(
+                    trigger, event_type.__name__, 'Before' if timing == trigger.Before else 'After'))
+                self.triggers[event_type, timing].discard(trigger)
 
     def _remove_dead_triggers(self):
-        for event_type, triggers in self.triggers.items():
-            self.triggers[event_type] = {trigger for trigger in triggers if trigger.enable}
+        for key, triggers in self.triggers.items():
+            self.triggers[key] = {trigger for trigger in triggers if trigger.enable}
 
     def add_callback(self, callback, when='resolve'):
         """Add a callback as a hook in the processing of the system.
@@ -188,6 +190,18 @@ class Game:
             self.end_game()
         return self.game_result
 
+    def _collect_resolve_triggers(self, event, timing, depth):
+        """Collect related triggers, then check their conditions and sort them in order of play.
+
+        Then resolve them.
+        """
+        related_triggers = set()
+        for event_type in event.ancestors():
+            related_triggers.update(self.triggers.get((event_type, timing), set()))
+        triggers_queue = order_of_play({trigger for trigger in related_triggers if trigger.queue_condition(event)})
+        if triggers_queue:
+            self.resolve_triggers(triggers_queue, event, depth=depth + 1)
+
     def resolve_events(self, events, depth=0):
         """Resolve all events in the queue.
 
@@ -210,20 +224,21 @@ class Game:
             e = events[i]
 
             if isinstance(e, Event):
+                # Resolve triggers before the event.
+                self._collect_resolve_triggers(e, Trigger.Before, depth)
+
+                # Do the event.
+                cons_events = e.do()
+                if cons_events:
+                    self.resolve_events(cons_events, depth=depth + 1)
+
                 # Log history.
                 e.message()
                 self.event_history.append(e)
 
-                # Get all related triggers, then check their conditions and sort them in order of play.
-                related_triggers = set()
-                for event_type in e.ancestors():
-                    related_triggers.update(self.triggers.get(event_type, set()))
-
-                related_triggers = {trigger for trigger in related_triggers if trigger.queue_condition(e)}
-                triggers_queue = order_of_play(related_triggers)
-
-                if triggers_queue:
-                    self.resolve_triggers(triggers_queue, e, depth=depth + 1)
+                # Resolve triggers after the event.
+                if e.enable:
+                    self._collect_resolve_triggers(e, Trigger.After, depth)
 
                 # Check for stopping subsequent phases.
                 if self._stop_subsequent_phases:
@@ -374,10 +389,7 @@ class Game:
             player.on_replace_done(replace)
 
         self.state = self.GameState.Main
-        # TODO: Change this into:
-        # add standard triggers into ``self.entity``
-        # then move ``self.entity`` into ``Zone.Play`` (use ``move_map``)
-        add_standard_triggers(self)
+        # TODO: Move ``self.entity`` into ``Zone.Play`` (use ``move_map``)
         self.resolve_events(game_begin_standard_events(self))
 
     def end_game(self):

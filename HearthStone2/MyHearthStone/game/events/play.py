@@ -42,6 +42,31 @@ class OnPlaySpell(OnPlay):
 
     def _repr(self):
         return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
+    
+    def do(self):
+        """Process the OnPlaySpell event.
+
+        The card is removed from your hand and enters Play and its Mana cost is paid.
+        If it targets, the target is remembered (and its validity is not checked again).
+        (If Bloodbloom or Cho'Gall is out, you take damage instead.
+        This damage is resolved immediately, e.g. for Floating Watcher.)
+
+        :return: new event list.
+        """
+
+        player = self.game.players[self.player_id]
+        player.spend_mana(self.spell.cost)
+
+        # [NOTE]: move it to `Game.move`?
+        self.spell.oop = self.game.inc_oop()
+
+        tz = Zone.Graveyard
+        if self.spell.data['secret']:
+            tz = Zone.Secret
+
+        self.game.move(self.player_id, Zone.Hand, self.spell, self.player_id, tz, 'last')
+
+        return []
 
 
 class SpellBenderPhase(Phase):
@@ -63,6 +88,9 @@ class SpellBenderPhase(Phase):
     def _repr(self):
         return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
 
+    def do(self):
+        return []
+
 
 class SpellText(Phase):
     def __init__(self, game, spell, target, player_id=None):
@@ -79,6 +107,9 @@ class SpellText(Phase):
     def _repr(self):
         return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
 
+    def do(self):
+        return self.spell.run(self.target)
+
 
 class AfterSpell(AfterPlay):
     def __init__(self, game, spell, target, player_id=None):
@@ -94,6 +125,9 @@ class AfterSpell(AfterPlay):
 
     def _repr(self):
         return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
+
+    def do(self):
+        return []
 
 
 class OnPlayWeapon(OnPlay):
@@ -121,6 +155,10 @@ class Summon(Event):
     def _repr(self):
         return super()._repr(P=self.player_id, minion=self.owner, loc=self.loc)
 
+    def do(self):
+        self.minion.init_attack_status()
+        return []
+
 
 class OnPlayMinion(OnPlay):
     def __init__(self, game, minion, loc, target, player_id=None):
@@ -139,6 +177,25 @@ class OnPlayMinion(OnPlay):
     def _repr(self):
         return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion,
                              loc=self.summon_event.loc, target=self.target)
+    
+    def do(self):
+        """Process the OnPlayMinion event.
+
+        :return: new event list.
+        """
+
+        player = self.game.players[self.player_id]
+        player.spend_mana(self.minion.cost)
+
+        se = self.summon_event
+        self.game.summon_events.add(se)
+
+        # [NOTE]: move it to `Game.move`?
+        self.minion.oop = self.game.inc_oop()
+
+        _, status = self.game.move(se.player_id, Zone.Hand, self.minion, se.player_id, Zone.Play, se.loc)
+
+        return status['events']
 
 
 class BattlecryPhase(Phase):
@@ -157,6 +214,9 @@ class BattlecryPhase(Phase):
 
     def _repr(self):
         return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion, target=self.target)
+
+    def do(self):
+        return self.minion.run_battlecry(self.target)
 
 
 class AfterPlayMinion(AfterPlay):
@@ -177,6 +237,9 @@ class AfterPlayMinion(AfterPlay):
     def _repr(self):
         return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion)
 
+    def do(self):
+        return []
+
 
 class AfterSummon(Phase):
     def __init__(self, game, summon_event):
@@ -193,6 +256,9 @@ class AfterSummon(Phase):
 
     def _repr(self):
         return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion)
+
+    def do(self):
+        return []
 
 
 def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone=None):

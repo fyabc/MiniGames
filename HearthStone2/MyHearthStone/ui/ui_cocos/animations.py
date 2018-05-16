@@ -10,17 +10,16 @@ __author__ = 'fyabc'
 
 
 def _event_animations(layer, event):
-    pass
+    if isinstance(event, std_e.Attack):
+        # todo: Add an animation of line from attacker to defender.
+        pass
 
     # todo
 
 
 def _trigger_animations(layer, trigger, current_event):
-    if isinstance(trigger, std_t.StdAttack):
-        # todo: Add an animation of line from attacker to defender.
-        pass
-    
     # todo
+    pass
 
 
 def run_animations(layer, event_or_trigger, current_event):

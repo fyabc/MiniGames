@@ -9,9 +9,16 @@ __author__ = 'fyabc'
 
 
 class LoseDivineShield(Event):
-    pass
+    def do(self):
+        return []
+
+
+class LoseStealth(Event):
+    def do(self):
+        return []
 
 
 __all__ = [
     'LoseDivineShield',
+    'LoseStealth',
 ]

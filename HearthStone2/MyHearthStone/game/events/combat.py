@@ -13,6 +13,9 @@ Sequence details: See https://hearthstone.gamepedia.com/Advanced_rulebook#Combat
 """
 
 from .event import Event, Phase
+from .damage import damage_events
+from .misc import LoseStealth
+from ...utils.constants import version_le
 
 __author__ = 'fyabc'
 
@@ -35,6 +38,36 @@ class PrepareCombat(Phase):
     def _repr(self):
         return super()._repr(attacker=self.attack_event.attacker, defender=self.attack_event.defender)
 
+    def do(self):
+        """Do the prepare combat phase.
+
+        Copied from Advanced Rulebook::
+
+            1. If you have Gladiator's Longbow or Candleshot at the start of Combat Sequence,
+            you are Immune in the whole Sequence.[156][157]
+
+            2. **Combat Preparation Phase**: A Proposed Attack Event is resolved.
+            If the defender changes, another Proposed Attack Event is created and placed in this Phase's Event Queue
+            after the current Proposed Attack Event. (It will begin to resolve when the current Proposed Attack Event
+            finishes resolving.)
+            Finally, an Attack Event is resolved.
+            Additionally, the attacker will lose Stealth.
+        """
+        ae = self.attack_event
+        pae = ProposedAttack(self.game, ae)
+
+        result = [pae, ae]
+
+        # Remove stealth.
+        if version_le("11.0.0"):
+            # After patch 11.0.0, Minions now only break Stealth when attacking.
+            # Damage dealt by card abilities, such as Knife Juggler's knife throw, no longer breaks Stealth.
+            if ae.attacker.stealth:
+                ae.attacker.stealth = False
+                result.append(LoseStealth(self.game, ae.attacker))
+
+        return result
+
 
 class Combat(Phase):
     def __init__(self, game, attack_event):
@@ -51,6 +84,23 @@ class Combat(Phase):
 
     def _repr(self):
         return super()._repr(attacker=self.attack_event.attacker, defender=self.attack_event.defender)
+
+    def do(self):
+        """Do the combat phase.
+
+        Increase attack number of attacker (where?).
+
+        todo:
+        Damage order: See **Ordering of damage in the Combat Phase** in
+            https://hearthstone.gamepedia.com/Advanced_rulebook#Combat.
+        """
+        g, a, d = self.game, self.attacker, self.defender
+
+        a.inc_n_attack()
+
+        return (damage_events(g, a, d, a.attack) +
+                damage_events(g, d, a, d.attack) +
+                [AfterAttack(self.game, self.attack_event)])
 
 
 class ProposedAttack(Event):
@@ -105,6 +155,9 @@ class Attack(Event):
 
     def _repr(self):
         return super()._repr(attacker=self.attacker, defender=self.defender)
+
+    def do(self):
+        return []
 
 
 class AfterAttack(Event):

@@ -13,8 +13,16 @@ class Trigger:
     TODO: More docstring.
     """
 
+    Before = 0
+    After = 1
+
     # Event types for this class of trigger to respond.
     respond = []
+
+    # Timing to respond the event: before or after.
+    # It will match corresponding event type in ``respond``,
+    # such as ``respond[0], timing[0]; respond[1], timing[1]; ...``.
+    timing = [After]
 
     # Zones that this trigger is active.
     zones = [Zone.Play]
