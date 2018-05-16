@@ -4,6 +4,7 @@
 from MyHearthStone import ext
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events
+from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import Spell
 
 __author__ = 'fyabc'
@@ -48,13 +49,8 @@ class 激活(Spell):
 
 
 # 野性印记 (10004)
-def _apply(self):
-    self.target.data['attack'] += 2
-    self.target.inc_health(2)
-    self.target.taunt = True
-
-
-Enc_野性印记 = ext.create_enchantment({'id': 10000}, apply_fn=_apply)
+Enc_野性印记 = ext.create_enchantment(
+    {'id': 10000}, *enc_common.apply_fn_add_a_h(2, 2, apply_other=enc_common.set_target_attr('taunt', True)))
 
 
 class 野性印记(Spell):

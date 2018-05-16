@@ -7,6 +7,7 @@ from MyHearthStone import ext
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import Minion, Spell, Weapon, Enchantment
 from MyHearthStone.ext import std_events, std_triggers
+from MyHearthStone.ext import enc_common
 from MyHearthStone.utils.game import Race, Zone
 
 __author__ = 'fyabc'
@@ -47,8 +48,7 @@ class Enc_叫嚣的中士(Enchantment):
         super().__init__(game, target, **kwargs)
         self.Trig_叫嚣的中士(self.game, self)
 
-    def apply(self):
-        self.target.data['attack'] += 2
+    apply, apply_imm = enc_common.apply_fn_add_attack(2)
 
 
 class 叫嚣的中士(Minion):

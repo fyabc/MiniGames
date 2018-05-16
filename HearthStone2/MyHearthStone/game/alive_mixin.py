@@ -19,11 +19,7 @@ class AliveMixin:
         # since it is called after initializer, it will overwrite the card specific value.
         self.data.update({
             'attack': 0,
-
-            # TODO: Change this into '_damage' to fix the bug of "Hunter's Mark".
-            # Raw health before any enchantments (need it?)
-            '_raw_health': self.cls_data['health'],
-            'health': self.cls_data['health'],
+            'damage': 0,
             'max_health': self.cls_data['health'],
             'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
 
@@ -33,23 +29,58 @@ class AliveMixin:
             'can_attack_hero': True,
         })
 
-    attack = make_property('attack', setter=False)
-    health = make_property('health', setter=False)
-    max_health = make_property('max_health', setter=False)
+        # Temporary data dict for aura update.
+        self.aura_tmp = {}
+
+    # Health-related properties.
+
+    damage = make_property('damage')
     to_be_destroyed = make_property('to_be_destroyed')
-
-    # Other attributes.
-    divine_shield = make_property('divine_shield', default=False)
-    stealth = make_property('stealth', default=False)
-    taunt = make_property('taunt', default=False)
-
-    n_attack = make_property('n_attack')
-    n_total_attack = make_property('n_total_attack')
-    can_attack_hero = make_property('can_attack_hero')
 
     @property
     def alive(self):
-        return self.health > 0 and not self.to_be_destroyed
+        return self.data['damage'] < self.data['max_health'] and not self.to_be_destroyed
+
+    def _get_max_health(self):
+        return self.data['max_health']
+
+    def _set_max_health(self, value):
+        # If max health is reduced, reduce damage value.
+        orig_max_h = self.data['max_health']
+        if orig_max_h > value:
+            self.data['damage'] = max(0, self.data['damage'] - (orig_max_h - value))
+        self.data['max_health'] = value
+
+    max_health = property(_get_max_health, _set_max_health)
+
+    @property
+    def health(self):
+        return self.data['max_health'] - self.data['damage']
+
+    @property
+    def damaged(self):
+        return self.data['damage'] > 0
+
+    def take_damage(self, value):
+        self.data['damage'] += value
+
+    def restore_health(self, value):
+        """
+
+        :param value: The proposed heal value
+        :return: The real heal value
+        """
+        real_heal = min(value, self.data['damage'])
+        self.data['damage'] -= real_heal
+
+        return real_heal
+
+    # Attack-related properties.
+
+    attack = make_property('attack')
+    n_attack = make_property('n_attack')
+    n_total_attack = make_property('n_total_attack')
+    can_attack_hero = make_property('can_attack_hero')
 
     @property
     def exhausted(self):
@@ -62,25 +93,6 @@ class AliveMixin:
         if self.n_attack >= self.n_total_attack:
             return 'exhausted'
         return 'ready'
-
-    def take_damage(self, value):
-        self.data['_raw_health'] -= value
-
-    def restore_health(self, value):
-        """
-
-        :param value: The proposed heal value
-        :return: The real heal value
-        """
-        real_heal = min(value, self.data['max_health'] - self.data['health'])
-        self.data['_raw_health'] += real_heal
-
-        return real_heal
-
-    def inc_health(self, value):
-        """Increase health and max-health."""
-        self.data['health'] += value
-        self.data['max_health'] += value
 
     def inc_n_attack(self):
         self.n_attack += 1
@@ -106,11 +118,23 @@ class AliveMixin:
         self.n_attack = 0
         self.can_attack_hero = True
 
+    # Other attributes.
+    divine_shield = make_property('divine_shield', default=False)
+    stealth = make_property('stealth', default=False)
+    taunt = make_property('taunt', default=False)
+
+    # Aura related.
+
     def aura_update_attack_health(self):
-        self.data['attack'] = self.cls_data.get('attack', 0)
-        self.data['health'] = self.data['_raw_health']
-        self.data['max_health'] = self.cls_data['health']
+        self.aura_tmp.update({
+            'attack': self.cls_data.get('attack', 0),
+            'max_health': self.cls_data['health'],
+        })
         super().aura_update_attack_health()
+
+        # Set new value after aura update, something will be do automatically here (such as value change of max_health)
+        self.attack = self.aura_tmp['attack']
+        self.max_health = self.aura_tmp['max_health']
 
 
 __all__ = [

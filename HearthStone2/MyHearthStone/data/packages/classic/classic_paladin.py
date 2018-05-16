@@ -3,6 +3,8 @@
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Spell
+from MyHearthStone.ext import enc_common
+
 __author__ = 'fyabc'
 
 
@@ -10,11 +12,8 @@ __author__ = 'fyabc'
 # Paladin (4) #
 ###############
 
-def _apply(self):
-    self.target.data['attack'] *= 2
-
-
-Enc_受祝福的勇士 = ext.create_enchantment({'id': 1040010}, apply_fn=_apply)
+Enc_受祝福的勇士 = ext.create_enchantment(
+    {'id': 1040010}, apply_fn=enc_common.modify_aura_tmp('attack', lambda a: a * 2))
 
 
 class 受祝福的勇士(Spell):

@@ -3,6 +3,7 @@
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Spell
+from MyHearthStone.ext import enc_common
 
 __author__ = 'fyabc'
 
@@ -14,12 +15,7 @@ __author__ = 'fyabc'
 # 列王守卫 (40000)
 
 # 力量祝福 (40001)
-def _apply(self):
-    self.target.data['attack'] += 3
-
-
-# [NOTE]: Must assign this to a global variable, or use ``add_to_module`` argument.
-Enc_力量祝福 = ext.create_enchantment({'id': 40000}, apply_fn=_apply)
+Enc_力量祝福 = ext.create_enchantment({'id': 40000}, *enc_common.apply_fn_add_attack(3))
 
 
 class 力量祝福(Spell):
@@ -43,12 +39,7 @@ class 力量祝福(Spell):
 # 圣光术 (40004)
 
 # 王者祝福 (40005)
-def _apply(self):
-    self.target.data['attack'] += 4
-    self.target.inc_health(4)
-
-
-Enc_王者祝福 = ext.create_enchantment({'id': 40003}, apply_fn=_apply)
+Enc_王者祝福 = ext.create_enchantment({'id': 40003}, *enc_common.apply_fn_add_a_h(4, 4))
 
 
 class 王者祝福(Spell):

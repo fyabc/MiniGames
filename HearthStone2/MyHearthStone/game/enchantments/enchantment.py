@@ -67,10 +67,12 @@ class Enchantment(GameEntity):
         """The order in enchantment list. Sorted in increase order."""
         return (1 if self.aura else 0), self.oop
 
-    # TODO: Add ``apply_imm``?
+    def apply_imm(self):
+        """Apply this enchantment to the attached target immediately after attachment."""
+        pass
 
     def apply(self):
-        """Apply this enchantment to the attached target."""
+        """Apply this enchantment to the attached target in aura updates."""
         pass
 
     @classmethod

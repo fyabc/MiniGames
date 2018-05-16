@@ -196,6 +196,7 @@ class Weapon(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
+        # TODO: Change it into ``AliveMixin`` style.
         self.data.update({
             'attack': self.cls_data['attack'],
             '_raw_health': self.cls_data['health'],

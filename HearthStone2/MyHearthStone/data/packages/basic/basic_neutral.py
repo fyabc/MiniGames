@@ -73,6 +73,7 @@ from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, Enchantment
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events, std_triggers
+from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import message as msg
 from MyHearthStone.utils.game import Race, Zone
 
@@ -220,12 +221,8 @@ blank_minion({
 
 
 # 破碎残阳祭司 (20)
-def _apply(self):
-    self.target.data['attack'] += 1
-    self.target.inc_health(1)
-
-
-Enc_破碎残阳祭司 = ext.create_enchantment({'id': 2}, apply_fn=_apply)
+# [NOTE]: Must assign this to a global variable, or use ``add_to_module`` argument.
+Enc_破碎残阳祭司 = ext.create_enchantment({'id': 2}, *enc_common.apply_fn_add_a_h(1, 1))
 
 
 class 破碎残阳祭司(Minion):
@@ -314,11 +311,7 @@ blank_minion({
 
 
 # 古拉巴什狂暴者 (30)
-def _apply(self):
-    self.target.data['attack'] += 3
-
-
-Enc_古拉巴什狂暴者 = ext.create_enchantment({'id': 3}, apply_fn=_apply)
+Enc_古拉巴什狂暴者 = ext.create_enchantment({'id': 3}, *enc_common.apply_fn_add_attack(3))
 
 
 class 古拉巴什狂暴者(Minion):
@@ -361,8 +354,8 @@ class Enc_霜狼督军(Enchantment):
         self.n = n
 
     def apply(self):
-        self.target.data['attack'] += self.n
-        self.target.inc_health(self.n)
+        self.target.aura_tmp['attack'] += self.n
+        self.target.aura_tmp['max_health'] += self.n
 
 
 class 霜狼督军(Minion):
