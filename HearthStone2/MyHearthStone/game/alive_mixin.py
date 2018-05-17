@@ -14,23 +14,22 @@ class AliveMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Temporary data dict for aura update.
+        self.aura_tmp = {}
+
+    def _reset_tags(self):
         # Data of alive entities.
-        # [NOTE]: Attributes like "divine_shield" and "stealth" must NOT be set in it,
-        # since it is called after initializer, it will overwrite the card specific value.
         self.data.update({
             'attack': 0,
             'damage': 0,
             'max_health': self.cls_data['health'],
-            'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
+            'to_be_destroyed': False,  # The destroy tag for instant kill enchantments.
 
             # Attack related attributes.
             'n_attack': None,
             'n_total_attack': 1,
             'can_attack_hero': True,
         })
-
-        # Temporary data dict for aura update.
-        self.aura_tmp = {}
 
     # Health-related properties.
 

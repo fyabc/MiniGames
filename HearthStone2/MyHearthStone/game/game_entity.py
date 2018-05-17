@@ -108,6 +108,7 @@ class GameEntity(metaclass=SetDataMeta):
             # 'zone': Zone.Invalid,
             # 'player_id': None,  # Same as 'controller'.
         })
+        self._reset_tags()
 
         self.init_zone = Zone.Invalid
         self._init_player_id = None
@@ -151,6 +152,27 @@ class GameEntity(metaclass=SetDataMeta):
         """Change the zone of the entity.
 
         Subclasses should overwrite this method to implement their zone movement behaviour.
+
+        See <https://hearthstone.gamepedia.com/Advanced_rulebook#Moving_between_Zones> for more details.
+
+        Rules when moving between zones::
+
+            Rule Z5: When an Entity moves from one zone to another, the minion's tags (such as Damage,
+            Divine Shield and pending destroy) are reset to a default state.[291] The rules are as follows:
+
+            Rule Z5a: Play Zone to any other Zone: All Enchantments detached.[292][293]
+            Rule Z5b: Hand Zone to Play Zone: Enchantments are NOT detached.[294]
+            (However, Mana cost related Enchantments will trigger to detach in the On Play Phase.)[295]
+            Rule Z5c: Deck Zone to any other Zone: Enchantments are NOT detached.[296]
+
+                Even though Enchantments are detached when moving between zones in this way,
+                if you target a spell or Battlecry at a minion, but before the spell/Battlecry resolves
+                the minion leaves play, the spell/Battlecry can put an Enchantment on the minion in an
+                unexpected Zone (such as the Hand Zone, Graveyard Zone or Deck Zone).
+
+                The Enchantment will be considered to be in Play, even though the attached minion is not.
+                As a result, the Enchantment will be able to trigger (for example if it is Shadow Madness)
+                and will be able to give your player Spell Damage +1 (Velen's Chosen).
         """
 
         # FIXME: For debug.
@@ -166,18 +188,33 @@ class GameEntity(metaclass=SetDataMeta):
         # Update triggers.
         self.update_triggers(old_zone, zone)
 
-        # Removed from play.
-        # Detach all enchantments (with some exceptions), reset attributes to default value.
+        # Reset tags to default value.
+        self._reset_tags()
+
         if old_zone == Zone.Play:
+            # Removed from play.
+            # Detach all enchantments (with some exceptions).
             for enchantment in self.enchantments:
                 enchantment.detach(remove_from_target=False)
             self.enchantments.clear()
-            # TODO: Reset other attributes, may need to override by subclasses.
 
         debug('Move {} from {!r} to {!r}.'.format(self, Zone.Idx2Str[old_zone], Zone.Idx2Str[zone]))
         self.data['zone'] = zone
 
     zone = property(_get_zone, _set_zone)
+
+    def _reset_tags(self):
+        """Reset tags when moving between zones.
+
+        Subclasses such as ``AliveMixin`` should overwrite it.
+        """
+        # Clear all old tags except ``player_id`` and ``zone``.
+        player_id, zone = self.player_id, self.zone
+        self.data.clear()
+        self.data.update({
+            'player_id': player_id,
+            'zone': zone,
+        })
 
     @property
     def init_player_id(self):

@@ -82,7 +82,7 @@ class AppUser:
                     break
                 if cnt >= 2:
                     raise ValueError('there are more than one user that has name {}, '
-                                     'please give use id'.format(user_id_or_name))
+                                     'please give user id'.format(user_id_or_name))
                 user_id = users[user_names.index(user_id_or_name)][0]
             elif user_id_or_name is None:
                 # If there isn't any users, create a new default user

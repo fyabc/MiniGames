@@ -382,7 +382,7 @@ class 夜刃刺客(Minion):
     }
 
     def run_battlecry(self, target, **kwargs):
-        return std_events.damage_events(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)
+        return [std_events.Damage(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)]
 
 
 # 暗鳞治愈者 (34)

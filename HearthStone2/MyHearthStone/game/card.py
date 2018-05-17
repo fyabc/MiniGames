@@ -37,12 +37,18 @@ class Card(GameEntity):
         super().__init__(game)
 
         self.data.update({
-            'cost': self.cls_data['cost'],
-            'player_id': player_id,
+            'player_id': player_id
         })
+        self._reset_tags()
 
     def __repr__(self):
         return self._repr(name=self.data['name'], P=self.player_id, oop=self.oop, __show_cls=False)
+
+    def _reset_tags(self):
+        super()._reset_tags()
+        self.data.update({
+            'cost': self.cls_data['cost'],
+        })
 
     type = make_property('type', setter=False)
     klass = make_property('klass', setter=False)
@@ -121,14 +127,16 @@ class Minion(AliveMixin, Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
+    def __repr__(self):
+        return self._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
+                          oop=self.oop, __show_cls=False)
+
+    def _reset_tags(self):
+        super()._reset_tags()
         self.data.update({
             'attack': self.cls_data['attack'],
             'n_total_attack': 2 if self.cls_data['windfury'] else 1,
         })
-
-    def __repr__(self):
-        return self._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
-                          oop=self.oop, __show_cls=False)
 
     # TODO: Move these properties into ``AliveMixin``.
     charge = make_property('charge')
@@ -271,8 +279,9 @@ class HeroCard(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
+    armor = make_property('armor')
+
+    def _reset_tags(self):
         self.data.update({
             'armor': self.cls_data['armor'],
         })
-
-    armor = make_property('armor')

@@ -1,11 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from itertools import chain
+
 from MyHearthStone import ext
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events
 from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import Spell
+from MyHearthStone.utils.game import order_of_play, Zone
 
 __author__ = 'fyabc'
 
@@ -83,6 +86,46 @@ class 治疗之触(Spell):
 
 # 野蛮咆哮 (10007)
 
+
 # 横扫 (10008)
+class 横扫(Spell):
+    data = {
+        'id': 10008,
+        'type': 1, 'klass': 1, 'cost': 4,
+        'have_target': True,
+    }
+
+    check_target = ext.checker_enemy_character
+
+    def run(self, target, **kwargs):
+        """See <https://hearthstone.gamepedia.com/Swipe#Notes> for more details.
+
+        Like most area of effect damaging effect, Swipe deals all its damage before any on-damage
+        triggered effects are activated. However, Swipe creates Damage Events in an unusual order:
+        first for the targeted character, and then for all other enemy characters in reverse order
+        of play; then, all Damage Events are resolved in the same order.
+        """
+        targets = [target]
+        values = [4]
+
+        for entity in order_of_play(
+                chain(self.game.get_zone(Zone.Play, 1 - self.player_id),
+                      self.game.get_zone(Zone.Hero, 1 - self.player_id)), reverse=True):
+            if entity == target:
+                continue
+            targets.append(entity)
+            values.append(1)
+
+        return [std_events.AreaDamage(self.game, self, targets, values)]
+
 
 # 星火术 (10009)
+class 星火术(Spell):
+    data = {
+        'id': 10009,
+        'type': 1, 'klass': 1, 'cost': 6,
+        'have_target': True,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.DrawCard(self.game, self, self.player_id), std_events.Damage(self.game, self, target, 5)]

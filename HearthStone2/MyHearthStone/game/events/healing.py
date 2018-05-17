@@ -3,32 +3,27 @@
 
 """Healing events."""
 
-from .event import Event
+from .event import Event, DelayResolvedEvent
 
 __author__ = 'fyabc'
 
 
-class Healing(Event):
-    def __init__(self, game, owner, target, value, heal_done=False):
-        super().__init__(game, owner)
+class Healing(DelayResolvedEvent):
+    def __init__(self, game, owner, target, value, work_done=False):
+        super().__init__(game, owner, work_done=work_done)
         self.target = target
         self.value = value
-
-        # This tag mark if the internal healing is done or not.
-        # If it is done, this event is just a marker for related triggers.
-        self.heal_done = heal_done
 
     def _repr(self):
         return super()._repr(source=self.owner, target=self.target, value=self.value)
 
-    def do(self):
-        if not self.heal_done:
-            real_heal = self.target.restore_health(self.value)
-            # If the Healing Event was prevented or if it did not change the character's current Health,
-            # it will not run any triggers.
-            if real_heal <= 0:
-                self.disable()
-        return []
+    def do_real_work(self):
+        real_heal = self.target.restore_health(self.value)
+        # If the Healing Event was prevented or if it did not change the character's current Health,
+        # it will not run any triggers.
+        if real_heal <= 0:
+            self.disable()
+        self.pending_events = []
 
 
 class AreaHealing(Event):
@@ -46,7 +41,7 @@ class AreaHealing(Event):
     def __init__(self, game, owner, targets, values):
         super().__init__(game, owner)
         self.heal_events = [
-            Healing(game, owner, target, value, heal_done=True)
+            Healing(game, owner, target, value, work_done=True)
             for target, value in zip(targets, values)]
 
     def _repr(self):
@@ -54,9 +49,7 @@ class AreaHealing(Event):
 
     def do(self):
         for h_event in self.heal_events:
-            real_heal = h_event.target.restore_health(h_event.value)
-            if real_heal <= 0:
-                h_event.disable()
+            h_event.do_real_work()
         return [h_event for h_event in self.heal_events if self.enable]
 
 

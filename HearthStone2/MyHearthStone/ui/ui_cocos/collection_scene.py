@@ -304,13 +304,17 @@ class DeckEditLayer(ActiveLayer):
 
             NColumns = 3
             NRows = (len(Klass.Idx2Str) - 1) // NColumns + 1
-            for i, (kls, name) in enumerate(Klass.Idx2Str.items()):
+            i = 0
+            for (kls, name) in Klass.Idx2Str.items():
+                if kls == Klass.Neutral:
+                    continue
                 y, x = divmod(i, NColumns)
                 layer_.add(ActiveLabel.hs_style(
                     name, pos((2 * x + 1) / (2 * NColumns) * DW,
-                              (0.04 + 0.92 * (2 * y + 1) / (2 * NRows)) * DH),
+                              (0.04 + 0.92 * (2 * (NRows - y - 1) + 1) / (2 * NRows)) * DH),
                     anchor_x='center', anchor_y='center', callback=lambda kls_=kls: _on_done(kls_),
                 ))
+                i += 1
 
             layer_.add(ActiveLabel.hs_style(
                 '取消', pos(0.5 * DW, 0.02 * DH), anchor_x='center', anchor_y='bottom',

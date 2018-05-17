@@ -58,6 +58,9 @@ class Enchantment(GameEntity):
     def _set_zone(self, zone):
         # TODO: Specific behaviour of enchantment: (or needn't?)
         # Only have two zones: Play & RFG.
+        if zone not in (Zone.Play, Zone.RFG):
+            raise ValueError("Enchantment can be only moved to 'Play' or 'RFG', but try to move to {!r}.".format(
+                Zone.Idx2Str[zone]))
         super()._set_zone(zone)
 
     aura = make_property('aura', setter=False)

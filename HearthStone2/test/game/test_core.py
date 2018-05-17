@@ -4,6 +4,7 @@
 import unittest
 import sys
 import os
+import random
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
@@ -21,6 +22,31 @@ class TestCore(unittest.TestCase):
     test_decks = [None, None]
 
     game_start_events = [std_e.BeginOfGame, std_e.BeginOfTurn, std_e.DrawCard]
+
+    seed = 1234
+
+    expected_entities = [
+        {
+            Zone.Deck: ['6', '6', '10000', '30007', '11', '10000', '30007', '10000', '10000', '11', '6', '30007'],
+            Zone.Hand: ['30007', '6', '11', '11', '43'],
+            Zone.Play: [],
+            Zone.Secret: [],
+            Zone.Graveyard: [],
+            Zone.Weapon: [None],
+            Zone.Hero: [1],
+            Zone.HeroPower: [None],
+        },
+        {
+            Zone.Deck: ['11', '10000', '6', '30007', '10000', '30007', '11', '6', '10000', '30007', '10000', '6'],
+            Zone.Hand: ['11', '30007', '11', '6'],
+            Zone.Play: [],
+            Zone.Secret: [],
+            Zone.Graveyard: [],
+            Zone.Weapon: [None],
+            Zone.Hero: [2],
+            Zone.HeroPower: [None],
+        },
+    ]
 
     @classmethod
     def setUpClass(cls):
@@ -44,6 +70,9 @@ class TestCore(unittest.TestCase):
         pass
 
     def setUp(self):
+        # Set random seed to get reproducible behaviour.
+        random.seed(self.seed)
+
         self.game = Game()
         self.game.start_game(self.test_decks, mode='standard')
         self.game.run_player_action(pa.ReplaceStartCard(self.game, 0, []))
@@ -51,10 +80,35 @@ class TestCore(unittest.TestCase):
 
         self.p0, self.p1 = self.game.players[self.game.current_player], self.game.players[1 - self.game.current_player]
 
+    def tearDown(self):
+        self.game.end_game()
+
+    def _print_zones(self):
+        for player_id in 0, 1:
+            for zone, z_name in Zone.Idx2Str.items():
+                if zone in (Zone.Invalid, Zone.SetAside, Zone.RFG):
+                    continue
+                print('{} {}'.format(player_id, z_name),
+                      [e.id if e is not None else None for e in self.game.get_zone(zone, player_id)])
+
     def _assertEventType(self, event_types):
         self.assertListEqual(event_types, [type(e) for e in self.game.event_history])
 
-    def _assertCorrectZones(self):
+    def _assertExpectedZones(self, expected_entities=None):
+        expected_entities = self.expected_entities if expected_entities is None else expected_entities
+        """Assert zones values as expected."""
+        for player_id in 0, 1:
+            for zone, z_name in Zone.Idx2Str.items():
+                if zone in (Zone.Invalid, Zone.SetAside, Zone.RFG):
+                    continue
+                self.assertListEqual(
+                    expected_entities[player_id][zone],
+                    [e.id if e is not None else None for e in self.game.get_zone(zone, player_id)],
+                    'Zone {!r} of player {} not as expected'.format(z_name, player_id),
+                )
+
+    def _assertZoneAttr(self):
+        """Assert that the ``zone`` attribute of entities are correct."""
         for player_id in 0, 1:
             for zone, z_name in Zone.Idx2Str.items():
                 if zone in (Zone.Invalid, Zone.SetAside, Zone.RFG):
@@ -66,9 +120,6 @@ class TestCore(unittest.TestCase):
                     self.assertEqual(entity.zone, zone, 'Entity {} in zone {} has an incorrect zone {}'.format(
                         entity, z_name, Zone.Idx2Str[entity.zone]))
 
-    def tearDown(self):
-        self.game.end_game()
-
     # Game basic tests.
 
     def testBasic(self):
@@ -79,10 +130,7 @@ class TestCore(unittest.TestCase):
 
     def testStartZones(self):
         """Test length of some start zones."""
-        self.assertEqual(len(self.p0.hand), Player.StartCardOffensive + 1)
-        self.assertEqual(len(self.p1.hand), Player.StartCardDefensive + 1)
-        self.assertEqual(len(self.p0.play), 0)
-        self.assertEqual(len(self.p1.play), 0)
+        self._assertExpectedZones()
 
     def testGameStartEvents(self):
         """Test if game start events are expected."""
@@ -109,8 +157,10 @@ class TestCore(unittest.TestCase):
     def testZones(self):
         """Test the correctness of entity zones in play."""
         # TODO: Test for more player actions.
-        self._assertCorrectZones()
+        self._assertZoneAttr()
         self.game.run_player_action(pa.TurnEnd(self.game))
-        self._assertCorrectZones()
+        self._assertZoneAttr()
         self.game.run_player_action(pa.Concede(self.game))
-        self._assertCorrectZones()
+        self._assertZoneAttr()
+
+    # TODO: Use ``_assertExpectedZones`` to run more tests.

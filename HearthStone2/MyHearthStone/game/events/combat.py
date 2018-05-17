@@ -13,7 +13,7 @@ Sequence details: See https://hearthstone.gamepedia.com/Advanced_rulebook#Combat
 """
 
 from .event import Event, Phase
-from .damage import damage_events
+from .damage import Damage
 from .misc import LoseStealth
 from ...utils.constants import version_le
 
@@ -98,9 +98,10 @@ class Combat(Phase):
 
         a.inc_n_attack()
 
-        return (damage_events(g, a, d, a.attack) +
-                damage_events(g, d, a, d.attack) +
-                [AfterAttack(self.game, self.attack_event)])
+        return [
+            Damage(g, a, d, a.attack),
+            Damage(g, d, a, d.attack),
+            AfterAttack(self.game, self.attack_event)]
 
 
 class ProposedAttack(Event):

@@ -1,53 +1,16 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-from functools import partial
-from types import new_class
+"""Some basic card creators."""
 
-from ..utils.message import warning
-from ..utils.game import Zone
-from ..game.enchantments.enchantment import Enchantment
-from ..game.card import Minion, Weapon
-from ..game.events import standard as std_events
+from functools import partial
+
+from .utils import create_card, add_to_module
+from ...game.card import Minion, Weapon
+from ...game.events import standard as std_events
+from ...utils.game import Zone
 
 __author__ = 'fyabc'
-
-
-def _create_card(data, name, card_type, cls_dict_others=None):
-    """Internal function to create a card, called by other creators."""
-
-    assert 'id' in data, 'Data must contain value of key "id".'
-
-    if name is None:
-        if 'name' in data:
-            name = data['name']
-        else:
-            name = '{}_{}'.format(card_type.__name__, data['id'])
-
-    cls_dict = {'data': data}
-
-    if cls_dict_others is not None:
-        cls_dict.update(cls_dict_others)
-
-    return new_class(name, (card_type,), {}, lambda ns: ns.update(cls_dict))
-
-
-def _add_to_module(result, module_dict):
-    """Internal function to add the card to the module dict.
-
-    [NOTE]: This method must be called by other creators directly if `module_dict` is not given.
-    """
-    if module_dict is None:
-        # noinspection PyProtectedMember
-        module_dict = sys._getframe(2).f_globals
-
-    # Get the module name of caller.
-    result.__module__ = module_dict['__name__']
-
-    if result.__name__ in module_dict:
-        warning('Variable {!r} already exists in this module, overwrite it'.format(result.__name__))
-    module_dict[result.__name__] = result
 
 
 # Blank card creation.
@@ -72,9 +35,9 @@ def create_blank(data, name=None, card_type=Minion, module_dict=None):
     :return: The created card class.
     """
 
-    result = _create_card(data, name, card_type)
+    result = create_card(data, name, card_type)
 
-    _add_to_module(result, module_dict)
+    add_to_module(result, module_dict)
 
     return result
 
@@ -106,7 +69,7 @@ def damage_fn(value):
     :return: Damage function, used as `run` or `battlecry`.
     """
     def run_battlecry(self, target, **kwargs):
-        return std_events.damage_events(self.game, self, target, value)
+        return [std_events.Damage(self.game, self, target, value)]
     return run_battlecry
 
 
@@ -133,11 +96,11 @@ def summon_fn(summon_id, relative_loc=1):
 
 
 def create_damage_entity(data, value, name=None, card_type=Minion, module_dict=None):
-    result = _create_card(data, name, card_type, cls_dict_others={
+    result = create_card(data, name, card_type, cls_dict_others={
         'run_battlecry': damage_fn(value),
     })
 
-    _add_to_module(result, module_dict)
+    add_to_module(result, module_dict)
 
     return result
 
@@ -147,62 +110,13 @@ create_damage_weapon = partial(create_damage_entity, card_type=Weapon)
 
 
 def create_summon_minion(data, summon_id, relative_loc, name=None, module_dict=None):
-    result = _create_card(data, name, Minion, cls_dict_others={
+    result = create_card(data, name, Minion, cls_dict_others={
         'run_battlecry': summon_fn(summon_id, relative_loc),
     })
 
-    _add_to_module(result, module_dict)
+    add_to_module(result, module_dict)
 
     return result
-
-
-# Common used target checkers.
-
-def checker_minion(self, target):
-    if not super(type(self), self).check_target(target):
-        return False
-
-    if target.zone != Zone.Play:
-        return False
-
-    return True
-
-
-def checker_friendly_minion(self, target):
-    if not super(type(self), self).check_target(target):
-        return False
-
-    if target.zone != Zone.Play:
-        return False
-
-    if target.player_id != self.player_id:
-        return False
-
-    return True
-
-
-# Enchantment creation.
-
-def create_enchantment(data, apply_fn, apply_imm_fn=None, name=None, module_dict=None, add_to_module=False):
-    assert 'id' in data, 'Data must contain value of key "id".'
-
-    if apply_imm_fn is None:
-        def apply_imm_fn(self):
-            pass
-
-    if name is None:
-        if 'name' in data:
-            name = data['name']
-        else:
-            name = '{}_{}'.format(Enchantment.__name__, data['id'])
-
-    cls_dict = {'data': data, 'apply': apply_fn, 'apply_imm': apply_imm_fn}
-
-    cls = new_class(name, (Enchantment,), {}, lambda ns: ns.update(cls_dict))
-    if add_to_module:
-        _add_to_module(cls, module_dict)
-
-    return cls
 
 
 __all__ = [
@@ -216,9 +130,4 @@ __all__ = [
     'create_damage_minion',
     'create_damage_weapon',
     'create_summon_minion',
-
-    'checker_minion',
-    'checker_friendly_minion',
-
-    'create_enchantment',
 ]

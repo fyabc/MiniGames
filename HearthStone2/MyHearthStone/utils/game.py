@@ -4,11 +4,12 @@
 __author__ = 'fyabc'
 
 
-def order_of_play(objects, key=None):
+def order_of_play(objects, key=None, reverse=False):
     """Sort objects by the order of play.
 
     :param objects: Entities or events or triggers.
     :param key: User-defined key function.
+    :param reverse: Sort in reversed order.
     :return: List of objects, sorted by order of play.
     """
 
@@ -18,7 +19,7 @@ def order_of_play(objects, key=None):
     if key is None:
         key = _default_key
 
-    return sorted(objects, key=key)
+    return sorted(objects, key=key, reverse=reverse)
 
 
 def validate_cost(player, card, msg_fn):

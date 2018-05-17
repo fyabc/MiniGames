@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from MyHearthStone import ext
 from MyHearthStone.ext import Spell
 from MyHearthStone.ext import std_events
 from MyHearthStone.utils.game import Zone
@@ -24,11 +25,35 @@ class 影袭(Spell):
     }
 
     def run(self, target, **kwargs):
-        return std_events.damage_events(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)
+        return [std_events.Damage(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)]
+
 
 # 毒刃 (60003)
+class 毒刃(Spell):
+    data = {
+        'id': 60003,
+        'type': 1, 'klass': 6, 'cost': 2,
+        'have_target': True,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.DrawCard(self.game, self, self.player_id),
+                std_events.Damage(self.game, self, target, 1)]
+
 
 # 闷棍 (60004)
+class 闷棍(Spell):
+    data = {
+        'id': 60004,
+        'type': 1, 'klass': 6, 'cost': 2,
+        'have_target': True,
+    }
+
+    check_target = ext.checker_enemy_minion
+
+    def run(self, target, **kwargs):
+        _, status = self.game.move(target.player_id, target.zone, target, target.player_id, Zone.Hand, 'last')
+        return status['events']
 
 # 刀扇 (60005)
 

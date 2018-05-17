@@ -1,7 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""Basic event classes."""
+"""Basic event classes.
+
+# TODO: Add ``DelayConditionEvent`` for multi-step spells?
+Example: Card "Holy Nova".
+See <https://hearthstone.gamepedia.com/Holy_Nova#Notes> for more details.
+"""
 
 from ...utils.message import info, entity_message
 
@@ -95,3 +100,33 @@ class Phase(Event):
         When the outermost Phase resolves, Hearthstone will run several Steps,
         including processing Deaths and updating Auras.
     """
+
+
+class DelayResolvedEvent(Event):
+    """The class of events that will be delayed resolved (do actual work before resolve it)
+
+    For example, most area of effect (AoE) events will affect all targets before any related triggers are activated.
+    (See <https://hearthstone.gamepedia.com/Area_of_effect#Notes> for more details)
+    """
+
+    def __init__(self, game, owner, work_done=False):
+        super().__init__(game, owner)
+
+        # This tag mark if the internal work is done or not.
+        # If it is done, this event is just a marker for related triggers.
+        self.work_done = work_done
+
+        # Pending events calculated by ``self.do_real_work``.
+        self.pending_events = []
+
+    def do_real_work(self):
+        """Subclass should overwrite this method to do the real work.
+
+        This method should do the real work, calculate a event list, then assign it to ``self.pending_events``.
+        """
+        raise NotImplementedError()
+
+    def do(self):
+        if not self.work_done:
+            self.do_real_work()
+        return self.pending_events

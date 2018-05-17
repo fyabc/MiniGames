@@ -79,7 +79,7 @@ class DrawCard(Event):
             debug('Deck empty, take tire damage!')
             self.disable()
             player.tire_counter += 1
-            return damage_events(self.game, self.owner, player.hero, player.tire_counter)
+            return Damage(self.game, self.owner, player.hero, player.tire_counter)
 
         card, status = self.game.move(self.player_id, Zone.Deck, 0, self.player_id, Zone.Hand, 'last')
         success, new_events = status['success'], status['events']

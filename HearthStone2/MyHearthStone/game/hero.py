@@ -20,9 +20,7 @@ class Hero(AliveMixin, GameEntity):
     def __init__(self, game, player_id):
         super().__init__(game)
 
-        self.data.update({
-            'player_id': player_id,
-        })
+        self.player_id = player_id
 
         # todo: How to assign weapon attributes to hero attributes?
 
@@ -43,6 +41,8 @@ class Hero(AliveMixin, GameEntity):
 
 class HeroPower(GameEntity):
     """The class of hero power."""
+
+    # TODO: Fix it as other entities.
 
     _data = {
         'type': Type.HeroPower,
@@ -80,5 +80,5 @@ class HeroPower(GameEntity):
 
         return True
 
-    def run(self, target):
+    def run(self, target, **kwargs):
         return []
