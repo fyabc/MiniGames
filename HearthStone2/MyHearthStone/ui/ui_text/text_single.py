@@ -4,6 +4,7 @@
 import argparse
 import cmd
 import shlex
+import textwrap
 
 from ...game.core import Game
 from ...game.deck import Deck
@@ -47,47 +48,55 @@ Welcome to HearthStone (single player text mode).
         self.prompt = 'HS[main]> '  # Init prompt
 
         # Command parsers.
-        self.parser_user = NoExitParser(prog='user')
+        self.parser_user = NoExitParser(prog='user', description='User information commands.')
         self.sub_user = self.parser_user.add_subparsers(dest='action')
         self.sub_user.default = 'show'
-        parser_user_show = self.sub_user.add_parser('show')
-        parser_user_all = self.sub_user.add_parser('all')
-        parser_user_name = self.sub_user.add_parser('name')
-        parser_user_name.add_argument('new_name', nargs='?', default=None, help='New name, default is None')
+        parser_user_show = self.sub_user.add_parser('show', description='Show current user.')
+        parser_user_all = self.sub_user.add_parser('all', description='Show all users.')
+        parser_user_name = self.sub_user.add_parser('name', description='Show or change user name.')
+        parser_user_name.add_argument('new_name', nargs='?', default=None,
+                                      help='New name to set, show current name if not given')
 
-        self.parser_deck = NoExitParser(prog='deck')
+        self.parser_deck = NoExitParser(prog='deck', description='Deck commands.')
         self.sub_deck = self.parser_deck.add_subparsers(dest='action')
         self.sub_deck.default = 'list'
-        parser_deck_list = self.sub_deck.add_parser('list')
-        parser_deck_new = self.sub_deck.add_parser('new')
+        parser_deck_list = self.sub_deck.add_parser('list', description='List all decks.')
+        parser_deck_new = self.sub_deck.add_parser('new', description='Create a new deck.')
         parser_deck_new.add_argument('-c', '--class', action='store', dest='klass', default=None,
                                      help='Deck class (str or int), default is None')
         parser_deck_new.add_argument('-n', '--name', action='store', dest='name', default=None,
                                      help='Deck name, default is None')
-        parser_deck_delete = self.sub_deck.add_parser('delete')
+        parser_deck_delete = self.sub_deck.add_parser('delete', description='Delete a deck.')
         delete_group = parser_deck_delete.add_mutually_exclusive_group(required=True)
         delete_group.add_argument('index', nargs='?', default=None, type=int, help='Delete by index')
         delete_group.add_argument('-n', '--name', action='store', dest='name', default=None,
                                   help='Delete by name, default is None')
-        parser_deck_show = self.sub_deck.add_parser('show')
+        parser_deck_show = self.sub_deck.add_parser('show', description='Show a deck.')
 
-        self.parser_game = NoExitParser(prog='game')
+        self.parser_game = NoExitParser(
+            prog='game', formatter_class=argparse.RawDescriptionHelpFormatter,
+            description=textwrap.dedent('''\
+            Start a new game. You can specify decks by its name or index.
+            Example:
+                game -x 0 -y 1
+                game -x 0 -2 "Custom Hunter" -m standard
+            '''))
         self.parser_game.add_argument('-m', '--mode', action='store', dest='mode', default='standard',
                                       help='Game mode, default is %(default)s.')
         deck1_group = self.parser_game.add_mutually_exclusive_group(required=True)
         deck1_group.add_argument('-1', '--deck1', action='store', dest='deck1', metavar='name', default=None,
                                  help='Name of deck 1.')
         deck1_group.add_argument('-x', '--id1', action='store', dest='deck1_id', metavar='N', type=int, default=None,
-                                 help='Index of deck 1.')
+                                 help='Index of deck 1 in the deck list.')
         deck2_group = self.parser_game.add_mutually_exclusive_group(required=True)
         deck2_group.add_argument('-2', '--deck2', action='store', dest='deck2', metavar='name', default=None,
                                  help='Name of deck 2.')
         deck2_group.add_argument('-y', '--id2', action='store', dest='deck2_id', metavar='N', type=int, default=None,
-                                 help='Index of deck 2.')
+                                 help='Index of deck 2 in the deck list.')
 
-        self.parser_draw = NoExitParser(prog='draw')
-        self.parser_draw.add_argument('-S', '--no-spawn', action='store_false', dest='spawn', default=True,
-                                      help='Do not spawn a new process, default will spawn.')
+        self.parser_draw = NoExitParser(prog='draw', description='Draw current game board.')
+        self.parser_draw.add_argument('-s', '--spawn', action='store_true', dest='spawn', default=False,
+                                      help='Spawn a new process to draw, default will draw in main process.')
 
     def emptyline(self):
         """Do nothing when enter an empty line."""
@@ -105,9 +114,9 @@ Welcome to HearthStone (single player text mode).
 
     def do_quit(self, arg):
         """\
-Terminate the application.
-Syntax: q | quit | exit\
-"""
+        Terminate the application.
+        Syntax: q | quit | exit"""
+
         if self.state == self.StateGame:
             while True:
                 confirm = input('The game is running. Are you sure to concede? (y/n) ').lower()
@@ -122,6 +131,7 @@ Syntax: q | quit | exit\
                     pass
         return True
 
+    do_quit.__doc__ = textwrap.dedent(do_quit.__doc__)
     do_exit = do_q = do_quit
 
     def do_user(self, arg):
@@ -175,91 +185,104 @@ Syntax: q | quit | exit\
                 print(i, '\t', deck, sep='')
             print('=========')
         elif args.action == 'new':
-            # Set deck name and class.
-            while True:
-                if args.klass is not None:
-                    klass = args.klass
-                else:
-                    klass = input('> Choose class [0-10 or name]:')
-                try:
-                    _klass = Klass.Str2Idx.get(klass.capitalize(), None)
-                    if _klass is not None:
-                        klass = _klass
-                        break
-                    klass = int(klass)
-                    if not 0 <= klass <= 10:
-                        raise ValueError
-                    break
-                except ValueError:
-                    error('Please enter number [0-10] or name.')
-            klass_name = Klass.Idx2Str[klass]
-            if args.name is not None:
-                name = args.name
-            else:
-                name = input('> Enter deck name ["Custom {}"]:'.format(klass_name))
-            if not name:
-                name = 'Custom {}'.format(klass_name)
-
-            # Add cards.
-            print('Add cards: (<card name / id> [<card number>]), type q to quit')
-            card_id_list = []
-            while True:
-                words = input('> ').strip().split()
-
-                if not words:
-                    continue
-                if words[0] == 'q':
-                    break
-
-                words = words[:2]
-                if len(words) == 1:
-                    n_cards = 1
-                else:
-                    try:
-                        n_cards = int(words[1])
-                    except ValueError:
-                        print('The second argument must be a number.')
-                        continue
-
-                try:
-                    card_id = int(words[0])
-                    if card_id not in all_cards():
-                        card_id = None
-                except ValueError:
-                    card_id = search_by_name(words[0])
-
-                if card_id is None:
-                    print('Cannot found the card.')
-                    continue
-
-                card_id_list.extend(card_id for _ in range(n_cards))
-            card_id_list = sorted(card_id_list)
-
-            decks.append(Deck(klass=klass, card_id_list=card_id_list, name=name))
-            info('Create new deck: {}[{}]'.format(name, klass_name))
+            self._new_deck(args, decks)
         elif args.action == 'delete':
-            if args.name is not None:
-                try:
-                    index = ([d.name for d in decks]).index(args.name)
-                except ValueError:
-                    error('Cannot find deck {!r}.'.format(args.name))
-                    return
+            self._delete_deck(args, decks)
+
+    def _new_deck(self, args, decks):
+        # Set deck name and class.
+        NumKlass = len(Klass.Str2Idx)
+        while True:
+            if args.klass is not None:
+                klass = args.klass
             else:
-                if not 0 <= args.index < len(decks):
-                    error('Index out of range.')
-                    return
-                index = args.index
-            while True:
-                confirm = input('> Delete deck {} {}, confirm? (y/n) '.format(index, decks[index])).lower()
-                if confirm == 'y':
-                    info('Deck {} {} deleted.'.format(index, decks[index]))
-                    del decks[index]
-                    return
-                elif confirm == 'n':
-                    info('Nothing happens.')
-                    return
-                else:
-                    pass
+                klass = input('> Choose class number [0-{}] or class name (q to quit):'.format(NumKlass - 1))
+
+            if klass == 'q':
+                print('Operation terminated by user.')
+                return
+            try:
+                _klass = Klass.Str2Idx.get(klass.capitalize(), None)
+                if _klass is not None:
+                    klass = _klass
+                    break
+                klass = int(klass)
+                if not 0 <= klass < NumKlass:
+                    raise ValueError()
+                break
+            except ValueError:
+                error('Please enter number 0-{} or class name.'.format(NumKlass - 1))
+        klass_name = Klass.Idx2Str[klass]
+        if args.name is not None:
+            name = args.name
+        else:
+            name = input('> Enter deck name ["Custom {}"]:'.format(klass_name))
+        if not name:
+            name = 'Custom {}'.format(klass_name)
+
+        # Add cards.
+        print('Add cards in format: (<card name / id> [<card number>]), type ":" to input commands.')
+        print('Type ":q" to quit, ":i" to list cards, ":h" to show simple help.')
+        card_id_list = []
+        while True:
+            words = input('> ').strip().split()
+
+            if not words:
+                continue
+            # TODO: commands start with ':'.
+            if words[0] == 'q':
+                break
+
+            words = words[:2]
+            if len(words) == 1:
+                n_cards = 1
+            else:
+                try:
+                    n_cards = int(words[1])
+                except ValueError:
+                    print('The second argument must be a number.')
+                    continue
+
+            try:
+                card_id = int(words[0])
+                if card_id not in all_cards():
+                    card_id = None
+            except ValueError:
+                card_id = search_by_name(words[0])
+
+            if card_id is None:
+                print('Cannot found the card.')
+                continue
+
+            card_id_list.extend(card_id for _ in range(n_cards))
+        card_id_list = sorted(card_id_list)
+
+        decks.append(Deck(klass=klass, card_id_list=card_id_list, name=name))
+        info('Create new deck: {}[{}]'.format(name, klass_name))
+
+    def _delete_deck(self, args, decks):
+        if args.name is not None:
+            try:
+                index = ([d.name for d in decks]).index(args.name)
+            except ValueError:
+                error('Cannot find deck {!r}.'.format(args.name))
+                return
+        else:
+            if not 0 <= args.index < len(decks):
+                error('Index out of range.')
+                return
+            index = args.index
+        while True:
+            confirm = input('> Delete deck {} {}, confirm? (y/n) '.format(index, decks[index])).lower()
+            if confirm == 'y':
+                info('Deck {} {} deleted.'.format(index, decks[index]))
+                del decks[index]
+                return
+            elif confirm == 'n':
+                info('Nothing happens.')
+                return
+            else:
+                pass
 
     def help_deck(self):
         self.parser_deck.print_help()
@@ -408,6 +431,10 @@ class TextSingleFrontend(Frontend):
 
     def _main(self):
         self.session.cmdloop()
+
+    def finalize(self):
+        info('Text single frontend exited')
+        super().finalize()
 
 
 __all__ = [

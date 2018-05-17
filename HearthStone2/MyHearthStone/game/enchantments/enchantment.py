@@ -53,6 +53,7 @@ class Enchantment(GameEntity):
         self.oop = kwargs.pop('oop', None)
 
         target.add_enchantment(self)
+        self.zone = Zone.Play
 
     def _set_zone(self, zone):
         # TODO: Specific behaviour of enchantment: (or needn't?)
@@ -85,7 +86,6 @@ class Enchantment(GameEntity):
 
         kwargs['oop'] = creator.oop
         enc = cls(*args, **kwargs)
-        enc.zone = Zone.Play
 
         return enc
 

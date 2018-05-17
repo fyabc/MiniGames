@@ -80,6 +80,7 @@ class CocosSingleFrontend(Frontend):
         return result
 
     def preprocess(self):
+        super().preprocess()
         load_fonts()
         index_resources()
 

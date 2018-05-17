@@ -199,12 +199,13 @@ class _GameData:
 
         values_filename = os.path.join(self.path, self.ResourcePathName, self.ValuesPathName, my_locale + '.json')
         if not os.path.exists(values_filename):
-            warning('Locale "{}" not found, use default locale "{}".'.format(my_locale, C.DefaultLocale))
+            warning('Locale {!r} of package {!r} not found, use default locale {!r}.'.format(
+                my_locale, self.path, C.DefaultLocale))
             my_locale = C.DefaultLocale
             values_filename = os.path.join(self.path, self.ResourcePathName, self.ValuesPathName, my_locale + '.json')
 
             if not os.path.exists(values_filename):
-                warning('Default locale not found, do not load strings.')
+                warning('Default locale of package {!r} not found, do not load strings.'.format(self.path))
                 return
 
         try:

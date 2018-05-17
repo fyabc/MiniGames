@@ -50,6 +50,9 @@ class Frontend:
     def create_server(self):
         pass
 
+    def preprocess(self):
+        pass
+
     def finalize(self):
         if self._hold_lock_file:
             info('Saving user information...')
