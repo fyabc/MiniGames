@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from MyHearthStone import ext
-from MyHearthStone.ext import Spell
+from MyHearthStone.ext import Minion, Spell
+from MyHearthStone.ext import std_events
 from MyHearthStone.ext import enc_common
+from MyHearthStone.utils.game import Zone
 
 __author__ = 'fyabc'
 
@@ -13,6 +15,16 @@ __author__ = 'fyabc'
 ###############
 
 # 列王守卫 (40000)
+class 列王守卫(Minion):
+    data = {
+        'id': 40000,
+        'klass': 4, 'cost': 7, 'attack': 5, 'health': 6,
+        'battlecry': True,
+    }
+
+    def run_battlecry(self, target, **kwargs):
+        return [std_events.Healing(self.game, self, self.game.get_zone(Zone.Hero, self.player_id)[0], 6)]
+
 
 # 力量祝福 (40001)
 Enc_力量祝福 = ext.create_enchantment({'id': 40000}, *enc_common.apply_fn_add_attack(3))

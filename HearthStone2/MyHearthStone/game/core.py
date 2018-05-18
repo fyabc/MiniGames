@@ -103,16 +103,6 @@ class Game:
         # Summon event cache.
         self.summon_events = set()
 
-        #######################################
-        # Stubs for high-level UI frontend(s) #
-        #######################################
-
-        # The frontends for all players.
-        # Key: uuid, user_id; Value: frontend, player_id
-        self.frontends = {}
-
-        self.error_stub = kwargs.pop('error_stub', error)
-
         # All history events. Store in `Event` instance or its string representation?
         self.event_history = []
 
@@ -668,6 +658,9 @@ class Game:
         for player in self.players:
             for entity in player.get_all_entities():
                 yield entity
+
+    def get_player(self, player_id):
+        return self.players[player_id]
 
     def get_zone(self, zone, player_id):
         return self.players[player_id].get_zone(zone)

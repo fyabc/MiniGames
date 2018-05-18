@@ -6,5 +6,6 @@ from ...game.hero import Hero, HeroPower
 from .basic_cards import *
 from .target_checker import *
 from .enchantment import *
+from .misc import *
 
 __author__ = 'fyabc'

@@ -173,7 +173,17 @@ blank_minion({
     'race': [Race.Beast],
 })
 
+
 # 酸性沼泽软泥怪 (12)
+class 酸性沼泽软泥怪(Minion):
+    data = {
+        'id': 12,
+        'cost': 2, 'attack': 3, 'health': 2,
+        'battlecry': True,
+    }
+
+    # TODO
+
 
 # 血沼迅猛龙 (13)
 blank_minion({
@@ -229,6 +239,7 @@ class 破碎残阳祭司(Minion):
     data = {
         'id': 20,
         'cost': 3, 'attack': 3, 'health': 2,
+        'battlecry': True,
     }
 
     @property
@@ -362,6 +373,7 @@ class 霜狼督军(Minion):
     data = {
         'id': 32,
         'cost': 5, 'attack': 4, 'health': 4,
+        'battlecry': True,
     }
 
     def run_battlecry(self, target, **kwargs):
@@ -390,7 +402,7 @@ class 暗鳞治愈者(Minion):
     data = {
         'id': 34,
         'cost': 5, 'attack': 4, 'health': 5,
-        'battlecry': True
+        'battlecry': True,
     }
 
     def run_battlecry(self, target, **kwargs):

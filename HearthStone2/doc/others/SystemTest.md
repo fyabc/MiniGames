@@ -9,3 +9,12 @@
     > 解释：神圣之灵实际上不是将当前生命值加倍，
     > 而是将当前生命值和最大生命值增加等同于当前生命值的值。
     > 见<https://hearthstone.gamepedia.com/Divine_Spirit>。
+
+2. Play some cards when the board is full
+    1. 无法使用的卡牌
+        > Error Message: "你的随从太多了，无法使用"
+
+        - 关门放狗
+        - 动物伙伴
+    2. 可以使用的卡牌
+        - 侧翼打击

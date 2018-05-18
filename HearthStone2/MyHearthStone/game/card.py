@@ -53,6 +53,8 @@ class Card(GameEntity):
     type = make_property('type', setter=False)
     klass = make_property('klass', setter=False)
     rarity = make_property('rarity', setter=False)
+    derivative = make_property('derivative', setter=False)
+    race = make_property('race', setter=False)
 
     @property
     def cost(self):
@@ -99,6 +101,18 @@ class Card(GameEntity):
         """Get the image filename of this card."""
 
         return '{}.png'.format(cls.data['id'])
+
+    def can_do_action(self, msg_fn=None):
+        super_result = super().can_do_action(msg_fn=msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+        if self.zone == Zone.Hand:
+            # Play in hand.
+            if self.game.get_player(self.player_id).displayed_mana() < self.cost:
+                if msg_fn:
+                    msg_fn('You do not have enough mana!')
+                return self.Inactive
+        return super_result
 
 
 class Minion(AliveMixin, Card):
@@ -161,6 +175,19 @@ class Minion(AliveMixin, Card):
         :return: list of events.
         """
         return []
+
+    def can_do_action(self, msg_fn=None):
+        super_result = super().can_do_action(msg_fn=msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+
+        # Test if board is full if play from hand.
+        if self.zone == Zone.Hand and self.game.get_player(self.player_id).full(Zone.Play):
+            if msg_fn:
+                msg_fn('I cannot have more minions!')
+            return self.Inactive
+
+        return super_result
 
 
 class Spell(Card):

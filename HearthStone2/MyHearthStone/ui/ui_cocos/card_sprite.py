@@ -18,6 +18,14 @@ from ...utils.draw.cocos_utils.primitives import Rect
 
 __author__ = 'fyabc'
 
+# Card action border colors.
+CommonColor = Colors['gray30']
+CanActionColor = Colors['green']
+# TODO: Use animation to show highlighted cards.
+HighlightColor = Colors['red']
+
+# TODO: Add race tags sprite.
+
 
 class EntitySprite(ActiveMixin, cocosnode.CocosNode):
     """ABC for entity sprites.
@@ -99,6 +107,8 @@ class HandSprite(EntitySprite):
     The card sprite may be static (created by card_id, attributes not changed)
         or dynamic (created by card instance).
     """
+
+    # TODO: Add action ready border.
 
     Size = euclid.Vector2(300, 450)    # Card size (original).
     SizeBase = Size // 2        # Coordinate base of children sprites.
@@ -328,8 +338,6 @@ class MinionSprite(EntitySprite):
         int(ImageSize[0] * ImagePart[0] * ImageScale), int(ImageSize[1] * ImagePart[1] * ImageScale))
     SizeBase = Size // 2  # Coordinate base of children sprites.
 
-    CommonColor = Colors['gray30']
-
     def __init__(self, minion, position=(0, 0), scale=1.0, **kwargs):
         self.common_border = None
         self.image_sprite = None
@@ -350,6 +358,15 @@ class MinionSprite(EntitySprite):
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
+
+        action_status = self.entity.can_do_action()
+        if action_status == self.entity.Inactive:
+            color = CommonColor
+        elif action_status == self.entity.Active:
+            color = CanActionColor
+        else:   # action_status == self.entity.Highlighted
+            color = HighlightColor
+        self.common_border.color = color
 
         if self.entity.type == Type.Minion:
             self.image_sprite.opacity = self._stealth_opacity()
@@ -387,7 +404,7 @@ class MinionSprite(EntitySprite):
         border_rect.center = (0, 0)
         self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
 
-        self.common_border = Rect(border_rect, self.CommonColor, width=2)
+        self.common_border = Rect(border_rect, CommonColor, width=2)
         self.add(self.common_border, z=1)
 
         # Get the part of card image.

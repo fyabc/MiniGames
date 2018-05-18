@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .game_entity import make_property
-from ..utils.game import Type
+from ..utils.game import Type, Zone
 
 __author__ = 'fyabc'
 
@@ -91,6 +91,7 @@ class AliveMixin:
             return 'sleep'
         if self.n_attack >= self.n_total_attack:
             return 'exhausted'
+        # TODO: Add other status, such as 'cannot attack'?
         return 'ready'
 
     def inc_n_attack(self):
@@ -134,6 +135,45 @@ class AliveMixin:
         # Set new value after aura update, something will be do automatically here (such as value change of max_health)
         self.attack = self.aura_tmp['attack']
         self.max_health = self.aura_tmp['max_health']
+
+    def can_do_action(self, msg_fn=None):
+        super_result = super().can_do_action(msg_fn=msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+
+        # Entities with alive mixin can only be in ``Zone.Play`` or ``Zone.Hero``.
+        if self.zone not in (Zone.Play, Zone.Hero):
+            return super_result
+
+        type_ = self.type
+        # If in play, test if can attack.
+        attack_status = self.attack_status
+        if attack_status == 'sleep':
+            if msg_fn:
+                if type_ == Type.Hero:
+                    msg_fn('I am not ready!')
+                else:
+                    msg_fn('This minion is not ready!')
+            return self.Inactive
+        else:
+            if self.attack <= 0:
+                if msg_fn:
+                    if type_ == Type.Hero:
+                        msg_fn('I cannot attack!')
+                    else:
+                        msg_fn('This minion cannot attack!')
+                return self.Inactive
+            else:
+                if attack_status == 'exhausted':
+                    if msg_fn:
+                        if type_ == Type.Hero:
+                            msg_fn('I have attacked!')
+                        else:
+                            msg_fn('This minion has attacked!')
+                    return self.Inactive
+                else:
+                    assert attack_status == 'ready'
+        return super_result
 
 
 __all__ = [

@@ -126,6 +126,7 @@ __all__ = [
 
     'draw_card_fn',
     'damage_fn',
+    'summon_fn',
     'create_damage_entity',
     'create_damage_minion',
     'create_damage_weapon',

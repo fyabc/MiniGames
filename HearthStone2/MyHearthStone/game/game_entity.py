@@ -201,7 +201,7 @@ class GameEntity(metaclass=SetDataMeta):
         debug('Move {} from {!r} to {!r}.'.format(self, Zone.Idx2Str[old_zone], Zone.Idx2Str[zone]))
         self.data['zone'] = zone
 
-    zone = property(_get_zone, _set_zone)
+    zone = property(fget=_get_zone, fset=_set_zone)
 
     def _reset_tags(self):
         """Reset tags when moving between zones.
@@ -283,3 +283,32 @@ class GameEntity(metaclass=SetDataMeta):
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
         for enchantment in self.enchantments:
             enchantment.apply()
+
+    # Methods for frontend.
+
+    # Entity status: Inactive, Active and Highlighted.
+    Inactive, Active, Highlighted = 0, 1, 2
+
+    def can_do_action(self, msg_fn=None):
+        """Return if this entity can do action or not.
+
+        If this entity can do action (playable) now, it will have a green border in HearthStone.
+
+        :param msg_fn: Message function to send some message back to frontend if check failed.
+            If default to ``None``, will send nothing.
+        :return The action status of this entity.
+            GameEntity.Inactive: This entity is not active.
+            GameEntity.Active: This entity is active.
+            GameEntity.Highlighted: This entity is highlighted.
+                (for example, the status of card "Kill Command" when you control a beast.)
+        :rtype: int
+        """
+        # Can only play entities owned by current player.
+        if self.player_id != self.game.current_player:
+            return self.Inactive
+        # Can only play entities int these zones.
+        if self.zone not in [Zone.Hand, Zone.Play, Zone.Hero, Zone.HeroPower]:
+            return self.Inactive
+        return self.Active
+
+    # TODO: Add method ``is_highlighted``?

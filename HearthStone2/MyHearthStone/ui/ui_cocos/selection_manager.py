@@ -9,6 +9,7 @@ from pyglet.window import mouse
 
 from ...game import player_action as pa
 from ...utils.game import *
+from ...utils.frontend import *
 from ...utils.draw.cocos_utils.basic import notice
 from .card_sprite import EntitySprite
 
@@ -22,7 +23,7 @@ class SelectionManager:
     ST = 2      # Play targeted spell,      spell: Y    target: N
     MC = 3      # Play common minion,       minion: Y   place: N
     MT = 4      # Play targeted minion,     minion: Y   place: N    target: N
-    MT2 = 5     # Play targeted minion 2,   minion: Y   place: Y    target: Y
+    MT2 = 5     # Play targeted minion 2,   minion: Y   place: Y    target: N
     WC = 6      # Play common weapon,       weapon: Y   confirm: N
     WT = 7      # Play targeted weapon,     weapon: Y   targeted: N
     HC = 8      # Play common hero card,    hero: Y     confirm: N
@@ -78,64 +79,57 @@ class SelectionManager:
 
         # TODO: Add more checks here (target, cost, etc.), put these check functions in a new module.
         if self.state == self.C:
-            # If not click on current player, do nothing.
-            if player_id != game.current_player:
-                return False
-            if zone == Zone.Hand:
-                card = sprite.entity
-                card_type = card.type
-                if not validate_cost(player, card, self._msg_fn):
-                    return False
-
-                self.sel['source'] = card
-                if card_type == Type.Spell:
-                    if card.have_target:
-                        self.state = self.ST
-                    else:
-                        self.state = self.SC
-                    sprite.on_mouse_release(*click_args)
-                    return True
-                elif card_type == Type.Minion:
-                    if card.have_target:
-                        self.state = self.MT
-                    else:
-                        self.state = self.MC
-                    sprite.on_mouse_release(*click_args)
-                    return True
-                elif card_type == Type.Weapon:
-                    if card.have_target:
-                        self.state = self.WT
-                    else:
-                        self.state = self.WC
-                    sprite.on_mouse_release(*click_args)
-                    return True
-                elif card_type == Type.HeroCard:
-                    if card.have_target:
-                        self.state = self.HT
-                    else:
-                        self.state = self.HC
-                    sprite.on_mouse_release(*click_args)
-                    return True
-                else:
-                    raise ValueError('Unknown card type {!r}'.format(card_type))
-            elif zone == Zone.Play:
-                if not validate_attacker(sprite.entity, self._msg_fn):
-                    return False
-                self.sel['source'] = sprite.entity
-                self.state = self.A
-                sprite.on_mouse_release(*click_args)
-                return True
-            elif zone == Zone.Hero:
-                if not validate_attacker(sprite.entity, self._msg_fn):
-                    return False
-                self.sel['source'] = sprite.entity
-                self.state = self.A
-                sprite.on_mouse_release(*click_args)
-                return True
-            elif zone == Zone.HeroPower:
+            entity = sprite.entity
+            if entity.can_do_action(msg_fn=self._msg_fn) == entity.Inactive:
                 return False
             else:
-                raise ValueError('Unknown zone {!r}'.format(zone))
+                if zone == Zone.Hand:
+                    type_ = entity.type
+                    self.sel['source'] = entity
+                    if type_ == Type.Spell:
+                        if entity.have_target:
+                            self.state = self.ST
+                        else:
+                            self.state = self.SC
+                        sprite.on_mouse_release(*click_args)
+                        return True
+                    elif type_ == Type.Minion:
+                        if entity.have_target:
+                            self.state = self.MT
+                        else:
+                            self.state = self.MC
+                        sprite.on_mouse_release(*click_args)
+                        return True
+                    elif type_ == Type.Weapon:
+                        if entity.have_target:
+                            self.state = self.WT
+                        else:
+                            self.state = self.WC
+                        sprite.on_mouse_release(*click_args)
+                        return True
+                    elif type_ == Type.HeroCard:
+                        if entity.have_target:
+                            self.state = self.HT
+                        else:
+                            self.state = self.HC
+                        sprite.on_mouse_release(*click_args)
+                        return True
+                    else:
+                        raise ValueError('Unknown card type {!r}'.format(Type.Idx2Str.get(type_, None)))
+                elif zone == Zone.Play:
+                    self.sel['source'] = entity
+                    self.state = self.A
+                    sprite.on_mouse_release(*click_args)
+                    return True
+                elif zone == Zone.Hero:
+                    self.sel['source'] = entity
+                    self.state = self.A
+                    sprite.on_mouse_release(*click_args)
+                    return True
+                elif zone == Zone.HeroPower:
+                    return False
+                else:
+                    raise ValueError('Unknown zone {!r}'.format(Zone.Idx2Str.get(zone, None)))
         elif self.state == self.SC:
             # todo: Or change the selection?
             return False
@@ -146,6 +140,10 @@ class SelectionManager:
                 return False
             game.run_player_action(pa.PlaySpell(game, card, target, card.player_id))
             return True
+        elif self.state == self.MC:
+            return False
+        elif self.state == self.MT:
+            return False
         elif self.state == self.MT2:
             minion = self.sel['source']
             index = self.sel['index']
@@ -154,6 +152,14 @@ class SelectionManager:
                 return False
             game.run_player_action(pa.PlayMinion(game, minion, index, target, minion.player_id))
             return True
+        elif self.state == self.WC:
+            return False
+        elif self.state == self.WT:
+            return False
+        elif self.state == self.HC:
+            return False
+        elif self.state == self.HT:
+            return False
         elif self.state == self.A:
             attacker = self.sel['source']
             defender = sprite.entity
@@ -212,20 +218,26 @@ class SelectionManager:
         elif self.state == self.MC:
             if player_id != game.current_player:
                 return False
-            if not validate_play_size(player, self._msg_fn):
-                return True
             minion = self.sel['source']
             game.run_player_action(pa.PlayMinion(game, minion, index, None, minion.player_id))
             return True
         elif self.state == self.MT:
             if player_id != game.current_player:
                 return False
-            if not validate_play_size(player, self._msg_fn):
-                return True
             self.board.add_loc_stub(player_id, index)
             self.sel['index'] = index
             self.state = self.MT2
             return True
+        elif self.state == self.MT2:
+            return False
+        elif self.state == self.WC:
+            return False
+        elif self.state == self.WT:
+            return False
+        elif self.state == self.HC:
+            return False
+        elif self.state == self.HT:
+            return False
         elif self.state == self.A:
             return False
         else:
