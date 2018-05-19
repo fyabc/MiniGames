@@ -6,7 +6,7 @@
 See <https://hearthstone.gamepedia.com/Advanced_rulebook#Damage_and_Healing> for details.
 """
 
-from .event import Event, DelayResolvedEvent
+from .event import Event, DelayResolvedEvent, AreaEvent
 from .misc import LoseDivineShield, LoseStealth
 from ...utils.constants import version_le
 
@@ -46,27 +46,16 @@ class Damage(DelayResolvedEvent):
                 self.pending_events.append(LoseStealth(self.game, self.owner))
 
 
-class AreaDamage(Event):
+class AreaDamage(AreaEvent):
     """The area of effect (AoE) damage event.
 
     See docstring of ``MyHearthStone.game.events.healing.AreaHealing`` for more details.
     """
 
-    # TODO: Need more test of area effects.
-
     def __init__(self, game, owner, targets, values):
-        super().__init__(game, owner)
-        self.damage_events = [
+        super().__init__(game, owner, events=[
             Damage(game, owner, target, value, work_done=True)
-            for target, value in zip(targets, values)]
-
-    def _repr(self):
-        return super()._repr(source=self.owner, damages=self.damage_events)
-
-    def do(self):
-        for d_event in self.damage_events:
-            d_event.do_real_work()
-        return [d_event for d_event in self.damage_events if self.enable]
+            for target, value in zip(targets, values)])
 
 
 __all__ = [

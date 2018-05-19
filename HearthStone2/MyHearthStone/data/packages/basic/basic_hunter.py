@@ -129,6 +129,8 @@ class 杀戮命令(Spell):
 
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
+        if super_result == self.Inactive:
+            return super_result
 
         if self.zone == Zone.Hand and ext.have_friendly_beast(self):
             return self.Highlighted

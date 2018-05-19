@@ -18,3 +18,19 @@
         - 动物伙伴
     2. 可以使用的卡牌
         - 侧翼打击
+
+3. Highlight status
+    - 杀戮命令：控制一个友方野兽
+    - 驯兽师：
+
+4. Faceless Manipulator
+    1. Play minion M (1/1)
+    2. Play 暴风城勇士 (6/6), M -> (2/2)
+    3. Play 无面操纵者, copy M
+    4. 无面操纵者 -> (2/2)
+
+5. Blessed Champion
+    1. Play minion M (1/1)
+    2. Play 暴风城勇士 (6/6), M -> (2/2)
+    3. Play 受祝福的勇士 on M -> (3/2)
+    4. Play 受祝福的勇士 on M -> (5/2)

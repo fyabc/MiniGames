@@ -89,7 +89,6 @@ class Card(GameEntity):
         # Default valid target zones.
         #   Only support target to `Play` and `Hero` zones now.
         #   Can support `Hand`, `Weapon` and other zones in future.
-        # [NOTE]: Only cards, heroes and hero powers have attribute zone.
         zone = target.zone
         if zone not in (Zone.Play, Zone.Hero):
             return False

@@ -389,7 +389,8 @@ class MinionSprite(EntitySprite):
         self.common_border.color = color
 
         if self.entity.type == Type.Minion:
-            self.image_sprite.opacity = self._stealth_opacity()
+            if self.image_sprite is not None:
+                self.image_sprite.opacity = self._stealth_opacity()
             self.atk_label.element.text = str(self.entity.attack)
             self.atk_label.element.color = self._get_attack_color()
             self.health_label.element.text = str(self.entity.health)
@@ -445,14 +446,15 @@ class MinionSprite(EntitySprite):
 
         # Get the part of card image.
         try:
-            image = pyglet_image(self.entity.get_image_name()).get_region(
-                x=int(self.ImageSize[0] * (1 - self.ImagePart[0]) / 2), y=int(self.ImageSize[1] * 0.51),
-                width=int(self.ImageSize[0] * self.ImagePart[0]), height=int(self.ImageSize[1] * self.ImagePart[1]))
-            self.image_sprite = Sprite(
-                image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale, opacity=self._stealth_opacity())
-            self.add(self.image_sprite, z=2)
+            image = pyglet_image(self.entity.get_image_name())
         except ResourceNotFoundException:
-            pass
+            image = pyglet_image('Minion-Skeleton.png')
+        image = image.get_region(
+            x=int(self.ImageSize[0] * (1 - self.ImagePart[0]) / 2), y=int(self.ImageSize[1] * 0.51),
+            width=int(self.ImageSize[0] * self.ImagePart[0]), height=int(self.ImageSize[1] * self.ImagePart[1]))
+        self.image_sprite = Sprite(
+            image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale, opacity=self._stealth_opacity())
+        self.add(self.image_sprite, z=2)
 
         if self.entity.type == Type.Minion:
             atk_sprite = Sprite('Atk.png', pos(-0.92, -0.81, base=self.SizeBase), scale=0.6)

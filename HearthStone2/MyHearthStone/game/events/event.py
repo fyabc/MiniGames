@@ -130,3 +130,21 @@ class DelayResolvedEvent(Event):
         if not self.work_done:
             self.do_real_work()
         return self.pending_events
+
+
+class AreaEvent(Event):
+    """The event of area of effect, worked with ``DelayResolvedEvent``."""
+
+    # TODO: Need more test of area effects.
+
+    def __init__(self, game, owner, events=None):
+        super().__init__(game, owner)
+        self.events = [] if events is None else events
+
+    def _repr(self):
+        return super()._repr(source=self.owner, events=self.events)
+
+    def do(self):
+        for event in self.events:
+            event.do_real_work()
+        return [e for e in self.events if e.enable]

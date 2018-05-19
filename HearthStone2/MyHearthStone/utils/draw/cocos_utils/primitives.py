@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from cocos.cocosnode import CocosNode
 from cocos.draw import Canvas, parameter
 
 __author__ = 'fyabc'
@@ -28,6 +29,12 @@ class Rect(Canvas):
         self.line_to(self.rect.topright)
         self.line_to(self.rect.bottomright)
         self.line_to(self.rect.bottomleft)
+
+
+class Circle(CocosNode):
+    def draw(self, *args, **kwargs):
+        # TODO
+        pass
 
 
 __all__ = [

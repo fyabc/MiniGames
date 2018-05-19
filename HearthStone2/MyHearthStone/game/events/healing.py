@@ -3,7 +3,7 @@
 
 """Healing events."""
 
-from .event import Event, DelayResolvedEvent
+from .event import Event, DelayResolvedEvent, AreaEvent
 
 __author__ = 'fyabc'
 
@@ -26,7 +26,7 @@ class Healing(DelayResolvedEvent):
         self.pending_events = []
 
 
-class AreaHealing(Event):
+class AreaHealing(AreaEvent):
     """The area of effect (AoE) healing event.
 
     This is a special case because of the "ShadowBoxer",
@@ -39,18 +39,9 @@ class AreaHealing(Event):
     """
 
     def __init__(self, game, owner, targets, values):
-        super().__init__(game, owner)
-        self.heal_events = [
+        super().__init__(game, owner, events=[
             Healing(game, owner, target, value, work_done=True)
-            for target, value in zip(targets, values)]
-
-    def _repr(self):
-        return super()._repr(source=self.owner, heals=self.heal_events)
-
-    def do(self):
-        for h_event in self.heal_events:
-            h_event.do_real_work()
-        return [h_event for h_event in self.heal_events if self.enable]
+            for target, value in zip(targets, values)])
 
 
 __all__ = [

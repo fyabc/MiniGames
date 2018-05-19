@@ -6,7 +6,7 @@
 import sys
 import os
 from locale import getdefaultlocale
-from importlib import import_module
+from importlib.util import spec_from_file_location, module_from_spec
 import json
 
 from .constants import get_package_paths, C
@@ -28,7 +28,7 @@ _AllData = {
 }
 
 
-def _load_module_variables(root_package_path, package_name):
+def _load_module_variables(root_package_path, package_name, ext='.py'):
     """Load all variables in a Python module file.
 
     :param root_package_path: The path of the module.
@@ -40,9 +40,10 @@ def _load_module_variables(root_package_path, package_name):
     full_package_name = os.path.join(root_package_path, package_name)
 
     try:
-        sys.path.append(root_package_path)
-
-        module_vars = vars(import_module(package_name))
+        spec = spec_from_file_location(package_name, location=os.path.join(root_package_path, package_name + ext))
+        module = module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module_vars = vars(module)
 
     except ImportError:
         error('Error when loading package {}'.format(full_package_name))
@@ -120,7 +121,7 @@ class _GameData:
             # so they can be used as implementation files.
             module_vars = None
             if ext == '.py':
-                module_vars = _load_module_variables(self.path, package_name)
+                module_vars = _load_module_variables(self.path, package_name, ext=ext)
             elif ext == '.hdl':
                 module_vars = load_file(os.path.join(self.path, filename))
             if module_vars is not None:
@@ -222,7 +223,7 @@ class _GameData:
                     assert isinstance(v[0], str)
                     assert isinstance(v[1], str)
 
-                    if entities == heroes_dict:
+                    if entities is heroes_dict:
                         k = int(k)
                     var = entities.get(k, None)
                     if var is not None:

@@ -52,6 +52,21 @@ def checker_enemy_minion(self, target):
     return True
 
 
+def checker_my_hand(self, target):
+    """The target checker of my hand.
+
+    This checker is used for DIY cards that will select your hand as target.
+    Example: Battlecry: Select and discard a card from you hand.
+    """
+    if target is None:
+        return True
+
+    zone, player_id = target.zone, target.player_id
+    if zone == Zone.Hand and player_id == self.player_id and target != self:
+        return True
+    return False
+
+
 # Have target checkers.
 
 def have_friendly_minion(self):
@@ -73,6 +88,7 @@ __all__ = [
     'checker_friendly_minion',
     'checker_enemy_character',
     'checker_enemy_minion',
+    'checker_my_hand',
 
     'have_friendly_minion',
     'have_friendly_beast',

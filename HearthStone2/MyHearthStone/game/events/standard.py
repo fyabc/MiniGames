@@ -10,6 +10,7 @@ from .healing import *
 from .death import *
 from .combat import *
 from .hero_power import *
+from .discard import *
 from .misc import *
 from .utils import dynamic_pid_prop
 from ...utils.constants import C
