@@ -241,7 +241,7 @@ class GameBoardLayer(ActiveLayer):
                                 for minion_sprite in chain(*self.play_sprites)}
         for card_sprite_list in self.hand_sprites + self.play_sprites:
             card_sprite_list.clear()
-        for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.38, .62))):
+        for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.365, .635))):
             num_hand, num_play = len(player.hand), len(player.play)
             for j, card in enumerate(player.hand):
                 spr_kw = {

@@ -21,7 +21,7 @@ __author__ = 'fyabc'
 # Card action border colors.
 CommonColor = Colors['gray30']
 CanActionColor = Colors['green']
-# TODO: Use animation to show highlighted cards.
+# TODO: Change this into a better color or use animation to show highlighted cards.
 HighlightColor = Colors['red']
 
 # TODO: Add race tags sprite.
@@ -132,6 +132,8 @@ class HandSprite(EntitySprite):
         self.front_sprites = {}
         self.back_sprites = {}
 
+        self.common_border = None
+
         super().__init__(card, position, scale, **kwargs)
 
         # For active mixin.
@@ -166,6 +168,20 @@ class HandSprite(EntitySprite):
         if unsel_eff != _sentinel:
             self.unselected_effect = unsel_eff
         self.sel_mgr.set_sel_eff()
+
+        if not self.static:
+            action_status = self.entity.can_do_action()
+            if action_status == self.entity.Inactive:
+                if self.common_border in self:
+                    self.remove(self.common_border)
+            else:
+                if action_status == self.entity.Active:
+                    color = CanActionColor
+                else:  # action_status == self.entity.Highlighted
+                    color = HighlightColor
+                self.common_border.color = color
+                if self.common_border not in self:
+                    self.add(self.common_border, z=3)
 
         self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
         if self._c_get('type') in (Type.Minion, Type.Weapon):
@@ -211,6 +227,9 @@ class HandSprite(EntitySprite):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
         self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
+
+        if not self.static:
+            self.common_border = Rect(border_rect, CanActionColor, width=4)
 
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
                              scale=1.0,)
@@ -347,8 +366,9 @@ class MinionSprite(EntitySprite):
         # Show enchantments of this minion.
         self.enchantments = []
 
-        # TODO: Taunt label, windfury label, etc.
+        # TODO: Windfury sprite, etc.
         self.divine_shield_sprite = None
+        self.taunt_sprite = None
 
         # TODO: Show the related card when mouse on it over N seconds.
         # TODO: (Need support of focus time in ``ActiveMixin``.)
@@ -374,14 +394,10 @@ class MinionSprite(EntitySprite):
             self.atk_label.element.color = self._get_attack_color()
             self.health_label.element.text = str(self.entity.health)
             self.health_label.element.color = self._get_health_color()
-            if self.entity.divine_shield:
-                ds_sprite = self._get_ds_sprite()
-                if ds_sprite not in self:
-                    self.add(ds_sprite, z=3)
-            else:
-                ds_sprite = self._get_ds_sprite()
-                if ds_sprite in self:
-                    self.remove(ds_sprite)
+            self._update_attr_sprite('divine_shield', self._get_ds_sprite, z=5)
+
+            # TODO: Set taunt opacity to 50 if this minion is negated_taunt.
+            self._update_attr_sprite('taunt', self._get_taunt_sprite, z=0)
 
         else:   # self.entity.type == Type.Permanent
             # Anything to do?
@@ -396,6 +412,26 @@ class MinionSprite(EntitySprite):
             self.divine_shield_sprite.scale_y = self.ImageScale * self.ImagePart[1] * 1.1
         return self.divine_shield_sprite
 
+    def _get_taunt_sprite(self):
+        if self.taunt_sprite is None:
+            self.taunt_sprite = Sprite(
+                'TauntMarker.png', pos(-0.05, 0.0, base=self.SizeBase),
+                opacity=200,
+            )
+            self.taunt_sprite.scale_x = 1.97
+            self.taunt_sprite.scale_y = 2.1
+        return self.taunt_sprite
+
+    def _update_attr_sprite(self, attr_name, get_fn, z):
+        if getattr(self.entity, attr_name):
+            sprite = get_fn()
+            if sprite not in self:
+                self.add(sprite, z=z)
+        else:
+            sprite = get_fn()
+            if sprite in self:
+                self.remove(sprite)
+
     def _stealth_opacity(self):
         return 50 if self.entity.stealth else 255
 
@@ -405,7 +441,7 @@ class MinionSprite(EntitySprite):
         self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
 
         self.common_border = Rect(border_rect, CommonColor, width=2)
-        self.add(self.common_border, z=1)
+        self.add(self.common_border, z=3)
 
         # Get the part of card image.
         try:
@@ -414,7 +450,7 @@ class MinionSprite(EntitySprite):
                 width=int(self.ImageSize[0] * self.ImagePart[0]), height=int(self.ImageSize[1] * self.ImagePart[1]))
             self.image_sprite = Sprite(
                 image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale, opacity=self._stealth_opacity())
-            self.add(self.image_sprite, z=0)
+            self.add(self.image_sprite, z=2)
         except ResourceNotFoundException:
             pass
 
@@ -425,13 +461,10 @@ class MinionSprite(EntitySprite):
             health_sprite = Sprite('Health.png', pos(0.88, -0.81, base=self.SizeBase), scale=0.56)
             self.health_label = hs_style_label(str(self.entity.health), pos(0.86, -0.8, base=self.SizeBase),
                                                anchor_y='center', font_size=32, color=self._get_health_color())
-            self.add(atk_sprite, z=1)
-            self.add(self.atk_label, z=2)
-            self.add(health_sprite, z=1)
-            self.add(self.health_label, z=2)
-
-            if self.entity.divine_shield:
-                self.add(self._get_ds_sprite(), z=3)
+            self.add(atk_sprite, z=3)
+            self.add(self.atk_label, z=4)
+            self.add(health_sprite, z=3)
+            self.add(self.health_label, z=4)
         else:   # self.entity.type == Type.Permanent
             pass
 

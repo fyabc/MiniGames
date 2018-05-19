@@ -121,7 +121,19 @@ class AliveMixin:
     # Other attributes.
     divine_shield = make_property('divine_shield', default=False)
     stealth = make_property('stealth', default=False)
-    taunt = make_property('taunt', default=False)
+    immune = make_property('immune', default=False)
+
+    @property
+    def taunt(self):
+        return self.data.get('taunt', False) and not self.stealth and not self.immune
+
+    @taunt.setter
+    def taunt(self, value):
+        self.data['taunt'] = value
+
+    @property
+    def negated_taunt(self):
+        return self.taunt and (self.stealth or self.immune)
 
     # Aura related.
 

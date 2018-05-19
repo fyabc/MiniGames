@@ -58,7 +58,7 @@ class 王者祝福(Spell):
     data = {
         'id': 40005,
         'type': 1, 'klass': 4, 'cost': 4,
-        'have_target': True
+        'have_target': True,
     }
 
     check_target = ext.checker_minion
