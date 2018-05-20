@@ -8,7 +8,7 @@ Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gameped
 
 ## Download Resource Files
 
-1. Download data file **data.zip** from <https://pan.baidu.com/s/1go8IGdRijG55h-Wv0FMGsg>, password: 2mdr
+1. Download data file **data.zip** from <https://pan.baidu.com/s/1Tr5MpFocg8KpIwCJBTqd_A>, password: u644
 
 2. Run `copy_data.py` to copy data into the project.
 
