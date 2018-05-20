@@ -13,8 +13,8 @@ from ...game.deck import Deck
 from ...utils.game import Klass
 from ...utils.message import info
 from ...utils.package_io import all_cards
-from ...utils.draw.cocos_utils.basic import pos, pos_y, Colors, hs_style_label
-from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel
+from ...utils.draw.cocos_utils.basic import pos, pos_y, Colors, hs_style_label, try_load_image
+from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveSprite, set_color_action
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 
 __author__ = 'fyabc'
@@ -246,9 +246,10 @@ class DeckEditLayer(ActiveLayer):
     DeckTitleY = 0.94
     UpDownY = 0.19
     EditDoneY = 0.11
-    CardListT = 0.88
+    CardListT = 0.86
     CardListB = 0.25
     CardShowS = 15
+    TitleImagePart = (0.20, 0.72, 0.63, 0.135)
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
@@ -261,12 +262,18 @@ class DeckEditLayer(ActiveLayer):
         self.card_items = []
         self.card_show_start = None
 
-        # TODO: Click deck name label to edit name, delete, etc.
+        # [NOTE]: If you want to change the image, must ensure that the image size is same,
+        # or the position will be incorrect.
+        self.sprite_deck_name = ActiveSprite(
+            try_load_image('1000000.png', image_part=self.TitleImagePart), callback=self.on_title_clicked, scale=1.5)
+        self.sprite_deck_name.visible = False
+        self.add(self.sprite_deck_name, name='sprite_deck_name')
         self.label_deck_name = ActiveLabel.hs_style(
-            '', pos(self.DeckC, self.DeckTitleY), anchor_x='center', anchor_y='center',
-            bold=True,
+            '', pos(self.DeckL, self.DeckTitleY), anchor_x='left', anchor_y='top',
+            bold=True, font_size=22,
         )
-        self.add(self.label_deck_name, name='label_deck_name')
+        self.label_deck_name.visible = False
+        self.add(self.label_deck_name, name='label_deck_name', z=1)
 
         for is_down in (False, True):
             self.add(ActiveLabel.hs_style(
@@ -339,8 +346,8 @@ class DeckEditLayer(ActiveLayer):
             if self.deck_id == 'new':
                 info('New deck {} not saved.'.format(self.deck))
             else:
-                del self.ctrl.user.decks[self.deck_id]
                 info('Deck {} {} deleted.'.format(self.deck_id, decks[self.deck_id]))
+                del self.ctrl.user.decks[self.deck_id]
         else:
             if self.deck_id == 'new':
                 decks.append(self.deck)
@@ -353,7 +360,8 @@ class DeckEditLayer(ActiveLayer):
         self.deck = None
         self.card_show_start = None
 
-        self.label_deck_name.element.text = ''
+        self.sprite_deck_name.visible = False
+        self.label_deck_name.visible = False
         self._remove_card_items()
         self.card_items.clear()
 
@@ -365,6 +373,15 @@ class DeckEditLayer(ActiveLayer):
         self.card_show_start = 0
 
         self.label_deck_name.element.text = self.deck.name
+        self.label_deck_name.visible = True
+
+        image = try_load_image(
+            'Hero-{}.png'.format(self.ctrl.user.class_hero_map[self.deck.klass]), image_part=self.TitleImagePart)
+        if image is not None:
+            self.sprite_deck_name.image = image
+        self.sprite_deck_name.position = pos(self.DeckC, self.DeckTitleY)
+        self.sprite_deck_name.visible = True
+
         self._build_card_items()
         self._refresh_card_items()
 
@@ -409,6 +426,32 @@ class DeckEditLayer(ActiveLayer):
 
     def on_edit_done(self):
         self.parent.switch_to(DeckSelectID)
+
+    def on_title_clicked(self):
+        from ...utils.draw.cocos_utils.layers import LineEditLayer
+        DW, DH = 0.5, 0.2
+
+        def _ok():
+            self.label_deck_name.element.text = self.deck.name = layer_.deck_name
+            layer_.remove_from_scene()
+
+        def _delete():
+            # TODO: Add confirm
+            self.delete_deck = True
+            layer_.remove_from_scene()
+            self.on_edit_done()
+
+        layer_ = LineEditLayer(Colors['black'], *map(int, pos(DW, DH)),
+                               position=pos((1 - DW) / 2, (1 - DH) / 2), stop_event=True, border=True)
+        layer_.deck_name = self.deck.name
+        layer_.add(ActiveLabel.hs_style(
+            '删除卡组', pos(0.3 * DW, 0.05 * DH), anchor_x='center',
+            callback=_delete,
+            color=Colors['red'],
+            unselected_effect=set_color_action(Colors['red']),
+        ))
+        layer_.add_ok(_ok, position=(0.7, 0.05))
+        layer_.add_to_scene(self.parent)
 
     def on_card_item_clicked(self, card_item: CardItem):
         """Click an card item, will remove one card."""

@@ -7,7 +7,7 @@ import base64
 import binascii
 
 from ..utils.game import Klass
-from ..utils.message import error
+from ..utils.message import error, info
 
 __author__ = 'fyabc'
 
@@ -26,10 +26,19 @@ class Deck:
         self.mode = mode
         self.klass = klass
         self.card_id_list = card_id_list
-        self.name = kwargs.pop('name', 'Custom {}'.format(Klass.Idx2Str[klass]))
+        self._name = kwargs.pop('name', 'Custom {}'.format(Klass.Idx2Str[klass]))
 
     def __repr__(self):
         return 'Deck(class={}, name={!r}, mode={})'.format(Klass.Idx2Str[self.klass], self.name, self.mode)
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        info('Set name of {} to {}'.format(self, value))
+        self._name = value
 
     def copy(self):
         """Return a (deep) copy of this deck."""

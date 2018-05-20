@@ -285,6 +285,10 @@ class ActiveColorLayer(ActiveLayerMixin, layer.ColorLayer):
         self.position = position
         self.stop_event = stop_event
 
+    @property
+    def size(self):
+        return self.width, self.height
+
 
 def children_inside_test(node, x, y):
     """Test if the point is inside the node according to its children.

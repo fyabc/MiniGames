@@ -3,9 +3,10 @@
 
 from cocos import layer, director, rect
 from cocos.scenes import transitions
+from pyglet.window import key as pyglet_key
 
 from .primitives import Rect
-from .basic import pos, Colors
+from .basic import pos, Colors, hs_style_label
 from . import active
 
 __author__ = 'fyabc'
@@ -75,18 +76,56 @@ class DialogLayer(active.ActiveColorLayer):
         """Add this dialog to the top, and if `stop_event` is True, it will stop related events."""
         scene.add(self, z=max(e[0] for e in scene.children) + 1)
 
-    def add_ok(self, callback, z=0):
+    def add_ok(self, callback, z=0, position=(0.5, 0.03)):
         self.add(active.ActiveLabel.hs_style(
-            '确定', pos(0.5, 0.03, base=(self.width, self.height)), anchor_x='center',
+            '确定', pos(*position, base=self.size), anchor_x='center',
             callback=callback,
-        ), z=z)
+        ), z=z, name='ok_button')
 
     def remove_from_scene(self):
         self.parent.remove(self)
+
+
+class LineEditLayer(DialogLayer):
+    is_event_handler = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.add(hs_style_label('Pick a name:', pos(0.03, 0.5, base=self.size), font_size=28, anchor_x='left'))
+
+        self.name_label = hs_style_label('', pos(0.4, 0.5, base=self.size), font_size=28, anchor_x='left')
+        self.add(self.name_label)
+
+    @property
+    def deck_name(self):
+        return self.name_label.element.text
+
+    @deck_name.setter
+    def deck_name(self, value):
+        self.name_label.element.text = value
+
+    def on_key_press(self, key, modifiers):
+        print('Press', hex(key), modifiers)
+        if key == pyglet_key.BACKSPACE:
+            # BACKSPACE means delete the last char.
+            self.deck_name = self.deck_name[:-1]
+        elif key == pyglet_key.ENTER:
+            # ENTER means done.
+            self.get('ok_button').call()
+        elif 0x020 <= key <= 0x07e:
+            # ASCII characters.
+            key_str = chr(key)
+            if modifiers & pyglet_key.MOD_SHIFT:
+                key_str = key_str.upper()
+            self.deck_name += key_str
+        else:
+            pass
 
 
 __all__ = [
     'BackgroundLayer',
     'BasicButtonsLayer',
     'DialogLayer',
+    'LineEditLayer',
 ]

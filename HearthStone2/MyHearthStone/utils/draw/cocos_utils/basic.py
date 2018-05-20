@@ -1,8 +1,9 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import rect, text, actions, director
+from cocos import rect, text, actions, director, layer
 from cocos.sprite import Sprite
+from pyglet.resource import ResourceNotFoundException, image as pyglet_image
 
 from ..constants import Colors
 from ...constants import C
@@ -83,6 +84,33 @@ def get_sprite_box(sprite: Sprite):
     global_bl = sprite.parent.point_to_world(aabb.bottomleft)
     global_tr = sprite.parent.point_to_world(aabb.topright)
     return rect.Rect(*global_bl, *(global_tr - global_bl))
+
+
+def try_load_image(name, image_part=None, image_size=None, default=None):
+    """
+
+    :param name: Image name.
+    :param image_part: 4-element tuple of image part: (x, y, width, height).
+    :param image_size: 2-element tuple of image size: (width, height). If not given, get it from image data.
+    :param default: Backup image name.
+    :return: The loaded image, None if resource not found.
+    """
+    try:
+        image = pyglet_image(name)
+    except ResourceNotFoundException:
+        if default is not None:
+            image = pyglet_image(default)
+        else:
+            image = None
+    if image is None:
+        return None
+    if image_part is not None:
+        if image_size is None:
+            image_size = image.width, image.height
+        image = image.get_region(
+            x=int(image_part[0] * image_size[0]), y=int(image_part[1] * image_size[1]),
+            width=int(image_part[2] * image_size[0]), height=int(image_part[3] * image_size[1]))
+    return image
 
 
 def try_remove(self, child):
@@ -178,6 +206,7 @@ __all__ = [
     'Colors',
     'get_width', 'get_height', 'pos', 'pos_x', 'pos_y',
     'get_sprite_box', 'get_label_box',
+    'try_load_image',
     'try_add', 'try_remove',
     'set_menu_style',
     'DefaultLabelStyle',

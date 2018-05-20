@@ -6,7 +6,6 @@
 from cocos import rect, cocosnode, euclid
 from cocos.sprite import Sprite
 from cocos.text import Label, HTMLLabel
-from pyglet.resource import ResourceNotFoundException, image as pyglet_image
 
 from .select_effect import SelectEffectManager
 from ...utils.constants import C
@@ -246,21 +245,18 @@ class HandSprite(EntitySprite):
 
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
                              scale=1.0,)
-        try:
-            if self.static:
-                card_cls = all_cards()[self.entity]
-            else:
-                card_cls = self.entity
-            image_sprite = Sprite(card_cls.get_image_name(), pos(0.0, 0.02, base=self.SizeBase), scale=1.2,)
-        except ResourceNotFoundException:
-            image_sprite = None
+        if self.static:
+            card_cls = all_cards()[self.entity]
+        else:
+            card_cls = self.entity
+        main_image = try_load_image(card_cls.get_image_name())
+        image_sprite = None if main_image is None else Sprite(
+            main_image, pos(0.0, 0.02, base=self.SizeBase), scale=1.2,)
 
         mana_sprite = Sprite('Mana.png', pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
-        try:
-            mark_sprite = Sprite('Mark-{}.png'.format(self._c_get('package')),
-                                 pos(0, -0.6, base=self.SizeBase), scale=1.0)
-        except ResourceNotFoundException:
-            mark_sprite = None
+
+        mark_image = try_load_image('Mark-{}.png'.format(self._c_get('package')))
+        mark_sprite = None if mark_image is None else Sprite(mark_image, pos(0, -0.6, base=self.SizeBase), scale=1.0)
         name_label = Label(self._c_get('name'), pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
                            anchor_y='center', bold=True)
         desc_label = HTMLLabel(self._render_desc(self._c_get('description')),
@@ -459,13 +455,7 @@ class MinionSprite(EntitySprite):
         self.add(self.status_border, z=3)
 
         # Get the part of card image.
-        try:
-            image = pyglet_image(self.entity.get_image_name())
-        except ResourceNotFoundException:
-            image = pyglet_image('Minion-Skeleton.png')
-        image = image.get_region(
-            x=int(self.ImageSize[0] * self.ImagePart[0]), y=int(self.ImageSize[1] * self.ImagePart[1]),
-            width=int(self.ImageSize[0] * self.ImagePart[2]), height=int(self.ImageSize[1] * self.ImagePart[3]))
+        image = try_load_image(self.entity.get_image_name(), image_part=self.ImagePart, default='Minion-Skeleton.png')
         self.image_sprite = Sprite(
             image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale, opacity=self._stealth_opacity())
         self.add(self.image_sprite, z=2)
@@ -493,7 +483,6 @@ class HeroSprite(EntitySprite):
 
     ImagePart = 0.10, 0.35, 0.76, 0.65  # Start x, start y, width, height
     ImageScale = 1.15
-    ImageSize = euclid.Vector2(286, 395)  # Full hero size (original).
 
     def __init__(self, hero, position=(0, 0), scale=1.0, **kwargs):
         # The border that indicate the status of this sprite (inactive, active, highlighted).
@@ -510,13 +499,9 @@ class HeroSprite(EntitySprite):
         # TODO: Status border
 
         # Hero image (background and blank foreground).
-        try:
-            image = pyglet_image('Hero-{}.png'.format(self.entity.id)).get_region(
-                x=int(self.ImagePart[0] * self.ImageSize[0]), y=int(self.ImagePart[1] * self.ImageSize[1]),
-                width=int(self.ImagePart[2] * self.ImageSize[0]), height=int(self.ImagePart[3] * self.ImageSize[1]))
+        image = try_load_image('Hero-{}.png'.format(self.entity.id), image_part=self.ImagePart)
+        if image is not None:
             self.add(Sprite(image, pos(0.05, 0.255, base=self.SizeBase), scale=self.ImageScale), z=0)
-        except ResourceNotFoundException:
-            pass
         self.add(Sprite('Hero.png', pos(0, 0, base=self.SizeBase), scale=1.0, opacity=255), z=1)
         self.add(hs_style_label(str(self.entity.name), pos(0.0, -0.59, base=self.SizeBase),
                                 font_size=14, anchor_y='center'), z=2)
@@ -539,7 +524,6 @@ class HeroPowerSprite(EntitySprite):
 
     ImagePart = 0.31, 0.59, 0.40, 0.25      # Start x, start y, width, height
     ImageScale = 0.6
-    ImageSize = euclid.Vector2(286, 395)    # Full hero power size (original).
 
     def __init__(self, hero_power, position=(0, 0), scale=1.0, **kwargs):
         self.common_border = None
@@ -558,9 +542,7 @@ class HeroPowerSprite(EntitySprite):
         self.status_border = Rect(border_rect, self.CanActionColor, width=2)
 
         self.hp_available = Sprite('HeroPower.png', pos(0, 0.05, base=self.SizeBase), scale=1.0)
-        image = pyglet_image('HeroPower-{}.png'.format(self.entity.id)).get_region(
-            x=int(self.ImagePart[0] * self.ImageSize[0]), y=int(self.ImagePart[1] * self.ImageSize[1]),
-            width=int(self.ImagePart[2] * self.ImageSize[0]), height=int(self.ImagePart[3] * self.ImageSize[1]))
+        image = try_load_image('HeroPower-{}.png'.format(self.entity.id), image_part=self.ImagePart)
         self.hp_image = Sprite(image, scale=self.ImageScale)
         self.hp_cost_label = hs_style_label(str(self.entity.cost), pos(0, 0.633, base=self.SizeBase), font_size=24)
         self.hp_exhausted = Sprite('HeroPowerExhausted.png', pos(0, 0, base=self.SizeBase), scale=1.0)
