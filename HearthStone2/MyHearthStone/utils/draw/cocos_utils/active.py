@@ -15,7 +15,7 @@ from pyglet.window import mouse
 
 from ...constants import C
 from ..constants import Colors
-from .basic import get_sprite_box, get_label_box
+from .basic import get_sprite_box, get_label_box, try_add, try_remove
 
 __author__ = 'fyabc'
 
@@ -137,6 +137,9 @@ class ActiveMixin:
             if self.unselected_effect is not None:
                 self.stop()
                 self.do(self.unselected_effect)
+
+    try_add = try_add
+    try_remove = try_remove
 
 
 class ActiveLabel(ActiveMixin, text.Label):
@@ -261,6 +264,9 @@ class ActiveLayerMixin:
                 if child.on_mouse_motion(x, y, dx, dy) is True:
                     return True
         return self.stop_event
+
+    try_add = try_add
+    try_remove = try_remove
 
 
 class ActiveLayer(ActiveLayerMixin, layer.Layer):

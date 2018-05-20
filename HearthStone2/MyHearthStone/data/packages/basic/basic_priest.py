@@ -1,12 +1,34 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
+from MyHearthStone.ext import std_events
+
 __author__ = 'fyabc'
 
 
 ##############
 # Priest (5) #
 ##############
+
+# Priest (4)
+class Priest(Hero):
+    data = {
+        'id': 4,
+        'klass': 5, 'hero_power': 4,
+    }
+
+
+class 次级治疗术(HeroPower):
+    data = {
+        'id': 4,
+        'klass': 5, 'is_basic': True, 'cost': 2,
+        'have_target': True,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.Healing(self.game, self, target, 2)]
+
 
 # 北郡牧师 (50000)
 

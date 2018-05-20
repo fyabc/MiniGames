@@ -15,7 +15,7 @@ from ...utils.draw.cocos_utils.basic import pos, notice, hs_style_label, get_wid
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, DialogLayer
 from ...utils.draw.cocos_utils.primitives import Rect
-from .card_sprite import HandSprite, HeroSprite, MinionSprite
+from .card_sprite import HandSprite, HeroSprite, MinionSprite, HeroPowerSprite
 from .selection_manager import SelectionManager
 from .animations import run_animations
 from ...game.core import Game
@@ -37,6 +37,8 @@ class GameBoardLayer(ActiveLayer):
     RightCX = (1 + RightL) / 2  # Center of right pane
     HeroL = 0.66  # Border of hero pane
     HeroY = (0.25, 0.75)
+    HeroPowerX = 0.84
+    HeroPowerY = (0.42, 0.92)
     BoardL = 0.05
     TurnEndBtnW = 0.1  # Width of turn end button
     TurnEndBtnT, TurnEndBtnB = 0.5 + TurnEndBtnW / 2, 0.5 - TurnEndBtnW / 2
@@ -96,20 +98,16 @@ class GameBoardLayer(ActiveLayer):
 
         for spr_list in self.hand_sprites + self.play_sprites:
             for sprite in spr_list:
-                if sprite in self:
-                    self.remove(sprite)
+                self.try_remove(sprite)
             spr_list.clear()
 
         for i in range(2):
-            s_h_name = 'sprite_hero_{}'.format(i)
-            if s_h_name in self.children_names:
-                self.remove(s_h_name)
+            self.try_remove('sprite_hero_{}'.format(i))
         self.hero_sprites = [None, None]
 
         for i in range(2):
-            s_hp_name = 'sprite_hero_power_{}'.format(i)
-            if s_hp_name in self.children_names:
-                self.remove(s_hp_name)
+            for sprite in self.hero_power_sprites:
+                self.try_remove(sprite)
         self.hero_power_sprites = [None, None]
 
         return super().on_exit()
@@ -117,6 +115,8 @@ class GameBoardLayer(ActiveLayer):
     def on_mouse_release(self, x, y, buttons, modifiers):
         if not self.enabled:
             return False
+
+        players = self.ctrl.game.players
 
         # Click at an item.
         # Iterate over card sprites.
@@ -129,13 +129,16 @@ class GameBoardLayer(ActiveLayer):
                         self._sm.click_at(child, player, zone, index, (x, y, buttons, modifiers))
                         return True
 
+        for player, hp_sprite in zip(players, self.hero_power_sprites):
+            if hp_sprite.respond_to_mouse_release(x, y, buttons, modifiers):
+                self._sm.click_at(hp_sprite, player, Zone.HeroPower, None, (x, y, buttons, modifiers))
+                return True
+
         # Iterate over hero sprites.
-        for player, hero_sprite in zip(self.ctrl.game.players, self.hero_sprites):
+        for player, hero_sprite in zip(players, self.hero_sprites):
             if hero_sprite.respond_to_mouse_release(x, y, buttons, modifiers):
                 self._sm.click_at(hero_sprite, player, Zone.Hero, None, (x, y, buttons, modifiers))
                 return True
-
-        # todo: Iterate over hero power sprites.
 
         # Click at space.
         play_areas = [rect.Rect(*pos(*bl), *pos(*wh)) for bl, wh in self.PlayAreas]
@@ -157,7 +160,12 @@ class GameBoardLayer(ActiveLayer):
         game.add_callback(self._update_content, when='resolve')
         game.add_callback(self._log_update_time, when='resolve')
         game.add_callback(self._game_end_dialog, when='game_end')
-        game.start_game(selected_decks, mode='standard')
+        game.start_game(selected_decks, mode='standard',
+                        class_hero_maps=[self.ctrl.user.class_hero_map for _ in range(2)])
+
+    def all_entity_sprites(self):
+        """Return an iterator over all entity sprites."""
+        return chain(*self.hand_sprites, *self.play_sprites, self.hero_power_sprites, self.hero_sprites)
 
     def add_loc_stub(self, player_id, loc):
         """Add a location stub rect sprite."""
@@ -171,7 +179,7 @@ class GameBoardLayer(ActiveLayer):
         if num_play == 0:
             x_rel = .5
         else:
-            x_rel = min(.99, max(.01, loc / num_play))
+            x_rel = min(.96, max(.04, loc / num_play))
         y_rel = (.38, .62)[real_id]
         r.center = pos(self.BoardL + x_rel * (self.HeroL - self.BoardL), y_rel)
 
@@ -219,6 +227,29 @@ class GameBoardLayer(ActiveLayer):
             )
             self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
 
+            # Create or update hero power sprites.
+            def _new_hp_sprite():
+                if player.hero_power is None:
+                    return
+                hp_sprite = HeroPowerSprite(player.hero_power, pos(self.HeroPowerX, self.HeroPowerY[i]), scale=1.0)
+                self.hero_power_sprites[player.player_id] = hp_sprite
+                self.add(hp_sprite, z=1)
+
+            current_hp_spr = self.hero_power_sprites[player.player_id]
+            if current_hp_spr is None:
+                # Old hero power sprite not exist, create a new.
+                _new_hp_sprite()
+            else:
+                if current_hp_spr.entity != player.hero_power:
+                    # Hero power should be replaced with a new one.
+                    self.try_remove(current_hp_spr)
+                    _new_hp_sprite()
+                else:
+                    # Same hero power.
+                    self.hero_power_sprites[player.player_id].update_content(**{
+                        'position': pos(self.HeroPowerX, self.HeroPowerY[i]),
+                        'scale': 1.0})
+
             # Create or update hero sprites.
             hero_spr_name = 'sprite_hero_{}'.format(player.player_id)
             if hero_spr_name not in self.children_names:
@@ -230,8 +261,6 @@ class GameBoardLayer(ActiveLayer):
                 self.hero_sprites[player.player_id].update_content(**{
                     'position': pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]),
                     'scale': 0.8})
-
-            # todo: Create or update hero power sprites.
 
         # Remove all old card sprites, and replace it to new.
         # [NOTE]: Use cache, need more tests.

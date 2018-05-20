@@ -54,7 +54,7 @@ class OnPlaySpell(OnPlay):
         :return: new event list.
         """
 
-        player = self.game.players[self.player_id]
+        player = self.game.get_player(self.player_id)
         player.spend_mana(self.spell.cost)
 
         # [NOTE]: move it to `Game.move`?
@@ -162,7 +162,7 @@ class Summon(Event):
 
 class OnPlayMinion(OnPlay):
     def __init__(self, game, minion, loc, target, player_id=None):
-        super().__init__(game, None)
+        super().__init__(game, minion)
         self.target = target
         self.summon_event = Summon(self.game, minion, loc, player_id)
 
@@ -200,7 +200,7 @@ class OnPlayMinion(OnPlay):
 
 class BattlecryPhase(Phase):
     def __init__(self, game, summon_event, target):
-        super().__init__(game, summon_event)
+        super().__init__(game, summon_event.minion)
         self.summon_event = summon_event
         self.target = target
 
@@ -223,7 +223,7 @@ class AfterPlayMinion(AfterPlay):
     skip_5_steps = True
 
     def __init__(self, game, summon_event):
-        super().__init__(game, None)
+        super().__init__(game, summon_event.minion)
         self.summon_event = summon_event
 
     @property
@@ -243,7 +243,7 @@ class AfterPlayMinion(AfterPlay):
 
 class AfterSummon(Phase):
     def __init__(self, game, summon_event):
-        super().__init__(game, None)
+        super().__init__(game, summon_event.minion)
         self.summon_event = summon_event
 
     @property

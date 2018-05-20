@@ -280,19 +280,60 @@ class GameEntity(metaclass=SetDataMeta):
     def aura_update_attack_health(self):
         """Aura update (attack / health), called by the same method of class `Game`."""
 
+        # TODO: Add reset to default here?
+        # Need to pull member ``aura_tmp`` up?
+        # Need to refactor method ``_reset_tags`` into ``_default_tags`` to get default tags?
+
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
         for enchantment in self.enchantments:
             enchantment.apply()
 
     # Methods for frontend.
 
+    @property
+    def have_target(self):
+        """Property called by frontend the test if this (playable) entity require a target.
+
+        Usually used by cards and hero power.
+
+        If it returns ``False``, the frontend will insert a special "select target" phase
+        when play the card or hero power.
+
+        [NOTE]: This attribute may be changed in the game, such as combo cards.
+        See card 破碎残阳祭司(20) for more details.
+        """
+        return False
+
+    def check_target(self, target: 'GameEntity'):
+        """When a playable entity with target is played, this method is called to check if
+        the target is correct or not.
+
+        If it is incorrect, the frontend will do nothing but show some message like "This is not a valid target!".
+
+        Here is the most common implementation.
+        """
+        if target is None:
+            return True
+
+        # Default valid target zones.
+        #   Only support target to `Play` and `Hero` zones now.
+        #   Can support `Hand`, `Weapon` and other zones in future.
+        # [NOTE]: Only cards, heroes and hero powers have attribute zone.
+        zone = target.zone
+        if zone not in (Zone.Play, Zone.Hero):
+            return False
+
+        return True
+
     # Entity status: Inactive, Active and Highlighted.
     Inactive, Active, Highlighted = 0, 1, 2
 
     def can_do_action(self, msg_fn=None):
-        """Return if this entity can do action or not.
+        """Return if this (playable) entity can do action or not.
 
-        If this entity can do action (playable) now, it will have a green border in HearthStone.
+        If this entity is inactive now, it will not have any border, and you cannot do action on it.
+        If this entity can active now, it will have a green border in HearthStone.
+        If this entity is highlighted now, it will have a red border in HearthStone.
 
         :param msg_fn: Message function to send some message back to frontend if check failed.
             If default to ``None``, will send nothing.

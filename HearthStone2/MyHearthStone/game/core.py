@@ -12,7 +12,7 @@ from .triggers.trigger import Trigger
 from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
 from ..utils.constants import C
-from ..utils.game import order_of_play, Zone
+from ..utils.game import order_of_play, Zone, DefaultClassHeroMap
 from ..utils.message import message, debug, error, info
 from ..utils.package_io import all_cards
 
@@ -341,13 +341,18 @@ class Game:
             'entity': GameEntity(self),
         }
 
-    def start_game(self, decks, mode='standard'):
+    def start_game(self, decks, mode='standard', class_hero_maps=(None, None)):
         """Start the game.
 
         :param decks:
         :param mode:
+        :param class_hero_maps:
         :return:
         """
+
+        # TODO: Fix the call signature in anywhere (add ``class_hero_maps``).
+
+        class_hero_maps = [DefaultClassHeroMap if m is None else m for m in class_hero_maps]
 
         self.mode = mode
         self.running = True
@@ -367,8 +372,8 @@ class Game:
         self.data = self._init_data()
         self.entity.oop = 0
 
-        for player_id, (player, deck) in enumerate(zip(self.players, decks)):
-            player.start_game(deck, player_id, start_player)
+        for player_id, (player, deck, m) in enumerate(zip(self.players, decks, class_hero_maps)):
+            player.start_game(deck, player_id, start_player, m)
 
         self.state = self.GameState.WaitReplace
 
@@ -490,32 +495,13 @@ class Game:
         }[(self.players[0].hero.play_state, self.players[1].hero.play_state)]
 
     def new_turn(self):
-        """TODO:
-            Do the real work of changing the current player.
-            wears off expired enchantments
-            fill your opponent's mana
-            flips which player's weapons are sheathed/unsheathed
-            flips which player's Secrets are active
-            unflips your opponent's Hero Power and removes exhaustion from all characters.
-        """
+        """Do the real work of changing the current player."""
 
         self.n_turns += 1
+
+        self.players[self.current_player].end_turn()
         self.current_player = self._next_player()
-
-        current_player = self.players[self.current_player]
-        opp_player = self.players[1 - self.current_player]
-
-        # Refresh mana.
-        current_player.add_mana(1, 'N')
-
-        # Refresh attack numbers.
-        for card in current_player.play:
-            card.reset_attack_status()
-        current_player.hero.reset_attack_status()
-
-        # todo
-
-        pass
+        self.players[self.current_player].start_turn()
 
     def _next_player(self):
         """The iterator to yield next player.

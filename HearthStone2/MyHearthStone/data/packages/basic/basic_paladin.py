@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from MyHearthStone import ext
-from MyHearthStone.ext import Minion, Spell
+from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
 from MyHearthStone.ext import enc_common
 from MyHearthStone.utils.game import Zone
@@ -13,6 +13,25 @@ __author__ = 'fyabc'
 ###############
 # Paladin (4) #
 ###############
+
+# Paladin (3)
+class StdPaladin(Hero):
+    data = {
+        'id': 3,
+        'klass': 4, 'hero_power': 3,
+    }
+
+
+class 援军(HeroPower):
+    data = {
+        'id': 3,
+        'klass': 4, 'is_basic': True, 'cost': 2,
+        'have_target': False,
+    }
+
+    def run(self, target, **kwargs):
+        return std_events.pure_summon_events(self.game, "40010", self.player_id, 'last')
+
 
 # 列王守卫 (40000)
 class 列王守卫(Minion):
@@ -74,3 +93,13 @@ class 王者祝福(Spell):
 # 圣光的正义 (40008)
 
 # 真银圣剑 (40009)
+
+
+# Derivatives
+
+# 白银之手新兵 (40010)
+ext.blank_minion({
+    'id': 40010,
+    'rarity': -1, 'klass': 4, 'cost': 1, 'attack': 1, 'health': 1,
+    'derivative': True,
+})

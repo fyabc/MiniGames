@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from MyHearthStone import ext
-from MyHearthStone.ext import Spell
+from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
 from MyHearthStone.utils.game import order_of_play, Zone
 
@@ -12,6 +12,25 @@ __author__ = 'fyabc'
 ############
 # Mage (3) #
 ############
+
+# Mage (2)
+class StdMage(Hero):
+    data = {
+        'id': 2,
+        'klass': 3, 'hero_power': 2,
+    }
+
+
+class 火焰冲击(HeroPower):
+    data = {
+        'id': 2,
+        'klass': 3, 'is_basic': True, 'cost': 2,
+        'have_target': True,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.Damage(self.game, self, target, 1)]
+
 
 # 水元素 (30000)
 

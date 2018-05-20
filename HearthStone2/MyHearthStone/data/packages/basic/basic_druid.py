@@ -7,7 +7,7 @@ from MyHearthStone import ext
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events
 from MyHearthStone.ext import enc_common
-from MyHearthStone.ext import Spell
+from MyHearthStone.ext import Spell, Hero, HeroPower
 from MyHearthStone.utils.game import order_of_play, Zone
 
 __author__ = 'fyabc'
@@ -16,6 +16,26 @@ __author__ = 'fyabc'
 #############
 # Druid (1) #
 #############
+
+# Druid (0)
+class StdDruid(Hero):
+    data = {
+        'id': 0,
+        'klass': 1, 'hero_power': 0,
+    }
+
+
+class 变形(HeroPower):
+    data = {
+        'id': 0,
+        'klass': 1, 'is_basic': True, 'cost': 2,
+        'have_target': False,
+    }
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
+
 
 # 埃隆巴克保护者 (10000)
 blank_minion({

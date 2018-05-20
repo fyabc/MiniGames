@@ -7,6 +7,7 @@ import os
 import uuid
 
 from ..game.deck import Deck
+from ..utils.game import DefaultClassHeroMap
 from .constants import UserListFilename, UserDataPath
 from .message import info
 
@@ -27,6 +28,10 @@ class AppUser:
         self.packs = kwargs.pop('packs', {})
         self.dusts = kwargs.pop('dusts', 0)
 
+        # Map classes to heroes (which hero to use for each class).
+        self.class_hero_map = kwargs.pop('class_hero_map', DefaultClassHeroMap.copy())
+        self._convert_key_to_int()
+
         self.uuid = kwargs.pop('uuid', None)
         if self.uuid is None:
             self.uuid = str(uuid.uuid1())
@@ -42,6 +47,7 @@ class AppUser:
             'cards': self.cards,
             'packs': self.packs,
             'dusts': self.dusts,
+            'class_hero_map': self.class_hero_map,
             'uuid': self.uuid,
         }
 
@@ -135,3 +141,8 @@ class AppUser:
         user_data_filename = os.path.join(UserDataPath, '{}.json'.format(self.user_id))
         with open(user_data_filename, 'w') as f:
             json.dump(self.to_dict(), f, indent=4)
+
+    def _convert_key_to_int(self):
+        self.class_hero_map = {
+            int(k): v for k, v in self.class_hero_map.items()
+        }

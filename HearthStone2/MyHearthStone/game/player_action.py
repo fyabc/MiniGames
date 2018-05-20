@@ -172,7 +172,12 @@ class UseHeroPower(PlayerAction):
         self.player_id = game.current_player if player_id is None else player_id
 
     def phases(self):
-        return []
+        hp_event = standard.HeroPowerPhase(self.game, self.game.get_player(self.player_id).hero_power, self.target)
+        return [
+            hp_event,
+            standard.InspirePhase(self.game, hp_event),
+            'check_win',
+        ]
 
     def _repr(self):
         return super()._repr(P=self.player_id, target=self.target)

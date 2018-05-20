@@ -85,6 +85,26 @@ def get_sprite_box(sprite: Sprite):
     return rect.Rect(*global_bl, *(global_tr - global_bl))
 
 
+def try_remove(self, child):
+    """Remove a child from a CocosNode safely."""
+    if isinstance(child, str):
+        if child in self.children_names:
+            self.remove(child)
+    else:
+        if child in self:
+            self.remove(child)
+
+
+def try_add(self, child, name=None, z=0):
+    """Add a child to a CocosNode safely."""
+    if name is None:
+        if child not in self:
+            self.add(child, z=z)
+    else:
+        if name not in self.children_names:
+            self.add(child, name=name, z=z)
+
+
 def set_menu_style(self, **kwargs):
     # you can override the font that will be used for the title and the items
     # you can also override the font size and the colors. see menu.py for
@@ -156,16 +176,11 @@ def notice(layer_, text_, **kwargs):
 
 __all__ = [
     'Colors',
-    'get_width',
-    'get_height',
-    'pos',
-    'pos_x',
-    'pos_y',
-    'get_sprite_box',
-    'get_label_box',
+    'get_width', 'get_height', 'pos', 'pos_x', 'pos_y',
+    'get_sprite_box', 'get_label_box',
+    'try_add', 'try_remove',
     'set_menu_style',
     'DefaultLabelStyle',
     'hs_style_label',
-    'NoticeLabel',
-    'notice',
+    'NoticeLabel', 'notice',
 ]

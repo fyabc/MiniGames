@@ -39,7 +39,6 @@ class Card(GameEntity):
         self.data.update({
             'player_id': player_id
         })
-        self._reset_tags()
 
     def __repr__(self):
         return self._repr(name=self.data['name'], P=self.player_id, oop=self.oop, __show_cls=False)
@@ -74,10 +73,6 @@ class Card(GameEntity):
 
     @property
     def have_target(self):
-        """[NOTE]: This attribute may be changed in the game, such as combo cards.
-
-        See card 破碎残阳祭司(20) for more details.
-        """
         return self.data['have_target']
 
     def check_target(self, target: GameEntity):
@@ -230,40 +225,45 @@ class Weapon(Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-        # TODO: Change it into ``AliveMixin`` style.
+        # Temporary data dict for aura update.
+        self.aura_tmp = {}
+
+    def _reset_tags(self):
+        super()._reset_tags()
         self.data.update({
             'attack': self.cls_data['attack'],
-            '_raw_health': self.cls_data['health'],
-            'health': self.cls_data['health'],
+            'damage': 0,
             'max_health': self.cls_data['health'],
-            'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
-
-            # Attack related attributes.
-            'n_attack': None,
-            'n_total_attack': 1,
-            'can_attack_hero': True,
+            'to_be_destroyed': False,  # The destroy tag for instant kill enchantments.
         })
 
-    attack = make_property('attack')
-    health = make_property('health')
-    max_health = make_property('max_health')
+    battlecry = make_property('battlecry', setter=False)
+    damage = make_property('damage')
     to_be_destroyed = make_property('to_be_destroyed')
-    n_attack = make_property('n_attack')
-    n_total_attack = make_property('n_total_attack')
-    can_attack_hero = make_property('can_attack_hero')
+    max_health = make_property('max_health')
+    max_durability = max_health
+
+    @property
+    def health(self):
+        return self.data['max_health'] - self.data['damage']
+
+    durability = health
+
+    @property
+    def damaged(self):
+        return self.data['damage'] > 0
 
     @property
     def alive(self):
-        return self.health > 0 and not self.to_be_destroyed
+        return self.data['damage'] < self.data['max_health'] and not self.to_be_destroyed
 
     @property
-    def battlecry(self):
-        """Test if this minion has battlecry.
+    def attack(self):
+        return max(0, self.data['attack'])
 
-        [NOTE]: This value may be changed in game, such as conditional battlecry.
-        """
-
-        return self.data['battlecry']
+    @attack.setter
+    def attack(self, value):
+        self.data['attack'] = value
 
     def run_battlecry(self, target: GameEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
@@ -284,13 +284,29 @@ class Weapon(Card):
         return []
 
     def take_damage(self, value):
-        self.data['_raw_health'] -= value
+        self.data['damage'] += value
+
+    def restore_health(self, value):
+        """
+
+        :param value: The proposed heal value
+        :return: The real heal value
+        """
+        real_heal = min(value, self.data['damage'])
+        self.data['damage'] -= real_heal
+
+        return real_heal
 
     def aura_update_attack_health(self):
-        self.data['attack'] = self.cls_data['attack']
-        self.data['health'] = self.data['_raw_health']
-        self.data['max_health'] = self.cls_data['health']
+        self.aura_tmp.update({
+            'attack': self.cls_data.get('attack', 0),
+            'max_health': self.cls_data['health'],
+        })
         super().aura_update_attack_health()
+
+        # Set new value after aura update, something will be do automatically here (such as value change of max_health)
+        self.attack = self.aura_tmp['attack']
+        self.max_health = self.aura_tmp['max_health']
 
 
 class HeroCard(Card):

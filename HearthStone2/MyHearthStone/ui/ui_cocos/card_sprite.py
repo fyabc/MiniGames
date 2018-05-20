@@ -18,12 +18,6 @@ from ...utils.draw.cocos_utils.primitives import Rect
 
 __author__ = 'fyabc'
 
-# Card action border colors.
-CommonColor = Colors['gray30']
-CanActionColor = Colors['green']
-# TODO: Change this into a better color or use animation to show highlighted cards.
-HighlightColor = Colors['red']
-
 # TODO: Add race tags sprite.
 
 
@@ -33,7 +27,14 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
     In fact, it is a `CocosNode` that contains multiple sprites.
     """
 
-    ActivatedColor = Colors['orange']
+    # Card action border colors.
+    CommonColor = Colors['gray30']
+    CanActionColor = Colors['green']
+    # TODO: Change this into a better color or use animation to show highlighted cards.
+    HighlightColor = Colors['red']
+
+    # Color when this entity is selected.
+    SelectedColor = Colors['orange']
 
     def __init__(self, entity, position=(0, 0), scale=1.0, **kwargs):
         # For active mixin.
@@ -45,6 +46,7 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
         self.position = position
         self.scale = scale
 
+        # The border that indicate this sprite is activated.
         self.activated_border = None
         self._is_activated = False
 
@@ -100,6 +102,15 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
             return Colors['green']
         return Colors['white']
 
+    def _get_cost_color(self):
+        _c = self.entity.cost
+        _c_s = self.entity.cls_data['cost']
+        if _c > _c_s:
+            return Colors['red']
+        elif _c < _c_s:
+            return Colors['green']
+        return Colors['white']
+
 
 class HandSprite(EntitySprite):
     """The sprite of a card.
@@ -132,7 +143,8 @@ class HandSprite(EntitySprite):
         self.front_sprites = {}
         self.back_sprites = {}
 
-        self.common_border = None
+        # The border that indicate the status of this sprite (inactive, active, highlighted).
+        self.status_border = None
 
         super().__init__(card, position, scale, **kwargs)
 
@@ -172,18 +184,19 @@ class HandSprite(EntitySprite):
         if not self.static:
             action_status = self.entity.can_do_action()
             if action_status == self.entity.Inactive:
-                if self.common_border in self:
-                    self.remove(self.common_border)
+                if self.status_border in self:
+                    self.remove(self.status_border)
             else:
                 if action_status == self.entity.Active:
-                    color = CanActionColor
+                    color = self.CanActionColor
                 else:  # action_status == self.entity.Highlighted
-                    color = HighlightColor
-                self.common_border.color = color
-                if self.common_border not in self:
-                    self.add(self.common_border, z=3)
+                    color = self.HighlightColor
+                self.status_border.color = color
+                if self.status_border not in self:
+                    self.add(self.status_border, z=3)
 
         self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
+        self.front_sprites['mana-label'][0].element.color = self._get_cost_color()
         if self._c_get('type') in (Type.Minion, Type.Weapon):
             self.front_sprites['attack-label'][0].element.text = str(self._c_get('attack'))
             self.front_sprites['health-label'][0].element.text = str(self._c_get('health'))
@@ -226,10 +239,10 @@ class HandSprite(EntitySprite):
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
-        self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
+        self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
 
         if not self.static:
-            self.common_border = Rect(border_rect, CanActionColor, width=4)
+            self.status_border = Rect(border_rect, self.CanActionColor, width=4)
 
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
                              scale=1.0,)
@@ -349,16 +362,17 @@ class HandSprite(EntitySprite):
 
 
 class MinionSprite(EntitySprite):
-    ImagePart = 0.40, 0.38
+    ImagePart = 0.30, 0.51, 0.40, 0.38      # Start x, start y, width, height
     ImageScale = 0.9
 
     ImageSize = euclid.Vector2(286, 395)    # Card size (original).
     Size = euclid.Vector2(                  # Sprite size.
-        int(ImageSize[0] * ImagePart[0] * ImageScale), int(ImageSize[1] * ImagePart[1] * ImageScale))
+        int(ImageSize[0] * ImagePart[2] * ImageScale), int(ImageSize[1] * ImagePart[3] * ImageScale))
     SizeBase = Size // 2  # Coordinate base of children sprites.
 
     def __init__(self, minion, position=(0, 0), scale=1.0, **kwargs):
-        self.common_border = None
+        # The border that indicate the status of this sprite (inactive, active, highlighted).
+        self.status_border = None
         self.image_sprite = None
         self.atk_label = None
         self.health_label = None
@@ -381,12 +395,12 @@ class MinionSprite(EntitySprite):
 
         action_status = self.entity.can_do_action()
         if action_status == self.entity.Inactive:
-            color = CommonColor
+            color = self.CommonColor
         elif action_status == self.entity.Active:
-            color = CanActionColor
+            color = self.CanActionColor
         else:   # action_status == self.entity.Highlighted
-            color = HighlightColor
-        self.common_border.color = color
+            color = self.HighlightColor
+        self.status_border.color = color
 
         if self.entity.type == Type.Minion:
             if self.image_sprite is not None:
@@ -409,8 +423,8 @@ class MinionSprite(EntitySprite):
             self.divine_shield_sprite = Sprite(
                 'DivineShield.png', pos(0.0, 0.0, base=self.SizeBase),
                 opacity=80)
-            self.divine_shield_sprite.scale_x = self.ImageScale * self.ImagePart[0] * 1.1
-            self.divine_shield_sprite.scale_y = self.ImageScale * self.ImagePart[1] * 1.1
+            self.divine_shield_sprite.scale_x = self.ImageScale * self.ImagePart[2] * 1.1
+            self.divine_shield_sprite.scale_y = self.ImageScale * self.ImagePart[3] * 1.1
         return self.divine_shield_sprite
 
     def _get_taunt_sprite(self):
@@ -419,8 +433,8 @@ class MinionSprite(EntitySprite):
                 'TauntMarker.png', pos(-0.05, 0.0, base=self.SizeBase),
                 opacity=200,
             )
-            self.taunt_sprite.scale_x = 1.97
-            self.taunt_sprite.scale_y = 2.1
+            self.taunt_sprite.scale_x = self.ImageScale * self.ImagePart[2] * 5.472222
+            self.taunt_sprite.scale_y = self.ImageScale * self.ImagePart[3] * 6.140351
         return self.taunt_sprite
 
     def _update_attr_sprite(self, attr_name, get_fn, z):
@@ -439,10 +453,10 @@ class MinionSprite(EntitySprite):
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
-        self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
+        self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
 
-        self.common_border = Rect(border_rect, CommonColor, width=2)
-        self.add(self.common_border, z=3)
+        self.status_border = Rect(border_rect, self.CommonColor, width=2)
+        self.add(self.status_border, z=3)
 
         # Get the part of card image.
         try:
@@ -450,8 +464,8 @@ class MinionSprite(EntitySprite):
         except ResourceNotFoundException:
             image = pyglet_image('Minion-Skeleton.png')
         image = image.get_region(
-            x=int(self.ImageSize[0] * (1 - self.ImagePart[0]) / 2), y=int(self.ImageSize[1] * 0.51),
-            width=int(self.ImageSize[0] * self.ImagePart[0]), height=int(self.ImageSize[1] * self.ImagePart[1]))
+            x=int(self.ImageSize[0] * self.ImagePart[0]), y=int(self.ImageSize[1] * self.ImagePart[1]),
+            width=int(self.ImageSize[0] * self.ImagePart[2]), height=int(self.ImageSize[1] * self.ImagePart[3]))
         self.image_sprite = Sprite(
             image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale, opacity=self._stealth_opacity())
         self.add(self.image_sprite, z=2)
@@ -477,7 +491,13 @@ class HeroSprite(EntitySprite):
     Size = euclid.Vector2(300, 425)  # Card size (original).
     SizeBase = Size // 2  # Coordinate base of children sprites.
 
+    ImagePart = 0.10, 0.35, 0.76, 0.65  # Start x, start y, width, height
+    ImageScale = 1.15
+    ImageSize = euclid.Vector2(286, 395)  # Full hero size (original).
+
     def __init__(self, hero, position=(0, 0), scale=1.0, **kwargs):
+        # The border that indicate the status of this sprite (inactive, active, highlighted).
+        self.status_border = None
         self.attack_label = None
         self.health_label = None
 
@@ -486,13 +506,24 @@ class HeroSprite(EntitySprite):
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
-        self.activated_border = Rect(border_rect, self.ActivatedColor, width=4)
+        self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
+        # TODO: Status border
 
-        self.add(Sprite('Hero.png', pos(0, 0, base=self.SizeBase), scale=1.0))
+        # Hero image (background and blank foreground).
+        try:
+            image = pyglet_image('Hero-{}.png'.format(self.entity.id)).get_region(
+                x=int(self.ImagePart[0] * self.ImageSize[0]), y=int(self.ImagePart[1] * self.ImageSize[1]),
+                width=int(self.ImagePart[2] * self.ImageSize[0]), height=int(self.ImagePart[3] * self.ImageSize[1]))
+            self.add(Sprite(image, pos(0.05, 0.255, base=self.SizeBase), scale=self.ImageScale), z=0)
+        except ResourceNotFoundException:
+            pass
+        self.add(Sprite('Hero.png', pos(0, 0, base=self.SizeBase), scale=1.0, opacity=255), z=1)
+        self.add(hs_style_label(str(self.entity.name), pos(0.0, -0.59, base=self.SizeBase),
+                                font_size=14, anchor_y='center'), z=2)
 
         self.health_label = hs_style_label(str(self.entity.health), pos(0.73, -0.34, base=self.SizeBase),
                                            font_size=46, anchor_y='center', color=self._get_health_color())
-        self.add(self.health_label, z=1)
+        self.add(self.health_label, z=2)
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
@@ -503,8 +534,63 @@ class HeroSprite(EntitySprite):
 class HeroPowerSprite(EntitySprite):
     """The hero power sprite."""
 
+    Size = euclid.Vector2(100, 100)  # Hero power size (original).
+    SizeBase = Size // 2  # Coordinate base of children sprites.
+
+    ImagePart = 0.31, 0.59, 0.40, 0.25      # Start x, start y, width, height
+    ImageScale = 0.6
+    ImageSize = euclid.Vector2(286, 395)    # Full hero power size (original).
+
+    def __init__(self, hero_power, position=(0, 0), scale=1.0, **kwargs):
+        self.common_border = None
+        self.hp_available = None
+        self.hp_image = None
+        self.hp_exhausted = None
+
+        super().__init__(hero_power, position, scale, **kwargs)
+
     def _build_components(self):
-        pass
+        border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
+        border_rect.center = (0, 0)
+        self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
+
+        # TODO: Change this into a circle?
+        self.status_border = Rect(border_rect, self.CanActionColor, width=2)
+
+        self.hp_available = Sprite('HeroPower.png', pos(0, 0.05, base=self.SizeBase), scale=1.0)
+        image = pyglet_image('HeroPower-{}.png'.format(self.entity.id)).get_region(
+            x=int(self.ImagePart[0] * self.ImageSize[0]), y=int(self.ImagePart[1] * self.ImageSize[1]),
+            width=int(self.ImagePart[2] * self.ImageSize[0]), height=int(self.ImagePart[3] * self.ImageSize[1]))
+        self.hp_image = Sprite(image, scale=self.ImageScale)
+        self.hp_cost_label = hs_style_label(str(self.entity.cost), pos(0, 0.633, base=self.SizeBase), font_size=24)
+        self.hp_exhausted = Sprite('HeroPowerExhausted.png', pos(0, 0, base=self.SizeBase), scale=1.0)
+
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
+
+        action_status = self.entity.can_do_action()
+        if action_status == self.entity.Inactive:
+            self.try_remove(self.status_border)
+        else:
+            if action_status == self.entity.Active:
+                color = self.CanActionColor
+            else:  # action_status == self.entity.Highlighted
+                color = self.HighlightColor
+            self.status_border.color = color
+            self.try_add(self.status_border, z=3)
+
+        self.hp_cost_label.element.text = str(self.entity.cost)
+        self.hp_cost_label.element.color = self._get_cost_color()
+        if self.entity.exhausted:
+            self.try_remove(self.hp_available)
+            self.try_remove(self.hp_image)
+            self.try_remove(self.hp_cost_label)
+            self.try_add(self.hp_exhausted, z=1)
+        else:
+            self.try_add(self.hp_available, z=2)
+            self.try_add(self.hp_image, z=1)
+            self.try_add(self.hp_cost_label, z=3)
+            self.try_remove(self.hp_exhausted)
 
 
 __all__ = [

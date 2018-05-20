@@ -10,7 +10,7 @@ from .game_entity import GameEntity
 from ..utils.constants import C
 from ..utils.game import Zone
 from ..utils.message import info, debug
-from ..utils.package_io import all_cards, all_heroes
+from ..utils.package_io import all_cards, all_heroes, all_hero_powers
 
 __author__ = 'fyabc'
 
@@ -46,22 +46,24 @@ class Player(GameEntity):
         self.weapon = None
         self.graveyard = []
 
+        # Hero power related.
+        self.number_hp_this_turn = 0
+        self.number_hp_this_game = 0
+
         # Misc.
         self.tire_counter = 0
         self.start_player = None
 
-    def start_game(self, deck, player_id: int, start_player: int):
+    def start_game(self, deck, player_id: int, start_player: int, class_hero_map: dict):
+        self._init_data()
+
         info('Deck of player {}: {}'.format(player_id, deck))
         self.player_id = player_id
         self.start_player = start_player
 
-        self._init_mana()
-
-        cards = all_cards()
-        heroes = all_heroes()
-
-        self.hero = heroes[deck.klass](self.game, player_id)
-        self.deck = [cards[card_id](self.game, player_id) for card_id in deck.card_id_list]
+        self.hero = all_heroes()[class_hero_map[deck.klass]](self.game, player_id)
+        self.hero_power = all_hero_powers()[self.hero.init_hero_power_id](self.game, player_id)
+        self.deck = [all_cards()[card_id](self.game, player_id) for card_id in deck.card_id_list]
         random.shuffle(self.deck)
 
         if player_id == start_player:
@@ -111,12 +113,18 @@ class Player(GameEntity):
         if self.weapon is not None:
             self.weapon.zone = Zone.Weapon
 
-    def _init_mana(self):
+    def _init_data(self):
         self.max_mana = 0
         self.temp_mana = 0
         self.used_mana = 0
         self.overload = 0
         self.overload_next = 0
+
+        self.number_hp_this_turn = 0
+        self.number_hp_this_game = 0
+
+        self.tire_counter = 0
+        self.start_player = None
 
     def generate(self, to_zone, to_index, entity):
         """Generate an entity into a zone.
@@ -239,6 +247,37 @@ class Player(GameEntity):
     def get_entity(self, zone, index=0):
         return self.get_zone(zone)[index]
 
+    def end_turn(self):
+        """Things to do when turn end.
+
+        Sheathe the weapon.
+        Inactive secrets.
+        """
+        # TODO
+
+    def start_turn(self):
+        """Things to do when turn start.
+
+        Fill the mana.
+        Unsheathe the weapon.
+        Active secrets.
+        Refresh hero power, hero and all friendly minions.
+        """
+
+        # Refresh mana.
+        self.add_mana(1, 'N')
+
+        # Refresh attack numbers.
+        for card in self.play:
+            card.reset_attack_status()
+        self.hero.reset_attack_status()
+
+        self.number_hp_this_turn = 0
+        if self.hero_power is not None:
+            self.hero_power.exhausted = False
+
+        # TODO
+
     def add_mana(self, value: int, action: str):
         """Add mana.
 
@@ -298,6 +337,10 @@ class Player(GameEntity):
         self.temp_mana = 0
         self.used_mana = self.max_mana
         return result
+
+    def log_use_hero_power(self):
+        self.number_hp_this_turn += 1
+        self.number_hp_this_game += 1
 
     def __repr__(self):
         return super()._repr(player_id=self.player_id)

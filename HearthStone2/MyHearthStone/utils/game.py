@@ -110,6 +110,23 @@ class Klass(metaclass=EnumMeta):
     DeathKnight = 11
 
 
+# Map classes to heroes (which hero to use for each class).
+# TODO: Remove hard code here
+DefaultClassHeroMap = {
+    1: 0,
+    2: 1,
+    3: 2,
+    4: 3,
+    5: 4,
+    6: 5,
+    7: 6,
+    8: 7,
+    9: 8,
+    10: 9,
+    11: 10,
+}
+
+
 class Condition:
     """The class of conditions to get random cards or select cards."""
 
@@ -121,4 +138,6 @@ __all__ = [
 
     'EnumMeta',
     'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
+
+    'DefaultClassHeroMap',
 ]

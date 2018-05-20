@@ -76,10 +76,17 @@ class AliveMixin:
 
     # Attack-related properties.
 
-    attack = make_property('attack')
     n_attack = make_property('n_attack')
     n_total_attack = make_property('n_total_attack')
     can_attack_hero = make_property('can_attack_hero')
+
+    @property
+    def attack(self):
+        return max(0, self.data['attack'])
+
+    @attack.setter
+    def attack(self, value):
+        self.data['attack'] = value
 
     @property
     def exhausted(self):

@@ -33,8 +33,8 @@ class TestCore(unittest.TestCase):
             Zone.Secret: [],
             Zone.Graveyard: [],
             Zone.Weapon: [None],
-            Zone.Hero: [1],
-            Zone.HeroPower: [None],
+            Zone.Hero: [0],
+            Zone.HeroPower: [0],
         },
         {
             Zone.Deck: ['11', '10000', '6', '30007', '10000', '30007', '11', '6', '10000', '30007', '10000', '6'],
@@ -43,8 +43,8 @@ class TestCore(unittest.TestCase):
             Zone.Secret: [],
             Zone.Graveyard: [],
             Zone.Weapon: [None],
-            Zone.Hero: [2],
-            Zone.HeroPower: [None],
+            Zone.Hero: [1],
+            Zone.HeroPower: [1],
         },
     ]
 

@@ -3,8 +3,6 @@
 
 """The selection manager of the game board."""
 
-from itertools import chain
-
 from pyglet.window import mouse
 
 from ...game import player_action as pa
@@ -28,7 +26,8 @@ class SelectionManager:
     WT = 7      # Play targeted weapon,     weapon: Y   targeted: N
     HC = 8      # Play common hero card,    hero: Y     confirm: N
     HT = 9      # Play targeted hero card,  hero: Y     targeted: N
-    A = 10      # Attack,                   minion: Y   target: N
+    HPT = 10    # Use targeted hero power,  hp: Y       targeted: N
+    A = 11      # Attack,                   minion: Y   target: N
 
     def __init__(self, game_board):
         self.board = game_board
@@ -42,7 +41,7 @@ class SelectionManager:
 
     def clear_all(self):
         self.board.clear_loc_stubs()
-        for sprite in chain(*self.board.hand_sprites, *self.board.play_sprites, self.board.hero_sprites):
+        for sprite in self.board.all_entity_sprites():
             if isinstance(sprite, EntitySprite):
                 sprite.is_activated = False
         for k in self.sel:
@@ -70,7 +69,8 @@ class SelectionManager:
             self.clear_all()
             return True
 
-        print('$Click at:', sprite, player_id, Zone.Idx2Str[zone], index)
+        print('$Click at {}, P={}, Zone={}, index={}, state={}'.format(
+            sprite, player_id, Zone.Idx2Str[zone], index, self.state))
 
         if self.state != self.C and zone == Zone.HeroPower:
             # [NOTE]: Hero power can be selected only in common state now.
@@ -127,7 +127,13 @@ class SelectionManager:
                     sprite.on_mouse_release(*click_args)
                     return True
                 elif zone == Zone.HeroPower:
-                    return False
+                    self.sel['source'] = entity
+                    if entity.have_target:
+                        self.state = self.HPT
+                        sprite.on_mouse_release(*click_args)
+                    else:
+                        game.run_player_action(pa.UseHeroPower(game, None, entity.player_id))
+                    return True
                 else:
                     raise ValueError('Unknown zone {!r}'.format(Zone.Idx2Str.get(zone, None)))
         elif self.state == self.SC:
@@ -160,6 +166,13 @@ class SelectionManager:
             return False
         elif self.state == self.HT:
             return False
+        elif self.state == self.HPT:
+            entity = self.sel['source']
+            target = sprite.entity
+            if not validate_target(entity, target, self._msg_fn):
+                return False
+            game.run_player_action(pa.UseHeroPower(game, target, entity.player_id))
+            return True
         elif self.state == self.A:
             attacker = self.sel['source']
             defender = sprite.entity

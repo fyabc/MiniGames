@@ -7,7 +7,7 @@ from MyHearthStone import ext
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import std_events, std_triggers
-from MyHearthStone.ext import Minion, Spell
+from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.utils.game import Zone, Race
 
 __author__ = 'fyabc'
@@ -16,6 +16,28 @@ __author__ = 'fyabc'
 ##############
 # Hunter (2) #
 ##############
+
+# Hunter (1)
+class StdHunter(Hero):
+    data = {
+        'id': 1,
+        'klass': 2, 'hero_power': 1,
+    }
+
+
+class 稳固射击(HeroPower):
+    data = {
+        'id': 1,
+        'klass': 2, 'is_basic': True, 'cost': 2,
+        'have_target': False,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.Damage(
+            self.game, self,
+            target=self.game.get_zone(Zone.Hero, 1 - self.player_id)[0],
+            value=2)]
+
 
 # 森林狼 (20000)
 

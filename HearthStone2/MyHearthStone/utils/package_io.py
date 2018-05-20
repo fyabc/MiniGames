@@ -13,7 +13,7 @@ from .constants import get_package_paths, C
 from .message import info, error, warning, msg_block
 from ..game.game_entity import SetDataMeta
 from ..game.card import Card
-from ..game.hero import Hero
+from ..game.hero import Hero, HeroPower
 from ..game.enchantments.enchantment import Enchantment
 from ..ext.card_builder import load_file
 
@@ -138,7 +138,8 @@ class _GameData:
         getattr(var, 'data')['id'] = str_var_id
         return str_var_id
 
-    def load_objects(self, cards_dict: dict, heroes_dict: dict, enchantents_dict: dict, data_dict: dict):
+    def load_objects(self, cards_dict: dict, heroes_dict: dict, hero_powers_dict: dict,
+                     enchantents_dict: dict, data_dict: dict):
         if self._package_id is None:
             self._package_id = 'unknown-{}'.format(len(data_dict))
             warning('Package ID not specified, automatically set to "{}"'.format(self._package_id))
@@ -152,46 +153,35 @@ class _GameData:
 
         for vars_ in self.vars_list:
             for var in vars_.values():
-                if isinstance(var, SetDataMeta) and issubclass(var, Card):
-                    data = var.data
-                    card_id = data.get('id', None)
-                    if card_id is None:  # Do not load base classes (id = None).
+                if not isinstance(var, SetDataMeta):
+                    continue
+                if issubclass(var, Card):
+                    name, base_cls, dict_ = 'card', Card, cards_dict
+                elif issubclass(var, Hero):
+                    name, base_cls, dict_ = 'hero', Hero, heroes_dict
+                elif issubclass(var, HeroPower):
+                    name, base_cls, dict_ = 'hero power', HeroPower, hero_powers_dict
+                elif issubclass(var, Enchantment):
+                    name, base_cls, dict_ = 'enchantment', Enchantment, enchantents_dict
+                else:
+                    continue
+                data = var.data
+                id_ = data.get('id', None)
+                if id_ is None:  # Do not load base classes (id = None).
+                    continue
+                # Hero id and hero power id stored as integer, card id and enchantment id stored as string.
+                if base_cls in (Card, Enchantment):
+                    id_ = self._set_str_id(var, id_)
+                if id_ in dict_:
+                    if dict_[id_] == var:
                         continue
-                    card_id = self._set_str_id(var, card_id)
-                    if card_id in cards_dict:
-                        if cards_dict[card_id] == var:
-                            continue
-                        warning('The card id {} already exists, overwrite it'.format(card_id))
-                    self._set_package(var)
-                    cards_dict[card_id] = var
-                elif isinstance(var, SetDataMeta) and issubclass(var, Hero):
-                    data = var.data
-                    hero_id = data.get('id', None)
-                    if hero_id is None:     # Do not load base classes (id = None).
-                        continue
-                    # hero_id = self._set_str_id(var, hero_id)
-                    if hero_id in heroes_dict:
-                        if heroes_dict[hero_id] == var:
-                            continue
-                        warning('The hero id {} already exists, overwrite it'.format(hero_id))
-                    self._set_package(var)
-                    heroes_dict[hero_id] = var
-                elif isinstance(var, SetDataMeta) and issubclass(var, Enchantment):
-                    data = var.data
-                    enchantment_id = data.get('id', None)
-                    if enchantment_id is None:  # Do not load base classes (id = None).
-                        continue
-                    enchantment_id = self._set_str_id(var, enchantment_id)
-                    if enchantment_id in enchantents_dict:
-                        if enchantents_dict[enchantment_id] == var:
-                            continue
-                        warning('The enchantment id {} already exists, overwrite it'.format(enchantment_id))
-                    self._set_package(var)
-                    enchantents_dict[enchantment_id] = var
+                    warning('The {} id {} already exists, overwrite it'.format(name, id_))
+                self._set_package(var)
+                dict_[id_] = var
 
-        self.load_strings(cards_dict, heroes_dict, enchantents_dict)
+        self.load_strings(cards_dict, heroes_dict, hero_powers_dict, enchantents_dict)
 
-    def load_strings(self, cards_dict: dict, heroes_dict: dict, enchantments_dict: dict):
+    def load_strings(self, cards_dict: dict, heroes_dict: dict, hero_powers_dict: dict, enchantments_dict: dict):
         """Load strings of name and description (specific locale) of cards and heroes."""
 
         my_locale = C.Locale
@@ -212,18 +202,22 @@ class _GameData:
         try:
             with open(values_filename, 'r', encoding='utf-8') as f:
                 values_dict = json.load(f)
-            values_cards = values_dict['Cards']
-            values_heroes = values_dict['Heroes']
-            values_enchantments = values_dict['Enchantments']
+            values_cards = values_dict.get('Cards', {})
+            values_heroes = values_dict.get('Heroes', {})
+            values_hero_powers = values_dict.get('HeroPowers', {})
+            values_enchantments = values_dict.get('Enchantments', {})
             for values, entities in ((values_cards, cards_dict), (values_heroes, heroes_dict),
+                                     (values_hero_powers, hero_powers_dict),
                                      (values_enchantments, enchantments_dict)):
                 for k, v in values.items():
+                    # TODO: Different load methods (data format) for different entities.
                     assert isinstance(v, list)
                     assert len(v) == 2
                     assert isinstance(v[0], str)
                     assert isinstance(v[1], str)
 
-                    if entities is heroes_dict:
+                    # Hero id and hero power id stored as integer, card id and enchantment id stored as string.
+                    if any(entities is e for e in (heroes_dict, hero_powers_dict)):
                         k = int(k)
                     var = entities.get(k, None)
                     if var is not None:
@@ -239,6 +233,7 @@ def _load_packages():
     """Load package data."""
     AllCards = {}
     AllHeroes = {}
+    AllHeroPowers = {}
     AllEnchantments = {}
     AllGameData = {}
 
@@ -252,13 +247,14 @@ def _load_packages():
                 abs_package_path = os.path.join(package_dir, package_path)
 
                 game_data = _GameData(abs_package_path)
-                game_data.load_objects(AllCards, AllHeroes, AllEnchantments, AllGameData)
+                game_data.load_objects(AllCards, AllHeroes, AllHeroPowers, AllEnchantments, AllGameData)
 
-    info('Total: {} packages, {} cards, {} heroes, {} enchantments.'.format(
-        len(AllGameData), len(AllCards), len(AllHeroes), len(AllEnchantments)))
+    info('Total: {} packages, {} cards, {} heroes, {} hero powers, {} enchantments.'.format(
+        len(AllGameData), len(AllCards), len(AllHeroes), len(AllHeroPowers), len(AllEnchantments)))
     return {
         'cards': AllCards,
         'heroes': AllHeroes,
+        'hero_powers': AllHeroPowers,
         'enchantments': AllEnchantments,
         'game_data': AllGameData,
     }
@@ -287,6 +283,15 @@ def all_heroes():
     :return: Dict of all heroes.
     """
     return _get_all_data('heroes')
+
+
+def all_hero_powers():
+    """Get dict of all hero powers.
+    If hero powers not loaded, it will load hero powers automatically.
+
+    :return: Dict of all hero powers.
+    """
+    return _get_all_data('hero_powers')
 
 
 def all_enchantments():
@@ -331,6 +336,7 @@ def reload_packages(force=False):
 __all__ = [
     'all_cards',
     'all_heroes',
+    'all_hero_powers',
     'all_enchantments',
     'all_package_data',
     'search_by_name',

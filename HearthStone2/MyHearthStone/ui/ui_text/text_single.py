@@ -196,7 +196,7 @@ Welcome to HearthStone (single player text mode).
             if args.klass is not None:
                 klass = args.klass
             else:
-                klass = input('> Choose class number [0-{}] or class name (q to quit):'.format(NumKlass - 1))
+                klass = input('> Choose class number [1-{}] or class name (q to quit):'.format(NumKlass - 1))
 
             if klass == 'q':
                 print('Operation terminated by user.')
@@ -211,7 +211,7 @@ Welcome to HearthStone (single player text mode).
                     raise ValueError()
                 break
             except ValueError:
-                error('Please enter number 0-{} or class name.'.format(NumKlass - 1))
+                error('Please enter number 1-{} or class name.'.format(NumKlass - 1))
         klass_name = Klass.Idx2Str[klass]
         if args.name is not None:
             name = args.name
