@@ -74,7 +74,7 @@ ext.blank_minion({
 # 治疗图腾 (70011)
 class 治疗图腾(Minion):
     data = {
-        'id': 70013,
+        'id': 70011,
         'rarity': -1, 'klass': 7, 'cost': 1, 'attack': 0, 'health': 2,
         'race': [Race.Totem], 'derivative': True,
     }

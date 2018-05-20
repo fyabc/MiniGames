@@ -87,6 +87,10 @@ class HeroPower(GameEntity):
     def cost(self):
         return max(self.data['cost'], 0)
 
+    @cost.setter
+    def cost(self, value):
+        self.data['cost'] = value
+
     @property
     def have_target(self):
         return self.data['have_target']

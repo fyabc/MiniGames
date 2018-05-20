@@ -55,6 +55,7 @@ class 叫嚣的中士(Minion):
     data = {
         'id': 1000002,
         'rarity': 1, 'cost': 1, 'attack': 1, 'health': 1,
+        'battlecry': True,
     }
 
     @property
@@ -95,6 +96,7 @@ class 战利品贮藏者(Minion):
     data = {
         'id': 1000008,
         'rarity': 1, 'cost': 2, 'attack': 2, 'health': 1,
+        'deathrattle': True,
     }
 
     def run_deathrattle(self, **kwargs):

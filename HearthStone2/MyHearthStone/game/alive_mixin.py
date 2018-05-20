@@ -144,17 +144,6 @@ class AliveMixin:
 
     # Aura related.
 
-    def aura_update_attack_health(self):
-        self.aura_tmp.update({
-            'attack': self.cls_data.get('attack', 0),
-            'max_health': self.cls_data['health'],
-        })
-        super().aura_update_attack_health()
-
-        # Set new value after aura update, something will be do automatically here (such as value change of max_health)
-        self.attack = self.aura_tmp['attack']
-        self.max_health = self.aura_tmp['max_health']
-
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
         if super_result == self.Inactive:

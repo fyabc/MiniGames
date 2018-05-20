@@ -117,6 +117,9 @@ class GameEntity(metaclass=SetDataMeta):
         # Order: Enchantments in order of oop + auras in order of oop.
         self.enchantments = []
 
+        # Temporary data dict for aura update.
+        self.aura_tmp = {}
+
         # Triggers of this entity.
         self.triggers = set()
 
@@ -140,6 +143,7 @@ class GameEntity(metaclass=SetDataMeta):
     player_id = make_property('player_id', default=None)
     type = make_property('type', setter=False)
     package = make_property('package', setter=False)
+    silenced = make_property('silenced', default=False)     # This entity is silenced or not.
 
     def _get_zone(self):
         """Get the zone value.
@@ -277,16 +281,39 @@ class GameEntity(metaclass=SetDataMeta):
             else:
                 pass
 
-    def aura_update_attack_health(self):
-        """Aura update (attack / health), called by the same method of class `Game`."""
+    def _aura_update_before(self):
+        """Set base status before aura update."""
+        self.aura_tmp.update({
+            'attack': self.cls_data.get('attack', 0),
+            'max_health': self.cls_data.get('health', 0),
+            'cost': self.cls_data.get('cost', 0),
+        })
 
-        # TODO: Add reset to default here?
-        # Need to pull member ``aura_tmp`` up?
-        # Need to refactor method ``_reset_tags`` into ``_default_tags`` to get default tags?
+    def _aura_update_after(self):
+        """Apply calculated result after aura update.
+
+        Something will be do automatically here (such as value change of max_health).
+        """
+        for attr_name in ('attack', 'max_health', 'cost'):
+            if hasattr(self, attr_name):
+                setattr(self, attr_name, self.aura_tmp[attr_name])
+
+    def aura_update_attack_health(self):
+        """Aura update (attack / health), called by ``Game._aura_update_attack_health``.
+
+        This method do the common aura updates, such as attack, health, mana cost, and some other basic attributes.
+
+        [NOTE]: Attributes like "taunt", "divine-shield" and "stealth" are add permanently,
+        since attack, health and cost are recalculated after each aura update.
+        """
+
+        self._aura_update_before()
 
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
         for enchantment in self.enchantments:
             enchantment.apply()
+
+        self._aura_update_after()
 
     # Methods for frontend.
 
@@ -351,5 +378,3 @@ class GameEntity(metaclass=SetDataMeta):
         if self.zone not in [Zone.Hand, Zone.Play, Zone.Hero, Zone.HeroPower]:
             return self.Inactive
         return self.Active
-
-    # TODO: Add method ``is_highlighted``?

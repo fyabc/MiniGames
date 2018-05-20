@@ -71,6 +71,10 @@ class Card(GameEntity):
         """
         return max(self.data['cost'], 0)
 
+    @cost.setter
+    def cost(self, value):
+        self.data['cost'] = value
+
     @property
     def have_target(self):
         return self.data['have_target']
@@ -144,6 +148,10 @@ class Minion(AliveMixin, Card):
         self.data.update({
             'attack': self.cls_data['attack'],
             'n_total_attack': 2 if self.cls_data['windfury'] else 1,
+
+            # Deathrattle functions.
+            # TODO: Silence will clear this list, some effects that given deathrattle will extend this list.
+            'deathrattle_fns': [self.run_deathrattle],
         })
 
     # TODO: Move these properties into ``AliveMixin``.
@@ -235,6 +243,10 @@ class Weapon(Card):
             'damage': 0,
             'max_health': self.cls_data['health'],
             'to_be_destroyed': False,  # The destroy tag for instant kill enchantments.
+
+            # Deathrattle functions.
+            # TODO: Silence will clear this list, some effects that given deathrattle will extend this list.
+            'deathrattle_fns': [self.run_deathrattle],
         })
 
     battlecry = make_property('battlecry', setter=False)
@@ -296,17 +308,6 @@ class Weapon(Card):
         self.data['damage'] -= real_heal
 
         return real_heal
-
-    def aura_update_attack_health(self):
-        self.aura_tmp.update({
-            'attack': self.cls_data.get('attack', 0),
-            'max_health': self.cls_data['health'],
-        })
-        super().aura_update_attack_health()
-
-        # Set new value after aura update, something will be do automatically here (such as value change of max_health)
-        self.attack = self.aura_tmp['attack']
-        self.max_health = self.aura_tmp['max_health']
 
 
 class HeroCard(Card):
