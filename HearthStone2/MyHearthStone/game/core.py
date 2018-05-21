@@ -5,7 +5,7 @@ from itertools import chain
 import random
 from typing import *
 
-from .game_entity import GameEntity, make_property
+from .game_entity import IndependentEntity, make_property
 from .player import Player
 from .player_action import process_special_pa
 from .triggers.trigger import Trigger
@@ -336,9 +336,9 @@ class Game:
             'instant_death_events': [],     # Instant death events.
 
             # The entity of the game itself. It may contain some triggers and enchantments.
-            # [NOTE]: It is too hard to change this class into the subclass of ``GameEntity``,
+            # [NOTE]: It is too hard to change this class into the subclass of ``IndependentEntity``,
             # so use this.
-            'entity': GameEntity(self),
+            'entity': IndependentEntity(self),
         }
 
     def start_game(self, decks, mode='standard', class_hero_maps=(None, None)):
@@ -349,8 +349,6 @@ class Game:
         :param class_hero_maps:
         :return:
         """
-
-        # TODO: Fix the call signature in anywhere (add ``class_hero_maps``).
 
         class_hero_maps = [DefaultClassHeroMap if m is None else m for m in class_hero_maps]
 
@@ -382,7 +380,7 @@ class Game:
             player.on_replace_done(replace)
 
         self.state = self.GameState.Main
-        # TODO: Move ``self.entity`` into ``Zone.Play`` (use ``move_map``)
+        self.entity.zone = Zone.Play
         self.resolve_events(game_begin_standard_events(self))
 
     def end_game(self):
@@ -467,7 +465,7 @@ class Game:
             Then, every Entity's Health and Attack values are recalculated.
         """
         for i, entity in enumerate(self.get_all_entities()):
-            if isinstance(entity, GameEntity):
+            if isinstance(entity, IndependentEntity):
                 entity.aura_update_attack_health()
 
     def _aura_update_other(self):

@@ -29,7 +29,6 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
     # Card action border colors.
     CommonColor = Colors['gray30']
     CanActionColor = Colors['green']
-    # TODO: Change this into a better color or use animation to show highlighted cards.
     HighlightColor = Colors['red']
 
     # Color when this entity is selected.
@@ -125,8 +124,6 @@ class HandSprite(EntitySprite):
     The card sprite may be static (created by card_id, attributes not changed)
         or dynamic (created by card instance).
     """
-
-    # TODO: Add action ready border.
 
     Size = euclid.Vector2(300, 450)    # Card size (original).
     SizeBase = Size // 2        # Coordinate base of children sprites.

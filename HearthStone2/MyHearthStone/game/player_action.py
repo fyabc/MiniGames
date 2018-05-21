@@ -107,6 +107,7 @@ class PlayWeapon(PlayerAction):
         self.player_id = game.current_player if player_id is None else player_id
 
     def phases(self):
+        # TODO
         return []
 
     def _repr(self):
@@ -193,7 +194,7 @@ def process_special_pa(game, player_action):
     if not isinstance(player_action, ReplaceStartCard):
         return False
     if game.state != game.GameState.WaitReplace:
-        return
+        return False
     game.data['replaces'][player_action.player_id] = player_action.replace_list[:]
     if all(l is not None for l in game.data['replaces']):
         game.on_replace_done()

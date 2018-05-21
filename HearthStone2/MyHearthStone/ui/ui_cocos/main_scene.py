@@ -6,8 +6,6 @@
 This is one of the views in MVC pattern.
 """
 
-# TODO: Copy from old HearthStone project now, need more fix.
-
 from cocos import director, layer, scene, menu
 from cocos.scenes import transitions
 import pyglet

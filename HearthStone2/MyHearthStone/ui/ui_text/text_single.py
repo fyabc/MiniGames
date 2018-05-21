@@ -328,7 +328,8 @@ Welcome to HearthStone (single player text mode).
 
         # Start game processing.
         game = self.frontend.game = Game(frontend=self.frontend, error_stub=self.frontend.game_error)
-        game.start_game([deck1, deck2], mode=args.mode)
+        game.start_game([deck1, deck2], mode=args.mode,
+                        class_hero_maps=[self.frontend.user.class_hero_map for _ in range(2)])
 
         def _get_replace(p=0):
             prompt = 'P{}: {}\nSelect card to replace: '.format(p, game.format_zone(Zone.Hand, p))

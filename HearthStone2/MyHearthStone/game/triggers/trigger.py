@@ -82,7 +82,6 @@ class Trigger:
         return []
 
     def message(self, event):
-        # todo: complete logging of events and triggers
         info('{} processing {}'.format(self, event))
 
     def __repr__(self):

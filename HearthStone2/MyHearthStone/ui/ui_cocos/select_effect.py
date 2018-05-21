@@ -14,7 +14,6 @@ __author__ = 'fyabc'
 class SelectEffectManager:
     """The helper class for select and unselect effects."""
 
-    # TODO: make this class more configurable.
     def __init__(self, sprite, **kwargs):
         self.sprite = sprite
         self.orig_pos = None

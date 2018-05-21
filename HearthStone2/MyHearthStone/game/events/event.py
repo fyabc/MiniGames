@@ -82,7 +82,6 @@ class Event:
         return self._repr()
 
     def do(self):
-        # TODO: Move code of standard triggers to here.
         return []
 
     def message(self):
@@ -134,8 +133,6 @@ class DelayResolvedEvent(Event):
 
 class AreaEvent(Event):
     """The event of area of effect, worked with ``DelayResolvedEvent``."""
-
-    # TODO: Need more test of area effects.
 
     def __init__(self, game, owner, events=None):
         super().__init__(game, owner)

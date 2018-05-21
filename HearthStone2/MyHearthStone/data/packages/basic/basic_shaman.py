@@ -1,10 +1,13 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from random import choice
+
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
-from MyHearthStone.utils.game import Race
+from MyHearthStone.ext import std_triggers
+from MyHearthStone.utils.game import Race, Zone
 
 __author__ = 'fyabc'
 
@@ -28,15 +31,28 @@ class 图腾召唤(HeroPower):
         'have_target': False,
     }
 
+    BasicTotems = {"70010", "70011", "70012", "70013"}
+
+    def _candidates(self):
+        my_minions = {m.id for m in self.game.get_zone(Zone.Play, self.player_id)}
+        return list(self.BasicTotems.difference(my_minions))
+
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        return std_events.pure_summon_events(self.game, choice(self._candidates()), self.player_id, 'last')
 
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
         if super_result == self.Inactive:
             return super_result
-        # TODO: Require space, and not all 4 totems
+        # TODO: Require space, and not all 4 totems, which is first?
+        if self.game.full(Zone.Play, self.player_id):
+            if msg_fn:
+                msg_fn('I have too many minions, and I can\'t use it!')
+            return self.Inactive
+        if not self._candidates():
+            if msg_fn:
+                msg_fn('I have already own all 4 basic totems!')
+            return self.Inactive
         return super_result
 
 
@@ -79,7 +95,18 @@ class 治疗图腾(Minion):
         'race': [Race.Totem], 'derivative': True,
     }
 
-    # TODO
+    class Trig_治疗图腾(std_triggers.Trigger):
+        respond = [std_events.EndOfTurn]
+
+        def process(self, event: respond[0]):
+            if event.player_id != self.owner.player_id:
+                return []
+            targets = self.game.get_zone(Zone.Play, self.owner.player_id)
+            return [std_events.AreaHealing(self.game, self.owner, targets, [1 for _ in targets])]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Trig_治疗图腾(self.game, self)
 
 
 # 空气之怒图腾 (70012)

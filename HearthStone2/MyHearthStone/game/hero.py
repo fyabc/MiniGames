@@ -1,14 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .game_entity import GameEntity, make_property
+from .game_entity import IndependentEntity, make_property
 from .alive_mixin import AliveMixin
 from ..utils.game import Zone, Type
 
 __author__ = 'fyabc'
 
 
-class Hero(AliveMixin, GameEntity):
+class Hero(AliveMixin, IndependentEntity):
     """The class of hero."""
 
     data = {
@@ -62,7 +62,7 @@ class Hero(AliveMixin, GameEntity):
         return []
 
 
-class HeroPower(GameEntity):
+class HeroPower(IndependentEntity):
     """The class of hero power."""
 
     _data = {
@@ -114,7 +114,13 @@ class HeroPower(GameEntity):
     def have_target(self):
         return self.data['have_target']
 
-    def run(self, target: GameEntity, **kwargs):
+    def run(self, target: IndependentEntity, **kwargs):
+        """Run the hero power.
+
+        :param target:
+        :param kwargs:
+        :return:
+        """
         return []
 
     def can_do_action(self, msg_fn=None):

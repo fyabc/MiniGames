@@ -77,7 +77,6 @@ class SelectionManager:
             self._msg_fn('This is not a valid target!')
             return True
 
-        # TODO: Add more checks here (target, cost, etc.), put these check functions in a new module.
         if self.state == self.C:
             entity = sprite.entity
             if entity.can_do_action(msg_fn=self._msg_fn) == entity.Inactive:
