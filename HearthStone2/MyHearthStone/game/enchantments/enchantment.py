@@ -3,7 +3,7 @@
 
 """Base classes of enchantment."""
 
-from ..game_entity import GameEntity, make_property
+from ..game_entity import GameEntity, IndependentEntity, make_property
 from ...utils.game import Type, Zone
 
 __author__ = 'fyabc'
@@ -33,14 +33,14 @@ class Enchantment(GameEntity):
         'aura': False,
     }
 
-    def __init__(self, game, target: GameEntity, **kwargs):
+    def __init__(self, game, target: IndependentEntity, **kwargs):
         """Create a new enchantment.
 
         When an enchantment is initialized, it is attached to its target and is ALWAYS in play.
 
         :param game:
         :param target: The target of this enchantment.
-        :type target: GameEntity
+        :type target: IndependentEntity
         :param kwargs:
             :keyword oop: int, order of play
         :type kwargs: dict
@@ -101,6 +101,7 @@ class Enchantment(GameEntity):
 
         This method will set the oop of enchantment as the enchantment of the creator.
         """
+        # TODO: Creator is a ``GameEntity`` or an ``IndependentEntity``?
 
         kwargs['oop'] = creator.oop
         enc = cls(*args, **kwargs)

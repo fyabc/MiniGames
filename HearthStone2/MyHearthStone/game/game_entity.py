@@ -6,7 +6,7 @@
 from collections import ChainMap
 
 from ..utils.game import Zone, Type
-from ..utils.message import entity_message, warning, info, debug
+from ..utils.message import entity_message, warning, debug
 
 __author__ = 'fyabc'
 
@@ -113,13 +113,6 @@ class GameEntity(metaclass=SetDataMeta):
         self.init_zone = Zone.Invalid
         self._init_player_id = None
 
-        # Enchantment list of this entity.
-        # Order: Enchantments in order of oop + auras in order of oop.
-        self.enchantments = []
-
-        # Temporary data dict for aura update.
-        self.aura_tmp = {}
-
         # Triggers of this entity.
         self.triggers = set()
 
@@ -195,12 +188,14 @@ class GameEntity(metaclass=SetDataMeta):
         # Reset tags to default value.
         self._reset_tags()
 
-        if old_zone == Zone.Play:
-            # Removed from play.
-            # Detach all enchantments (with some exceptions).
-            for enchantment in self.enchantments:
-                enchantment.detach(remove_from_target=False)
-            self.enchantments.clear()
+        # Modify enchantments (only for independent entities).
+        if hasattr(self, 'enchantments'):
+            if old_zone == Zone.Play:
+                # Removed from play.
+                # Detach all enchantments (with some exceptions).
+                for enchantment in self.enchantments:
+                    enchantment.detach(remove_from_target=False)
+                self.enchantments.clear()
 
         debug('Move {} from {!r} to {!r}.'.format(self, Zone.Idx2Str[old_zone], Zone.Idx2Str[zone]))
         self.data['zone'] = zone
@@ -231,6 +226,48 @@ class GameEntity(metaclass=SetDataMeta):
         # todo: Apply enchantments that affect description (e.g. spell power) on it.
         return self.data['description']
 
+    def add_trigger(self, trigger):
+        """Add a trigger."""
+        self.triggers.add(trigger)
+
+        # Update the currently added trigger to the correct zone.
+        self.update_triggers(Zone.Invalid, self.zone, (trigger,))
+
+    def update_triggers(self, from_zone, to_zone, triggers=None):
+        """Update triggers according to its active zones."""
+
+        triggers = self.triggers if triggers is None else triggers
+        for trigger in triggers:
+            from_ = from_zone in trigger.zones
+            to_ = to_zone in trigger.zones
+            if not from_ and to_:
+                self.game.register_trigger(trigger)
+            elif from_ and not to_:
+                self.game.remove_trigger(trigger)
+            else:
+                pass
+
+
+class IndependentEntity(GameEntity):
+    """The class of independent game entity.
+
+    An independent game entity can have its own enchantments, and does not need to be attached to another entity.
+    An independent game entity acts like "common" entities, and can be selected by player to do actions.
+
+    Example of independent entities: Player, Card, Hero, HeroPower
+    Example of non-independent entities: Enchantment, Aura
+    """
+
+    def __init__(self, game):
+        super().__init__(game)
+
+        # Enchantment list of this entity.
+        # Order: Enchantments in order of oop + auras in order of oop.
+        self.enchantments = []
+
+        # Temporary data dict for aura update.
+        self.aura_tmp = {}
+
     @classmethod
     def get_cahr(cls):
         """Get cost / attack / health / armor (basic attributes)."""
@@ -244,13 +281,6 @@ class GameEntity(metaclass=SetDataMeta):
         if 'armor' in cls.data:
             result.append(cls.data['armor'])
         return result
-
-    def add_trigger(self, trigger):
-        """Add a trigger."""
-        self.triggers.add(trigger)
-
-        # Update the currently added trigger to the correct zone.
-        self.update_triggers(Zone.Invalid, self.zone, (trigger,))
 
     def add_enchantment(self, enchantment):
         """Add an enchantment, insert in order."""
@@ -270,20 +300,6 @@ class GameEntity(metaclass=SetDataMeta):
             raise ValueError('Enchantment {} not found in the enchantment list'.format(enchantment))
         else:
             del a[lo]
-
-    def update_triggers(self, from_zone, to_zone, triggers=None):
-        """Update triggers according to its active zones."""
-
-        triggers = self.triggers if triggers is None else triggers
-        for trigger in triggers:
-            from_ = from_zone in trigger.zones
-            to_ = to_zone in trigger.zones
-            if not from_ and to_:
-                self.game.register_trigger(trigger)
-            elif from_ and not to_:
-                self.game.remove_trigger(trigger)
-            else:
-                pass
 
     def _aura_update_before(self):
         """Set base status before aura update."""
@@ -335,7 +351,7 @@ class GameEntity(metaclass=SetDataMeta):
         """
         return False
 
-    def check_target(self, target: 'GameEntity'):
+    def check_target(self, target: 'IndependentEntity'):
         """When a playable entity with target is played, this method is called to check if
         the target is correct or not.
 
@@ -349,7 +365,6 @@ class GameEntity(metaclass=SetDataMeta):
         # Default valid target zones.
         #   Only support target to `Play` and `Hero` zones now.
         #   Can support `Hand`, `Weapon` and other zones in future.
-        # [NOTE]: Only cards, heroes and hero powers have attribute zone.
         zone = target.zone
         if zone not in (Zone.Play, Zone.Hero):
             return False
@@ -378,7 +393,7 @@ class GameEntity(metaclass=SetDataMeta):
         # Can only play entities owned by current player.
         if self.player_id != self.game.current_player:
             return self.Inactive
-        # Can only play entities int these zones.
+        # Can only play entities in these zones.
         if self.zone not in [Zone.Hand, Zone.Play, Zone.Hero, Zone.HeroPower]:
             return self.Inactive
         return self.Active

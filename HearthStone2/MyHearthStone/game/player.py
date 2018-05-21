@@ -6,7 +6,7 @@
 import itertools
 import random
 
-from .game_entity import GameEntity
+from .game_entity import IndependentEntity
 from ..utils.constants import C
 from ..utils.game import Zone
 from ..utils.message import info, debug
@@ -15,7 +15,7 @@ from ..utils.package_io import all_cards, all_heroes, all_hero_powers
 __author__ = 'fyabc'
 
 
-class Player(GameEntity):
+class Player(IndependentEntity):
     DeckMax = C.Game.DeckMax
     HandMax = C.Game.HandMax
     PlayMax = C.Game.PlayMax
@@ -29,6 +29,7 @@ class Player(GameEntity):
     def __init__(self, game):
         super().__init__(game)
 
+        # TODO: Put these variables into ``self.data``?
         # Mana and overloads.
         self.max_mana = 0
         self.temp_mana = 0
@@ -94,11 +95,7 @@ class Player(GameEntity):
         pass
 
     def _init_card_zones(self):
-        """Initialize cards' zones when the game start.
-
-        This will call ``move_map`` to do some other initializing (such as triggers)
-        """
-        # Need to init hero zone?
+        """Initialize cards' zones when the game start."""
 
         for zone_id in Zone.Idx2Str.keys():
             try:

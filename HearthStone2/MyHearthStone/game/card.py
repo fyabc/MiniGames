@@ -12,14 +12,14 @@ Health rules (copied from https://hearthstone.gamepedia.com/Advanced_rulebook#He
     if it exceeds the new maximum.
 """
 
-from .game_entity import GameEntity, make_property
+from .game_entity import IndependentEntity, make_property
 from .alive_mixin import AliveMixin
 from ..utils.game import Zone, Type
 
 __author__ = 'fyabc'
 
 
-class Card(GameEntity):
+class Card(IndependentEntity):
     """The class of card."""
 
     data = {
@@ -79,7 +79,7 @@ class Card(GameEntity):
     def have_target(self):
         return self.data['have_target']
 
-    def check_target(self, target: GameEntity):
+    def check_target(self, target: IndependentEntity):
         """Check the validity of the target."""
 
         if target is None:
@@ -167,7 +167,7 @@ class Minion(AliveMixin, Card):
     deathrattle = make_property('deathrattle', setter=False)
     deathrattle_fns = make_property('deathrattle_fns')
 
-    def run_battlecry(self, target: GameEntity, **kwargs):
+    def run_battlecry(self, target: IndependentEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
 
         :param target: Target of the battlecry.
@@ -209,7 +209,7 @@ class Spell(Card):
         'quest': False,
     }
 
-    def run(self, target: GameEntity, **kwargs):
+    def run(self, target: IndependentEntity, **kwargs):
         """Run the spell.
 
         :param target:
@@ -239,9 +239,6 @@ class Weapon(Card):
 
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
-
-        # Temporary data dict for aura update.
-        self.aura_tmp = {}
 
     def _reset_tags(self):
         super()._reset_tags()
@@ -290,7 +287,7 @@ class Weapon(Card):
     def attack(self, value):
         self.data['attack'] = value
 
-    def run_battlecry(self, target: GameEntity, **kwargs):
+    def run_battlecry(self, target: IndependentEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
 
         :param target: Target of the battlecry.

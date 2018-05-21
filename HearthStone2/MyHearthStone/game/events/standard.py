@@ -35,6 +35,11 @@ class BeginOfTurn(Event):
     def __init__(self, game):
         super().__init__(game, game)
 
+    @property
+    def player_id(self):
+        # [NOTE]: After this event happens, the current player id has been changed.
+        return self.game.current_player
+
     def _repr(self):
         return super()._repr(n=self.game.n_turns, player=self.game.current_player)
 
@@ -49,8 +54,16 @@ class EndOfTurn(Event):
     def __init__(self, game):
         super().__init__(game, game)
 
+    @property
+    def player_id(self):
+        # [NOTE]: Before and after this event happens, the current player id has not been changed.
+        return self.game.current_player
+
     def _repr(self):
-        return super()._repr(n=self.game.n_turns, player=self.game.current_player)
+        return super()._repr(n=self.game.n_turns, player=self.player_id)
+
+    def do(self):
+        return []
 
 
 class DrawCard(Event):
