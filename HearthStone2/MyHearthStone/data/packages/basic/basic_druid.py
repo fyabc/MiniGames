@@ -73,7 +73,7 @@ class 激活(Spell):
 
 # 野性印记 (10004)
 Enc_野性印记 = ext.create_enchantment(
-    {'id': 10000}, *enc_common.apply_fn_add_a_h(2, 2, apply_other=enc_common.set_target_attr('taunt', True)))
+    {'id': 10000}, *enc_common.apply_fn_add_a_h(2, 2, apply_imm_other=enc_common.set_target_attr('taunt', True)))
 
 
 class 野性印记(Spell):

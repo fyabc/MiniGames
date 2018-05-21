@@ -18,6 +18,10 @@ class Hero(AliveMixin, GameEntity):
 
         # Default hero power id.
         'hero_power': None,
+
+        # Other attributes.
+        'deathrattle': False,
+        'anti_magic': False,
     }
 
     def __init__(self, game, player_id):
@@ -31,14 +35,28 @@ class Hero(AliveMixin, GameEntity):
 
         self.oop = self.game.entity.oop
 
+    def _reset_tags(self):
+        super()._reset_tags()
+        # TODO: Better solution? Get "deathrattle" attribute automatically?
+        deathrattle_fns = [] if type(self).run_deathrattle == Hero.run_deathrattle else [type(self).run_deathrattle]
+        self.data.update({
+            # Deathrattle functions.
+            # TODO: Silence will clear this list, some effects that given deathrattle will extend this list.
+            'deathrattle_fns': deathrattle_fns,
+        })
+
     def _repr(self):
         return super()._repr(klass=self.data['klass'], P=self.player_id, health=self.health)
 
     init_hero_power_id = make_property('hero_power', setter=False)
+    deathrattle = make_property('deathrattle', setter=False)
+    anti_magic = make_property('anti_magic')
+    deathrattle_fns = make_property('deathrattle_fns')
 
-    def run_deathrattle(self):
+    def run_deathrattle(self, **kwargs):
         """Run the deathrattle. Implemented in subclasses.
 
+        :param kwargs: Other arguments, such as location.
         :return: list of events.
         """
         return []
@@ -74,6 +92,7 @@ class HeroPower(GameEntity):
         return super()._repr(P=self.player_id, cost=self.cost, exhausted=self.exhausted)
 
     def _reset_tags(self):
+        super()._reset_tags()
         self.data.update({
             'exhausted': False,
         })

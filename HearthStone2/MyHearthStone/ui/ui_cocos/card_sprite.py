@@ -110,6 +110,14 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
             return Colors['green']
         return Colors['white']
 
+    def _update_attr_sprite(self, attr_name, get_fn, z):
+        if getattr(self.entity, attr_name):
+            sprite = get_fn()
+            self.try_add(sprite, z=z)
+        else:
+            sprite = get_fn()
+            self.try_remove(sprite)
+
 
 class HandSprite(EntitySprite):
     """The sprite of a card.
@@ -379,6 +387,8 @@ class MinionSprite(EntitySprite):
         # TODO: Windfury sprite, etc.
         self.divine_shield_sprite = None
         self.taunt_sprite = None
+        self.deathrattle_sprite = None
+        self.trigger_sprite = None
 
         # TODO: Show the related card when mouse on it over N seconds.
         # TODO: (Need support of focus time in ``ActiveMixin``.)
@@ -405,10 +415,13 @@ class MinionSprite(EntitySprite):
             self.atk_label.element.color = self._get_attack_color()
             self.health_label.element.text = str(self.entity.health)
             self.health_label.element.color = self._get_health_color()
-            self._update_attr_sprite('divine_shield', self._get_ds_sprite, z=5)
+            self._update_attr_sprite('divine_shield', self._get_ds_sprite, z=6)
 
             # TODO: Set taunt opacity to 50 if this minion is negated_taunt.
             self._update_attr_sprite('taunt', self._get_taunt_sprite, z=0)
+
+            # TODO: Only show one sprite at mid-bottom when more than one available (show which?).
+            self._update_attr_sprite('deathrattle_fns', self._get_dr_sprite, z=5)
 
         else:   # self.entity.type == Type.Permanent
             # Anything to do?
@@ -433,15 +446,13 @@ class MinionSprite(EntitySprite):
             self.taunt_sprite.scale_y = self.ImageScale * self.ImagePart[3] * 6.140351
         return self.taunt_sprite
 
-    def _update_attr_sprite(self, attr_name, get_fn, z):
-        if getattr(self.entity, attr_name):
-            sprite = get_fn()
-            if sprite not in self:
-                self.add(sprite, z=z)
-        else:
-            sprite = get_fn()
-            if sprite in self:
-                self.remove(sprite)
+    def _get_dr_sprite(self):
+        if self.deathrattle_sprite is None:
+            self.deathrattle_sprite = Sprite(
+                'Deathrattle.png', pos(0.00, -0.90, base=self.SizeBase),
+                scale=0.7,
+            )
+        return self.deathrattle_sprite
 
     def _stealth_opacity(self):
         return 50 if self.entity.stealth else 255
@@ -489,6 +500,8 @@ class HeroSprite(EntitySprite):
         self.status_border = None
         self.attack_label = None
         self.health_label = None
+        self.armor_sprite = None
+        self.armor_label = None
 
         super().__init__(hero, position, scale, **kwargs)
 
@@ -509,11 +522,27 @@ class HeroSprite(EntitySprite):
         self.health_label = hs_style_label(str(self.entity.health), pos(0.73, -0.34, base=self.SizeBase),
                                            font_size=46, anchor_y='center', color=self._get_health_color())
         self.add(self.health_label, z=2)
+        self.armor_sprite = Sprite('Armor.png', pos(0.71, -0.00, base=self.SizeBase), scale=1.0)
+        self.armor_sprite.visible = False
+        self.add(self.armor_sprite, z=2)
+        self.armor_label = hs_style_label('0', pos(0.71, 0.04, base=self.SizeBase),
+                                          font_size=46, anchor_y='center', color=Colors['white'])
+        self.armor_label.visible = False
+        self.add(self.armor_label, z=3)
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
         self.health_label.element.text = str(self.entity.health)
         self.health_label.element.color = self._get_health_color()
+
+        armor = self.entity.armor
+        if armor == 0:
+            self.armor_label.visible = False
+            self.armor_sprite.visible = False
+        else:
+            self.armor_label.element.text = str(armor)
+            self.armor_label.visible = True
+            self.armor_sprite.visible = True
 
 
 class HeroPowerSprite(EntitySprite):

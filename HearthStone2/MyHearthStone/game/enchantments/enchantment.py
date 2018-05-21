@@ -44,8 +44,6 @@ class Enchantment(GameEntity):
         :param kwargs:
             :keyword oop: int, order of play
         :type kwargs: dict
-
-        [NOTE]: Do not forget to call ``move_map`` after initializing (auto called in ``from_card``).
         """
         super().__init__(game)
         self.target = target
@@ -54,6 +52,9 @@ class Enchantment(GameEntity):
 
         target.add_enchantment(self)
         self.zone = Zone.Play
+
+        # Apply the enchantment immediately.
+        self.apply_imm()
 
     def _set_zone(self, zone):
         # TODO: Specific behaviour of enchantment: (or needn't?)
@@ -71,11 +72,25 @@ class Enchantment(GameEntity):
         return (1 if self.aura else 0), self.oop
 
     def apply_imm(self):
-        """Apply this enchantment to the attached target immediately after attachment."""
+        """Apply this enchantment to the attached target immediately after attachment.
+
+        This method usually set some permanent attributes, such as taunt, stealth, etc.
+        When apply an enchantment of "set health to x", this method also need to set the damage value to 0.
+
+        Subclasses should overwrite this method, and they should only modify the attributes directly.
+        For example, ``self.taunt = True``.
+        """
         pass
 
     def apply(self):
-        """Apply this enchantment to the attached target in aura updates."""
+        """Apply this enchantment to the attached target in aura updates.
+
+        This method usually set some attributes that will be recalculated in aura updates, such as attack, health
+        and mana cost.
+
+        Subclasses should overwrite this method, and they should only modify ``self.aura_tmp``.
+        For example, ``self.aura_tmp['attack'] *= 2``.
+        """
         pass
 
     @classmethod
@@ -99,9 +114,9 @@ class Enchantment(GameEntity):
         This method or target itself will remove this enchantment from its target,
         decided by kwarg ``remove_from_target``.
         """
-        self.zone = Zone.RFG
         if remove_from_target:
             self.target.remove_enchantment(self)
+        self.zone = Zone.RFG
 
 
 class Aura(Enchantment):

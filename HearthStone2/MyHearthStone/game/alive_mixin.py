@@ -23,7 +23,8 @@ class AliveMixin:
             'attack': 0,
             'damage': 0,
             'max_health': self.cls_data['health'],
-            'to_be_destroyed': False,  # The destroy tag for instant kill enchantments.
+            'armor': 0,                 # [NOTE]: Even support armor for minions (for future DIYs).
+            'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
 
             # Attack related attributes.
             'n_attack': None,
@@ -34,11 +35,12 @@ class AliveMixin:
     # Health-related properties.
 
     damage = make_property('damage')
+    armor = make_property('armor')
     to_be_destroyed = make_property('to_be_destroyed')
 
     @property
     def alive(self):
-        return self.data['damage'] < self.data['max_health'] and not self.to_be_destroyed
+        return self.data['damage'] < self.data['max_health'] + self.data['armor'] and not self.to_be_destroyed
 
     def _get_max_health(self):
         return self.data['max_health']
@@ -61,6 +63,11 @@ class AliveMixin:
         return self.data['damage'] > 0
 
     def take_damage(self, value):
+        if value <= self.data['armor']:
+            self.data['armor'] -= value
+            return
+        value -= self.data['armor']
+        self.data['armor'] = 0
         self.data['damage'] += value
 
     def restore_health(self, value):

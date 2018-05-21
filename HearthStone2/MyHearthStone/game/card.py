@@ -126,6 +126,7 @@ class Minion(AliveMixin, Card):
         'divine_shield': False,
         'stealth': False,
         'windfury': False,
+        'anti_magic': False,
         'poisonous': False,
         'lifesteal': False,
         'recruit': False,
@@ -145,13 +146,17 @@ class Minion(AliveMixin, Card):
 
     def _reset_tags(self):
         super()._reset_tags()
+
+        # TODO: Better solution? Get "deathrattle" attribute automatically?
+        deathrattle_fns = [] if type(self).run_deathrattle == Minion.run_deathrattle else [type(self).run_deathrattle]
+
         self.data.update({
             'attack': self.cls_data['attack'],
             'n_total_attack': 2 if self.cls_data['windfury'] else 1,
 
             # Deathrattle functions.
             # TODO: Silence will clear this list, some effects that given deathrattle will extend this list.
-            'deathrattle_fns': [self.run_deathrattle],
+            'deathrattle_fns': deathrattle_fns,
         })
 
     # TODO: Move these properties into ``AliveMixin``.
@@ -159,6 +164,8 @@ class Minion(AliveMixin, Card):
     rush = make_property('rush')
 
     battlecry = make_property('battlecry', setter=False)
+    deathrattle = make_property('deathrattle', setter=False)
+    deathrattle_fns = make_property('deathrattle_fns')
 
     def run_battlecry(self, target: GameEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
@@ -238,6 +245,10 @@ class Weapon(Card):
 
     def _reset_tags(self):
         super()._reset_tags()
+
+        # TODO: Better solution? Get "deathrattle" attribute automatically?
+        deathrattle_fns = [] if type(self).run_deathrattle == Weapon.run_deathrattle else [type(self).run_deathrattle]
+
         self.data.update({
             'attack': self.cls_data['attack'],
             'damage': 0,
@@ -246,10 +257,12 @@ class Weapon(Card):
 
             # Deathrattle functions.
             # TODO: Silence will clear this list, some effects that given deathrattle will extend this list.
-            'deathrattle_fns': [self.run_deathrattle],
+            'deathrattle_fns': deathrattle_fns,
         })
 
     battlecry = make_property('battlecry', setter=False)
+    deathrattle = make_property('deathrattle', setter=False)
+    deathrattle_fns = make_property('deathrattle_fns')
     damage = make_property('damage')
     to_be_destroyed = make_property('to_be_destroyed')
     max_health = make_property('max_health')

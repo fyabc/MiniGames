@@ -44,7 +44,26 @@ class AreaHealing(AreaEvent):
             for target, value in zip(targets, values)])
 
 
+class GainArmor(Event):
+    """The event of gain armor.
+
+    [NOTE]: The ``target`` of this event can be any alive entities, not only heroes.
+    """
+    def __init__(self, game, owner, target, value):
+        super().__init__(game, owner)
+        self.target = target
+        self.value = value
+
+    def _repr(self):
+        return super()._repr(source=self.owner, target=self.target, value=self.value)
+
+    def do(self):
+        self.target.armor += self.value
+        return []
+
+
 __all__ = [
     'Healing',
     'AreaHealing',
+    'GainArmor',
 ]

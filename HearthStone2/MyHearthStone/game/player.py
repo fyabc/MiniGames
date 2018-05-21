@@ -247,6 +247,9 @@ class Player(GameEntity):
     def get_entity(self, zone, index=0):
         return self.get_zone(zone)[index]
 
+    def get_hero(self):
+        return self.hero
+
     def end_turn(self):
         """Things to do when turn end.
 

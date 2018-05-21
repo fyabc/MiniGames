@@ -112,7 +112,7 @@ class Game:
 
     def register_trigger(self, trigger):
         for event_type, timing in zip(trigger.respond, trigger.timing):
-            if event_type not in self.triggers:
+            if (event_type, timing) not in self.triggers:
                 self.triggers[event_type, timing] = set()
             debug('Register trigger {} to event type {} and timing "{}"'.format(
                 trigger, event_type.__name__, 'Before' if timing == trigger.Before else 'After'))
@@ -120,7 +120,7 @@ class Game:
 
     def remove_trigger(self, trigger):
         for event_type, timing in zip(trigger.respond, trigger.timing):
-            if event_type in self.triggers:
+            if (event_type, timing) in self.triggers:
                 debug('Remove trigger {} from event type {} and timing "{}"'.format(
                     trigger, event_type.__name__, 'Before' if timing == trigger.Before else 'After'))
                 self.triggers[event_type, timing].discard(trigger)
@@ -653,6 +653,9 @@ class Game:
 
     def get_entity(self, zone, player_id, index=0):
         return self.players[player_id].get_entity(zone, index)
+
+    def get_hero(self, player_id):
+        return self.get_player(player_id).get_hero()
 
     def show_details(self, level='INFO'):
         def _msg(*args, **kwargs):

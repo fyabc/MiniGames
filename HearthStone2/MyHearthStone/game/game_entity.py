@@ -249,6 +249,9 @@ class GameEntity(metaclass=SetDataMeta):
         """Add a trigger."""
         self.triggers.add(trigger)
 
+        # Update the currently added trigger to the correct zone.
+        self.update_triggers(Zone.Invalid, self.zone, (trigger,))
+
     def add_enchantment(self, enchantment):
         """Add an enchantment, insert in order."""
         a = self.enchantments
@@ -268,10 +271,11 @@ class GameEntity(metaclass=SetDataMeta):
         else:
             del a[lo]
 
-    def update_triggers(self, from_zone, to_zone):
+    def update_triggers(self, from_zone, to_zone, triggers=None):
         """Update triggers according to its active zones."""
 
-        for trigger in self.triggers:
+        triggers = self.triggers if triggers is None else triggers
+        for trigger in triggers:
             from_ = from_zone in trigger.zones
             to_ = to_zone in trigger.zones
             if not from_ and to_:

@@ -3,6 +3,8 @@
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
+from MyHearthStone.ext import std_events
+from MyHearthStone.utils.game import Zone
 
 __author__ = 'fyabc'
 
@@ -28,8 +30,7 @@ class 全副武装(HeroPower):
     }
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        return [std_events.GainArmor(self.game, self, self.game.get_hero(self.player_id), 2)]
 
 
 # 战歌指挥官 (90000)

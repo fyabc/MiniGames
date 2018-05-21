@@ -38,7 +38,10 @@ class HeroDeath(Event):
         owner = self.owner
         _push_death_cache(self.game, owner)
         owner.play_state = False
-        return owner.run_deathrattle()
+        result = []
+        for dr in self.owner.deathrattle_fns:
+            result.extend(dr(self.owner))
+        return result
 
 
 class MinionDeath(Event):
@@ -56,7 +59,10 @@ class MinionDeath(Event):
 
     def do(self):
         _push_death_cache(self.game, self.owner)
-        return self.owner.run_deathrattle(location=self.location)
+        result = []
+        for dr in self.owner.deathrattle_fns:
+            result.extend(dr(self.owner, location=self.location))
+        return result
 
 
 class WeaponDeath(Event):
@@ -65,7 +71,10 @@ class WeaponDeath(Event):
 
     def do(self):
         _push_death_cache(self.game, self.owner)
-        return self.owner.run_deathrattle()
+        result = []
+        for dr in self.owner.deathrattle_fns:
+            result.extend(dr(self.owner))
+        return result
 
 
 def create_death_event(game, death, location=None):

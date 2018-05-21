@@ -29,6 +29,8 @@ class 援军(HeroPower):
         'have_target': False,
     }
 
+    can_do_action = ext.require_board_not_full
+
     def run(self, target, **kwargs):
         return std_events.pure_summon_events(self.game, "40010", self.player_id, 'last')
 

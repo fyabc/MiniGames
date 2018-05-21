@@ -44,7 +44,7 @@ class 稳固射击(HeroPower):
 
 # 驯兽师 (20001)
 Enc_驯兽师 = ext.create_enchantment(
-    {'id': 20001}, *enc_common.apply_fn_add_a_h(2, 2, apply_other=enc_common.set_target_attr('taunt', True)))
+    {'id': 20001}, *enc_common.apply_fn_add_a_h(2, 2, apply_imm_other=enc_common.set_target_attr('taunt', True)))
 
 
 class 驯兽师(Minion):
