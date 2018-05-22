@@ -4,7 +4,6 @@
 import random
 
 from MyHearthStone import ext
-from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
@@ -35,7 +34,7 @@ class 稳固射击(HeroPower):
     def run(self, target, **kwargs):
         return [std_events.Damage(
             self.game, self,
-            target=self.game.get_zone(Zone.Hero, 1 - self.player_id)[0],
+            target=self.game.get_hero(1 - self.player_id),
             value=2)]
 
 

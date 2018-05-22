@@ -45,7 +45,7 @@ class 影袭(Spell):
     }
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)]
+        return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), 3)]
 
 
 # 毒刃 (60003)
@@ -57,8 +57,7 @@ class 毒刃(Spell):
     }
 
     def run(self, target, **kwargs):
-        return [std_events.DrawCard(self.game, self, self.player_id),
-                std_events.Damage(self.game, self, target, 1)]
+        return [std_events.Damage(self.game, self, target, 1), std_events.DrawCard(self.game, self, self.player_id)]
 
 
 # 闷棍 (60004)

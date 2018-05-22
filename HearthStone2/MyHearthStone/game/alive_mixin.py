@@ -46,6 +46,15 @@ class AliveMixin:
         return self.data['max_health']
 
     def _set_max_health(self, value):
+        """Set the max health.
+
+        Health rules (copied from https://hearthstone.gamepedia.com/Advanced_rulebook#Health)::
+
+            Rule H1: Any time a minion's maximum Health is increased,
+                its current Health is increased by the same amount.
+            Rule H2: However, when a minion's maximum Health is reduced,
+                its current Health is only reduced if it exceeds the new maximum.
+        """
         # If max health is reduced, reduce damage value.
         orig_max_h = self.data['max_health']
         if orig_max_h > value:

@@ -653,7 +653,13 @@ class Game:
         return self.players[player_id].get_entity(zone, index)
 
     def get_hero(self, player_id):
-        return self.get_player(player_id).get_hero()
+        return self.get_player(player_id).hero
+
+    def get_hero_power(self, player_id):
+        return self.get_player(player_id).hero_power
+
+    def get_weapon(self, player_id):
+        return self.get_player(player_id).weapon
 
     def show_details(self, level='INFO'):
         def _msg(*args, **kwargs):

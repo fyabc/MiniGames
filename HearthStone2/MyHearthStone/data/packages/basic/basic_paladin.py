@@ -44,7 +44,7 @@ class 列王守卫(Minion):
     }
 
     def run_battlecry(self, target, **kwargs):
-        return [std_events.Healing(self.game, self, self.game.get_zone(Zone.Hero, self.player_id)[0], 6)]
+        return [std_events.Healing(self.game, self, self.game.get_hero(self.player_id), 6)]
 
 
 # 力量祝福 (40001)

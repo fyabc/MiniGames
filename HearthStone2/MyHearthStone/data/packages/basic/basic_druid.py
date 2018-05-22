@@ -148,4 +148,4 @@ class 星火术(Spell):
     }
 
     def run(self, target, **kwargs):
-        return [std_events.DrawCard(self.game, self, self.player_id), std_events.Damage(self.game, self, target, 5)]
+        return [std_events.Damage(self.game, self, target, 5), std_events.DrawCard(self.game, self, self.player_id)]

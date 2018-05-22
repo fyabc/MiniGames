@@ -15,6 +15,22 @@ from ..utils.package_io import all_cards, all_heroes, all_hero_powers
 __author__ = 'fyabc'
 
 
+def _make_single_zone_property(name, zone_name):
+    def _getter(self):
+        zone = getattr(self, zone_name)
+        if not zone:
+            return None
+        return zone[0]
+
+    def _setter(self, value):
+        zone = getattr(self, zone_name)
+        if not zone:
+            zone.append(value)
+        zone[0] = value
+
+    return property(fget=_getter, fset=_setter, doc='The single entity of zone {}'.format(name))
+
+
 class Player(IndependentEntity):
     DeckMax = C.Game.DeckMax
     HandMax = C.Game.HandMax
@@ -38,13 +54,13 @@ class Player(IndependentEntity):
         self.overload_next = 0
 
         # Zones.
-        self.hero = None
-        self.hero_power = None
+        self.heroes = []
+        self.hero_powers = []
         self.deck = []
         self.hand = []
         self.play = []
         self.secret = []
-        self.weapon = None
+        self.weapons = []
         self.graveyard = []
 
         # Hero power related.
@@ -54,6 +70,11 @@ class Player(IndependentEntity):
         # Misc.
         self.tire_counter = 0
         self.start_player = None
+
+    # These zones have only one entity, use properties to represent them.
+    hero = _make_single_zone_property('hero', 'heroes')
+    hero_power = _make_single_zone_property('hero_power', 'hero_powers')
+    weapon = _make_single_zone_property('weapon', 'weapons')
 
     def start_game(self, deck, player_id: int, start_player: int, class_hero_map: dict):
         self._init_data()
@@ -223,6 +244,13 @@ class Player(IndependentEntity):
             self.deck, self.hand, self.secret, self.play, [self.weapon, self.hero, self.hero_power])
 
     def get_zone(self, zone):
+        """Get the given zone of the player.
+
+        [NOTE]: The returned zone is always a list, even for zones that only contains one entity, such as ``Zone.Hero``.
+        :param zone: The zone id.
+        :return: The list of the given zone.
+        :rtype: list
+        """
         if zone == Zone.Deck:
             return self.deck
         if zone == Zone.Hand:
@@ -234,18 +262,15 @@ class Player(IndependentEntity):
         if zone == Zone.Graveyard:
             return self.graveyard
         if zone == Zone.Weapon:
-            return [self.weapon]
+            return self.weapons
         if zone == Zone.Hero:
-            return [self.hero]
+            return self.heroes
         if zone == Zone.HeroPower:
-            return [self.hero_power]
+            return self.hero_powers
         raise ValueError('Does not have zone {!r}'.format(Zone.Idx2Str.get(zone, zone)))
 
     def get_entity(self, zone, index=0):
         return self.get_zone(zone)[index]
-
-    def get_hero(self):
-        return self.hero
 
     def end_turn(self):
         """Things to do when turn end.

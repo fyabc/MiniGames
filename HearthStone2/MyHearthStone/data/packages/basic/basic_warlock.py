@@ -29,7 +29,7 @@ class 生命分流(HeroPower):
     }
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, target=self.game.get_zone(Zone.Hero, self.player_id)[0], value=2),
+        return [std_events.Damage(self.game, self, target=self.game.get_hero(self.player_id), value=2),
                 std_events.DrawCard(self.game, self, self.player_id)]
 
 

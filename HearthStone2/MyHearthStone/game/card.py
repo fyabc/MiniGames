@@ -1,16 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""The base classes of cards.
-
-Notes:
-
-Health rules (copied from https://hearthstone.gamepedia.com/Advanced_rulebook#Health)::
-
-    Rule H1: Any time a minion's maximum Health is increased, its current Health is increased by the same amount.
-    Rule H2: However, when a minion's maximum Health is reduced, its current Health is only reduced
-    if it exceeds the new maximum.
-"""
+"""The base classes of cards."""
 
 from .game_entity import IndependentEntity, make_property
 from .alive_mixin import AliveMixin
@@ -39,9 +30,6 @@ class Card(IndependentEntity):
         self.data.update({
             'player_id': player_id
         })
-
-    def __repr__(self):
-        return self._repr(name=self.data['name'], P=self.player_id, oop=self.oop, __show_cls=False)
 
     def _reset_tags(self):
         super()._reset_tags()
@@ -140,9 +128,9 @@ class Minion(AliveMixin, Card):
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
 
-    def __repr__(self):
-        return self._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
-                          oop=self.oop, __show_cls=False)
+    def _repr(self):
+        return super()._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
+                             oop=self.oop, __show_cls=False)
 
     def _reset_tags(self):
         super()._reset_tags()
@@ -208,6 +196,10 @@ class Spell(Card):
         'quest': False,
     }
 
+    def _repr(self):
+        return super()._repr(name=self.data['name'], CAH=[self.cost], P=self.player_id,
+                             oop=self.oop, __show_cls=False)
+
     def run(self, target: IndependentEntity, **kwargs):
         """Run the spell.
 
@@ -238,6 +230,10 @@ class Weapon(Card):
 
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
+
+    def _repr(self):
+        return super()._repr(name=self.data['name'], CAH=[self.cost, self.attack, self.health], P=self.player_id,
+                             oop=self.oop, __show_cls=False)
 
     def _reset_tags(self):
         super()._reset_tags()
@@ -330,6 +326,10 @@ class HeroCard(Card):
 
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
+
+    def _repr(self):
+        return super()._repr(name=self.data['name'], CAH=[self.cost, self.armor], P=self.player_id,
+                             oop=self.oop, __show_cls=False)
 
     armor = make_property('armor')
 

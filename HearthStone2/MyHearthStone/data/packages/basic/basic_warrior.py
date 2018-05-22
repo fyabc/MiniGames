@@ -4,7 +4,7 @@
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
-from MyHearthStone.utils.game import Zone
+from MyHearthStone.utils.game import Zone, order_of_play
 
 __author__ = 'fyabc'
 
@@ -42,7 +42,19 @@ ext.blank_minion({
     'charge': True,
 })
 
+
 # 旋风斩 (90002)
+class 旋风斩(Spell):
+    data = {
+        'id': 90002,
+        'type': 1, 'klass': 9, 'cost': 1,
+    }
+
+    def run(self, target, **kwargs):
+        targets = order_of_play(self.game.get_zone(Zone.Play, self.player_id) +
+                                self.game.get_zone(Zone.Play, 1 - self.player_id))
+        return [std_events.AreaDamage(self.game, self, targets, [1 for _ in targets])]
+
 
 # 冲锋 (90003)
 

@@ -265,6 +265,7 @@ blank_minion({
 blank_minion({
     'id': 22,
     'cost': 3, 'attack': 5, 'health': 1,
+    'race': [Race.Elemental],
 })
 
 # 机械幼龙技工 (23)
@@ -394,7 +395,7 @@ class 夜刃刺客(Minion):
     }
 
     def run_battlecry(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, self.game.get_entity(Zone.Hero, 1 - self.player_id), 3)]
+        return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), 3)]
 
 
 # 暗鳞治愈者 (34)
