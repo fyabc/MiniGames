@@ -191,13 +191,14 @@ def process_special_pa(game, player_action):
     :param player_action:
     :return: Stop the processing of this action?
     """
-    if not isinstance(player_action, ReplaceStartCard):
-        return False
-    if game.state != game.GameState.WaitReplace:
-        return False
-    game.data['replaces'][player_action.player_id] = player_action.replace_list[:]
-    if all(l is not None for l in game.data['replaces']):
-        game.on_replace_done()
-        return True
+    if isinstance(player_action, ReplaceStartCard):
+        if game.state != game.GameState.WaitReplace:
+            return False
+        game.data['replaces'][player_action.player_id] = player_action.replace_list[:]
+        if all(l is not None for l in game.data['replaces']):
+            game.on_replace_done()
+            return True
+        else:
+            return False
     else:
         return False

@@ -6,7 +6,7 @@
 from MyHearthStone.ext import Minion
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events
-from MyHearthStone.utils.game import Zone
+from MyHearthStone.utils.game import Zone, Race
 
 __author__ = 'fyabc'
 
@@ -15,6 +15,7 @@ class 蓝腮骑士(Minion):
     data = {
         'id': "D00000007",
         'rarity': 1, 'cost': 3, 'attack': 2, 'health': 1,
+        'race': [Race.Murloc],
     }
 
     def run_deathrattle(self, **kwargs):

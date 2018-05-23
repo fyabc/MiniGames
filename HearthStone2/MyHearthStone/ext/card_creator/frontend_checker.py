@@ -1,12 +1,55 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""Commonly used target checkers and testers."""
+"""Commonly used frontend checkers.
+
+Contains:
+    Action checker      (used as ``can_do_action`` method)
+    Target tester       (used as ``have_target`` method)
+    Target checker      (used as ``check_target`` method)
+    Entity collector    (used to collect target entities in battlecry/deathrattle/run methods)
+"""
 
 from ...utils.game import Zone, Race
 
 __author__ = 'fyabc'
 
+
+# Action checkers.
+
+def require_board_not_full(self, msg_fn=None):
+    """The ``can_do_action`` method that require the board not full.
+
+    Used by many spells that will summon a minion.
+    """
+    super_result = super(type(self), self).can_do_action(msg_fn=msg_fn)
+    if super_result == self.Inactive:
+        return super_result
+
+    if self.game.full(Zone.Play, self.player_id):
+        if msg_fn:
+            msg_fn('I have too many minions, and I can\'t use it!')
+        return self.Inactive
+
+    return super_result
+
+
+# Target testers.
+
+def have_friendly_minion(self):
+    return bool(self.game.get_zone(Zone.Play, self.player_id))
+
+
+def make_have_friendly_race(race):
+    def _have_friendly_race(self):
+        return any(race in e.race for e in self.game.get_zone(Zone.Play, self.player_id))
+    return _have_friendly_race
+
+
+have_friendly_beast = make_have_friendly_race(Race.Beast)
+
+
+# Target checkers.
 
 def checker_minion(self, target):
     if not super(type(self), self).check_target(target):
@@ -67,30 +110,20 @@ def checker_my_hand(self, target):
     return False
 
 
-# Have target checkers.
-
-def have_friendly_minion(self):
-    return bool(self.game.get_zone(Zone.Play, self.player_id))
-
-
-def make_have_friendly_race(race):
-    def _have_friendly_race(self):
-        return any(race in e.race for e in self.game.get_zone(Zone.Play, self.player_id))
-    return _have_friendly_race
-
-
-have_friendly_beast = make_have_friendly_race(Race.Beast)
+# Entity collectors.
 
 
 __all__ = [
+    'require_board_not_full',
+
+    'have_friendly_minion',
+    'have_friendly_beast',
+    'make_have_friendly_race',
+
     'checker_minion',
     'checker_friendly_character',
     'checker_friendly_minion',
     'checker_enemy_character',
     'checker_enemy_minion',
     'checker_my_hand',
-
-    'have_friendly_minion',
-    'have_friendly_beast',
-    'make_have_friendly_race',
 ]

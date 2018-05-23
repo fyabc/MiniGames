@@ -9,7 +9,7 @@ from cocos.text import Label, HTMLLabel
 
 from .select_effect import SelectEffectManager
 from ...utils.constants import C
-from ...utils.game import Klass, Type, Rarity
+from ...utils.game import Klass, Type, Rarity, Race
 from ...utils.package_io import all_cards
 from ...utils.draw.cocos_utils.basic import *
 from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test
@@ -188,16 +188,14 @@ class HandSprite(EntitySprite):
         if not self.static:
             action_status = self.entity.can_do_action()
             if action_status == self.entity.Inactive:
-                if self.status_border in self:
-                    self.remove(self.status_border)
+                self.try_remove(self.status_border)
             else:
                 if action_status == self.entity.Active:
                     color = self.CanActionColor
                 else:  # action_status == self.entity.Highlighted
                     color = self.HighlightColor
                 self.status_border.color = color
-                if self.status_border not in self:
-                    self.add(self.status_border, z=3)
+                self.try_add(self.status_border, z=3)
 
         self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
         self.front_sprites['mana-label'][0].element.color = self._get_cost_color()
@@ -212,6 +210,8 @@ class HandSprite(EntitySprite):
         _r_desc = self._render_desc(self._c_get('description'))
         if self.front_sprites['desc'][0].element.text != _r_desc:
             self.front_sprites['desc'][0].element.text = _r_desc
+
+        # [NOTE] Race sprite and label not updated.
 
     @property
     def is_front(self):
@@ -248,6 +248,7 @@ class HandSprite(EntitySprite):
         if not self.static:
             self.status_border = Rect(border_rect, self.CanActionColor, width=4)
 
+        # Main card image.
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
                              scale=1.0,)
         if self.static:
@@ -255,11 +256,13 @@ class HandSprite(EntitySprite):
         else:
             card_cls = self.entity
         main_image = try_load_image(card_cls.get_image_name())
-        image_sprite = None if main_image is None else Sprite(
-            main_image, pos(0.0, 0.02, base=self.SizeBase), scale=1.2,)
+        if main_image is not None:
+            image_sprite = Sprite(main_image, pos(0.0, 0.02, base=self.SizeBase), scale=1.2,)
+            self.front_sprites['image'] = [image_sprite, 0]
 
         mana_sprite = Sprite('Mana.png', pos(-0.85, 0.76, base=self.SizeBase), scale=0.9,)
 
+        # Mark, name and description.
         mark_image = try_load_image('Mark-{}.png'.format(self._c_get('package')))
         mark_sprite = None if mark_image is None else Sprite(mark_image, pos(0, -0.6, base=self.SizeBase), scale=1.0)
         name_label = Label(self._c_get('name'), pos(0, -0.08, base=self.SizeBase), font_size=21, anchor_x='center',
@@ -271,14 +274,21 @@ class HandSprite(EntitySprite):
         # must set font out of HTML.
         desc_label.element.set_style('font_name', C.UI.Cocos.Fonts.Description.Name)
 
+        # Race sprite and label.
+        race = self._c_get('race')
+        if race:
+            race_sprite = Sprite('Race.png', pos(0.02, -0.86, base=self.SizeBase), scale=1.0)
+            race_label = hs_style_label('，'.join(Race.Idx2Str[r] for r in race), pos(0.02, -0.86, base=self.SizeBase),
+                                        font_size=22, anchor_y='center')
+            self.front_sprites['race-sprite'] = [race_sprite, 3]
+            self.front_sprites['race-label'] = [race_label, 4]
+
         self.front_sprites.update({
             'main': [main_sprite, 1],
             'mana-sprite': [mana_sprite, 2],
             'name': [name_label, 3],
             'desc': [desc_label, 3],
         })
-        if image_sprite is not None:
-            self.front_sprites['image'] = [image_sprite, 0]
         if mark_sprite is not None:
             self.front_sprites['mark-sprite'] = [mark_sprite, 2]
         if self._c_get('type') != Type.Permanent:

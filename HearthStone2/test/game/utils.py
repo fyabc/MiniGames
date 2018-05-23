@@ -17,12 +17,12 @@ __author__ = 'fyabc'
 Seed = 1234
 
 ExampleDecks = [
-    Deck(klass=Klass.Str2Idx['Druid'], card_id_list=[
+    Deck(klass=Klass.Str2Idx['Mage'], card_id_list=[
         "6", "6", "6", "6",
         "11", "11", "11", "11",
         "10000", "10000", "10000", "10000",
         "30007", "30007", "30007", "30007",
-    ], name='Test Druid'),
+    ], name='Test Mage'),
     Deck(klass=Klass.Str2Idx['Hunter'], card_id_list=[
         "6", "6", "6", "6",
         "11", "11", "11", "11",
@@ -39,8 +39,8 @@ ExpectedEntities = [
         Zone.Secret: [],
         Zone.Graveyard: [],
         Zone.Weapon: [],
-        Zone.Hero: [0],
-        Zone.HeroPower: [0],
+        Zone.Hero: [2],
+        Zone.HeroPower: [2],
     },
     {
         Zone.Deck: ['11', '10000', '6', '30007', '10000', '30007', '11', '6', '10000', '30007', '10000', '6'],

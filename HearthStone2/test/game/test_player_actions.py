@@ -7,7 +7,6 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
-from MyHearthStone.game.player import Player
 from MyHearthStone.game import player_action as pa
 from MyHearthStone.game.events import standard as std_e
 from MyHearthStone.utils.game import Zone
@@ -36,6 +35,9 @@ class TestPlayerActions(unittest.TestCase):
 
     def tearDown(self):
         self.game.end_game()
+
+    def _printEventHistory(self):
+        print([e.__class__.__name__ for e in self.game.event_history])
 
     def _assertEventType(self, event_types):
         self.assertListEqual(event_types, [type(e) for e in self.game.event_history])
@@ -83,4 +85,36 @@ class TestPlayerActions(unittest.TestCase):
 
         self._assertEventType(self.game_start_events + expected_events + [
             std_e.OnPlaySpell, std_e.SpellBenderPhase, std_e.SpellText, std_e.Damage, std_e.AfterSpell,
+        ])
+
+    # TODO: Generate new cards directly to run tests.
+
+    def testUseHeroPower(self):
+        expected_events = self._turnEnds(2 * 1)
+
+        # Hero power == 稳固射击
+        hp = self.game.get_player(self.game.current_player).hero_power
+        self.assertEqual(hp.id, 1)
+
+        self.game.run_player_action(pa.UseHeroPower(self.game, None, self.game.current_player))
+
+        self.assertEqual(self.game.get_hero(1 - self.game.current_player).health, 28)
+        assert_events1 = self.game_start_events + expected_events + [
+            std_e.HeroPowerPhase, std_e.Damage, std_e.InspirePhase,
+        ]
+        self._assertEventType(assert_events1)
+
+        expected_events2 = self._turnEnds(1)
+
+        # Hero power == 火焰冲击
+        hp = self.game.get_player(self.game.current_player).hero_power
+        self.assertEqual(hp.id, 2)
+
+        # TODO
+        self.game.run_player_action(pa.UseHeroPower(
+            self.game, self.game.get_hero(1 - self.game.current_player), self.game.current_player))
+
+        self.assertEqual(self.game.get_hero(1 - self.game.current_player).health, 29)
+        self._assertEventType(assert_events1 + expected_events2 + [
+            std_e.HeroPowerPhase, std_e.Damage, std_e.InspirePhase,
         ])
