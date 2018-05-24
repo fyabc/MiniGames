@@ -7,10 +7,10 @@ Contains:
     Action checker      (used as ``can_do_action`` method)
     Target tester       (used as ``have_target`` method)
     Target checker      (used as ``check_target`` method)
-    Entity collector    (used to collect target entities in battlecry/deathrattle/run methods)
+    Entity collector    (used to collect target entities in battlecry/deathrattle/run methods, usually in AoEs)
 """
 
-from ...utils.game import Zone, Race
+from ...utils.game import Type, Zone, Race, order_of_play
 
 __author__ = 'fyabc'
 
@@ -99,7 +99,7 @@ def checker_my_hand(self, target):
     """The target checker of my hand.
 
     This checker is used for DIY cards that will select your hand as target.
-    Example: Battlecry: Select and discard a card from you hand.
+    Example: "Battlecry: Select and discard a card from you hand."
     """
     if target is None:
         return True
@@ -111,6 +111,99 @@ def checker_my_hand(self, target):
 
 
 # Entity collectors.
+
+def entity_collector(game, *pzts, oop=False, except_list=()):
+    """
+
+    :param game:
+    :param pzts:
+    :param oop:
+    :param except_list:
+    :return:
+    """
+
+    result = []
+
+    for player_id, zone, types in pzts:
+        if types == 'any':
+            result.extend(e for e in game.get_zone(zone, player_id))
+        else:
+            result.extend(e for e in game.get_zone(zone, player_id) if e.type in types)
+
+    for e in except_list:
+        try:
+            result.remove(e)
+        except ValueError:
+            pass
+
+    if oop:
+        result = order_of_play(result)
+    return result
+
+
+def collect_all(self, except_self, oop=False, except_list=()):
+    if except_self:
+        except_list += (self,)
+    return entity_collector(
+        self.game,
+        (0, Zone.Hero, (Type.Hero,)), (0, Zone.Play, (Type.Minion,)),
+        (1, Zone.Hero, (Type.Hero,)), (1, Zone.Play, (Type.Minion,)),
+        oop=oop,
+        except_list=except_list,
+    )
+
+
+def collect_all_minions(self, except_self, oop=False, except_list=()):
+    if except_self:
+        except_list += (self,)
+    return entity_collector(
+        self.game,
+        (0, Zone.Play, (Type.Minion,)), (1, Zone.Play, (Type.Minion,)),
+        oop=oop,
+        except_list=except_list,
+    )
+
+
+def collect_1p(self, except_self, oop=False, player_id=None, except_list=()):
+    """Collect one-player minions and hero.
+
+    :param self:
+    :param except_self:
+    :param oop:
+    :param player_id:
+    :param except_list:
+    :return:
+    """
+    player_id = self.player_id if player_id is None else player_id
+    if except_self:
+        except_list += (self,)
+    return entity_collector(
+        self.game,
+        (player_id, Zone.Hero, (Type.Hero,)), (player_id, Zone.Play, (Type.Minion,)),
+        oop=oop,
+        except_list=except_list,
+    )
+
+
+def collect_1p_minions(self, except_self, oop=False, player_id=None, except_list=()):
+    """Collect one-player minions.
+
+    :param self:
+    :param except_self:
+    :param oop:
+    :param player_id:
+    :param except_list:
+    :return:
+    """
+    player_id = self.player_id if player_id is None else player_id
+    if except_self:
+        except_list += (self,)
+    return entity_collector(
+        self.game,
+        (player_id, Zone.Play, (Type.Minion,)),
+        oop=oop,
+        except_list=except_list,
+    )
 
 
 __all__ = [
@@ -126,4 +219,10 @@ __all__ = [
     'checker_enemy_character',
     'checker_enemy_minion',
     'checker_my_hand',
+
+    'entity_collector',
+    'collect_all',
+    'collect_all_minions',
+    'collect_1p',
+    'collect_1p_minions',
 ]

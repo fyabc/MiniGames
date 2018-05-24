@@ -51,8 +51,7 @@ class 旋风斩(Spell):
     }
 
     def run(self, target, **kwargs):
-        targets = order_of_play(self.game.get_zone(Zone.Play, self.player_id) +
-                                self.game.get_zone(Zone.Play, 1 - self.player_id))
+        targets = ext.collect_all_minions(self, False, oop=True)
         return [std_events.AreaDamage(self.game, self, targets, [1 for _ in targets])]
 
 

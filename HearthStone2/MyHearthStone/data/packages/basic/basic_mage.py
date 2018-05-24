@@ -60,7 +60,7 @@ class 魔爆术(Spell):
     }
 
     def run(self, target, **kwargs):
-        targets = order_of_play(self.game.get_zone(Zone.Play, 1 - self.player_id))
+        targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
         return [std_events.AreaDamage(self.game, self, targets, [1 for _ in targets])]
 
 
@@ -100,7 +100,7 @@ class 烈焰风暴(Spell):
     }
 
     def run(self, target, **kwargs):
-        targets = order_of_play(self.game.get_zone(Zone.Play, 1 - self.player_id))
+        targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
         return [std_events.AreaDamage(self.game, self, targets, [4 for _ in targets])]
 
 

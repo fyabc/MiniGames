@@ -37,9 +37,6 @@ class 图腾召唤(HeroPower):
         my_minions = {m.id for m in self.game.get_zone(Zone.Play, self.player_id)}
         return list(self.BasicTotems.difference(my_minions))
 
-    def run(self, target, **kwargs):
-        return std_events.pure_summon_events(self.game, choice(self._candidates()), self.player_id, 'last')
-
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
         if super_result == self.Inactive:
@@ -54,6 +51,9 @@ class 图腾召唤(HeroPower):
                 msg_fn('I have already own all 4 basic totems!')
             return self.Inactive
         return super_result
+
+    def run(self, target, **kwargs):
+        return std_events.pure_summon_events(self.game, choice(self._candidates()), self.player_id, 'last')
 
 
 # 火舌图腾 (70000)
