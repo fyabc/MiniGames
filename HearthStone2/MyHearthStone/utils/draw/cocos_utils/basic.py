@@ -90,7 +90,7 @@ def try_load_image(name, image_part=None, image_size=None, default=None):
     """
 
     :param name: Image name.
-    :param image_part: 4-element tuple of image part: (x, y, width, height).
+    :param image_part: 4-element tuple of image part: (x, y, width, height), values in range [0.0, 1.0].
     :param image_size: 2-element tuple of image size: (width, height). If not given, get it from image data.
     :param default: Backup image name.
     :return: The loaded image, None if resource not found.

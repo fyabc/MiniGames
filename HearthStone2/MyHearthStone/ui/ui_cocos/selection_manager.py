@@ -175,7 +175,7 @@ class SelectionManager:
         elif self.state == self.A:
             attacker = self.sel['source']
             defender = sprite.entity
-            if not validate_defender(game, zone, player_id, attacker, defender, self._msg_fn):
+            if not attacker.check_defender(defender, self._msg_fn):
                 return False
             game.run_player_action(pa.ToAttack(game, attacker, defender))
             return True

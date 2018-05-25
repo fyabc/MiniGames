@@ -7,6 +7,7 @@ import itertools
 import random
 
 from .game_entity import IndependentEntity
+from .alive_mixin import AliveMixin
 from ..utils.constants import C
 from ..utils.game import Zone
 from ..utils.message import info, debug
@@ -277,7 +278,15 @@ class Player(IndependentEntity):
 
         Sheathe the weapon.
         Inactive secrets.
+
+        [NOTE]: Current player has not been changed in this function.
         """
+
+        # Update frozen status of alive entities.
+        for e in self.play + [self.hero]:
+            if isinstance(e, AliveMixin):
+                e.update_frozen_status()
+
         # TODO
 
     def start_turn(self):
@@ -287,6 +296,8 @@ class Player(IndependentEntity):
         Unsheathe the weapon.
         Active secrets.
         Refresh hero power, hero and all friendly minions.
+
+        [NOTE]: Current player has been changed in this function.
         """
 
         # Refresh mana.

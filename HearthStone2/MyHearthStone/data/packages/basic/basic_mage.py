@@ -65,6 +65,17 @@ class 魔爆术(Spell):
 
 
 # 寒冰箭 (30004)
+class 寒冰箭(Spell):
+    data = {
+        'id': 30004,
+        'type': 1, 'klass': 3, 'cost': 2,
+        'have_target': True,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.Damage(self.game, self, target, 3),
+                std_events.Freeze(self.game, self, target)]
+
 
 # 奥术智慧 (30005)
 class 奥术智慧(Spell):

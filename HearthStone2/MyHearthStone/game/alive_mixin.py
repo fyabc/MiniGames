@@ -27,6 +27,7 @@ class AliveMixin:
             'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
 
             # Attack related attributes.
+            # TODO: Make this more flexible?
             'n_attack': None,
             'n_total_attack': 1,
             'can_attack_hero': True,
@@ -95,6 +96,7 @@ class AliveMixin:
     n_attack = make_property('n_attack')
     n_total_attack = make_property('n_total_attack')
     can_attack_hero = make_property('can_attack_hero')
+    frozen = make_property('frozen', default=False)
 
     @property
     def attack(self):
@@ -128,6 +130,7 @@ class AliveMixin:
             return
 
         # This is a minion
+        # TODO: Process charge and rush in a more flexible way?
         if self.charge:
             self.n_attack = 0
             return
@@ -140,6 +143,21 @@ class AliveMixin:
     def reset_attack_status(self):
         self.n_attack = 0
         self.can_attack_hero = True
+
+    def update_frozen_status(self):
+        """Update the frozen status of this entity.
+
+        Copied from Advanced Rulebook <https://hearthstone.gamepedia.com/Freeze#Duration> ::
+
+            After a player ends their turn (just before the next player's Start of Turn Phase),
+            un-Freeze all characters they control that are Frozen, don't have summoning sickness
+            (or do have Charge) and have not attacked that turn.
+        """
+        if not self.frozen:
+            return
+        # TODO: Need test.
+        if self.attack_status != 'sleep' and self.n_attack == 0:
+            self.frozen = False
 
     # Other attributes.
     divine_shield = make_property('divine_shield', default=False)
@@ -160,7 +178,13 @@ class AliveMixin:
 
     # Aura related.
 
+    # Frontend related.
+
     def can_do_action(self, msg_fn=None):
+        """This method only handle attack actions.
+
+        See <https://hearthstone.gamepedia.com/Attack#Choosing_an_attacker> for more details.
+        """
         super_result = super().can_do_action(msg_fn=msg_fn)
         if super_result == self.Inactive:
             return super_result
@@ -172,6 +196,25 @@ class AliveMixin:
         type_ = self.type
         # If in play, test if can attack.
         attack_status = self.attack_status
+
+        # 1. A character with an Attack of 0 cannot attack.
+        if self.attack <= 0:
+            if msg_fn:
+                msg_fn('The character without attack value cannot attack!')
+            return self.Inactive
+
+        # 2. A minion with the Can't attack ability cannot attack.
+        # TODO
+
+        # 3. A character that is Frozen due to a Freeze effect cannot attack.
+        if self.frozen:
+            if msg_fn:
+                msg_fn('The frozen character cannot attack!')
+            return self.Inactive
+
+        # 4. When a minion enters the battlefield or changes controller it is exhausted
+        # (it is also said to have "summoning sickness"): an exhausted minion cannot attack
+        # (and has a "zzz" text floating up from the portrait), unless it has Charge.
         if attack_status == 'sleep':
             if msg_fn:
                 if type_ == Type.Hero:
@@ -179,25 +222,61 @@ class AliveMixin:
                 else:
                     msg_fn('This minion is not ready!')
             return self.Inactive
-        else:
-            if self.attack <= 0:
-                if msg_fn:
-                    if type_ == Type.Hero:
-                        msg_fn('I cannot attack!')
-                    else:
-                        msg_fn('This minion cannot attack!')
-                return self.Inactive
-            else:
-                if attack_status == 'exhausted':
-                    if msg_fn:
-                        if type_ == Type.Hero:
-                            msg_fn('I have attacked!')
-                        else:
-                            msg_fn('This minion has attacked!')
-                    return self.Inactive
+
+        # 5. A character that already attacked its maximum number of times for that turn cannot attack again.
+        if attack_status == 'exhausted':
+            if msg_fn:
+                if type_ == Type.Hero:
+                    msg_fn('I have attacked!')
                 else:
-                    assert attack_status == 'ready'
+                    msg_fn('This minion has attacked!')
+            return self.Inactive
+        assert attack_status == 'ready'
         return super_result
+
+    def check_defender(self, defender, msg_fn=None):
+        """Check the validity of the defender.
+
+        See <https://hearthstone.gamepedia.com/Attack#Choosing_a_defender> for more details.
+        """
+        player_id, zone = defender.player_id, defender.zone
+
+        if player_id == self.game.current_player:
+            if msg_fn:
+                msg_fn('Must select an enemy!')
+            return False
+        if zone not in (Zone.Play, Zone.Hero) or not isinstance(defender, AliveMixin):
+            if msg_fn:
+                msg_fn('This is not a valid target!')
+            return False
+
+        # 1. A Stealthed minion cannot be targeted by enemy attacks.
+        if defender.stealth:
+            if msg_fn:
+                msg_fn('Character with stealth cannot be attacked!')
+            return False
+
+        # 2. An Immune hero or minion cannot be targeted by enemy attacks.
+        if defender.immune:
+            if msg_fn:
+                msg_fn('Character with immune cannot be attacked!')
+
+        # 3. If the opponent has one or more characters with Taunt on the battlefield,
+        # the player will only be able to command melee attacks at one of them.
+        if not defender.taunt:
+            if any(getattr(e, 'taunt', False) for e in (
+                    self.game.get_zone(Zone.Play, player_id) + self.game.get_zone(Zone.Hero, player_id))):
+                if msg_fn:
+                    msg_fn('A character with taunt is in the way!')
+                return False
+
+        # 4. If the attacker has the Can't attack heroes ability, the enemy hero cannot be selected as the defender.
+        if zone == Zone.Hero and not self.can_attack_hero:
+            if msg_fn:
+                msg_fn('Cannot attack hero!')
+            return False
+
+        return True
 
 
 __all__ = [

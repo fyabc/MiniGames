@@ -70,7 +70,7 @@ DIY cards / heroes / enchantments can add 'D' or other prefixes before the ID fo
 """
 
 from MyHearthStone import ext
-from MyHearthStone.ext import Minion, Spell, Hero, Enchantment
+from MyHearthStone.ext import Minion, Spell, Enchantment
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import enc_common
@@ -496,4 +496,18 @@ blank_minion({
     'id': 46,
     'rarity': -1, 'cost': 1, 'attack': 2, 'health': 1,
     'race': [Race.Mech], 'derivative': True,
+})
+
+# 绵羊 (47)
+blank_minion({
+    'id': 47,
+    'rarity': -1, 'cost': 1, 'attack': 1, 'health': 1,
+    'race': [Race.Beast], 'derivative': True,
+})
+
+# 青蛙 (48)
+blank_minion({
+    'id': 48,
+    'rarity': -1, 'cost': 0, 'attack': 0, 'health': 1,
+    'race': [Race.Beast], 'taunt': True, 'derivative': True,
 })

@@ -17,8 +17,6 @@ from ...utils.draw.cocos_utils.primitives import Rect
 
 __author__ = 'fyabc'
 
-# TODO: Add race tags sprite.
-
 
 class EntitySprite(ActiveMixin, cocosnode.CocosNode):
     """ABC for entity sprites.
@@ -170,49 +168,6 @@ class HandSprite(EntitySprite):
         else:
             return getattr(self.entity, key)
 
-    def update_content(self, **kwargs):
-        super().update_content(**kwargs)
-        self.is_front = kwargs.pop('is_front', False)
-
-        # Set selected and unselected effects.
-        self.sel_mgr.update_kwargs(kwargs.pop('sel_mgr_kwargs', {}))
-        _sentinel = object()
-        sel_eff = kwargs.pop('selected_effect', _sentinel)
-        if sel_eff != _sentinel:
-            self.selected_effect = sel_eff
-        unsel_eff = kwargs.pop('unselected_effect', _sentinel)
-        if unsel_eff != _sentinel:
-            self.unselected_effect = unsel_eff
-        self.sel_mgr.set_sel_eff()
-
-        if not self.static:
-            action_status = self.entity.can_do_action()
-            if action_status == self.entity.Inactive:
-                self.try_remove(self.status_border)
-            else:
-                if action_status == self.entity.Active:
-                    color = self.CanActionColor
-                else:  # action_status == self.entity.Highlighted
-                    color = self.HighlightColor
-                self.status_border.color = color
-                self.try_add(self.status_border, z=3)
-
-        self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
-        self.front_sprites['mana-label'][0].element.color = self._get_cost_color()
-        if self._c_get('type') in (Type.Minion, Type.Weapon):
-            self.front_sprites['attack-label'][0].element.text = str(self._c_get('attack'))
-            self.front_sprites['health-label'][0].element.text = str(self._c_get('health'))
-            self.front_sprites['attack-label'][0].element.color = self._get_attack_color()
-            self.front_sprites['health-label'][0].element.color = self._get_health_color()
-        elif self._c_get('type') == Type.HeroCard:
-            self.front_sprites['armor-label'][0].element.text = str(self._c_get('armor'))
-        self.front_sprites['name'][0].element.text = self._c_get('name')
-        _r_desc = self._render_desc(self._c_get('description'))
-        if self.front_sprites['desc'][0].element.text != _r_desc:
-            self.front_sprites['desc'][0].element.text = _r_desc
-
-        # [NOTE] Race sprite and label not updated.
-
     @property
     def is_front(self):
         return self._is_front
@@ -239,6 +194,27 @@ class HandSprite(EntitySprite):
 
     def toggle_side(self):
         self.is_front = not self._is_front
+
+    @staticmethod
+    def _render_desc(desc: str, **kwargs) -> str:
+        format_map = {
+            'desc': desc,
+            # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
+            'font_size': int(kwargs.pop('font_size', 5)),
+            # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.
+            'color': kwargs.pop('color', 'black'),
+        }
+        return '<center><font size="{font_size}" color="{color}">{desc}</font></center>'.format_map(format_map)
+
+    def _get_health_color(self):
+        if self.static:
+            return Colors['white']
+        return super()._get_health_color()
+
+    def _get_attack_color(self):
+        if self.static:
+            return Colors['white']
+        return super()._get_attack_color()
 
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
@@ -350,26 +326,48 @@ class HandSprite(EntitySprite):
                 'armor-label': [armor_label, 3],
             })
 
-    @staticmethod
-    def _render_desc(desc: str, **kwargs) -> str:
-        format_map = {
-            'desc': desc,
-            # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
-            'font_size': int(kwargs.pop('font_size', 5)),
-            # Only support color names and hex colors, see in `pyglet.text.DocumentLabel`.
-            'color': kwargs.pop('color', 'black'),
-        }
-        return '<center><font size="{font_size}" color="{color}">{desc}</font></center>'.format_map(format_map)
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
+        self.is_front = kwargs.pop('is_front', False)
 
-    def _get_health_color(self):
-        if self.static:
-            return Colors['white']
-        return super()._get_health_color()
+        # Set selected and unselected effects.
+        self.sel_mgr.update_kwargs(kwargs.pop('sel_mgr_kwargs', {}))
+        _sentinel = object()
+        sel_eff = kwargs.pop('selected_effect', _sentinel)
+        if sel_eff != _sentinel:
+            self.selected_effect = sel_eff
+        unsel_eff = kwargs.pop('unselected_effect', _sentinel)
+        if unsel_eff != _sentinel:
+            self.unselected_effect = unsel_eff
+        self.sel_mgr.set_sel_eff()
 
-    def _get_attack_color(self):
-        if self.static:
-            return Colors['white']
-        return super()._get_attack_color()
+        if not self.static:
+            action_status = self.entity.can_do_action()
+            if action_status == self.entity.Inactive:
+                self.try_remove(self.status_border)
+            else:
+                if action_status == self.entity.Active:
+                    color = self.CanActionColor
+                else:  # action_status == self.entity.Highlighted
+                    color = self.HighlightColor
+                self.status_border.color = color
+                self.try_add(self.status_border, z=3)
+
+        self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
+        self.front_sprites['mana-label'][0].element.color = self._get_cost_color()
+        if self._c_get('type') in (Type.Minion, Type.Weapon):
+            self.front_sprites['attack-label'][0].element.text = str(self._c_get('attack'))
+            self.front_sprites['health-label'][0].element.text = str(self._c_get('health'))
+            self.front_sprites['attack-label'][0].element.color = self._get_attack_color()
+            self.front_sprites['health-label'][0].element.color = self._get_health_color()
+        elif self._c_get('type') == Type.HeroCard:
+            self.front_sprites['armor-label'][0].element.text = str(self._c_get('armor'))
+        self.front_sprites['name'][0].element.text = self._c_get('name')
+        _r_desc = self._render_desc(self._c_get('description'))
+        if self.front_sprites['desc'][0].element.text != _r_desc:
+            self.front_sprites['desc'][0].element.text = _r_desc
+
+        # [NOTE] Race sprite and label not updated.
 
 
 class MinionSprite(EntitySprite):
@@ -394,6 +392,7 @@ class MinionSprite(EntitySprite):
         # TODO: Windfury sprite, etc.
         self.divine_shield_sprite = None
         self.taunt_sprite = None
+        self.frozen_sprite = None
         self.deathrattle_sprite = None
         self.trigger_sprite = None
 
@@ -402,37 +401,6 @@ class MinionSprite(EntitySprite):
         self.related_card = None
 
         super().__init__(minion, position, scale, **kwargs)
-
-    def update_content(self, **kwargs):
-        super().update_content(**kwargs)
-
-        action_status = self.entity.can_do_action()
-        if action_status == self.entity.Inactive:
-            color = self.CommonColor
-        elif action_status == self.entity.Active:
-            color = self.CanActionColor
-        else:   # action_status == self.entity.Highlighted
-            color = self.HighlightColor
-        self.status_border.color = color
-
-        if self.entity.type == Type.Minion:
-            if self.image_sprite is not None:
-                self.image_sprite.opacity = self._stealth_opacity()
-            self.atk_label.element.text = str(self.entity.attack)
-            self.atk_label.element.color = self._get_attack_color()
-            self.health_label.element.text = str(self.entity.health)
-            self.health_label.element.color = self._get_health_color()
-            self._update_attr_sprite('divine_shield', self._get_ds_sprite, z=6)
-
-            # TODO: Set taunt opacity to 50 if this minion is negated_taunt.
-            self._update_attr_sprite('taunt', self._get_taunt_sprite, z=0)
-
-            # TODO: Only show one sprite at mid-bottom when more than one available (show which?).
-            self._update_attr_sprite('deathrattle_fns', self._get_dr_sprite, z=5)
-
-        else:   # self.entity.type == Type.Permanent
-            # Anything to do?
-            pass
 
     def _get_ds_sprite(self):
         if self.divine_shield_sprite is None:
@@ -452,6 +420,14 @@ class MinionSprite(EntitySprite):
             self.taunt_sprite.scale_x = self.ImageScale * self.ImagePart[2] * 5.472222
             self.taunt_sprite.scale_y = self.ImageScale * self.ImagePart[3] * 6.140351
         return self.taunt_sprite
+
+    def _get_frozen_sprite(self):
+        if self.frozen_sprite is None:
+            self.frozen_sprite = Sprite(
+                'Frozen.png', pos(0.00, 0.00, base=self.SizeBase),
+                scale=0.55, opacity=200,
+            )
+        return self.frozen_sprite
 
     def _get_dr_sprite(self):
         if self.deathrattle_sprite is None:
@@ -492,6 +468,39 @@ class MinionSprite(EntitySprite):
         else:   # self.entity.type == Type.Permanent
             pass
 
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
+
+        action_status = self.entity.can_do_action()
+        if action_status == self.entity.Inactive:
+            color = self.CommonColor
+        elif action_status == self.entity.Active:
+            color = self.CanActionColor
+        else:   # action_status == self.entity.Highlighted
+            color = self.HighlightColor
+        self.status_border.color = color
+
+        if self.entity.type == Type.Minion:
+            if self.image_sprite is not None:
+                self.image_sprite.opacity = self._stealth_opacity()
+            self.atk_label.element.text = str(self.entity.attack)
+            self.atk_label.element.color = self._get_attack_color()
+            self.health_label.element.text = str(self.entity.health)
+            self.health_label.element.color = self._get_health_color()
+            self._update_attr_sprite('divine_shield', self._get_ds_sprite, z=6)
+
+            # TODO: Set taunt opacity to 50 if this minion is negated_taunt.
+            self._update_attr_sprite('taunt', self._get_taunt_sprite, z=0)
+
+            self._update_attr_sprite('frozen', self._get_frozen_sprite, z=5)
+
+            # TODO: Only show one sprite at mid-bottom when more than one available (show which?).
+            self._update_attr_sprite('deathrattle_fns', self._get_dr_sprite, z=5)
+
+        else:   # self.entity.type == Type.Permanent
+            # Anything to do?
+            pass
+
 
 class HeroSprite(EntitySprite):
     """The hero sprite."""
@@ -509,8 +518,17 @@ class HeroSprite(EntitySprite):
         self.health_label = None
         self.armor_sprite = None
         self.armor_label = None
+        self.frozen_sprite = None
 
         super().__init__(hero, position, scale, **kwargs)
+
+    def _get_frozen_sprite(self):
+        if self.frozen_sprite is None:
+            self.frozen_sprite = Sprite(
+                'Frozen.png', pos(-0.00, 0.10, base=self.SizeBase),
+                scale=1.0, opacity=200,
+            )
+        return self.frozen_sprite
 
     def _build_components(self):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
@@ -550,6 +568,8 @@ class HeroSprite(EntitySprite):
             self.armor_label.element.text = str(armor)
             self.armor_label.visible = True
             self.armor_sprite.visible = True
+
+        self._update_attr_sprite('frozen', self._get_frozen_sprite, z=3)
 
 
 class HeroPowerSprite(EntitySprite):
