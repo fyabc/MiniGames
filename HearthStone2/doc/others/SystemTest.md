@@ -34,3 +34,10 @@
     2. Play 暴风城勇士 (6/6), M -> (2/2)
     3. Play 受祝福的勇士 on M -> (3/2)
     4. Play 受祝福的勇士 on M -> (5/2)
+
+6. Weapon Equippments
+    1. 公正之剑 + 伊利丹怒风 + 公正之剑
+    2. 生成一个 2/1 + (+1/+1) + (+1/+1) 的埃辛诺斯之焰
+
+    > 解释：在装备新武器时，旧武器仍存在，在一个阶段中两个武器同时存在于场上。
+    > 见<https://hearthstone.gamepedia.com/Advanced_rulebook#Playing_a_weapon>.

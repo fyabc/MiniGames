@@ -131,15 +131,114 @@ class AfterSpell(AfterPlay):
 
 
 class OnPlayWeapon(OnPlay):
-    pass
+    def __init__(self, game, weapon, target, player_id=None):
+        super().__init__(game, weapon)
+        self.target = target
+        self._player_id = player_id
+
+    player_id = dynamic_pid_prop()
+
+    @property
+    def weapon(self):
+        return self.owner
+
+    def _repr(self):
+        return super()._repr(P=self.player_id, weapon=self.owner, target=self.target)
+
+    def do(self):
+        """Do the OnPlayWeapon phase.
+
+        The card is removed from your hand and its Mana cost is paid. The card enters Play as a weapon.
+        If it targets, the target is remembered.
+        All triggers on playing a card Queue and resolve here.
+
+        :return: new event list.
+        """
+        player = self.game.get_player(self.player_id)
+        player.spend_mana(self.weapon.cost)
+
+        # [NOTE]: move it to `Game.move`?
+        self.weapon.oop = self.game.inc_oop()
+
+        # [NOTE]: Insert the new weapon into the first one (index 0).
+        _, status = self.game.move(self.player_id, Zone.Hand, self.weapon, self.player_id, Zone.Weapon, 0)
+
+        return status['events']
+
+
+def destroy_old_weapons(game, player_id):
+    """Destroy old weapons."""
+    for i, weapon in enumerate(game.get_zone(Zone.Weapon, player_id)):
+        if i == 0:
+            continue
+        weapon.to_be_destroyed = True
 
 
 class EquipWeapon(Phase):
-    pass
+    def __init__(self, game, weapon, target, player_id, is_played=True):
+        super().__init__(game, weapon)
+        self.target = target
+        self.player_id = player_id
+        self.is_played = is_played
+
+    @property
+    def weapon(self):
+        return self.owner
+
+    def _repr(self):
+        return super()._repr(P=self.player_id, weapon=self.owner, target=self.target, is_played=self.is_played)
+
+    def do(self):
+        """Do the EquipWeapon phase.
+
+        The Battlecry of your new weapon (if any) is resolved. Then Buccaneer triggers.
+        Finally your old weapon is destroyed and removed from play.
+        The Deathrattle of your old weapon (if any) and Grave Shambler are resolved in the order of play.
+        """
+        bc_events = self.weapon.run_battlecry(self.target) if self.is_played else []
+
+        destroy_old_weapons(self.game, self.player_id)
+
+        return bc_events
 
 
 class AfterPlayWeapon(AfterPlay):
-    pass
+    def __init__(self, game, weapon, player_id):
+        super().__init__(game, weapon)
+        self.player_id = player_id
+
+    @property
+    def weapon(self):
+        return self.owner
+
+    def _repr(self):
+        return super()._repr(P=self.player_id, weapon=self.owner)
+
+    def do(self):
+        return []
+
+
+def pure_equip_events(game, weapon, to_player, from_player=None, from_zone=None):
+    """Utility for merely equip a weapon.
+
+    :param game:
+    :param weapon:
+    :param to_player:
+    :param from_player:
+    :param from_zone:
+    :return:
+    """
+
+    if from_zone is None:
+        weapon, status = game.generate(to_player, Zone.Weapon, 0, weapon)
+    else:
+        weapon, status = game.move(from_player, from_zone, weapon, to_player, Zone.Weapon, 0)
+    assert status['success'], 'The equipment of weapon must succeed'
+
+    # [NOTE]: move it to ``Game.move``?
+    weapon.oop = game.inc_oop()
+
+    return [EquipWeapon(game, weapon, None, to_player, is_played=False)]
 
 
 class Summon(Event):

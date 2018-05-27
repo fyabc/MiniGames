@@ -425,11 +425,13 @@ class Game:
             for location, e in enumerate(player.play):
                 if not e.alive:
                     death_minion.append([e, location])
-            if player.weapon is not None and not player.weapon.alive:
-                deaths.append([player.weapon, None])
-            # Special case for hero: if already lose (play_state = False), do not add to deaths.
-            if player.hero.play_state is True and not player.hero.alive:
-                deaths.append([player.hero, None])
+            for weapon in player.get_zone(Zone.Weapon):
+                if not weapon.alive:
+                    deaths.append([weapon, None])
+            # Special case for hero: if already lose (``hero.play_state == False``), do not add to deaths.
+            for hero in player.get_zone(Zone.Hero):
+                if hero.play_state is True and not hero.alive:
+                    deaths.append([hero, None])
 
         # Recalculate minion death locations by order-of-play.
         # TODO: Need test here.

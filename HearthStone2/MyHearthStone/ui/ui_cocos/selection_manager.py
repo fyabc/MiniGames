@@ -160,7 +160,12 @@ class SelectionManager:
         elif self.state == self.WC:
             return False
         elif self.state == self.WT:
-            return False
+            card = self.sel['source']
+            target = sprite.entity
+            if not validate_target(card, target, self._msg_fn):
+                return False
+            game.run_player_action(pa.PlayWeapon(game, card, target, card.player_id))
+            return True
         elif self.state == self.HC:
             return False
         elif self.state == self.HT:
@@ -243,9 +248,14 @@ class SelectionManager:
         elif self.state == self.MT2:
             return False
         elif self.state == self.WC:
-            return False
+            card = self.sel['source']
+            if not validate_target(card, None, self._msg_fn):
+                return True
+            game.run_player_action(pa.PlayWeapon(game, card, None, card.player_id))
+            return True
         elif self.state == self.WT:
-            return False
+            self._msg_fn('Must select a target!')
+            return True
         elif self.state == self.HC:
             return False
         elif self.state == self.HT:

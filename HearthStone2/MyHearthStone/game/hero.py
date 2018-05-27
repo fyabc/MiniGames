@@ -53,6 +53,13 @@ class Hero(AliveMixin, IndependentEntity):
     anti_magic = make_property('anti_magic')
     deathrattle_fns = make_property('deathrattle_fns')
 
+    def _aura_update_before(self):
+        super()._aura_update_before()
+        # Add weapon attack. FIXME: Is this correct?
+        weapon = self.game.get_weapon(self.player_id)
+        if weapon is not None and not weapon.sheathed:
+            self.aura_tmp['attack'] += weapon.attack
+
     def run_deathrattle(self, **kwargs):
         """Run the deathrattle. Implemented in subclasses.
 

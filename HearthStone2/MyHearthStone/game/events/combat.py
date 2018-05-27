@@ -14,7 +14,7 @@ Sequence details: See https://hearthstone.gamepedia.com/Advanced_rulebook#Combat
 
 from .event import Event, Phase
 from .damage import Damage
-from .misc import LoseStealth
+from .misc import LoseStealth, LoseDurability
 from ...utils.constants import version_le
 
 __author__ = 'fyabc'
@@ -88,6 +88,8 @@ class Combat(Phase):
     def do(self):
         """Do the combat phase.
 
+        Damage is dealt simultaneously in the order (attack, counterattack) and resolved.
+        The attacker's weapon loses durability (unless prevented due to the weapon being Immune).
         Increase attack number of attacker (where?).
 
         todo:
@@ -98,10 +100,18 @@ class Combat(Phase):
 
         a.inc_n_attack()
 
-        return [
+        result = [
             Damage(g, a, d, a.attack),
             Damage(g, d, a, d.attack),
             AfterAttack(self.game, self.attack_event)]
+
+        atk_pid = self.attacker.player_id
+        if a == self.game.get_hero(atk_pid):
+            weapon = self.game.get_weapon(atk_pid)
+            if weapon is not None:
+                result.insert(2, LoseDurability(self.game, weapon, 1))
+
+        return result
 
 
 class ProposedAttack(Event):

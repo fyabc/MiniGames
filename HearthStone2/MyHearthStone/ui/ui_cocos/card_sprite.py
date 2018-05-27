@@ -46,6 +46,9 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
         self.activated_border = None
         self._is_activated = False
 
+        # The border that indicate the status of this sprite (inactive, active, highlighted).
+        self.status_border = None
+
         self._build_components()
 
     get_box = None
@@ -107,6 +110,23 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
             return Colors['green']
         return Colors['white']
 
+    def _create_status_border(self, border_rect, width, z):
+        self.status_border = Rect(border_rect, self.CanActionColor, width=width)
+        self.status_border.visible = False
+        self.add(self.status_border, z=z)
+
+    def _update_status_border(self):
+        action_status = self.entity.can_do_action()
+        if action_status == self.entity.Inactive:
+            self.status_border.visible = False
+        else:
+            if action_status == self.entity.Active:
+                color = self.CanActionColor
+            else:  # action_status == self.entity.Highlighted
+                color = self.HighlightColor
+            self.status_border.color = color
+            self.status_border.visible = True
+
     def _update_attr_sprite(self, attr_name, get_fn, z):
         if getattr(self.entity, attr_name):
             sprite = get_fn()
@@ -144,9 +164,6 @@ class HandSprite(EntitySprite):
         # Dict of front and back labels: name -> [sprite/label, z-order].
         self.front_sprites = {}
         self.back_sprites = {}
-
-        # The border that indicate the status of this sprite (inactive, active, highlighted).
-        self.status_border = None
 
         super().__init__(card, position, scale, **kwargs)
 
@@ -222,7 +239,7 @@ class HandSprite(EntitySprite):
         self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
 
         if not self.static:
-            self.status_border = Rect(border_rect, self.CanActionColor, width=4)
+            self._create_status_border(border_rect, z=3, width=4)
 
         # Main card image.
         main_sprite = Sprite('{}-{}.png'.format(Klass.Idx2Str[self._c_get('klass')], self._c_get('type')), (0, 0),
@@ -342,16 +359,7 @@ class HandSprite(EntitySprite):
         self.sel_mgr.set_sel_eff()
 
         if not self.static:
-            action_status = self.entity.can_do_action()
-            if action_status == self.entity.Inactive:
-                self.try_remove(self.status_border)
-            else:
-                if action_status == self.entity.Active:
-                    color = self.CanActionColor
-                else:  # action_status == self.entity.Highlighted
-                    color = self.HighlightColor
-                self.status_border.color = color
-                self.try_add(self.status_border, z=3)
+            self._update_status_border()
 
         self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
         self.front_sprites['mana-label'][0].element.color = self._get_cost_color()
@@ -380,8 +388,6 @@ class MinionSprite(EntitySprite):
     SizeBase = Size // 2  # Coordinate base of children sprites.
 
     def __init__(self, minion, position=(0, 0), scale=1.0, **kwargs):
-        # The border that indicate the status of this sprite (inactive, active, highlighted).
-        self.status_border = None
         self.image_sprite = None
         self.atk_label = None
         self.health_label = None
@@ -445,8 +451,8 @@ class MinionSprite(EntitySprite):
         border_rect.center = (0, 0)
         self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
 
-        self.status_border = Rect(border_rect, self.CommonColor, width=2)
-        self.add(self.status_border, z=3)
+        self._create_status_border(border_rect, z=3, width=2)
+        self.status_border.visible = True
 
         # Get the part of card image.
         image = try_load_image(self.entity.get_image_name(), image_part=self.ImagePart, default='Minion-Skeleton.png')
@@ -513,7 +519,6 @@ class HeroSprite(EntitySprite):
 
     def __init__(self, hero, position=(0, 0), scale=1.0, **kwargs):
         # The border that indicate the status of this sprite (inactive, active, highlighted).
-        self.status_border = None
         self.attack_label = None
         self.health_label = None
         self.armor_sprite = None
@@ -534,7 +539,7 @@ class HeroSprite(EntitySprite):
         border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
         border_rect.center = (0, 0)
         self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
-        # TODO: Status border
+        self._create_status_border(border_rect, width=2, z=4)
 
         # Hero image (background and blank foreground).
         image = try_load_image('Hero-{}.png'.format(self.entity.id), image_part=self.ImagePart)
@@ -544,6 +549,13 @@ class HeroSprite(EntitySprite):
         self.add(hs_style_label(str(self.entity.name), pos(0.0, -0.59, base=self.SizeBase),
                                 font_size=14, anchor_y='center'), z=2)
 
+        self.attack_sprite = Sprite('Atk.png', pos(-0.75, -0.34, base=self.SizeBase), scale=1.0)
+        self.attack_sprite.visible = False
+        self.add(self.attack_sprite, z=2)
+        self.attack_label = hs_style_label('0', pos(-0.687, -0.34, base=self.SizeBase),
+                                           font_size=46, anchor_y='center', color=Colors['white'])
+        self.attack_label.visible = False
+        self.add(self.attack_label, z=3)
         self.health_label = hs_style_label(str(self.entity.health), pos(0.73, -0.34, base=self.SizeBase),
                                            font_size=46, anchor_y='center', color=self._get_health_color())
         self.add(self.health_label, z=2)
@@ -557,6 +569,12 @@ class HeroSprite(EntitySprite):
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
+
+        attack = self.entity.attack
+        self.attack_label.element.text = str(attack)
+        self.attack_label.visible = attack > 0
+        self.attack_sprite.visible = attack > 0
+
         self.health_label.element.text = str(self.entity.health)
         self.health_label.element.color = self._get_health_color()
 
@@ -570,6 +588,7 @@ class HeroSprite(EntitySprite):
             self.armor_sprite.visible = True
 
         self._update_attr_sprite('frozen', self._get_frozen_sprite, z=3)
+        self._update_status_border()
 
 
 class HeroPowerSprite(EntitySprite):
@@ -584,7 +603,7 @@ class HeroPowerSprite(EntitySprite):
     def __init__(self, hero_power, position=(0, 0), scale=1.0, **kwargs):
         self.common_border = None
         self.hp_available = None
-        self.hp_image = None
+        self.hp_sprite = None
         self.hp_exhausted = None
 
         super().__init__(hero_power, position, scale, **kwargs)
@@ -595,11 +614,11 @@ class HeroPowerSprite(EntitySprite):
         self.activated_border = Rect(border_rect, self.SelectedColor, width=4)
 
         # TODO: Change this into a circle?
-        self.status_border = Rect(border_rect, self.CanActionColor, width=2)
+        self._create_status_border(border_rect, width=2, z=3)
 
         self.hp_available = Sprite('HeroPower.png', pos(0, 0.05, base=self.SizeBase), scale=1.0)
         image = try_load_image('HeroPower-{}.png'.format(self.entity.id), image_part=self.ImagePart)
-        self.hp_image = Sprite(image, scale=self.ImageScale)
+        self.hp_sprite = Sprite(image, scale=self.ImageScale)
         self.hp_cost_label = hs_style_label(str(self.entity.cost), pos(0, 0.633, base=self.SizeBase), font_size=24)
         self.hp_exhausted = Sprite('HeroPowerExhausted.png', pos(0, 0, base=self.SizeBase), scale=1.0)
 
@@ -608,27 +627,83 @@ class HeroPowerSprite(EntitySprite):
 
         action_status = self.entity.can_do_action()
         if action_status == self.entity.Inactive:
-            self.try_remove(self.status_border)
+            self.status_border.visible = False
         else:
             if action_status == self.entity.Active:
                 color = self.CanActionColor
             else:  # action_status == self.entity.Highlighted
                 color = self.HighlightColor
             self.status_border.color = color
-            self.try_add(self.status_border, z=3)
+            self.status_border.visible = True
 
         self.hp_cost_label.element.text = str(self.entity.cost)
         self.hp_cost_label.element.color = self._get_cost_color()
         if self.entity.exhausted:
             self.try_remove(self.hp_available)
-            self.try_remove(self.hp_image)
+            self.try_remove(self.hp_sprite)
             self.try_remove(self.hp_cost_label)
             self.try_add(self.hp_exhausted, z=1)
         else:
             self.try_add(self.hp_available, z=2)
-            self.try_add(self.hp_image, z=1)
+            self.try_add(self.hp_sprite, z=1)
             self.try_add(self.hp_cost_label, z=3)
             self.try_remove(self.hp_exhausted)
+
+
+class WeaponSprite(EntitySprite):
+    """The weapon sprite."""
+
+    Size = euclid.Vector2(120, 120)  # Weapon size (original).
+    SizeBase = Size // 2  # Coordinate base of children sprites.
+
+    ImagePart = 0.22, 0.50, 0.58, 0.38
+    ImageScale = 0.5
+
+    def __init__(self, weapon, position=(0, 0), scale=1.0, **kwargs):
+        self.border_sprite = None
+        self.main_sprite = None
+        self.sheathed_sprite = None
+        self.attack_sprite, self.attack_label = None, None
+        self.health_sprite, self.health_label = None, None
+
+        super().__init__(weapon, position, scale, **kwargs)
+
+    def _build_components(self):
+        image = try_load_image(self.entity.get_image_name(), image_part=self.ImagePart)
+        if image is not None:
+            self.main_sprite = Sprite(image, pos(0.0, 0.0, base=self.SizeBase), scale=self.ImageScale)
+            self.add(self.main_sprite, z=0)
+        self.border_sprite = Sprite('Weapon.png', pos(0.0, 0.0, base=self.SizeBase), scale=0.60)
+        self.add(self.border_sprite, z=1)
+        self.attack_sprite = Sprite('WeaponAtk.png', pos(-0.58, -0.49, base=self.SizeBase), scale=0.30)
+        self.add(self.attack_sprite, z=2)
+        self.attack_label = hs_style_label('0', pos(-0.58, -0.41, base=self.SizeBase), font_size=24, anchor_y='center')
+        self.add(self.attack_label, z=3)
+        self.health_sprite = Sprite('WeaponHealth.png', pos(0.60, -0.44, base=self.SizeBase), scale=0.32)
+        self.add(self.health_sprite, z=2)
+        self.health_label = hs_style_label('0', pos(0.59, -0.40, base=self.SizeBase), font_size=24, anchor_y='center')
+        self.add(self.health_label, z=3)
+
+        self.sheathed_image = Sprite('WeaponSheathed.png', pos(0.0, 0.0, base=self.SizeBase), scale=0.60)
+        self.add(self.sheathed_image, z=1)
+
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
+
+        self.attack_label.element.text = str(self.entity.attack)
+        self.attack_label.element.color = self._get_attack_color()
+        self.health_label.element.text = str(self.entity.health)
+        self.health_label.element.color = self._get_health_color()
+        if self.entity.sheathed:
+            if self.main_sprite is not None:
+                self.main_sprite.visible = False
+            self.border_sprite.visible = False
+            self.sheathed_image.visible = True
+        else:
+            if self.main_sprite is not None:
+                self.main_sprite.visible = True
+            self.border_sprite.visible = True
+            self.sheathed_image.visible = False
 
 
 __all__ = [
@@ -637,4 +712,5 @@ __all__ = [
     'MinionSprite',
     'HeroSprite',
     'HeroPowerSprite',
+    'WeaponSprite',
 ]

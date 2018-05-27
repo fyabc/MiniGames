@@ -3,7 +3,7 @@
 
 {
     "ProjectName": "HearthStone",
-    "Version": [1, 3, 8],
+    "Version": [1, 3, 9],
 
     // Locale, default is `locale.getdefaultlocale()`.
     "Locale": null,

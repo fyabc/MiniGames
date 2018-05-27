@@ -29,8 +29,7 @@ class 匕首精通(HeroPower):
     }
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        return std_events.pure_equip_events(self.game, "60010", self.player_id)
 
 
 # 背刺 (60000)

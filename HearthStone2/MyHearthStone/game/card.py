@@ -282,6 +282,10 @@ class Weapon(Card):
     def attack(self, value):
         self.data['attack'] = value
 
+    @property
+    def sheathed(self):
+        return self.player_id != self.game.current_player
+
     def run_battlecry(self, target: IndependentEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
 

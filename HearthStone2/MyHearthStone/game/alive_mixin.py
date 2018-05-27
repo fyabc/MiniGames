@@ -24,7 +24,6 @@ class AliveMixin:
             'damage': 0,
             'max_health': self.cls_data['health'],
             'armor': 0,                 # [NOTE]: Even support armor for minions (for future DIYs).
-            'to_be_destroyed': False,   # The destroy tag for instant kill enchantments.
 
             # Attack related attributes.
             # TODO: Make this more flexible?
@@ -37,7 +36,7 @@ class AliveMixin:
 
     damage = make_property('damage')
     armor = make_property('armor')
-    to_be_destroyed = make_property('to_be_destroyed')
+    to_be_destroyed = make_property('to_be_destroyed', default=False)   # The destroy tag for instant kill enchantments.
 
     @property
     def alive(self):
@@ -95,7 +94,7 @@ class AliveMixin:
 
     n_attack = make_property('n_attack')
     n_total_attack = make_property('n_total_attack')
-    can_attack_hero = make_property('can_attack_hero')
+    can_attack_hero = make_property('can_attack_hero', default=True)
     frozen = make_property('frozen', default=False)
 
     @property

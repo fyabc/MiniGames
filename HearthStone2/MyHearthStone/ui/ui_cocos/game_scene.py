@@ -15,7 +15,7 @@ from ...utils.draw.cocos_utils.basic import pos, notice, hs_style_label, get_wid
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, DialogLayer
 from ...utils.draw.cocos_utils.primitives import Rect
-from .card_sprite import HandSprite, HeroSprite, MinionSprite, HeroPowerSprite
+from .card_sprite import HandSprite, HeroSprite, MinionSprite, HeroPowerSprite, WeaponSprite
 from .selection_manager import SelectionManager
 from .animations import run_animations
 from ...game.core import Game
@@ -37,8 +37,8 @@ class GameBoardLayer(ActiveLayer):
     RightCX = (1 + RightL) / 2  # Center of right pane
     HeroL = 0.66  # Border of hero pane
     HeroY = (0.25, 0.75)
-    HeroPowerX = 0.84
-    HeroPowerY = (0.42, 0.92)
+    HeroPowerX, HeroPowerY = 0.84, (0.42, 0.92)
+    WeaponX, WeaponY = 0.703, (0.42, 0.92)
     BoardL = 0.05
     TurnEndBtnW = 0.1  # Width of turn end button
     TurnEndBtnT, TurnEndBtnB = 0.5 + TurnEndBtnW / 2, 0.5 - TurnEndBtnW / 2
@@ -73,6 +73,7 @@ class GameBoardLayer(ActiveLayer):
         # [NOTE]: `self.hero_sprites[0]` is the hero sprite of player 0, not position index 0.
         self.hero_sprites = [None, None]
         self.hero_power_sprites = [None, None]
+        self.weapon_sprites = [None, None]
 
     def on_enter(self):
         super().on_enter()
@@ -101,14 +102,17 @@ class GameBoardLayer(ActiveLayer):
                 self.try_remove(sprite)
             spr_list.clear()
 
-        for i in range(2):
-            self.try_remove('sprite_hero_{}'.format(i))
+        for sprite in self.hero_sprites:
+            self.try_remove(sprite)
         self.hero_sprites = [None, None]
 
-        for i in range(2):
-            for sprite in self.hero_power_sprites:
-                self.try_remove(sprite)
+        for sprite in self.hero_power_sprites:
+            self.try_remove(sprite)
         self.hero_power_sprites = [None, None]
+
+        for sprite in self.weapon_sprites:
+            self.try_remove(sprite)
+        self.weapon_sprites = [None, None]
 
         return super().on_exit()
 
@@ -227,6 +231,32 @@ class GameBoardLayer(ActiveLayer):
             )
             self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
 
+            # TODO: Extract the duplicate code.
+
+            # Create or update weapon sprites.
+            def _new_w_sprite():
+                if player.weapon is None:
+                    return
+                w_sprite = WeaponSprite(player.weapon, pos(self.WeaponX, self.WeaponY[i]), scale=1.0)
+                self.weapon_sprites[player.player_id] = w_sprite
+                self.add(w_sprite, z=1)
+            current_w_spr = self.weapon_sprites[player.player_id]   # type: WeaponSprite
+            if current_w_spr is None:
+                # Old weapon sprite not exist, create a new.
+                _new_w_sprite()
+            else:
+                if player.weapon is None:
+                    self.try_remove(current_w_spr)
+                elif current_w_spr.entity != player.weapon:
+                    # Weapon should be replaced with a new one.
+                    self.try_remove(current_w_spr)
+                    _new_w_sprite()
+                else:
+                    # Same weapon.
+                    current_w_spr.update_content(**{
+                        'position': pos(self.WeaponX, self.WeaponY[i]),
+                        'scale': 1.0})
+
             # Create or update hero power sprites.
             def _new_hp_sprite():
                 if player.hero_power is None:
@@ -234,8 +264,7 @@ class GameBoardLayer(ActiveLayer):
                 hp_sprite = HeroPowerSprite(player.hero_power, pos(self.HeroPowerX, self.HeroPowerY[i]), scale=1.0)
                 self.hero_power_sprites[player.player_id] = hp_sprite
                 self.add(hp_sprite, z=1)
-
-            current_hp_spr = self.hero_power_sprites[player.player_id]
+            current_hp_spr = self.hero_power_sprites[player.player_id]  # type: HeroPowerSprite
             if current_hp_spr is None:
                 # Old hero power sprite not exist, create a new.
                 _new_hp_sprite()
@@ -246,19 +275,20 @@ class GameBoardLayer(ActiveLayer):
                     _new_hp_sprite()
                 else:
                     # Same hero power.
-                    self.hero_power_sprites[player.player_id].update_content(**{
+                    current_hp_spr.update_content(**{
                         'position': pos(self.HeroPowerX, self.HeroPowerY[i]),
                         'scale': 1.0})
 
             # Create or update hero sprites.
-            hero_spr_name = 'sprite_hero_{}'.format(player.player_id)
-            if hero_spr_name not in self.children_names:
+            # TODO: Support replacing heroes.
+            hero_sprite = self.hero_sprites[player.player_id]
+            if hero_sprite not in self:
                 hero_sprite = HeroSprite(
                     player.hero, pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]), scale=0.8)
                 self.hero_sprites[player.player_id] = hero_sprite
-                self.add(hero_sprite, name=hero_spr_name)
+                self.add(hero_sprite)
             else:
-                self.hero_sprites[player.player_id].update_content(**{
+                hero_sprite.update_content(**{
                     'position': pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]),
                     'scale': 0.8})
 

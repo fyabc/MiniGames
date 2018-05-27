@@ -39,6 +39,9 @@ class Player(IndependentEntity):
     SecretMax = C.Game.SecretMax
     ManaMax = C.Game.ManaMax
     TurnMax = C.Game.TurnMax
+    WeaponMax = 1
+    HeroMax = 1
+    HeroPowerMax = 1
     StartCardOffensive, StartCardDefensive = C.Game.StartCard
 
     CoinCardID = "43"
@@ -128,9 +131,10 @@ class Player(IndependentEntity):
                         card.zone = zone_id
             except ValueError:
                 pass
-        self.hero.zone = Zone.Hero
-        if self.weapon is not None:
-            self.weapon.zone = Zone.Weapon
+        for hero in self.heroes:
+            hero.zone = Zone.Hero
+        for weapon in self.weapons:
+            weapon.zone = Zone.Weapon
 
     def _init_data(self):
         self.max_mana = 0
@@ -220,12 +224,13 @@ class Player(IndependentEntity):
             return len(self.play) >= self.PlayMax
         if zone == Zone.Graveyard:
             return False
+        # [NOTE]: Zones below will never full. New entity will REPLACE old entity (controlled by events).
         if zone == Zone.Weapon:
-            return self.weapon is not None
+            return False
         if zone == Zone.Hero:
-            return self.hero is not None
+            return False
         if zone == Zone.HeroPower:
-            return self.hero_power is not None
+            return False
         return False
 
     def get_all_entities(self):
@@ -242,7 +247,7 @@ class Player(IndependentEntity):
         """
 
         return itertools.chain(
-            self.deck, self.hand, self.secret, self.play, [self.weapon, self.hero, self.hero_power])
+            self.deck, self.hand, self.secret, self.play, self.weapons, self.heroes, self.hero_powers)
 
     def get_zone(self, zone):
         """Get the given zone of the player.

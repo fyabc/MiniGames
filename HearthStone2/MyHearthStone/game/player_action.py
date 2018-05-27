@@ -107,8 +107,12 @@ class PlayWeapon(PlayerAction):
         self.player_id = game.current_player if player_id is None else player_id
 
     def phases(self):
-        # TODO
-        return []
+        return [
+            standard.OnPlayWeapon(self.game, self.weapon, self.target, self.player_id),
+            standard.EquipWeapon(self.game, self.weapon, self.target, self.player_id, is_played=True),
+            standard.AfterPlayWeapon(self.game, self.weapon, self.player_id),
+            'check_win',
+        ]
 
     def _repr(self):
         return super()._repr(P=self.player_id, weapon=self.weapon, target=self.target)
