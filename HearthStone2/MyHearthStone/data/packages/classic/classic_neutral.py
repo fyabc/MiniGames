@@ -37,16 +37,9 @@ class Enc_叫嚣的中士(Enchantment):
         'id': 1000000,
     }
 
-    class Trig_叫嚣的中士(std_triggers.Trigger):
-        respond = [std_events.EndOfTurn]
-
-        def process(self, event: respond[0]):
-            self.owner.detach(remove_from_target=True)
-            return []
-
     def __init__(self, game, target, **kwargs):
         super().__init__(game, target, **kwargs)
-        self.Trig_叫嚣的中士(self.game, self)
+        std_triggers.DetachOnTurnEnd(self.game, self)
 
     apply, apply_imm = enc_common.apply_fn_add_attack(2)
 

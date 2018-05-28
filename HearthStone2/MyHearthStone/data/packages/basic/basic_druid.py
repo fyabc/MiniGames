@@ -5,9 +5,9 @@ from itertools import chain
 
 from MyHearthStone import ext
 from MyHearthStone.ext import blank_minion
-from MyHearthStone.ext import std_events
+from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import enc_common
-from MyHearthStone.ext import Spell, Hero, HeroPower
+from MyHearthStone.ext import Spell, Hero, HeroPower, Enchantment
 from MyHearthStone.utils.game import order_of_play, Zone
 
 __author__ = 'fyabc'
@@ -25,6 +25,16 @@ class StdDruid(Hero):
     }
 
 
+class Enc_变形(Enchantment):
+    data = {'id': 10000}
+
+    def __init__(self, game, target, **kwargs):
+        super().__init__(game, target, **kwargs)
+        std_triggers.DetachOnTurnEnd(self.game, self)
+
+    apply, apply_imm = enc_common.apply_fn_add_attack(1)
+
+
 class 变形(HeroPower):
     data = {
         'id': 0,
@@ -33,8 +43,9 @@ class 变形(HeroPower):
     }
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        hero = self.game.get_hero(self.player_id)
+        Enc_变形.from_card(self, self.game, hero)
+        return [std_events.GainArmor(self.game, self, hero, 1)]
 
 
 # 埃隆巴克保护者 (10000)
@@ -68,12 +79,32 @@ class 激活(Spell):
         return []
 
 
+class Enc_爪击(Enchantment):
+    data = {'id': 10001}
+
+    def __init__(self, game, target, **kwargs):
+        super().__init__(game, target, **kwargs)
+        std_triggers.DetachOnTurnEnd(self.game, self)
+
+    apply, apply_imm = enc_common.apply_fn_add_attack(2)
+
+
 # 爪击 (10003)
+class 爪击(Spell):
+    data = {
+        'id': 10003,
+        'type': 1, 'klass': 1, 'cost': 1,
+    }
+
+    def run(self, target, **kwargs):
+        hero = self.game.get_hero(self.player_id)
+        Enc_爪击.from_card(self, self.game, hero)
+        return [std_events.GainArmor(self.game, self, hero, 2)]
 
 
 # 野性印记 (10004)
 Enc_野性印记 = ext.create_enchantment(
-    {'id': 10000}, *enc_common.apply_fn_add_a_h(2, 2, apply_imm_other=enc_common.set_target_attr('taunt', True)))
+    {'id': 10002}, *enc_common.apply_fn_add_a_h(2, 2, apply_imm_other=enc_common.set_target_attr('taunt', True)))
 
 
 class 野性印记(Spell):
@@ -89,7 +120,32 @@ class 野性印记(Spell):
         Enc_野性印记.from_card(self, self.game, target)
         return []
 
+
 # 野性成长 (10005)
+class 野性成长(Spell):
+    data = {
+        'id': 10005,
+        'type': 1, 'klass': 1, 'cost': 2,
+    }
+
+    def run(self, target, **kwargs):
+        """Run this spell.
+
+        See <https://hearthstone.gamepedia.com/Wild_Growth#Notes> for more details.
+
+        1. If, after paying this card's Cost, the casting player has 10 available and/or maximum mana,
+        this card will generate an Excess Mana card in the player's hand.
+
+        2. Otherwise, it will give an empty Mana Crystal to the casting player.
+        """
+        player = self.game.get_player(self.player_id)
+        if player.displayed_mana() >= player.ManaMax or player.max_mana >= player.ManaMax:
+            # TODO: Test the card generation.
+            _, status = player.generate(Zone.Hand, 'last', "10010")
+            return status['events']
+        else:
+            player.add_mana(1, 'M')
+            return []
 
 
 # 治疗之触 (10006)
@@ -149,3 +205,14 @@ class 星火术(Spell):
 
     def run(self, target, **kwargs):
         return [std_events.Damage(self.game, self, target, 5), std_events.DrawCard(self.game, self, self.player_id)]
+
+
+# 法力过剩 (10010)
+class 法力过剩(Spell):
+    data = {
+        'id': 10010,
+        'type': 1, 'klass': 1, 'rarity': -1, 'cost': 0,
+        'derivative': True,
+    }
+
+    run = ext.draw_card_fn(1)

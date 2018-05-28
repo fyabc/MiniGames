@@ -352,6 +352,12 @@ class Player(IndependentEntity):
             self.used_mana = self.overload
         elif action == 'T':
             self.temp_mana = min(self.ManaMax, value + self.temp_mana)
+        elif action == 'M':
+            old_max_mana = self.max_mana
+            self.max_mana = min(self.ManaMax, value + self.max_mana)
+
+            # Increase used mana with real value.
+            self.used_mana += self.max_mana - old_max_mana
         else:
             # TODO
             raise ValueError('Unknown action {!r}'.format(action))
