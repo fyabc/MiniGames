@@ -215,7 +215,8 @@ class Game:
 
             if isinstance(e, Event):
                 # Resolve triggers before the event.
-                self._collect_resolve_triggers(e, Trigger.Before, depth)
+                for pre_e in e.pre_events():
+                    self._collect_resolve_triggers(pre_e, Trigger.Before, depth)
 
                 # Do the event and log history.
                 cons_events = e.do()

@@ -124,3 +124,5 @@ ext.blank_minion({
     'rarity': -1, 'klass': 3, 'cost': 0, 'attack': 0, 'health': 2,
     'derivative': True, 'taunt': True,
 })
+
+# 绵羊 (47) in ``basic_neutral.py``.

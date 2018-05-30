@@ -90,6 +90,15 @@ class Event:
     def disable(self):
         self.enable = False
 
+    def pre_events(self):
+        """Get pre-events of this event.
+
+        The events in the returned list will be processed by "Before" triggers (e.g. Predamage triggers).
+
+        Area events and delayed-resolved events will overwrite this method.
+        """
+        return [self]
+
 
 class Phase(Event):
     """The class of phases.
@@ -130,6 +139,15 @@ class DelayResolvedEvent(Event):
             self.do_real_work()
         return self.pending_events
 
+    def pre_events(self):
+        """Return the pre-events.
+
+        If ``self.work_done``, it means that the pre-triggers have been resolved, so return a empty list.
+        """
+        if self.work_done:
+            return []
+        return [self]
+
 
 class AreaEvent(Event):
     """The event of area of effect, worked with ``DelayResolvedEvent``."""
@@ -145,3 +163,10 @@ class AreaEvent(Event):
         for event in self.events:
             event.do_real_work()
         return [e for e in self.events if e.enable]
+
+    def pre_events(self):
+        """Return the pre-events.
+
+        Area event only delay post-triggers, not pre-triggers.
+        """
+        return self.events
