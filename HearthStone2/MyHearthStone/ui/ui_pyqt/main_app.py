@@ -21,6 +21,7 @@ else:
 from ...game.deck import Deck
 from ...utils.game import Klass
 from ...utils.user import AppUser
+from ...utils.constants import SystemDataPath
 
 __author__ = 'fyabc'
 
@@ -66,6 +67,22 @@ class MainWindow(QtWidgets.QMainWindow):
         ###############
         # Set init UI #
         ###############
+
+        # This is to fix the bug of Windows
+        # See <https://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon-in-windows-7>
+        # for more details.
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('An Arbitrary String')
+        except AttributeError:
+            pass
+        icon = QtGui.QIcon()
+        icon.addFile(os.path.join(SystemDataPath, 'resources', 'images', 'HS-Icon-16x16.png'))
+        icon.addFile(os.path.join(SystemDataPath, 'resources', 'images', 'HS-Icon-32x32.png'))
+        icon.addFile(os.path.join(SystemDataPath, 'resources', 'images', 'HS-Icon-64x64.png'))
+        icon.addFile(os.path.join(SystemDataPath, 'resources', 'images', 'HS-Icon-100x100.png'))
+        icon.addFile(os.path.join(SystemDataPath, 'resources', 'images', 'HS-Icon-256x256.png'))
+        self.setWindowIcon(icon)
         self._set_nickname_labels()
         self.ui.table_deck.setColumnWidth(0, 45)
         self.ui.table_deck.setColumnWidth(1, 175)

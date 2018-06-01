@@ -25,9 +25,6 @@ class Enchantment(GameEntity):
         Despite not visually updating, enchantments take effect the moment they are created.
     """
 
-    # [NOTE]: It seems that the movement of enchantments are different from other entities.
-    # TODO: The movement of enchantments are different from other entities. How to unify them?
-
     data = {
         'type': Type.Enchantment,
         'aura': False,
@@ -101,7 +98,6 @@ class Enchantment(GameEntity):
 
         This method will set the oop of enchantment as the enchantment of the creator.
         """
-        # TODO: Creator is a ``GameEntity`` or an ``IndependentEntity``?
 
         kwargs['oop'] = creator.oop
         enc = cls(*args, **kwargs)

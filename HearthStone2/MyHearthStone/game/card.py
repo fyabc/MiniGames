@@ -147,9 +147,6 @@ class Minion(AliveMixin, Card):
             'deathrattle_fns': deathrattle_fns,
         })
 
-    charge = make_property('charge')
-    rush = make_property('rush')
-
     battlecry = make_property('battlecry', setter=False)
     deathrattle = make_property('deathrattle', setter=False)
     deathrattle_fns = make_property('deathrattle_fns')

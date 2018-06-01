@@ -18,6 +18,7 @@ from ..frontend import Frontend
 from ...utils.constants import C
 from ...utils.message import info
 from ...utils.resource import index_resources, load_fonts
+from ...utils.draw.cocos_utils.basic import try_load_image
 
 __author__ = 'fyabc'
 
@@ -49,6 +50,15 @@ class CocosSingleFrontend(Frontend):
             width=self.Width,
             height=self.Height,
         )
+
+        # Set icon. [NOTE]: This call take about 0.27s on Windows 10 (about 0.40s if contains 256x256 image).
+        image_list = []
+        for size in (16, 32):
+            image = try_load_image('HS-Icon-{0}x{0}.png'.format(size))
+            if image is not None:
+                image_list.append(image)
+        if image_list:
+            director.director.window.set_icon(*image_list)
 
         self.scenes['main'] = get_main_scene(self)
         self.scenes['collection'] = get_collection_scene(self)
@@ -83,6 +93,15 @@ class CocosSingleFrontend(Frontend):
         super().preprocess()
         load_fonts()
         index_resources()
+
+        # This is to fix the bug of Windows
+        # See <https://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon-in-windows-7>
+        # for more details.
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('An Arbitrary String')
+        except AttributeError:
+            pass
 
     def finalize(self):
         info('Cocos2d-Python app exited')

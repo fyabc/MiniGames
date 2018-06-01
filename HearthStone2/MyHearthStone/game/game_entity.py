@@ -25,7 +25,7 @@ def make_property(name, setter=True, deleter=False, default=_sentinel):
         self.data[name] = value
 
     def _deleter(self):
-        del self.data[name]
+        self.data.pop(name, None)
 
     return property(
         _getter,

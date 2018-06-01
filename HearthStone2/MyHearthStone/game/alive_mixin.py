@@ -26,10 +26,8 @@ class AliveMixin:
             'armor': 0,                 # [NOTE]: Even support armor for minions (for future DIYs).
 
             # Attack related attributes.
-            # TODO: Make this more flexible?
             'n_attack': None,
             'n_total_attack': 1,
-            'can_attack_hero': True,
         })
 
     # Health-related properties.
@@ -92,9 +90,18 @@ class AliveMixin:
 
     # Attack-related properties.
 
+    # First turn in the play zone (summoning sickness) or not.
+    first_turn = make_property('first_turn', deleter=True, default=False)
+
     n_attack = make_property('n_attack')
     n_total_attack = make_property('n_total_attack')
+
+    # TODO: Implement these properties.
+    can_attack = make_property('can_attack', default=True)
     can_attack_hero = make_property('can_attack_hero', default=True)
+
+    charge = make_property('charge', default=False)
+    rush = make_property('rush', default=False)
     frozen = make_property('frozen', default=False)
 
     @property
@@ -106,13 +113,11 @@ class AliveMixin:
         self.data['attack'] = value
 
     @property
-    def exhausted(self):
-        return self.n_attack >= self.n_total_attack
-
-    @property
     def attack_status(self):
-        if self.n_attack is None:
-            return 'sleep'
+        # Heroes are always "charge".
+        if self.type == Type.Minion:
+            if self.first_turn is False and not self.charge and not self.rush:
+                return 'sleep'
         if self.n_attack >= self.n_total_attack:
             return 'exhausted'
         # TODO: Add other status, such as 'cannot attack'?
@@ -124,24 +129,12 @@ class AliveMixin:
     def init_attack_status(self):
         """Initialize attack state when the object."""
 
-        if self.type == Type.Hero:
-            self.n_attack = 0
-            return
-
-        # This is a minion
-        # TODO: Process charge and rush in a more flexible way?
-        if self.charge:
-            self.n_attack = 0
-            return
-
-        if self.rush:
-            self.n_attack = 0
-            self.can_attack_hero = False
-        self.n_attack = None
+        self.first_turn = True
+        self.n_attack = 0
 
     def reset_attack_status(self):
+        del self.first_turn
         self.n_attack = 0
-        self.can_attack_hero = True
 
     def update_frozen_status(self):
         """Update the frozen status of this entity.
@@ -203,7 +196,13 @@ class AliveMixin:
             return self.Inactive
 
         # 2. A minion with the Can't attack ability cannot attack.
-        # TODO
+        if not self.can_attack:
+            if msg_fn:
+                if type_ == Type.Hero:
+                    msg_fn('I cannot attack!')
+                else:
+                    msg_fn('This minion cannot attack!')
+            return self.Inactive
 
         # 3. A character that is Frozen due to a Freeze effect cannot attack.
         if self.frozen:
@@ -249,7 +248,7 @@ class AliveMixin:
                 msg_fn('This is not a valid target!')
             return False
 
-        # 1. A Stealthed minion cannot be targeted by enemy attacks.
+        # 1. A Stealth minion cannot be targeted by enemy attacks.
         if defender.stealth:
             if msg_fn:
                 msg_fn('Character with stealth cannot be attacked!')
@@ -271,6 +270,12 @@ class AliveMixin:
 
         # 4. If the attacker has the Can't attack heroes ability, the enemy hero cannot be selected as the defender.
         if zone == Zone.Hero and not self.can_attack_hero:
+            if msg_fn:
+                msg_fn('Cannot attack hero!')
+            return False
+
+        # 4.2 Processing "rush".    TODO: Need test.
+        if zone == Zone.Hero and self.rush and self.first_turn:
             if msg_fn:
                 msg_fn('Cannot attack hero!')
             return False
