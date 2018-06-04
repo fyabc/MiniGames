@@ -44,29 +44,23 @@ class Aura:
         See ``Enchantment.order`` for more details."""
         return 1, self.oop
 
-    def check_entity(self, entity):
-        """Check if this entity match the condition of this aura."""
-        return True
+    def prepare_update(self):
+        """Prepare the update of this aura, called by aura update methods of ``Game``.
 
-    def grant_enchantment(self, entity):
-        """Grant the enchantment on this entity."""
-        raise NotImplementedError()
-
-    def modify_exist_enchantment(self, entity, enchantment):
-        """Modify the enchantment that has been already granted to the entity.
-
-        In default and the most cases, this method do nothing.
-
-        An example that need to override this method:
-            "Aura: Your other minions have +1 attack, your other minion with charge have +2 attack instead."
-            If one friendly minion gain charge, it need to modify the exist enchantment.
+        In this method, you can do some useful calculations that are available during this update, for example,
+        the location of the owner. It can avoid the recalculation for many times.
         """
         pass
 
-    def process_entity(self, entity):
-        """Process the entity, called by aura update methods of ``Game``."""
+    def process_entity(self, entity, **kwargs):
+        """Process the entity, called by aura update methods of ``Game``.
 
-        match = self.check_entity(entity)
+        :param entity: The entity to be processed.
+        :param kwargs: Some useful information, such as the location of the entity.
+        :return:
+        """
+
+        match = self.check_entity(entity, **kwargs)
 
         # If not match, remove the previous granted enchantment on the entity if it exists.
         if not match:
@@ -76,9 +70,28 @@ class Aura:
         # If match, grant the enchantment to the entity (or do nothing if it already exists).
         exist_enc = entity.get_enchantment_by_aura(self)
         if exist_enc is None:
-            self.grant_enchantment(entity)
+            self.grant_enchantment(entity, **kwargs)
         else:
-            self.modify_exist_enchantment(entity, exist_enc)
+            self.modify_exist_enchantment(entity, exist_enc, **kwargs)
+
+    def check_entity(self, entity, **kwargs):
+        """Check if this entity match the condition of this aura."""
+        raise NotImplementedError()
+
+    def grant_enchantment(self, entity, **kwargs):
+        """Grant the enchantment on this entity."""
+        raise NotImplementedError()
+
+    def modify_exist_enchantment(self, entity, enchantment, **kwargs):
+        """Modify the enchantment that has been already granted to the entity.
+
+        In default and the most cases, this method do nothing.
+
+        An example that need to override this method:
+            "Aura: Your other minions have +1 attack, your other minion with charge have +2 attack instead."
+            If one friendly minion gain charge, it need to modify the exist enchantment.
+        """
+        pass
 
     def detach_granted_enchantments(self):
         for entity in self.game.get_all_entities():

@@ -233,7 +233,7 @@ class Player(IndependentEntity):
             return False
         return False
 
-    def get_all_entities(self):
+    def get_all_entities(self, yield_location=False):
         """Get all entities in the game.
 
         Contains:
@@ -246,8 +246,10 @@ class Player(IndependentEntity):
         :return: Iterator of all entities.
         """
 
-        return itertools.chain(
-            self.deck, self.hand, self.secret, self.play, self.weapons, self.heroes, self.hero_powers)
+        all_visible_zones = (self.deck, self.hand, self.secret, self.play, self.weapons, self.heroes, self.hero_powers)
+        if yield_location:
+            all_visible_zones = (enumerate(z) for z in all_visible_zones)
+        return itertools.chain(*all_visible_zones)
 
     def get_zone(self, zone):
         """Get the given zone of the player.

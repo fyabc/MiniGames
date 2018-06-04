@@ -22,6 +22,7 @@
 3. Highlight status
     - 杀戮命令：控制一个友方野兽
     - 驯兽师：
+    - 酸性沼泽软泥怪：
 
 4. Faceless Manipulator
     1. Play minion M (1/1)

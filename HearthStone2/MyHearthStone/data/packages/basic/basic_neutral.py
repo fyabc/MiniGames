@@ -93,6 +93,28 @@ ext.create_damage_minion({
 }, 1)
 
 # 暗鳞先知 (1)
+Enc_暗鳞先知 = ext.create_enchantment({'id': 0}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
+
+
+class 暗鳞先知(Minion):
+    data = {
+        'id': 1,
+        'cost': 1, 'attack': 1, 'health': 1,
+        'race': [Race.Murloc],
+    }
+
+    class Aura_暗鳞先知(Aura):
+        def check_entity(self, entity, **kwargs):
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
+                and Race.Murloc in entity.race and entity != self.owner
+
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_暗鳞先知.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_暗鳞先知(self.game, self)
+
 
 # 石牙野猪 (2)
 blank_minion({
@@ -183,7 +205,11 @@ class 酸性沼泽软泥怪(Minion):
         'battlecry': True,
     }
 
-    # TODO
+    def run_battlecry(self, target, **kwargs):
+        weapon = self.game.get_weapon(1 - self.player_id)
+        if weapon is not None:
+            weapon.to_be_destroyed = True
+        return []
 
 
 # 血沼迅猛龙 (13)
@@ -448,30 +474,26 @@ blank_minion({
 
 
 # 暴风城勇士 (40)
+# TODO: Is this correct to use these apply functions for aura enchantments?
+Enc_暴风城勇士 = ext.create_enchantment({'id': 5}, *enc_common.apply_fn_add_a_h(1, 1), base=AuraEnchantment)
+
+
 class 暴风城勇士(Minion):
+    """[NOTE]: This is a classic card of aura."""
     data = {
         'id': 40,
         'cost': 7, 'attack': 6, 'health': 6,
     }
 
-    # TODO: Is this correct to use these apply functions for aura enchantments?
-    Enc_暴风城勇士 = ext.create_enchantment({'id': 5}, *enc_common.apply_fn_add_a_h(1, 1), base=AuraEnchantment)
-
     class Aura_暴风城勇士(Aura):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
-        def check_entity(self, entity):
-            if entity.zone != Zone.Play:
-                return False
-            if entity.player_id != self.owner.player_id:
-                return False
-            if entity == self.owner:
-                return False
-            return True
+        def check_entity(self, entity, **kwargs):
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id and entity != self.owner
 
-        def grant_enchantment(self, entity):
-            暴风城勇士.Enc_暴风城勇士.from_card(self.owner, self.game, entity, self)
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_暴风城勇士.from_card(self.owner, self.game, entity, self)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

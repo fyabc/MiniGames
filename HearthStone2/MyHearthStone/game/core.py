@@ -398,11 +398,7 @@ class Game:
             Then, every Entity's Health and Attack values are recalculated.
         """
 
-        # For each entity, Scan all attack/health auras to grant enchantments.
-        auras = self.auras[AuraType.AttackHealth]
-        for entity in self.get_all_entities():
-            for aura in auras:
-                aura.process_entity(entity)
+        self._aura_update_shared(self.auras[AuraType.AttackHealth])
 
         # Update enchantments for all entities.
         for entity in self.get_all_entities():
@@ -410,9 +406,16 @@ class Game:
                 entity.aura_update_attack_health()
 
     def _aura_update_other(self):
-        # Scan all other auras to grant enchantments.
-        for aura in self.auras[AuraType.Other]:
-            aura.update()
+        self._aura_update_shared(self.auras[AuraType.Other])
+
+    def _aura_update_shared(self, auras):
+        # For each entity, Scan all given auras to grant enchantments.
+        for aura in auras:
+            aura.prepare_update()
+
+        for location, entity in self.get_all_entities(yield_location=True):
+            for aura in auras:
+                aura.process_entity(entity, location=location)
 
     #######################
     # Game system methods #
@@ -663,9 +666,9 @@ class Game:
     def full(self, zone, player_id):
         return self.players[player_id].full(zone)
 
-    def get_all_entities(self):
+    def get_all_entities(self, yield_location=False):
         for player in self.players:
-            for entity in player.get_all_entities():
+            for entity in player.get_all_entities(yield_location=yield_location):
                 yield entity
 
     def get_player(self, player_id):

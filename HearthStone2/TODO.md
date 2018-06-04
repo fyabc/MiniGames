@@ -8,8 +8,8 @@
 # TODOs
 
 - Secrets
-- Auras
 - Transform effects (e.g. "Polymorph" and "Hex")
 - Copy effects
+- Control effects (e.g. "Shadow Madness" and "Mind Control")
 - Silence
 - Spell Damage (include effects of "Auchenai Soulpriest" and "Prophet Velen")
