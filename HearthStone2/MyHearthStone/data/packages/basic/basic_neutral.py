@@ -70,7 +70,8 @@ DIY cards / heroes / enchantments can add 'D' or other prefixes before the ID fo
 """
 
 from MyHearthStone import ext
-from MyHearthStone.ext import Minion, Spell, Enchantment
+from MyHearthStone.ext import Minion, Spell
+from MyHearthStone.ext import Aura, Enchantment, AuraEnchantment
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import enc_common
@@ -445,7 +446,37 @@ blank_minion({
     'cost': 6, 'attack': 6, 'health': 7,
 })
 
+
 # 暴风城勇士 (40)
+class 暴风城勇士(Minion):
+    data = {
+        'id': 40,
+        'cost': 7, 'attack': 6, 'health': 6,
+    }
+
+    # TODO: Is this correct to use these apply functions for aura enchantments?
+    Enc_暴风城勇士 = ext.create_enchantment({'id': 5}, *enc_common.apply_fn_add_a_h(1, 1), base=AuraEnchantment)
+
+    class Aura_暴风城勇士(Aura):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def check_entity(self, entity):
+            if entity.zone != Zone.Play:
+                return False
+            if entity.player_id != self.owner.player_id:
+                return False
+            if entity == self.owner:
+                return False
+            return True
+
+        def grant_enchantment(self, entity):
+            暴风城勇士.Enc_暴风城勇士.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_暴风城勇士(self.game, self)
+
 
 # 作战傀儡 (41)
 blank_minion({

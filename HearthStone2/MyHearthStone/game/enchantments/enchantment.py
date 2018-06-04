@@ -61,6 +61,7 @@ class Enchantment(GameEntity):
                 Zone.Idx2Str[zone]))
         super()._set_zone(zone)
 
+    # Indicate that this enchantment is granted from an aura or not.
     aura = make_property('aura', setter=False)
 
     @property
@@ -116,23 +117,27 @@ class Enchantment(GameEntity):
         self.zone = Zone.RFG
 
 
-class Aura(Enchantment):
-    """Aura (also called ongoing effect).
+class AuraEnchantment(Enchantment):
+    """Enchantments that granted by auras.
 
-    Information from <https://hearthstone.gamepedia.com/Ongoing_effect>:
-        Ongoing effects are minion, weapon, and boss Hero Power abilities which grant special effects
-        on an ongoing basis. Ongoing effects are often referred to as auras, particularly those which grant
-        temporary enchantments to other targets.
+    These enchantments are "temporary", and will be moved to the end of the enchantment list when the aura update.
     """
-
-    # TODO: or not subclass of Enchantment?
 
     data = {
         'aura': True,
     }
 
+    def __init__(self, game, target: IndependentEntity, source, **kwargs):
+        super().__init__(game, target, **kwargs)
+        self._source = source
+
+    @property
+    def source(self):
+        """The source aura of this enchantment."""
+        return self._source
+
 
 __all__ = [
     'Enchantment',
-    'Aura',
+    'AuraEnchantment',
 ]

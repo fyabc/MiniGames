@@ -12,7 +12,7 @@ from .triggers.trigger import Trigger
 from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
 from ..utils.constants import C
-from ..utils.game import order_of_play, Zone, DefaultClassHeroMap
+from ..utils.game import order_of_play, Zone, AuraType, DefaultClassHeroMap
 from ..utils.message import message, debug, error, info
 from ..utils.package_io import all_cards
 
@@ -64,6 +64,9 @@ class Game:
 
         # Players.
         self.players = [None, None]     # type: List[Player]
+
+        # Auras. It is convenient to share it between players.
+        self.auras = {t: set() for t in AuraType.Idx2Str}       # type: Dict[int, Set]
 
         # Contains arbitrary data (need it?)
         self.data = self._init_data()
@@ -325,6 +328,92 @@ class Game:
 
             i += 1
 
+    def _summon_resolution(self):
+        """Resolve all summon events in order of play."""
+
+        result = order_of_play(self.summon_events)
+        self.summon_events.clear()
+
+        return result
+
+    def _death_creation_step(self):
+        """Death creation step.
+        Looks for all mortally wounded (0 or less Health) / pending destroy (hit with a destroy effect) Entities.
+        Then kill dead entities, remove them from play simultaneously.
+
+        [NOTE]: Minion death event need to remember the location of the death.
+        See <https://hearthstone.gamepedia.com/Advanced_rulebook#Where_do_Minions_summoned_by_Deathrattles_spawn.3F>
+        for details.
+
+        :return: list, all death events, sorted in order of play.
+        """
+
+        # Collect all deaths.
+        death_minions = [[], []]
+        deaths = []
+
+        for player, death_minion in zip(self.players, death_minions):
+            for location, e in enumerate(player.play):
+                if not e.alive:
+                    death_minion.append([e, location])
+            for weapon in player.get_zone(Zone.Weapon):
+                if not weapon.alive:
+                    deaths.append([weapon, None])
+            # Special case for hero: if already lose (``hero.play_state == False``), do not add to deaths.
+            for hero in player.get_zone(Zone.Hero):
+                if hero.play_state is True and not hero.alive:
+                    deaths.append([hero, None])
+
+        # Recalculate minion death locations by order-of-play.
+        # TODO: Need test here.
+        for death_minion in death_minions:
+            for i, death_pair in enumerate(death_minion):
+                # Number of minions died before this minion that will affect the location
+                n_pre_died = sum(int(d[0].oop < death_pair[0].oop) for d in death_minion[:i])
+                death_pair[1] -= n_pre_died
+            deaths.extend(death_minion)
+
+        death_events = [
+            create_death_event(self, death, location)
+            for (death, location) in deaths]
+
+        for death_event in death_events:
+            death = death_event.owner
+            self.move(death.player_id, death.zone, death, death.player_id, Zone.Graveyard, 'last')
+
+        # Add instant removal death events.
+        death_events = order_of_play(death_events + self.data['instant_death_events'], key=lambda o: o.owner.oop)
+        self.data['instant_death_events'].clear()
+
+        return death_events
+
+    def _aura_update_attack_health(self):
+        """Run aura update (attack / health).
+
+        Definition in Advanced Rulebook (<https://hearthstone.gamepedia.com/Advanced_rulebook#Glossary>)::
+
+            Runs before the Death Creation Step after each outermost Phase resolves, and at a few other timings.
+            Health/Attack Auras are recalculated, and moved in each Entity's Enchantment List to the end.
+            (Note that Enchantments like "Equality" apply immediately, and therefore may briefly apply 'out of order'.)
+            Then, every Entity's Health and Attack values are recalculated.
+        """
+
+        # For each entity, Scan all attack/health auras to grant enchantments.
+        auras = self.auras[AuraType.AttackHealth]
+        for entity in self.get_all_entities():
+            for aura in auras:
+                aura.process_entity(entity)
+
+        # Update enchantments for all entities.
+        for entity in self.get_all_entities():
+            if isinstance(entity, IndependentEntity):
+                entity.aura_update_attack_health()
+
+    def _aura_update_other(self):
+        # Scan all other auras to grant enchantments.
+        for aura in self.auras[AuraType.Other]:
+            aura.update()
+
     #######################
     # Game system methods #
     #######################
@@ -397,82 +486,6 @@ class Game:
         self.state = self.GameState.Invalid
         for callback in self.callbacks['game_end']:
             callback(self.game_result)
-
-    def _summon_resolution(self):
-        """Resolve all summon events in order of play."""
-
-        result = order_of_play(self.summon_events)
-        self.summon_events.clear()
-
-        return result
-
-    def _death_creation_step(self):
-        """Death creation step.
-        Looks for all mortally wounded (0 or less Health) / pending destroy (hit with a destroy effect) Entities.
-        Then kill dead entities, remove them from play simultaneously.
-
-        [NOTE]: Minion death event need to remember the location of the death.
-        See <https://hearthstone.gamepedia.com/Advanced_rulebook#Where_do_Minions_summoned_by_Deathrattles_spawn.3F>
-        for details.
-
-        :return: list, all death events, sorted in order of play.
-        """
-
-        # Collect all deaths.
-        death_minions = [[], []]
-        deaths = []
-
-        for player, death_minion in zip(self.players, death_minions):
-            for location, e in enumerate(player.play):
-                if not e.alive:
-                    death_minion.append([e, location])
-            for weapon in player.get_zone(Zone.Weapon):
-                if not weapon.alive:
-                    deaths.append([weapon, None])
-            # Special case for hero: if already lose (``hero.play_state == False``), do not add to deaths.
-            for hero in player.get_zone(Zone.Hero):
-                if hero.play_state is True and not hero.alive:
-                    deaths.append([hero, None])
-
-        # Recalculate minion death locations by order-of-play.
-        # TODO: Need test here.
-        for death_minion in death_minions:
-            for i, death_pair in enumerate(death_minion):
-                # Number of minions died before this minion that will affect the location
-                n_pre_died = sum(int(d[0].oop < death_pair[0].oop) for d in death_minion[:i])
-                death_pair[1] -= n_pre_died
-            deaths.extend(death_minion)
-
-        death_events = [
-            create_death_event(self, death, location)
-            for (death, location) in deaths]
-
-        for death_event in death_events:
-            death = death_event.owner
-            self.move(death.player_id, death.zone, death, death.player_id, Zone.Graveyard, 'last')
-
-        # Add instant removal death events.
-        death_events = order_of_play(death_events + self.data['instant_death_events'], key=lambda o: o.owner.oop)
-        self.data['instant_death_events'].clear()
-
-        return death_events
-
-    def _aura_update_attack_health(self):
-        """Run aura update (attack / health).
-
-        Definition in Advanced Rulebook (<https://hearthstone.gamepedia.com/Advanced_rulebook#Glossary>)::
-
-            Runs before the Death Creation Step after each outermost Phase resolves, and at a few other timings.
-            Health/Attack Auras are recalculated, and moved in each Entity's Enchantment List to the end.
-            (Note that Enchantments like "Equality" apply immediately, and therefore may briefly apply 'out of order'.)
-            Then, every Entity's Health and Attack values are recalculated.
-        """
-        for i, entity in enumerate(self.get_all_entities()):
-            if isinstance(entity, IndependentEntity):
-                entity.aura_update_attack_health()
-
-    def _aura_update_other(self):
-        pass
 
     def stop_subsequent_phases(self):
         """Stop subsequent phases, like CounterSpell, etc."""
@@ -618,6 +631,15 @@ class Game:
     def inc_oop(self):
         self.current_oop += 1
         return self.current_oop
+
+    def register_aura(self, aura):
+        debug('Register aura {} of type {}'.format(aura, AuraType.Idx2Str[aura.type]))
+        self.auras[aura.type].add(aura)
+
+    def remove_aura(self, aura):
+        debug('Remove aura {} of type {}'.format(aura, AuraType.Idx2Str[aura.type]))
+        aura.detach_granted_enchantments()
+        self.auras[aura.type].discard(aura)
 
     ###############################################
     # Game attributes methods and other utilities #

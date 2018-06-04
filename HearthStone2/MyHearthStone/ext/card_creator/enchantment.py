@@ -6,13 +6,15 @@
 from types import new_class
 
 from .utils import add_to_module as _add_to_module
-from ...game.enchantments.enchantment import Enchantment
+from ...game.enchantments.enchantment import Enchantment, AuraEnchantment
+from ...game.enchantments.aura import Aura
 from ...game.enchantments import common as enc_common
 
 __author__ = 'fyabc'
 
 
-def create_enchantment(data, apply_fn, apply_imm_fn=None, name=None, module_dict=None, add_to_module=False):
+def create_enchantment(data, apply_fn, apply_imm_fn=None, base=Enchantment,
+                       name=None, module_dict=None, add_to_module=False):
     assert 'id' in data, 'Data must contain value of key "id".'
 
     if apply_imm_fn is None:
@@ -27,7 +29,7 @@ def create_enchantment(data, apply_fn, apply_imm_fn=None, name=None, module_dict
 
     cls_dict = {'data': data, 'apply': apply_fn, 'apply_imm': apply_imm_fn}
 
-    cls = new_class(name, (Enchantment,), {}, lambda ns: ns.update(cls_dict))
+    cls = new_class(name, (base,), {}, lambda ns: ns.update(cls_dict))
     if add_to_module:
         _add_to_module(cls, module_dict)
 
@@ -35,7 +37,8 @@ def create_enchantment(data, apply_fn, apply_imm_fn=None, name=None, module_dict
 
 
 __all__ = [
-    'Enchantment',
+    'Aura',
+    'Enchantment', 'AuraEnchantment',
     'enc_common',
     'create_enchantment',
 ]

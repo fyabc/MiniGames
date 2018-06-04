@@ -116,7 +116,7 @@ class AliveMixin:
     def attack_status(self):
         # Heroes are always "charge".
         if self.type == Type.Minion:
-            if self.first_turn is False and not self.charge and not self.rush:
+            if self.first_turn and not self.charge and not self.rush:
                 return 'sleep'
         if self.n_attack >= self.n_total_attack:
             return 'exhausted'

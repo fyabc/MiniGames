@@ -4,6 +4,7 @@
 """The base class of game entities."""
 
 from collections import ChainMap
+from itertools import chain
 
 from ..utils.game import Zone, Type
 from ..utils.message import entity_message, warning, debug
@@ -180,17 +181,16 @@ class GameEntity(metaclass=SetDataMeta):
         # Update triggers.
         self.update_triggers(old_zone, zone)
 
+        # Update auras (only for independent entities).
+        if hasattr(self, 'update_auras'):
+            self.update_auras(old_zone, zone)
+
         # Reset tags to default value.
         self._reset_tags()
 
         # Modify enchantments (only for independent entities).
-        if hasattr(self, 'enchantments'):
-            if old_zone == Zone.Play:
-                # Removed from play.
-                # Detach all enchantments (with some exceptions).
-                for enchantment in self.enchantments:
-                    enchantment.detach(remove_from_target=False)
-                self.enchantments.clear()
+        if hasattr(self, '_modify_enchantments_between_zones'):
+            self._modify_enchantments_between_zones(old_zone, zone)
 
         debug('Move {} from {!r} to {!r}.'.format(self, Zone.Idx2Str[old_zone], Zone.Idx2Str[zone]))
         self.data['zone'] = zone
@@ -256,9 +256,12 @@ class IndependentEntity(GameEntity):
     def __init__(self, game):
         super().__init__(game)
 
-        # Enchantment list of this entity.
-        # Order: Enchantments in order of oop + auras in order of oop.
+        # Enchantment list and aura enchantment list of this entity. Both in order of oop.
         self.enchantments = []
+        self.aura_enchantments = []
+
+        # Auras. TODO: Pull this member up to ``GameEntity`` or not?
+        self.auras = set()
 
         # Temporary data dict for aura update.
         self.aura_tmp = {}
@@ -277,24 +280,77 @@ class IndependentEntity(GameEntity):
             result.append(cls.data['armor'])
         return result
 
+    # Methods of aura, enchantment and aura update.
+
+    def add_aura(self, aura):
+        """Add an aura."""
+        self.auras.add(aura)
+
+        # Update the currently added aura to the correct zone.
+        self.update_auras(Zone.Invalid, self.zone, (aura,))
+
+    def update_auras(self, from_zone, to_zone, auras=None):
+        """Update auras according to its active zones."""
+
+        auras = self.auras if auras is None else auras
+        for aura in auras:
+            from_ = from_zone in aura.zones
+            to_ = to_zone in aura.zones
+            if not from_ and to_:
+                self.game.register_aura(aura)
+            elif from_ and not to_:
+                self.game.remove_aura(aura)
+            else:
+                pass
+
     def add_enchantment(self, enchantment):
         """Add an enchantment, insert in order."""
-        a = self.enchantments
+        a = self.aura_enchantments if enchantment.aura else self.enchantments
         lo = _bisect(a, enchantment)
         a.insert(lo, enchantment)
 
-    def remove_enchantment(self, enchantment):
+    def remove_enchantment(self, enchantment, error_not_found=False):
         """Recalculate enchantments.
 
         Move auras to the end.
         Enchantments are sorted in order of play.
         """
-        a = self.enchantments
+        a = self.aura_enchantments if enchantment.aura else self.enchantments
         lo = _bisect(a, enchantment)
-        if a[lo] != enchantment:
-            raise ValueError('Enchantment {} not found in the enchantment list'.format(enchantment))
+        if not 0 <= lo < len(a) or a[lo] != enchantment:
+            if error_not_found:
+                raise ValueError('Enchantment {} not found in the enchantment list'.format(enchantment))
         else:
             del a[lo]
+
+    def get_enchantment_by_aura(self, aura):
+        a = self.aura_enchantments
+        lo = _bisect(a, aura)
+        if not 0 <= lo < len(a) or a[lo].source != aura:
+            return None
+        return a[lo]
+
+    def remove_enchantment_by_aura(self, aura, error_not_found=False):
+        a = self.aura_enchantments
+        lo = _bisect(a, aura)
+        if not 0 <= lo < len(a) or a[lo].source != aura:
+            if error_not_found:
+                raise ValueError('Enchantment of source {} not found in the aura enchantment list'.format(aura))
+        else:
+            del a[lo]
+
+    def all_enchantments(self):
+        return chain(self.enchantments, self.aura_enchantments)
+
+    def _modify_enchantments_between_zones(self, old_zone, zone):
+        """Modify enchantments. Called by ``_set_zone``."""
+        if old_zone == Zone.Play:
+            for e_list in (self.enchantments, self.aura_enchantments):
+                # Removed from play.
+                # Detach all enchantments (with some exceptions).
+                for enchantment in e_list:
+                    enchantment.detach(remove_from_target=False)
+                e_list.clear()
 
     def _aura_update_before(self):
         """Set base status before aura update."""
@@ -325,7 +381,7 @@ class IndependentEntity(GameEntity):
         self._aura_update_before()
 
         # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Auras> for details.
-        for enchantment in self.enchantments:
+        for enchantment in self.all_enchantments():
             enchantment.apply()
 
         self._aura_update_after()

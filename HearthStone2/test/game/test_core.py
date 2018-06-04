@@ -90,3 +90,24 @@ class TestCore(unittest.TestCase):
         self._assertZoneAttr()
         self.game.run_player_action(pa.Concede(self.game))
         self._assertZoneAttr()
+
+    def _assertManas(self, player, m, u, t, o, on, d):
+        self.assertEqual(player.max_mana, m, 'Max mana not equal')
+        self.assertEqual(player.used_mana, u, 'Used mana not equal')
+        self.assertEqual(player.temp_mana, t, 'Temp mana not equal')
+        self.assertEqual(player.overload, o, 'Overload mana not equal')
+        self.assertEqual(player.overload_next, on, 'Overload next mana not equal')
+        self.assertEqual(player.displayed_mana(), d, 'Displayed mana not equal')
+
+    def testTempMana(self):
+        game = self.game
+        player = game.get_player(0)
+        self._assertManas(player, 0, 0, 0, 0, 0, 0)
+        player.add_mana(4, 'M')
+        self._assertManas(player, 4, 4, 0, 0, 0, 0)
+        player.add_mana(12, 'T')
+        self._assertManas(player, 4, 4, 10, 0, 0, 10)
+        player.spend_mana(7)
+        self._assertManas(player, 4, 4, 3, 0, 0, 3)
+        player.add_mana(6, 'T')
+        self._assertManas(player, 4, 4, 9, 0, 0, 9)

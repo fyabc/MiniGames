@@ -127,6 +127,12 @@ DefaultClassHeroMap = {
 }
 
 
+class AuraType(metaclass=EnumMeta):
+    """An enumeration class, contains aura types."""
+    AttackHealth = 0
+    Other = 1
+
+
 class Condition:
     """The class of conditions to get random cards or select cards."""
 
@@ -137,7 +143,9 @@ __all__ = [
     'order_of_play',
 
     'EnumMeta',
-    'Type', 'Zone', 'Rarity', 'Race', 'Klass', 'Condition',
+    'Type', 'Zone', 'Rarity', 'Race', 'Klass',
+    'AuraType',
+    'Condition',
 
     'DefaultClassHeroMap',
 ]

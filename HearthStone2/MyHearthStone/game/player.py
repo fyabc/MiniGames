@@ -351,7 +351,7 @@ class Player(IndependentEntity):
             self.temp_mana = 0
             self.used_mana = self.overload
         elif action == 'T':
-            self.temp_mana = min(self.ManaMax, value + self.temp_mana)
+            self.temp_mana = min(self.ManaMax - (self.max_mana - self.used_mana), value + self.temp_mana)
         elif action == 'M':
             old_max_mana = self.max_mana
             self.max_mana = min(self.ManaMax, value + self.max_mana)

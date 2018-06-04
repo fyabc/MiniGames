@@ -4,7 +4,7 @@
 """This is a package for some new-features test cards."""
 
 from MyHearthStone import ext
-from MyHearthStone.ext import Minion
+from MyHearthStone.ext import Minion, Spell
 from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.utils.game import Zone
@@ -52,3 +52,15 @@ class TestPredamage(Minion):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.Trig_Predamage(self.game, self)
+
+
+class QuickGetMana(Spell):
+    """在本回合中，获得十个法力水晶。"""
+    data = {
+        'id': "T00000002",
+        'type': 1, 'rarity': 0, 'cost': 0,
+    }
+
+    def run(self, target, **kwargs):
+        self.game.add_mana(10, 'T', self.player_id)
+        return []
