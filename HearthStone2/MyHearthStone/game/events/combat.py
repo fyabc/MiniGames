@@ -106,7 +106,7 @@ class Combat(Phase):
             AfterAttack(self.game, self.attack_event)]
 
         atk_pid = self.attacker.player_id
-        if a == self.game.get_hero(atk_pid):
+        if a is self.game.get_hero(atk_pid):
             weapon = self.game.get_weapon(atk_pid)
             if weapon is not None:
                 result.insert(2, LoseDurability(self.game, weapon, 1))

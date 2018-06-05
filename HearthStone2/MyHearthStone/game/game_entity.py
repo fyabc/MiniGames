@@ -81,6 +81,20 @@ class GameEntity(metaclass=SetDataMeta):
         Use `CardClass.data['cost']` or `card_object.cls_data['cost']` to access class-level data
             (original card data, will not be changed).
         Use `card_object.cost` to access object-level data (card-specific data, may be changed in the game).
+
+    [NOTE]: Differences between two type of triggers: (same for auras)
+        1) Triggers directly attached to this entity (Entity -> Trigger)
+        2) Triggers attached to enchantments that are attached to this entity (Entity -> Enchantment -> Trigger)
+
+        Triggers of 1) are "original" triggers of this entity, and will be remained when the entity is moving between
+        zones. So they can be reused when the entity go to their active zones again.
+            Example: The "original" trigger effect of "Knife Juggler":
+                "After you summon a minion, deal 1 damage to a random enemy."
+        Triggers of 2) are "extra" triggers of this entity, and because some of attached enchantments will be detached
+        when the entity is moving between zones (e.g. moving from Play zone to other zones will detach all
+        enchantments), and their triggers will also be detached.
+            Example: The triggered effect attached to a minion by "Blessing of Wisdom":
+                "Whenever this minion attacks, the caster of 'Blessing of Wisdom' draw a card."
     """
 
     # TODO: Extract all these keys of ``data`` into a new enumeration ``GameTags``.
@@ -116,6 +130,9 @@ class GameEntity(metaclass=SetDataMeta):
 
         # Triggers of this entity.
         self.triggers = set()
+
+        # Auras of this entity. [NOTE]: Non-independent entities (like enchantments) CAN have auras.
+        self.auras = set()
 
     def _repr(self, **kwargs):
         __show_cls = kwargs.pop('__show_cls', True)
@@ -221,8 +238,16 @@ class GameEntity(metaclass=SetDataMeta):
         # todo: Apply enchantments that affect description (e.g. spell power) on it.
         return self.data['description']
 
+    # Method of triggers and auras.
+
     def add_trigger(self, trigger):
-        """Add a trigger."""
+        """Add a trigger.
+
+        This method will also update the added trigger.
+
+        :param trigger:
+        :return:
+        """
         self.triggers.add(trigger)
 
         # Update the currently added trigger to the correct zone.
@@ -241,46 +266,6 @@ class GameEntity(metaclass=SetDataMeta):
                 self.game.remove_trigger(trigger)
             else:
                 pass
-
-
-class IndependentEntity(GameEntity):
-    """The class of independent game entity.
-
-    An independent game entity can have its own enchantments, and does not need to be attached to another entity.
-    An independent game entity acts like "common" entities, and can be selected by player to do actions.
-
-    Example of independent entities: Player, Card, Hero, HeroPower
-    Example of non-independent entities: Enchantment, Aura
-    """
-
-    def __init__(self, game):
-        super().__init__(game)
-
-        # Enchantment list and aura enchantment list of this entity. Both in order of oop.
-        self.enchantments = []
-        self.aura_enchantments = []
-
-        # Auras. TODO: Pull this member up to ``GameEntity`` or not?
-        self.auras = set()
-
-        # Temporary data dict for aura update.
-        self.aura_tmp = {}
-
-    @classmethod
-    def get_cahr(cls):
-        """Get cost / attack / health / armor (basic attributes)."""
-        result = []
-        if 'cost' in cls.data:
-            result.append(cls.data['cost'])
-        if 'attack' in cls.data:
-            result.append(cls.data['attack'])
-        if 'health' in cls.data:
-            result.append(cls.data['health'])
-        if 'armor' in cls.data:
-            result.append(cls.data['armor'])
-        return result
-
-    # Methods of aura, enchantment and aura update.
 
     def add_aura(self, aura):
         """Add an aura."""
@@ -303,6 +288,43 @@ class IndependentEntity(GameEntity):
             else:
                 pass
 
+
+class IndependentEntity(GameEntity):
+    """The class of independent game entity.
+
+    An independent game entity can have its own enchantments, and does not need to be attached to another entity.
+    An independent game entity acts like "common" entities, and can be selected by player to do actions.
+
+    Example of independent entities: Player, Card, Hero, HeroPower
+    Example of non-independent entities: Enchantment, Aura
+    """
+
+    def __init__(self, game):
+        super().__init__(game)
+
+        # Enchantment list and aura enchantment list of this entity. Both in order of oop.
+        self.enchantments = []
+        self.aura_enchantments = []
+
+        # Temporary data dict for aura update.
+        self.aura_tmp = {}
+
+    @classmethod
+    def get_cahr(cls):
+        """Get cost / attack / health / armor (basic attributes)."""
+        result = []
+        if 'cost' in cls.data:
+            result.append(cls.data['cost'])
+        if 'attack' in cls.data:
+            result.append(cls.data['attack'])
+        if 'health' in cls.data:
+            result.append(cls.data['health'])
+        if 'armor' in cls.data:
+            result.append(cls.data['armor'])
+        return result
+
+    # Methods of aura, enchantment and aura update.
+
     def add_enchantment(self, enchantment):
         """Add an enchantment, insert in order."""
         a = self.aura_enchantments if enchantment.aura else self.enchantments
@@ -323,21 +345,26 @@ class IndependentEntity(GameEntity):
         else:
             del a[lo]
 
-    def get_enchantment_by_aura(self, aura):
+    def _find_aura_enchantment(self, aura, return_idx=True):
         a = self.aura_enchantments
-        lo = _bisect(a, aura)
-        if not 0 <= lo < len(a) or a[lo].source != aura:
-            return None
-        return a[lo]
+        for i, e in enumerate(a):
+            if e.source is aura:
+                if return_idx:
+                    return i
+                else:
+                    return a[i]
+        return None
+
+    def get_enchantment_by_aura(self, aura):
+        return self._find_aura_enchantment(aura, return_idx=False)
 
     def remove_enchantment_by_aura(self, aura, error_not_found=False):
-        a = self.aura_enchantments
-        lo = _bisect(a, aura)
-        if not 0 <= lo < len(a) or a[lo].source != aura:
+        i = self._find_aura_enchantment(aura)
+        if i is None:
             if error_not_found:
                 raise ValueError('Enchantment of source {} not found in the aura enchantment list'.format(aura))
         else:
-            del a[lo]
+            del self.aura_enchantments[i]
 
     def all_enchantments(self):
         return chain(self.enchantments, self.aura_enchantments)

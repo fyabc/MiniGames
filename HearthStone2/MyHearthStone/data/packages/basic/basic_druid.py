@@ -187,7 +187,7 @@ class 横扫(Spell):
         for entity in order_of_play(
                 chain(self.game.get_zone(Zone.Play, 1 - self.player_id),
                       self.game.get_zone(Zone.Hero, 1 - self.player_id)), reverse=True):
-            if entity == target:
+            if entity is target:
                 continue
             targets.append(entity)
             values.append(1)

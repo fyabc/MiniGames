@@ -13,7 +13,8 @@ Playing/Summoning a minion: See https://hearthstone.gamepedia.com/Advanced_ruleb
 
 """
 
-from .event import Event, Phase
+from .event import Phase
+from .summon import Summon
 from .utils import dynamic_pid_prop
 from ...utils.game import Zone
 
@@ -241,24 +242,6 @@ def pure_equip_events(game, weapon, to_player, from_player=None, from_zone=None)
     return [EquipWeapon(game, weapon, None, to_player, is_played=False)]
 
 
-class Summon(Event):
-    def __init__(self, game, minion, loc, player_id=None):
-        super().__init__(game, minion)
-        self.loc = loc
-        self.player_id = player_id
-
-    @property
-    def minion(self):
-        return self.owner
-
-    def _repr(self):
-        return super()._repr(P=self.player_id, minion=self.owner, loc=self.loc)
-
-    def do(self):
-        self.minion.init_attack_status()
-        return []
-
-
 class OnPlayMinion(OnPlay):
     def __init__(self, game, minion, loc, target, player_id=None):
         super().__init__(game, minion)
@@ -391,3 +374,11 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
         return [AfterSummon(game, summon_event)]
     else:
         return []
+
+
+__all__ = [
+    'OnPlay', 'AfterPlay',
+    'OnPlaySpell', 'SpellBenderPhase', 'SpellText', 'AfterSpell',
+    'OnPlayWeapon', 'destroy_old_weapons', 'EquipWeapon', 'AfterPlayWeapon', 'pure_equip_events',
+    'OnPlayMinion', 'BattlecryPhase', 'AfterPlayMinion', 'AfterSummon', 'pure_summon_events',
+]

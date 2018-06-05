@@ -16,7 +16,7 @@ class Aura:
         temporary enchantments to other targets.
     """
 
-    # TODO: This class is like the ``Trigger`` class, which has its active zones, and will update when changing zones.
+    # TODO: Need test when the owner is an enchantment.
 
     # Aura type.
     type = AuraType.AttackHealth
@@ -34,15 +34,6 @@ class Aura:
     @property
     def oop(self):
         return self.owner.oop
-
-    @property
-    def order(self):
-        """The order of granted enchantments in enchantment list.
-
-        Used by searching the enchantment in the list.
-
-        See ``Enchantment.order`` for more details."""
-        return 1, self.oop
 
     def prepare_update(self):
         """Prepare the update of this aura, called by aura update methods of ``Game``.

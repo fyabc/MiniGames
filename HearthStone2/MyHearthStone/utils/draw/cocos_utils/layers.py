@@ -48,7 +48,7 @@ class BasicButtonsLayer(active.ActiveLayer):
         self.ctrl.get_node('main/main').switch_to(0)
 
         main_scene = self.ctrl.get('main')
-        if director.director.scene == main_scene:
+        if director.director.scene is main_scene:
             # Transition to the same scene will cause error.
             return
 
@@ -58,7 +58,7 @@ class BasicButtonsLayer(active.ActiveLayer):
         self.ctrl.get_node('main/main').switch_to(1)
 
         main_scene = self.ctrl.get('main')
-        if director.director.scene == main_scene:
+        if director.director.scene is main_scene:
             return
         director.director.replace(transitions.FadeTransition(main_scene, duration=1.0))
 
