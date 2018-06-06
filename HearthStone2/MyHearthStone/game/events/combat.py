@@ -15,7 +15,7 @@ Sequence details: See https://hearthstone.gamepedia.com/Advanced_rulebook#Combat
 from .event import Event, Phase
 from .damage import Damage
 from .misc import LoseStealth, LoseDurability
-from ...utils.constants import version_le
+from ...utils.constants import version_larger_equal
 
 __author__ = 'fyabc'
 
@@ -59,7 +59,7 @@ class PrepareCombat(Phase):
         result = [pae, ae]
 
         # Remove stealth.
-        if version_le("11.0.0"):
+        if version_larger_equal("11.0.0"):
             # After patch 11.0.0, Minions now only break Stealth when attacking.
             # Damage dealt by card abilities, such as Knife Juggler's knife throw, no longer breaks Stealth.
             if ae.attacker.stealth:

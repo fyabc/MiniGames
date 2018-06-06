@@ -100,6 +100,6 @@ def get_game_version(vstring):
     return _StrictVersion(vstring)
 
 
-def version_le(vstring):
+def version_larger_equal(vstring):
     """Test if current game version is larger or equals to given vstring."""
     return global_game_version() >= get_game_version(vstring)

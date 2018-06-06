@@ -6,9 +6,9 @@
 See <https://hearthstone.gamepedia.com/Advanced_rulebook#Damage_and_Healing> for details.
 """
 
-from .event import Event, DelayResolvedEvent, AreaEvent
+from .event import DelayResolvedEvent, AreaEvent
 from .misc import LoseDivineShield, LoseStealth
-from ...utils.constants import version_le
+from ...utils.constants import version_larger_equal
 
 __author__ = 'fyabc'
 
@@ -40,7 +40,7 @@ class Damage(DelayResolvedEvent):
         self.target.take_damage(self.value)
 
         # Lose stealth (before patch 11.0.0).
-        if not version_le("11.0.0"):
+        if not version_larger_equal("11.0.0"):
             if self.owner.stealth:
                 self.owner.stealth = False
                 self.pending_events.append(LoseStealth(self.game, self.owner))
