@@ -247,7 +247,7 @@ class GameBoardLayer(ActiveLayer):
             else:
                 if player.weapon is None:
                     self.try_remove(current_w_spr)
-                elif current_w_spr.entity != player.weapon:
+                elif current_w_spr.entity is not player.weapon:
                     # Weapon should be replaced with a new one.
                     self.try_remove(current_w_spr)
                     _new_w_sprite()
@@ -269,7 +269,7 @@ class GameBoardLayer(ActiveLayer):
                 # Old hero power sprite not exist, create a new.
                 _new_hp_sprite()
             else:
-                if current_hp_spr.entity != player.hero_power:
+                if current_hp_spr.entity is not player.hero_power:
                     # Hero power should be replaced with a new one.
                     self.try_remove(current_hp_spr)
                     _new_hp_sprite()

@@ -106,7 +106,7 @@ class 暗鳞先知(Minion):
     class Aura_暗鳞先知(Aura):
         def check_entity(self, entity, **kwargs):
             return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
-                and Race.Murloc in entity.race and entity != self.owner
+                and Race.Murloc in entity.race and entity is not self.owner
 
         def grant_enchantment(self, entity, **kwargs):
             Enc_暗鳞先知.from_card(self.owner, self.game, entity, self)
@@ -140,6 +140,7 @@ blank_minion({
 
 # 巫医 (5)
 class 巫医(Minion):
+    """[NOTE]: This is a classic card of battlecry."""
     data = {
         'id': 5,
         'cost': 1, 'attack': 2, 'health': 1,
@@ -240,7 +241,29 @@ ext.create_damage_minion({
     'battlecry': True, 'have_target': True,
 }, 1)
 
+
 # 团队领袖 (17)
+Enc_团队领袖 = ext.create_enchantment({'id': 1}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
+
+
+class 团队领袖(Minion):
+    data = {
+        'id': 17,
+        'cost': 3, 'attack': 2, 'health': 2,
+    }
+
+    class Aura_团队领袖(Aura):
+        def check_entity(self, entity, **kwargs):
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
+                and entity is not self.owner
+
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_团队领袖.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_团队领袖(self.game, self)
+
 
 # 剃刀猎手 (18)
 ext.create_summon_minion({
@@ -263,6 +286,7 @@ Enc_破碎残阳祭司 = ext.create_enchantment({'id': 2}, *enc_common.apply_fn_
 
 
 class 破碎残阳祭司(Minion):
+    """[NOTE]: This is a classic card of (permanently) granted enchantments."""
     data = {
         'id': 20,
         'cost': 3, 'attack': 3, 'health': 2,
@@ -354,6 +378,7 @@ Enc_古拉巴什狂暴者 = ext.create_enchantment({'id': 3}, *enc_common.apply_
 
 
 class 古拉巴什狂暴者(Minion):
+    """[NOTE]: This is a classic card of triggered effect."""
     data = {
         'id': 30,
         'cost': 5, 'attack': 2, 'health': 7,
@@ -363,7 +388,7 @@ class 古拉巴什狂暴者(Minion):
         respond = [std_events.Damage]
 
         def process(self, event: respond[0]):
-            if event.target != self.owner:
+            if event.target is not self.owner:
                 return []
             # The oop of the enchantment is the oop of damage event.
             Enc_古拉巴什狂暴者.from_card(event, self.game, self.owner)
@@ -490,7 +515,7 @@ class 暴风城勇士(Minion):
             super().__init__(*args, **kwargs)
 
         def check_entity(self, entity, **kwargs):
-            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id and entity != self.owner
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id and entity is not self.owner
 
         def grant_enchantment(self, entity, **kwargs):
             Enc_暴风城勇士.from_card(self.owner, self.game, entity, self)

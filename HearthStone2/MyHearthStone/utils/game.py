@@ -4,6 +4,9 @@
 __author__ = 'fyabc'
 
 
+OOP_LAST = (1 << 32) - 1
+
+
 def order_of_play(objects, key=None, reverse=False):
     """Sort objects by the order of play.
 
@@ -13,8 +16,9 @@ def order_of_play(objects, key=None, reverse=False):
     :return: List of objects, sorted by order of play.
     """
 
+    # If real oop is None, it means the entity is not played, so it have the lowest priority.
     def _default_key(o):
-        return o.oop
+        return OOP_LAST if o.oop is None else o.oop
 
     if key is None:
         key = _default_key

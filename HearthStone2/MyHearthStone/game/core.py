@@ -12,7 +12,7 @@ from .triggers.trigger import Trigger
 from .events.standard import game_begin_standard_events, DeathPhase, create_death_event
 from .events.event import Event
 from ..utils.constants import C
-from ..utils.game import order_of_play, Zone, AuraType, DefaultClassHeroMap
+from ..utils.game import order_of_play, Type, Zone, AuraType, DefaultClassHeroMap
 from ..utils.message import message, debug, error, info
 from ..utils.package_io import all_cards
 
@@ -379,6 +379,10 @@ class Game:
 
         for death_event in death_events:
             death = death_event.owner
+
+            # [NOTE]: When a hero died, did not move it to graveyard.
+            if death.type == Type.Hero:
+                continue
             self.move(death.player_id, death.zone, death, death.player_id, Zone.Graveyard, 'last')
 
         # Add instant removal death events.

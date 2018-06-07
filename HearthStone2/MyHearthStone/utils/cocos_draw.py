@@ -320,7 +320,7 @@ class HSGameBoard(layer.Layer):
             if self.active_card is None:
                 new_active_card.mouse_move_on()
             else:
-                if self.active_card != new_active_card:
+                if self.active_card is not new_active_card:
                     self.active_card.mouse_move_off()
                     new_active_card.mouse_move_on()
                 else:

@@ -105,7 +105,7 @@ def checker_my_hand(self, target):
         return True
 
     zone, player_id = target.zone, target.player_id
-    if zone == Zone.Hand and player_id == self.player_id and target != self:
+    if zone == Zone.Hand and player_id == self.player_id and target is not self:
         return True
     return False
 

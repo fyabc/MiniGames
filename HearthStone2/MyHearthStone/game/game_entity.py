@@ -256,6 +256,12 @@ class GameEntity(metaclass=SetDataMeta):
     def update_triggers(self, from_zone, to_zone, triggers=None):
         """Update triggers according to its active zones."""
 
+        # TODO:
+        #   A problem: weapons are in Weapon zone when in play, not in Play zone.
+        #   So the related triggers must explicitly set its ``zones`` attribute to ``[Zone.Weapon]``.
+        #   Is it too troublesome and easy to forget? Need and how to fix it?
+        #   Same problem for auras.
+
         triggers = self.triggers if triggers is None else triggers
         for trigger in triggers:
             from_ = from_zone in trigger.zones
@@ -299,6 +305,11 @@ class IndependentEntity(GameEntity):
     Example of non-independent entities: Enchantment, Aura
     """
 
+    data = {
+        # Both minions and heroes can have races (e.g. Jaraxxus).
+        'race': [],
+    }
+
     def __init__(self, game):
         super().__init__(game)
 
@@ -339,7 +350,7 @@ class IndependentEntity(GameEntity):
         """
         a = self.aura_enchantments if enchantment.aura else self.enchantments
         lo = _bisect(a, enchantment)
-        if not 0 <= lo < len(a) or a[lo] != enchantment:
+        if not 0 <= lo < len(a) or a[lo] is not enchantment:
             if error_not_found:
                 raise ValueError('Enchantment {} not found in the enchantment list'.format(enchantment))
         else:

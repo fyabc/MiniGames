@@ -42,3 +42,9 @@
 
     > 解释：在装备新武器时，旧武器仍存在，在一个阶段中两个武器同时存在于场上。
     > 见<https://hearthstone.gamepedia.com/Advanced_rulebook#Playing_a_weapon>.
+
+7. Draw card vs. Put into hand
+    1. 克洛玛古斯 + 秘法学家 可以复制
+    2. 古董收藏家 + 秘法学家 可以获得+1/+1
+
+    > <https://hearthstone.gamepedia.com/Arcanologist#Notes>中的描述不正确。

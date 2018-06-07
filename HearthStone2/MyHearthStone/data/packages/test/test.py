@@ -64,3 +64,14 @@ class QuickGetMana(Spell):
     def run(self, target, **kwargs):
         self.game.add_mana(10, 'T', self.player_id)
         return []
+
+
+class QuickDamage(Spell):
+    """对敌方英雄造成100点伤害。"""
+    data = {
+        'id': "T00000003",
+        'type': 1, 'rarity': 0, 'cost': 0,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), 100)]

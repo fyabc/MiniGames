@@ -17,7 +17,6 @@ class Card(IndependentEntity):
         'rarity': 0,
         'derivative': False,
         'klass': 0,
-        'race': [],
         'cost': 0,
         'overload': 0,
         'spell_power': 0,
