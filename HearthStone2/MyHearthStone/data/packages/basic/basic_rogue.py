@@ -42,9 +42,10 @@ class 影袭(Spell):
         'id': 60002,
         'type': 1, 'klass': 6, 'cost': 1,
     }
+    ext.add_dh_bonus_data(data, 3)
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), 3)]
+        return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), self.dh_values[0])]
 
 
 # 毒刃 (60003)
@@ -54,9 +55,11 @@ class 毒刃(Spell):
         'type': 1, 'klass': 6, 'cost': 2,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 1)
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, target, 1), std_events.DrawCard(self.game, self, self.player_id)]
+        return [std_events.Damage(self.game, self, target, self.dh_values[0]),
+                std_events.DrawCard(self.game, self, self.player_id)]
 
 
 # 闷棍 (60004)

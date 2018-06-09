@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# TODO: Apply DH values.
+
 import random
 
 from MyHearthStone import ext
@@ -30,12 +32,13 @@ class 稳固射击(HeroPower):
         'klass': 2, 'is_basic': True, 'cost': 2,
         'have_target': False,
     }
+    ext.add_dh_bonus_data(data, [2])
 
     def run(self, target, **kwargs):
         return [std_events.Damage(
             self.game, self,
             target=self.game.get_hero(1 - self.player_id),
-            value=2)]
+            value=self.dh_values[0])]
 
 
 # 森林狼 (20000)
@@ -120,8 +123,9 @@ class 奥术射击(Spell):
         'type': 1, 'klass': 2, 'cost': 1,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 2)
 
-    run = ext.damage_fn(2)
+    run = ext.damage_fn(data.get('dh_values', [])[0])
 
 
 # 追踪术 (20006)
@@ -147,6 +151,7 @@ class 杀戮命令(Spell):
         'type': 1, 'klass': 2, 'cost': 3,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, [3, 5])
 
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
@@ -158,7 +163,7 @@ class 杀戮命令(Spell):
         return super_result
 
     def run(self, target, **kwargs):
-        value = 5 if ext.have_friendly_beast(self) else 3
+        value = self.dh_values[1] if ext.have_friendly_beast(self) else self.dh_values[0]
         return [std_events.Damage(self.game, self, target, value)]
 
 
@@ -168,6 +173,7 @@ class 多重射击(Spell):
         'id': 20009,
         'type': 1, 'klass': 2, 'cost': 4,
     }
+    ext.add_dh_bonus_data(data, 3)
 
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
@@ -191,7 +197,7 @@ class 多重射击(Spell):
             real_targets = zone
         else:
             real_targets = random.sample(zone, 2)
-        return [std_events.AreaDamage(self.game, self, real_targets, [3 for _ in real_targets])]
+        return [std_events.AreaDamage(self.game, self, real_targets, [self.dh_values[0] for _ in real_targets])]
 
 
 # Derivations.

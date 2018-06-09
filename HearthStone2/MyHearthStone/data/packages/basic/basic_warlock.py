@@ -27,9 +27,10 @@ class 生命分流(HeroPower):
         'klass': 8, 'is_basic': True, 'cost': 2,
         'have_target': False,
     }
+    ext.add_dh_bonus_data(data, 2)
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, target=self.game.get_hero(self.player_id), value=2),
+        return [std_events.Damage(self.game, self, target=self.game.get_hero(self.player_id), value=self.dh_values[0]),
                 std_events.DrawCard(self.game, self, self.player_id)]
 
 

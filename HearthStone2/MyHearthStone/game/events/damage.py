@@ -9,6 +9,7 @@ See <https://hearthstone.gamepedia.com/Advanced_rulebook#Damage_and_Healing> for
 from .event import DelayResolvedEvent, AreaEvent
 from .misc import LoseDivineShield, LoseStealth
 from ...utils.constants import version_larger_equal
+from ...utils.game import DHBonusEventType
 
 __author__ = 'fyabc'
 
@@ -23,7 +24,14 @@ class Damage(DelayResolvedEvent):
         return super()._repr(source=self.owner, target=self.target, value=self.value)
 
     def do_real_work(self):
+        """Do the real work of damage event.
+
+        See <https://hearthstone.gamepedia.com/Damage#Advanced_rules> for more details.
+        """
         self.pending_events = []
+
+        # Apply proposed damage bonuses.
+        self.value = self.owner.get_proposed_dh_value(self.value, DHBonusEventType.Damage)
 
         if self.value <= 0:
             self.disable()

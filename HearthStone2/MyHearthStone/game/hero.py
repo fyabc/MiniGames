@@ -72,7 +72,7 @@ class Hero(AliveMixin, IndependentEntity):
 class HeroPower(IndependentEntity):
     """The class of hero power."""
 
-    _data = {
+    data = {
         'type': Type.HeroPower,
 
         # The klass of this hero power (is this useless?)

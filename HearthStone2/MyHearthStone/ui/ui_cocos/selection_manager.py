@@ -62,15 +62,14 @@ class SelectionManager:
         _, _, buttons, _ = click_args
 
         game = self.board.ctrl.game
-        player_id = player.player_id
 
         # Right click will clear all.
         if buttons & mouse.RIGHT:
             self.clear_all()
             return True
 
-        print('$Click at {}, P={}, Zone={}, index={}, state={}'.format(
-            sprite, player_id, Zone.Idx2Str[zone], index, self.state))
+        # print('$Click at {}, P={}, Zone={}, index={}, state={}'.format(
+        #     sprite, player.player_id, Zone.Idx2Str[zone], index, self.state))
 
         if self.state != self.C and zone == Zone.HeroPower:
             # [NOTE]: Hero power can be selected only in common state now.
@@ -219,7 +218,7 @@ class SelectionManager:
             self.clear_all()
             return True
 
-        print('$Click at space:', player_id, index)
+        # print('$Click at space:', player_id, index)
 
         if self.state == self.C:
             return False

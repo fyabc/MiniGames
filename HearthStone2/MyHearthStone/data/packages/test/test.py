@@ -72,6 +72,7 @@ class QuickDamage(Spell):
         'id': "T00000003",
         'type': 1, 'rarity': 0, 'cost': 0,
     }
+    ext.add_dh_bonus_data(data, 100)
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), 100)]
+        return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), self.dh_values[0])]

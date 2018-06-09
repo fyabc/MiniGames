@@ -137,6 +137,20 @@ class AuraType(metaclass=EnumMeta):
     Other = 1
 
 
+class DHBonusEventType(metaclass=EnumMeta):
+    """An enumeration class, contains damage/healing bonus event types."""
+    Invalid = -1
+    Damage = 0
+    Healing = 1
+
+
+class DHBonusType(metaclass=EnumMeta):
+    """An enumeration class, contains damage/healing bonus types."""
+    Invalid = -1
+    Add = 0
+    Double = 1
+
+
 class Condition:
     """The class of conditions to get random cards or select cards."""
 
@@ -149,6 +163,7 @@ __all__ = [
     'EnumMeta',
     'Type', 'Zone', 'Rarity', 'Race', 'Klass',
     'AuraType',
+    'DHBonusEventType', 'DHBonusType',
     'Condition',
 
     'DefaultClassHeroMap',

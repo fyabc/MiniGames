@@ -19,6 +19,10 @@ class AliveMixin:
 
     def _reset_tags(self):
         # Data of alive entities.
+
+        # noinspection PyProtectedMember
+        super()._reset_tags()
+
         self.data.update({
             'attack': 0,
             'damage': 0,

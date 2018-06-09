@@ -66,7 +66,10 @@ class Game:
         self.players = [None, None]     # type: List[Player]
 
         # Auras. It is convenient to share it between players.
-        self.auras = {t: set() for t in AuraType.Idx2Str}       # type: Dict[int, Set]
+        self.auras = {t: set() for t in AuraType.Idx2Str}           # type: Dict[int, Set]
+        # Auras that have been removed since last aura update step.
+        # Their granted enchantments will be removed at next aura update step.
+        self.removed_auras = {t: set() for t in AuraType.Idx2Str}   # type: Dict[int, Set]
 
         # Contains arbitrary data (need it?)
         self.data = self._init_data()
@@ -402,7 +405,8 @@ class Game:
             Then, every Entity's Health and Attack values are recalculated.
         """
 
-        self._aura_update_shared(self.auras[AuraType.AttackHealth])
+        debug('Running aura update (attack/health)')
+        self._aura_update_shared(AuraType.AttackHealth)
 
         # Update enchantments for all entities.
         for entity in self.get_all_entities():
@@ -410,9 +414,19 @@ class Game:
                 entity.aura_update_attack_health()
 
     def _aura_update_other(self):
-        self._aura_update_shared(self.auras[AuraType.Other])
+        debug('Running aura update (other)')
+        self._aura_update_shared(AuraType.Other)
 
-    def _aura_update_shared(self, auras):
+    def _aura_update_shared(self, aura_type):
+        auras = self.auras[aura_type]
+        removed_auras = self.removed_auras[aura_type]
+
+        # Detach granted enchantments of removed auras.
+        for aura in removed_auras:
+            debug('Detaching enchantments granted by {}'.format(aura))
+            aura.detach_granted_enchantments()
+        removed_auras.clear()
+
         # For each entity, Scan all given auras to grant enchantments.
         for aura in auras:
             aura.prepare_update()
@@ -456,15 +470,12 @@ class Game:
         # Select start player.
         start_player = random.randint(0, 1)
 
-        # Refresh some counters.
-        self.event_history.clear()
+        # Initialize some counters.
         self.n_turns = -1
         self.current_player = start_player
         self.current_oop = 1
         self._stop_subsequent_phases = False
-        self.player_buffer = [None]
         self.players = [Player(self) for _ in range(2)]
-        self.data = self._init_data()
         self.entity.oop = 0
 
         for player_id, (player, deck, m) in enumerate(zip(self.players, decks, class_hero_maps)):
@@ -644,9 +655,16 @@ class Game:
         self.auras[aura.type].add(aura)
 
     def remove_aura(self, aura):
+        """Remove an aura.
+
+        [NOTE]: Copied from Advanced Rulebook::
+
+            Auras are not recalculated due to minions leaving play or
+            due to minions being stolen in the middle of a Phase.
+        """
         debug('Remove aura {} of type {}'.format(aura, AuraType.Idx2Str[aura.type]))
-        aura.detach_granted_enchantments()
         self.auras[aura.type].discard(aura)
+        self.removed_auras[aura.type].add(aura)
 
     ###############################################
     # Game attributes methods and other utilities #
@@ -683,6 +701,12 @@ class Game:
 
     def get_entity(self, zone, player_id, index=0):
         return self.players[player_id].get_entity(zone, index)
+
+    def get_damage_bonus(self, player_id, source, bonus_type, event_type):
+        return self.players[player_id].get_damage_bonus(source, bonus_type, event_type)
+
+    def get_spell_power(self, player_id):
+        return self.players[player_id].get_spell_power()
 
     def get_hero(self, player_id):
         return self.get_player(player_id).hero

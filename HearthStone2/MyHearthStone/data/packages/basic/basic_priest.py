@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
 
@@ -25,9 +26,10 @@ class 次级治疗术(HeroPower):
         'klass': 5, 'is_basic': True, 'cost': 2,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 2)
 
     def run(self, target, **kwargs):
-        return [std_events.Healing(self.game, self, target, 2)]
+        return [std_events.Healing(self.game, self, target, self.dh_values[0])]
 
 
 # 北郡牧师 (50000)

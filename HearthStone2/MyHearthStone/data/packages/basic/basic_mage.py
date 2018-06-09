@@ -27,9 +27,10 @@ class 火焰冲击(HeroPower):
         'klass': 3, 'is_basic': True, 'cost': 2,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 1)
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, target, 1)]
+        return [std_events.Damage(self.game, self, target, self.dh_values[0])]
 
 
 # 水元素 (30000)
@@ -58,10 +59,11 @@ class 魔爆术(Spell):
         'id': 30003,
         'type': 1, 'klass': 3, 'cost': 2,
     }
+    ext.add_dh_bonus_data(data, 1)
 
     def run(self, target, **kwargs):
         targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
-        return [std_events.AreaDamage(self.game, self, targets, [1 for _ in targets])]
+        return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 
 # 寒冰箭 (30004)
@@ -71,9 +73,10 @@ class 寒冰箭(Spell):
         'type': 1, 'klass': 3, 'cost': 2,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 3)
 
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, target, 3),
+        return [std_events.Damage(self.game, self, target, self.dh_values[0]),
                 std_events.Freeze(self.game, self, target)]
 
 
@@ -96,8 +99,9 @@ class 火球术(Spell):
         'type': 1, 'klass': 3, 'cost': 4,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 6)
 
-    run = ext.damage_fn(6)
+    run = ext.damage_fn(data.get('dh_values', [])[0])
 
 
 # 变形术 (30008)
@@ -109,10 +113,11 @@ class 烈焰风暴(Spell):
         'id': 30009,
         'type': 1, 'klass': 3, 'cost': 7,
     }
+    ext.add_dh_bonus_data(data, 4)
 
     def run(self, target, **kwargs):
         targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
-        return [std_events.AreaDamage(self.game, self, targets, [4 for _ in targets])]
+        return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 
 # Derivatives.

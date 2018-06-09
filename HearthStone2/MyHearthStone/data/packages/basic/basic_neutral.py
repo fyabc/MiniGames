@@ -186,7 +186,7 @@ blank_minion({
 # 狗头人地卜师 (10)
 blank_minion({
     'id': 10,
-    'cost': 2, 'attack': 2, 'health': 1,
+    'cost': 2, 'attack': 2, 'health': 2,
     'spell_power': 1,
 })
 

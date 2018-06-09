@@ -8,8 +8,9 @@ import random
 
 from .game_entity import IndependentEntity
 from .alive_mixin import AliveMixin
+from .enchantments.dh_bonus import DHBonusMixin
 from ..utils.constants import C
-from ..utils.game import Zone
+from ..utils.game import Zone, Type, DHBonusEventType, DHBonusType
 from ..utils.message import info, debug
 from ..utils.package_io import all_cards, all_heroes, all_hero_powers
 
@@ -46,6 +47,10 @@ class Player(IndependentEntity):
 
     CoinCardID = "43"
 
+    data = {
+        'type': Type.Player,
+    }
+
     def __init__(self, game):
         super().__init__(game)
 
@@ -79,6 +84,8 @@ class Player(IndependentEntity):
     hero = _make_single_zone_property('hero', 'heroes')
     hero_power = _make_single_zone_property('hero_power', 'hero_powers')
     weapon = _make_single_zone_property('weapon', 'weapons')
+
+    # Start/end game related methods
 
     def start_game(self, deck, player_id: int, start_player: int, class_hero_map: dict):
         self._init_data()
@@ -149,6 +156,8 @@ class Player(IndependentEntity):
         self.tire_counter = 0
         self.start_player = None
 
+    # Entity movement methods.
+
     def generate(self, to_zone, to_index, entity):
         """Generate an entity into a zone.
 
@@ -213,6 +222,8 @@ class Player(IndependentEntity):
 
         return to_index
 
+    # Getters.
+
     def full(self, zone):
         if zone == Zone.Deck:
             return len(self.deck) >= self.DeckMax
@@ -246,7 +257,8 @@ class Player(IndependentEntity):
         :return: Iterator of all entities.
         """
 
-        all_visible_zones = (self.deck, self.hand, self.secret, self.play, self.weapons, self.heroes, self.hero_powers)
+        all_visible_zones = (
+            [self], self.deck, self.hand, self.secret, self.play, self.weapons, self.heroes, self.hero_powers)
         if yield_location:
             all_visible_zones = (enumerate(z) for z in all_visible_zones)
         return itertools.chain(*all_visible_zones)
@@ -279,6 +291,52 @@ class Player(IndependentEntity):
 
     def get_entity(self, zone, index=0):
         return self.get_zone(zone)[index]
+
+    def get_damage_bonus(self, source, bonus_type, event_type):
+        """Get number of damage bonus with given source and bonus type.
+
+        :param source: The source of the damage.
+        :param bonus_type: The bonus type (add or double).
+        :param event_type: The event type (damage or healing).
+        :return: The bonus number.
+
+        [NOTE]: If bonus number of ``DamageBonusType.Double`` is 3, it means the damage will be doubled 3 times,
+            so the result is ``value *= (1 << 3)``.
+        """
+
+        result = sum(e.get_bonus_value() for e in self.all_enchantments() if
+                     isinstance(e, DHBonusMixin) and
+                     event_type in e.event_types and
+                     source.type in e.source_types and
+                     bonus_type in e.bonus_types)
+
+        # Add spell power in this case.
+        if source.type == Type.Spell and bonus_type == DHBonusType.Add and event_type == DHBonusEventType.Damage:
+            result += self.get_spell_power()
+        return result
+
+    def get_spell_power(self):
+        """Get the spell power value of this player.
+
+        See <https://hearthstone.gamepedia.com/Spell_Damage#Notes> and
+        <https://hearthstone.gamepedia.com/Advanced_rulebook#Spell_Damage> for details.
+
+        Copied from Advanced Rulebook:
+            Spell Damage is unlike Auras - it does not update when each outermost Phase resolves and
+            Hearthstone updates Auras.
+            Rather, it updates constantly - it is always the most up-to-date value.
+        """
+
+        # Collect spell power value of all related entities directly, so the value will be permanent.
+        # Spell power is a permanent attribute, like stealth, taunt, etc. So its always up-to-date.
+
+        # [NOTE]: Only collect minions and weapons in play. May add hero power and player in future,
+        # see <https://hearthstone.gamepedia.com/Jungle_Moonkin#Notes> for more details.
+
+        result = sum(e.spell_power for e in itertools.chain(self.get_zone(Zone.Play), self.get_zone(Zone.Weapon)))
+        return result
+
+    # Turn related methods.
 
     def end_turn(self):
         """Things to do when turn end.
@@ -320,6 +378,8 @@ class Player(IndependentEntity):
             self.hero_power.exhausted = False
 
         # TODO
+
+    # Mana related methods.
 
     def add_mana(self, value: int, action: str):
         """Add mana.
@@ -388,13 +448,6 @@ class Player(IndependentEntity):
         self.used_mana = self.max_mana
         return result
 
-    def log_use_hero_power(self):
-        self.number_hp_this_turn += 1
-        self.number_hp_this_game += 1
-
-    def __repr__(self):
-        return super()._repr(player_id=self.player_id)
-
     def displayed_mana(self):
         """Get displayed current mana value. Negative value will be displayed as 0.
 
@@ -405,8 +458,19 @@ class Player(IndependentEntity):
         """
         return max(0, self.max_mana + self.temp_mana - self.used_mana)
 
+    # Hero power related methods.
+
+    def log_use_hero_power(self):
+        self.number_hp_this_turn += 1
+        self.number_hp_this_game += 1
+
     def create_card(self, card_id, **kwargs):
         return all_cards()[card_id](self.game, **kwargs)
+
+    # Repr methods.
+
+    def __repr__(self):
+        return super()._repr(player_id=self.player_id)
 
     def format_zone(self, zone, verbose=False):
         """Format cards in the zone into string.

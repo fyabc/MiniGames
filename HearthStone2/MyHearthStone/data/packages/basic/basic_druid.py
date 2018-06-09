@@ -8,7 +8,7 @@ from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import Spell, Hero, HeroPower, Enchantment
-from MyHearthStone.utils.game import order_of_play, Zone
+from MyHearthStone.utils.game import order_of_play, Zone, DHBonusEventType
 
 __author__ = 'fyabc'
 
@@ -63,8 +63,9 @@ class 月火术(Spell):
         'type': 1, 'klass': 1, 'cost': 0,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 1)
 
-    run = ext.damage_fn(1)
+    run = ext.damage_fn(data['dh_values'][0])
 
 
 # 激活 (10002)
@@ -155,9 +156,10 @@ class 治疗之触(Spell):
         'type': 1, 'klass': 1, 'cost': 3,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 8, DHBonusEventType.Healing)
 
     def run(self, target, **kwargs):
-        return [std_events.Healing(self.game, self, target, 8)]
+        return [std_events.Healing(self.game, self, target, self.dh_values[0])]
 
 
 # 野蛮咆哮 (10007)
@@ -170,6 +172,7 @@ class 横扫(Spell):
         'type': 1, 'klass': 1, 'cost': 4,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, [4, 1])
 
     check_target = ext.checker_enemy_character
 
@@ -182,7 +185,7 @@ class 横扫(Spell):
         of play; then, all Damage Events are resolved in the same order.
         """
         targets = [target]
-        values = [4]
+        values = [self.dh_values[0]]
 
         for entity in order_of_play(
                 chain(self.game.get_zone(Zone.Play, 1 - self.player_id),
@@ -190,7 +193,7 @@ class 横扫(Spell):
             if entity is target:
                 continue
             targets.append(entity)
-            values.append(1)
+            values.append(self.dh_values[1])
 
         return [std_events.AreaDamage(self.game, self, targets, values)]
 
@@ -203,8 +206,11 @@ class 星火术(Spell):
         'have_target': True,
     }
 
+    ext.add_dh_bonus_data(data, 5)
+
     def run(self, target, **kwargs):
-        return [std_events.Damage(self.game, self, target, 5), std_events.DrawCard(self.game, self, self.player_id)]
+        return [std_events.Damage(self.game, self, target, self.dh_values[0]),
+                std_events.DrawCard(self.game, self, self.player_id)]
 
 
 # 法力过剩 (10010)

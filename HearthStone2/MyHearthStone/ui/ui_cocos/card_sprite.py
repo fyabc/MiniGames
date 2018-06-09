@@ -72,7 +72,7 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
             self.remove(self.activated_border)
 
     def _on_click(self):
-        print('{} clicked!'.format(self))
+        # print('{} clicked!'.format(self))
         self.is_activated = not self.is_activated
         return True
 
@@ -181,7 +181,10 @@ class HandSprite(EntitySprite):
     def _c_get(self, key):
         """Get card attributes."""
         if self.static:
-            return all_cards()[self.entity].data[key]
+            card = all_cards()[self.entity]
+            if key == 'description':
+                return card.static_description()
+            return card.data[key]
         else:
             return getattr(self.entity, key)
 
@@ -372,8 +375,10 @@ class HandSprite(EntitySprite):
             self.front_sprites['armor-label'][0].element.text = str(self._c_get('armor'))
         self.front_sprites['name'][0].element.text = self._c_get('name')
         _r_desc = self._render_desc(self._c_get('description'))
-        if self.front_sprites['desc'][0].element.text != _r_desc:
-            self.front_sprites['desc'][0].element.text = _r_desc
+        _e_desc = self.front_sprites['desc'][0].element
+        if _e_desc.text != _r_desc:
+            _e_desc.text = _r_desc
+            _e_desc.set_style('font_name', C.UI.Cocos.Fonts.Description.Name)
 
         # [NOTE] Race sprite and label not updated.
 

@@ -49,10 +49,11 @@ class 旋风斩(Spell):
         'id': 90002,
         'type': 1, 'klass': 9, 'cost': 1,
     }
+    ext.add_dh_bonus_data(data, 1)
 
     def run(self, target, **kwargs):
         targets = ext.collect_all_minions(self, False, oop=True)
-        return [std_events.AreaDamage(self.game, self, targets, [1 for _ in targets])]
+        return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 
 # 冲锋 (90003)

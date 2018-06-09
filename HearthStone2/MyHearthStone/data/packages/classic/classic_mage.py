@@ -19,8 +19,9 @@ class 炎爆术(Spell):
         'type': 1, 'rarity': 3, 'klass': 3, 'cost': 10,
         'have_target': True,
     }
+    ext.add_dh_bonus_data(data, 10)
 
-    run = ext.damage_fn(10)
+    run = ext.damage_fn(data.get('dh_values', [])[0])
 
 
 class 大法师安东尼达斯(Minion):

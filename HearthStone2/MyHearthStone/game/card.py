@@ -41,6 +41,7 @@ class Card(IndependentEntity):
     rarity = make_property('rarity', setter=False)
     derivative = make_property('derivative', setter=False)
     race = make_property('race', setter=False)
+    spell_power = make_property('spell_power')      # TODO: Need to make it read-only?
 
     @property
     def cost(self):
@@ -191,6 +192,8 @@ class Spell(Card):
         'secret': False,
         'quest': False,
     }
+
+    DamageValues = []   # Used for spell damage description rendering.
 
     def _repr(self):
         return super()._repr(name=self.data['name'], CAH=[self.cost], P=self.player_id,

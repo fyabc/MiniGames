@@ -4,6 +4,7 @@
 """Healing events."""
 
 from .event import Event, DelayResolvedEvent, AreaEvent
+from ...utils.game import DHBonusEventType
 
 __author__ = 'fyabc'
 
@@ -18,6 +19,9 @@ class Healing(DelayResolvedEvent):
         return super()._repr(source=self.owner, target=self.target, value=self.value)
 
     def do_real_work(self):
+        # Apply proposed healing bonuses.
+        self.value = self.owner.get_proposed_dh_value(self.value, DHBonusEventType.Healing)
+
         real_heal = self.target.restore_health(self.value)
         # If the Healing Event was prevented or if it did not change the character's current Health,
         # it will not run any triggers.

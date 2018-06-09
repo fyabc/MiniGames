@@ -5,8 +5,9 @@
 
 from collections import ChainMap
 from itertools import chain
+import re
 
-from ..utils.game import Zone, Type
+from ..utils.game import Zone, Type, DHBonusType
 from ..utils.message import entity_message, warning, debug
 
 __author__ = 'fyabc'
@@ -235,7 +236,6 @@ class GameEntity(metaclass=SetDataMeta):
 
     @property
     def description(self):
-        # todo: Apply enchantments that affect description (e.g. spell power) on it.
         return self.data['description']
 
     # Method of triggers and auras.
@@ -423,6 +423,75 @@ class IndependentEntity(GameEntity):
             enchantment.apply()
 
         self._aura_update_after()
+
+    # Methods for damage bonus.
+
+    dh_values = make_property('dh_values', setter=False, default=None)
+    dh_types = make_property('dh_types', setter=False, default=None)
+
+    DH_PATTERN = re.compile(r'\[(\d+)\]')
+
+    def get_proposed_dh_value(self, v, type_):
+        """Get proposed damage/healing value of this spell with given input value (after damage bonuses).
+
+        This method is used to update card description and calculate proposed damage value in damage events.
+
+        Some entities may override this method to implement its own behaviour (e.g. "Arcane Blast").
+
+        :param v:
+        :param type_:
+        :return:
+        """
+        n_add = self.game.get_damage_bonus(self.player_id, self, DHBonusType.Add, type_)
+        n_doubles = self.game.get_damage_bonus(self.player_id, self, DHBonusType.Double, type_)
+
+        return (v + n_add) * (1 << n_doubles)
+
+    def _render_dh_text(self, v, type_):
+        v_p = self.get_proposed_dh_value(v, type_)
+
+        if v_p == v:
+            return str(v)
+        else:
+            return '*{}*'.format(v_p)
+
+    @property
+    def description(self):
+        """Return the description of this spell card.
+
+        This method will apply the spell power rendering if it exists.
+        This method also uses the class attribute ``DamageValues``.
+
+        Example: Card "Swipe".
+            This list is ``[4, 1]``, and the card description is
+            "对一个敌人造<br/>成{}点伤害，并对所有<br/>其他敌人<br/>造成{}点伤害。"
+            The rendered description is
+            ```
+            description.format(*(self._render_spell_damage_text(v) for v in self.DamageValues))
+            ```
+            In normal case:
+                self._render_spell_damage_text(4) = '4'
+            In spell damage +1:
+                self._render_spell_damage_text(4) = '*5*'
+
+        :return:
+        """
+        d = super().description
+
+        dh_values = self.dh_values
+        dh_types = self.dh_types
+        if not dh_values:
+            return d
+
+        rendered_dh = (self._render_dh_text(v, t) for v, t in zip(dh_values, dh_types))
+        d = self.DH_PATTERN.subn(lambda mo: next(rendered_dh), d)[0]
+
+        return d
+
+    @classmethod
+    def static_description(cls):
+        """The static version of the card description."""
+        return cls.DH_PATTERN.subn(lambda mo: mo.group(1), cls.data['description'])[0]
 
     # Methods for frontend.
 
