@@ -111,7 +111,7 @@ class AreaDiscardCard(AreaEvent):
             for target in targets])
 
 
-class Mill(Event):
+class MillCard(Event):
     # TODO
     pass
 
@@ -119,5 +119,5 @@ class Mill(Event):
 __all__ = [
     'GenericDrawCard', 'DrawCard', 'PutIntoHand',
     'DiscardCard', 'AreaDiscardCard',
-    'Mill',
+    'MillCard',
 ]

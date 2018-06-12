@@ -147,12 +147,24 @@ class Minion(AliveMixin, Card):
             'deathrattle_fns': deathrattle_fns,
         })
 
+    def _set_zone_hook(self, old_zone, zone):
+        super()._set_zone_hook(old_zone, zone)
+
+        # If a minion is moved into play (in any case), do the post processing.
+        if zone == Zone.Play:
+            self.init_attack_status()
+
     battlecry = make_property('battlecry', setter=False)
     deathrattle = make_property('deathrattle', setter=False)
     deathrattle_fns = make_property('deathrattle_fns')
 
     def run_battlecry(self, target: IndependentEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
+
+        [NOTE]: Notes from Advanced Rulebook:
+        1. The Battlecry still occurs even if the played minion Dies first.
+        If the Battlecry uses the played minion as a target, then it affects its position in the Graveyard,
+        not the position it had on the board, because it has already left play. This is probably a bug.
 
         :param target: Target of the battlecry.
         :param kwargs: Other arguments, such as location.
@@ -201,6 +213,11 @@ class Spell(Card):
 
     def run(self, target: IndependentEntity, **kwargs):
         """Run the spell.
+
+        [NOTE]: Notes from Advanced Rulebook:
+        1. If the spell requires a target, and the target is removed from play during an intermediate Phase,
+        the spell goes off anyway. It will affect its target in the Graveyard Zone, which mostly does nothing,
+        but side-effects and second steps may still go off.
 
         :param target:
         :param kwargs: Other arguments, such as location.

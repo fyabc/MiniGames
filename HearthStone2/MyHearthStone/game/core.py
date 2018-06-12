@@ -135,6 +135,22 @@ class Game:
         for key, triggers in self.triggers.items():
             self.triggers[key] = {trigger for trigger in triggers if trigger.enable}
 
+    def register_aura(self, aura):
+        debug('Register aura {} of type {}'.format(aura, AuraType.Idx2Str[aura.type]))
+        self.auras[aura.type].add(aura)
+
+    def remove_aura(self, aura):
+        """Remove an aura.
+
+        [NOTE]: Copied from Advanced Rulebook::
+
+            Auras are not recalculated due to minions leaving play or
+            due to minions being stolen in the middle of a Phase.
+        """
+        debug('Remove aura {} of type {}'.format(aura, AuraType.Idx2Str[aura.type]))
+        self.auras[aura.type].discard(aura)
+        self.removed_auras[aura.type].add(aura)
+
     def add_callback(self, callback, when='resolve'):
         """Add a callback as a hook in the processing of the system.
 
@@ -649,22 +665,6 @@ class Game:
     def inc_oop(self):
         self.current_oop += 1
         return self.current_oop
-
-    def register_aura(self, aura):
-        debug('Register aura {} of type {}'.format(aura, AuraType.Idx2Str[aura.type]))
-        self.auras[aura.type].add(aura)
-
-    def remove_aura(self, aura):
-        """Remove an aura.
-
-        [NOTE]: Copied from Advanced Rulebook::
-
-            Auras are not recalculated due to minions leaving play or
-            due to minions being stolen in the middle of a Phase.
-        """
-        debug('Remove aura {} of type {}'.format(aura, AuraType.Idx2Str[aura.type]))
-        self.auras[aura.type].discard(aura)
-        self.removed_auras[aura.type].add(aura)
 
     ###############################################
     # Game attributes methods and other utilities #

@@ -196,22 +196,22 @@ class GameEntity(metaclass=SetDataMeta):
             warning('Try to move {} from {!r} to the same zone.'.format(self, Zone.Idx2Str[zone]))
             return
 
-        # Update triggers.
+        # Update triggers and auras.
         self.update_triggers(old_zone, zone)
-
-        # Update auras (only for independent entities).
-        if hasattr(self, 'update_auras'):
-            self.update_auras(old_zone, zone)
+        self.update_auras(old_zone, zone)
 
         # Reset tags to default value.
         self._reset_tags()
 
-        # Modify enchantments (only for independent entities).
-        if hasattr(self, '_modify_enchantments_between_zones'):
-            self._modify_enchantments_between_zones(old_zone, zone)
+        # Call the hook overwritten by subclasses.
+        self._set_zone_hook(old_zone, zone)
 
         debug('Move {} from {!r} to {!r}.'.format(self, Zone.Idx2Str[old_zone], Zone.Idx2Str[zone]))
         self.data['zone'] = zone
+
+    def _set_zone_hook(self, old_zone, zone):
+        """The hook method used for subclasses when set the zone."""
+        pass
 
     zone = property(fget=_get_zone, fset=_set_zone)
 
@@ -380,8 +380,10 @@ class IndependentEntity(GameEntity):
     def all_enchantments(self):
         return chain(self.enchantments, self.aura_enchantments)
 
-    def _modify_enchantments_between_zones(self, old_zone, zone):
-        """Modify enchantments. Called by ``_set_zone``."""
+    def _set_zone_hook(self, old_zone, zone):
+        super()._set_zone_hook(old_zone, zone)
+
+        # Modify enchantments.
         if old_zone == Zone.Play:
             for e_list in (self.enchantments, self.aura_enchantments):
                 # Removed from play.
