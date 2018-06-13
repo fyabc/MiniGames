@@ -1,9 +1,11 @@
 # HearthStone Versions
 
+- ...
 - Patch 9.2.0.21517
 - Patch 9.4.0.22115
 - Patch 10.0.0.22611
 - Patch 11.0.0.23966
+- ...
 
 # Implemented Features
 
@@ -39,6 +41,7 @@
         > TODO: Need full tests
     - Active and highlighted effect of cards (e.g. "Killer Command")
     - Discard effect (e.g. "Soulfire")
+    - Transform effects (e.g. "Polymorph" and "Hex")
 - Classic:
     - Keywords
         - **Deathrattle**
@@ -62,7 +65,6 @@
 
 - Basic:
     - Splitted spell damage (e.g. "Arcane Missiles")
-    - Transform effects (e.g. "Polymorph" and "Hex")
     - Select effects (e.g. **Choose One** effects, "Tracking")
     - Control effects (e.g. "Shadow Madness" and "Mind Control")
 - Classic:
@@ -76,3 +78,6 @@
     - Modify healing to damage effects (e.g. "Auchenai Soulpriest")
     - Mana related
         - Destroy mana (e.g. "Felguard")
+- LOE:
+    - Keywords
+        - **Discover** (a kind of select effects)

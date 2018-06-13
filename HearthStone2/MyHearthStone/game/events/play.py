@@ -62,7 +62,7 @@ class OnPlaySpell(OnPlay):
         self.spell.oop = self.game.inc_oop()
 
         tz = Zone.Graveyard
-        if self.spell.data['secret']:
+        if self.spell.data['secret'] or self.spell.data['quest']:
             tz = Zone.Secret
 
         self.game.move(self.player_id, Zone.Hand, self.spell, self.player_id, tz, 'last')

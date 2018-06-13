@@ -699,8 +699,17 @@ class Game:
     def get_zone(self, zone, player_id):
         return self.players[player_id].get_zone(zone)
 
-    def get_entity(self, zone, player_id, index=0):
-        return self.players[player_id].get_entity(zone, index)
+    def get_entity(self, zone, player_id, location=0):
+        return self.players[player_id].get_entity(zone, location)
+
+    def get_location(self, entity, zone, player_id, error_not_found=False):
+        z = self.get_zone(zone, player_id)
+        try:
+            return z.index(entity)
+        except ValueError:
+            if error_not_found:
+                raise
+            return None
 
     def get_damage_bonus(self, player_id, source, bonus_type, event_type):
         return self.players[player_id].get_damage_bonus(source, bonus_type, event_type)

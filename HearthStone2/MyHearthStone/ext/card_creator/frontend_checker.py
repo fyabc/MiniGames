@@ -34,7 +34,29 @@ def require_board_not_full(self, msg_fn=None):
     return super_result
 
 
+def require_minion(self, msg_fn=None):
+    """The ``can_do_action`` method that require a minion.
+
+    Used by many spells that target a minion.
+    """
+    super_result = super(type(self), self).can_do_action(msg_fn=msg_fn)
+    if super_result == self.Inactive:
+        return super_result
+
+    if not have_minion(self):
+        if msg_fn:
+            # TODO: Figure out the correct message.
+            msg_fn('No minions in play, and I can\'t use it!')
+        return self.Inactive
+
+    return super_result
+
+
 # Target testers.
+
+def have_minion(self):
+    return bool(self.game.get_zone(Zone.Play, 0)) or bool(self.game.get_zone(Zone.Play, 1))
+
 
 def have_friendly_minion(self):
     return bool(self.game.get_zone(Zone.Play, self.player_id))
@@ -208,7 +230,9 @@ def collect_1p_minions(self, except_self, oop=False, player_id=None, except_list
 
 __all__ = [
     'require_board_not_full',
+    'require_minion',
 
+    'have_minion',
     'have_friendly_minion',
     'have_friendly_beast',
     'make_have_friendly_race',

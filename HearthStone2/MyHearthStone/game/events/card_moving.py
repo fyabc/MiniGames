@@ -116,8 +116,37 @@ class MillCard(Event):
     pass
 
 
+def replace_events(game, target, new_entity, loc=None):
+    """Utility for replace an entity with an new entity.
+
+    :param game:
+    :param target:
+    :param new_entity:
+    :param loc:
+    :return:
+    """
+
+    zone, player_id = target.zone, target.player_id
+
+    if loc is None:
+        loc = game.get_location(target, zone, player_id)
+
+    assert loc is not None, 'The transform target {} is not found in zone {!r} and player id {}'.format(
+        target, Zone.Idx2Str[zone], player_id)
+
+    old_entity, old_status = game.move(player_id, zone, loc, player_id, Zone.Graveyard, 'last')
+    new_entity, new_status = game.generate(player_id, zone, loc, new_entity)
+
+    if zone == Zone.Play:
+        # [NOTE]: move it to `Game.move`?
+        new_entity.oop = game.inc_oop()
+
+    return old_status['events'] + new_status['events']
+
+
 __all__ = [
     'GenericDrawCard', 'DrawCard', 'PutIntoHand',
     'DiscardCard', 'AreaDiscardCard',
     'MillCard',
+    'replace_events',
 ]

@@ -104,6 +104,8 @@ class AliveMixin:
     can_attack = make_property('can_attack', default=True)
     can_attack_hero = make_property('can_attack_hero', default=True)
 
+    # TODO: Move windfury attribute to here, and implement it in a more generic way.
+
     charge = make_property('charge', default=False)
     rush = make_property('rush', default=False)
     frozen = make_property('frozen', default=False)

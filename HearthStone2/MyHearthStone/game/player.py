@@ -289,8 +289,8 @@ class Player(IndependentEntity):
             return self.hero_powers
         raise ValueError('Does not have zone {!r}'.format(Zone.Idx2Str.get(zone, zone)))
 
-    def get_entity(self, zone, index=0):
-        return self.get_zone(zone)[index]
+    def get_entity(self, zone, location=0):
+        return self.get_zone(zone)[location]
 
     def get_damage_bonus(self, source, bonus_type, event_type):
         """Get number of damage bonus with given source and bonus type.

@@ -55,6 +55,7 @@ class 镜像(Spell):
 
 # 魔爆术 (30003)
 class 魔爆术(Spell):
+    """[NOTE]: This is a classic card of area damage."""
     data = {
         'id': 30003,
         'type': 1, 'klass': 3, 'cost': 2,
@@ -105,6 +106,21 @@ class 火球术(Spell):
 
 
 # 变形术 (30008)
+class 变形术(Spell):
+    """[NOTE]: This is a classic card of transform effect."""
+    data = {
+        'id': 30008,
+        'type': 1, 'klass': 3, 'cost': 4,
+        'have_target': True,
+    }
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    SheepId = 47
+
+    def run(self, target, **kwargs):
+        return std_events.replace_events(self.game, target, new_entity=self.SheepId)
 
 
 # 烈焰风暴 (30009)
