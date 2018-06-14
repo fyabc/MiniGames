@@ -575,6 +575,21 @@ class Game:
     def move(self, from_player, from_zone, from_index, to_player, to_zone, to_index):
         """Move an entity from one zone to another.
 
+        This method do the real moving, and call the zone & player id setter and player setter of the entity to update
+        tags and other states. See ``GameEntity._set_zp`` for more details.
+
+        Rules when moving between zones::
+
+            Rule Z1: When an Entity tries to move from one Zone to another, it first checks if the destination is full.
+            If it is, it instead dies and moves to the Graveyard Zone.
+            Rule Z1b: If an Entity tries to move from a Zone to the Zone it's already in, do not apply Rule Z1
+            (such as steal effects on a minion you already control, or bounce effects on a minion already in your hand).
+            However, other effects of the zone change still happen (such as gaining summoning sickness).
+
+            Rule Z2: If multiple Entities are moved from one Zone to another simultaneously,
+            they check and move themselves in order of play, and thus newest minions are the ones that get Destroyed
+            if there is insufficient room.
+
         :param from_player: The source player id.
         :param from_zone: The source zone.
         :param from_index: The source index of the entity.
@@ -617,7 +632,7 @@ class Game:
             # Move it to graveyard.
             to_zone = Zone.Graveyard
             self.get_zone(to_zone, from_player).append(entity)
-            entity.zone = to_zone
+            entity.set_zp(to_zone, player_id=None)
 
             return entity, {
                 'success': False,

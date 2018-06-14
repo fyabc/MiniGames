@@ -217,8 +217,7 @@ class Player(IndependentEntity):
             to_index = len(tz) - 1
         else:
             tz.insert(to_index, entity)
-        entity.zone = to_zone
-        entity.player_id = self.player_id
+        entity.set_zp(to_zone, self.player_id)
 
         return to_index
 

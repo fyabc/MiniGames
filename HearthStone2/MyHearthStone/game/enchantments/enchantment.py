@@ -40,6 +40,8 @@ class Enchantment(GameEntity):
         :type target: IndependentEntity
         :param kwargs:
             :keyword oop: int, order of play
+            :keyword player_id: int, player id of the creator
+                [NOTE]: This is different from ``self.owner.player_id``.
         :type kwargs: dict
         """
         super().__init__(game)
@@ -48,18 +50,22 @@ class Enchantment(GameEntity):
         self.oop = kwargs.pop('oop', None)
 
         target.add_enchantment(self)
-        self.zone = Zone.Play
+
+        self.set_zp(Zone.Play, player_id=kwargs.pop('player_id', None))
 
         # Apply the enchantment immediately.
         self.apply_imm()
 
-    def _set_zone(self, zone):
+    def _repr(self):
+        return super()._repr()
+
+    def set_zp(self, zone=None, player_id=None):
         # TODO: Specific behaviour of enchantment: (or needn't?)
         # Only have two zones: Play & RFG.
         if zone not in (Zone.Play, Zone.RFG):
             raise ValueError("Enchantment can be only moved to 'Play' or 'RFG', but try to move to {!r}.".format(
                 Zone.Idx2Str[zone]))
-        super()._set_zone(zone)
+        super().set_zp(zone, player_id)
 
     # Indicate that this enchantment is granted from an aura or not.
     aura = make_property('aura', setter=False)
@@ -97,10 +103,11 @@ class Enchantment(GameEntity):
 
         This is the recommended method to create an enchantment.
 
-        This method will set the oop of enchantment as the enchantment of the creator.
+        This method will set the oop and player id of the enchantment from the creator.
         """
 
         kwargs['oop'] = creator.oop
+        kwargs['player_id'] = creator.player_id
         enc = cls(*args, **kwargs)
 
         return enc
@@ -114,7 +121,7 @@ class Enchantment(GameEntity):
         """
         if remove_from_target:
             self.target.remove_enchantment(self)
-        self.zone = Zone.RFG
+        self.set_zp(Zone.RFG, player_id=None)
 
 
 class AuraEnchantment(Enchantment):

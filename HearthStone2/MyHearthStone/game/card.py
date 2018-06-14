@@ -147,8 +147,8 @@ class Minion(AliveMixin, Card):
             'deathrattle_fns': deathrattle_fns,
         })
 
-    def _set_zone_hook(self, old_zone, zone):
-        super()._set_zone_hook(old_zone, zone)
+    def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):
+        super()._set_zp_hook(old_zone, old_player_id, zone, player_id)
 
         # If a minion is moved into play (in any case), do the post processing.
         if zone == Zone.Play:

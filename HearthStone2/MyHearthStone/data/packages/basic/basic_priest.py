@@ -4,6 +4,7 @@
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
+from MyHearthStone.utils.game import Zone
 
 __author__ = 'fyabc'
 
@@ -50,4 +51,19 @@ class 次级治疗术(HeroPower):
 
 # 神圣新星 (50008)
 
+
 # 精神控制 (50009)
+class 精神控制(Spell):
+    """[NOTE]: This is a classic card of (permanent) mind control effect."""
+    data = {
+        'id': 50009,
+        'type': 1, 'klass': 5, 'cost': 10,
+        'have_target': True,
+    }
+
+    can_do_action = ext.require_board_not_full
+    check_target = ext.checker_enemy_minion
+
+    def run(self, target, **kwargs):
+        entity, status = self.game.move(target.player_id, target.zone, target, self.player_id, Zone.Play, 'last')
+        return status['events']

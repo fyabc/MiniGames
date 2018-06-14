@@ -65,7 +65,7 @@ class 月火术(Spell):
     }
     ext.add_dh_bonus_data(data, 1)
 
-    run = ext.damage_fn(data['dh_values'][0])
+    run = ext.damage_fn(data.get('dh_values', [])[0])
 
 
 # 激活 (10002)

@@ -42,6 +42,7 @@
     - Active and highlighted effect of cards (e.g. "Killer Command")
     - Discard effect (e.g. "Soulfire")
     - Transform effects (e.g. "Polymorph" and "Hex")
+    - Permanently Control effects (e.g. "Mind Control")
 - Classic:
     - Keywords
         - **Deathrattle**
@@ -66,7 +67,6 @@
 - Basic:
     - Splitted spell damage (e.g. "Arcane Missiles")
     - Select effects (e.g. **Choose One** effects, "Tracking")
-    - Control effects (e.g. "Shadow Madness" and "Mind Control")
 - Classic:
     - Keywords
         - **Combo**
@@ -78,6 +78,7 @@
     - Modify healing to damage effects (e.g. "Auchenai Soulpriest")
     - Mana related
         - Destroy mana (e.g. "Felguard")
+    - Temporary control effects (e.g. "Shadow Madness")
 - LOE:
     - Keywords
         - **Discover** (a kind of select effects)

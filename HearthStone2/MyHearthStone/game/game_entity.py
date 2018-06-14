@@ -150,23 +150,12 @@ class GameEntity(metaclass=SetDataMeta):
             self._init_player_id = self.data.get('player_id', value)
         self.data[tag] = value
 
-    id = make_property('id', setter=False)
-    name = make_property('name', setter=False)
-    player_id = make_property('player_id', default=None)
-    type = make_property('type', setter=False)
-    package = make_property('package', setter=False)
-    silenced = make_property('silenced', default=False)     # This entity is silenced or not.
+    # Basic attributes: zone and player id.
 
-    def _get_zone(self):
-        """Get the zone value.
+    def set_zp(self, zone=None, player_id=None):
+        """Change the zone and the player id of the entity.
 
-        See ``_set_zone`` for more details.
-        """
-        return self.data.get('zone', Zone.Invalid)
-
-    def _set_zone(self, zone):
-        """Change the zone of the entity.
-
+        This method is usually called by ``Game.move``, and change tags and other states of this entity.
         Subclasses should overwrite this method to implement their zone movement behaviour.
 
         See <https://hearthstone.gamepedia.com/Advanced_rulebook#Moving_between_Zones> for more details.
@@ -190,30 +179,64 @@ class GameEntity(metaclass=SetDataMeta):
                 As a result, the Enchantment will be able to trigger (for example if it is Shadow Madness)
                 and will be able to give your player Spell Damage +1 (Velen's Chosen).
         """
-
-        old_zone = self.zone
-        if old_zone == zone:
-            warning('Try to move {} from {!r} to the same zone.'.format(self, Zone.Idx2Str[zone]))
+        old_zone, old_player_id = self.zone, self.player_id
+        if zone is None:
+            zone = old_zone
+        if player_id is None:
+            player_id = old_player_id
+        if old_zone == zone and old_player_id == player_id:
+            warning('Try to move {} from P_{}#{} to the same zone.'.format(self, player_id, Zone.Idx2Str[zone]))
             return
 
-        # Update triggers and auras.
-        self.update_triggers(old_zone, zone)
-        self.update_auras(old_zone, zone)
+        # Do something when changing the zone.
+        if old_zone != zone:
+            # Update triggers and auras.
+            self.update_triggers(old_zone, zone)
+            self.update_auras(old_zone, zone)
 
-        # Reset tags to default value.
-        self._reset_tags()
+            # Reset tags to default value.
+            self._reset_tags()
 
-        # Call the hook overwritten by subclasses.
-        self._set_zone_hook(old_zone, zone)
+        self._set_zp_hook(old_zone, old_player_id, zone, player_id)
 
-        debug('Move {} from {!r} to {!r}.'.format(self, Zone.Idx2Str[old_zone], Zone.Idx2Str[zone]))
+        debug('Move {} from P_{}#{} to P_{}#{}.'.format(
+            self, old_player_id, Zone.Idx2Str[old_zone], player_id, Zone.Idx2Str[zone]))
         self.data['zone'] = zone
+        self.data['player_id'] = player_id
 
-    def _set_zone_hook(self, old_zone, zone):
-        """The hook method used for subclasses when set the zone."""
+    def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):
+        """The hook method used for subclasses when set the zone and player id."""
         pass
 
+    def _get_zone(self):
+        """Get the zone value.
+
+        See ``_set_zp`` for more details.
+        """
+        return self.data.get('zone', Zone.Invalid)
+
+    def _set_zone(self, zone):
+        self.set_zp(zone, player_id=None)
+
     zone = property(fget=_get_zone, fset=_set_zone)
+
+    def _get_player_id(self):
+        """Get the player id value.
+
+        See ``_set_zp`` for more details.
+        """
+        return self.data.get('player_id', None)
+
+    def _set_player_id(self, player_id):
+        self.set_zp(zone=None, player_id=player_id)
+
+    player_id = property(fget=_get_player_id, fset=_set_player_id)
+
+    id = make_property('id', setter=False)
+    name = make_property('name', setter=False)
+    type = make_property('type', setter=False)
+    package = make_property('package', setter=False)
+    silenced = make_property('silenced', default=False)     # This entity is silenced or not.
 
     def _reset_tags(self):
         """Reset tags when moving between zones.
@@ -380,14 +403,13 @@ class IndependentEntity(GameEntity):
     def all_enchantments(self):
         return chain(self.enchantments, self.aura_enchantments)
 
-    def _set_zone_hook(self, old_zone, zone):
-        super()._set_zone_hook(old_zone, zone)
+    def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):
+        super()._set_zp_hook(old_zone, old_player_id, zone, player_id)
 
         # Modify enchantments.
-        if old_zone == Zone.Play:
+        if old_zone == Zone.Play and zone != Zone.Play:
             for e_list in (self.enchantments, self.aura_enchantments):
-                # Removed from play.
-                # Detach all enchantments (with some exceptions).
+                # Removed from play. Detach all enchantments (with some exceptions). See "RuleZ5a".
                 for enchantment in e_list:
                     enchantment.detach(remove_from_target=False)
                 e_list.clear()
