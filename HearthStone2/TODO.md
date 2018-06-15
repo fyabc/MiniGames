@@ -59,8 +59,9 @@
             > TODO: Ugly solution now, not tested
 
 # Extension Features (in package "test")
-    - Select hand effect (e.g. "TestDiscardHand")
-    - Predamage triggers on non-hero entities (e.g. "TestPredamage")
+
+- Select hand effect (e.g. "TestDiscardHand")
+- Predamage triggers on non-hero entities (e.g. "TestPredamage")
 
 # TODOs
 
@@ -78,6 +79,7 @@
     - Modify healing to damage effects (e.g. "Auchenai Soulpriest")
     - Mana related
         - Destroy mana (e.g. "Felguard")
+    - Put into battlefield effects (e.g. "Alarm-o-Bot")
     - Temporary control effects (e.g. "Shadow Madness")
 - LOE:
     - Keywords

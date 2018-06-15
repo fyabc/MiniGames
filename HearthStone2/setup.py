@@ -7,7 +7,7 @@ __author__ = 'fyabc'
 
 setup(
     name='MyHearthStone',
-    version='1.3.13',
+    version='1.3.16',
     keywords=('HearthStone', 'game'),
     description='A Python implementation of HearthStone.',
     license='MIT',

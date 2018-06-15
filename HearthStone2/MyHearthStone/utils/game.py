@@ -27,9 +27,15 @@ def order_of_play(objects, key=None, reverse=False):
 
 
 class EnumMeta(type):
+    """Metaclass of enumerations.
+
+    This metaclass will collect all enumeration values automatically.
+        Enumeration values are names that starts with an upper case character,
+        for example, 'Aura', 'Space', but not 'aura', '_Space'.
+    """
     @staticmethod
     def __new__(mcs, name, bases, ns):
-        str2idx = {k: v for k, v in ns.items() if not k.startswith('_')}
+        str2idx = {k: v for k, v in ns.items() if k[0].isupper()}
         idx2str = {v: k for k, v in str2idx.items()}
         ns['Str2Idx'] = str2idx
         ns['Idx2Str'] = idx2str
@@ -72,6 +78,10 @@ class Zone(metaclass=EnumMeta):
     # Removed From Game Zone, holds enchantments that have expired, been detached or been silenced off.
     # TODO: Implement this zone.
     RFG = 10
+
+    @classmethod
+    def repr_zp(cls, zone, player_id):
+        return 'P_{}#{}'.format(player_id, cls.Idx2Str[zone])
 
 
 class Rarity(metaclass=EnumMeta):

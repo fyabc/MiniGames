@@ -572,7 +572,7 @@ class Game:
                 else:
                     yield p
 
-    def move(self, from_player, from_zone, from_index, to_player, to_zone, to_index):
+    def move(self, from_player, from_zone, from_index, to_player, to_zone, to_index, on_full='destroy'):
         """Move an entity from one zone to another.
 
         This method do the real moving, and call the zone & player id setter and player setter of the entity to update
@@ -598,6 +598,10 @@ class Game:
         :param to_zone: The target zone.
         :param to_index: The target index of the entity.
             if it is 'last', means append.
+        :param on_full: How to handle the entity when the target zone is full.
+            Candidates:
+                'destroy': Destroy the entity instantly, send it to Graveyard. [default]
+                'ignore': Cancel this moving, nothing happens.
         :return: a tuple of (entity, dict)
             The moved entity (even when failed).
             The dict contains:
@@ -615,31 +619,42 @@ class Game:
                 from_index = fz.index(entity)
                 del fz[from_index]
             except ValueError:
-                error('{} does not exist in the zone {} of player {}!'.format(entity, from_zone, from_player))
+                error('{} does not exist in {}!'.format(entity, Zone.repr_zp(from_zone, from_player)))
                 raise
         else:
             entity = fz[from_index]
             del fz[from_index]
 
         if (from_zone, from_index) != (to_zone, to_index) and self.full(to_zone, to_player):
-            debug('{} full!'.format(Zone.Idx2Str[to_zone]))
+            if on_full == 'destroy':
+                debug('{} full, destroy the entity!'.format(Zone.repr_zp(to_zone, to_player)))
 
-            # Full zone instant removal:
-            # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Full_Zone_Instant_Removal> for details.
-            if from_zone == Zone.Play:
-                self.data['instant_death_events'].append(create_death_event(self, entity, location=from_index))
+                # Full zone instant removal:
+                # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Full_Zone_Instant_Removal> for details.
+                if from_zone == Zone.Play:
+                    self.data['instant_death_events'].append(create_death_event(self, entity, location=from_index))
 
-            # Move it to graveyard.
-            to_zone = Zone.Graveyard
-            self.get_zone(to_zone, from_player).append(entity)
-            entity.set_zp(to_zone, player_id=None)
+                # Move it to graveyard.
+                to_zone = Zone.Graveyard
+                self.get_zone(to_zone, from_player).append(entity)
+                entity.set_zp(to_zone, player_id=None)
 
-            return entity, {
-                'success': False,
-                'events': [],
-                'from_index': from_index,
-                'to_index': None,
-            }
+                return entity, {
+                    'success': False,
+                    'events': [],
+                    'from_index': from_index,
+                    'to_index': None,
+                }
+            elif on_full == 'ignore':
+                debug('{} full, ignore this movement!'.format(Zone.repr_zp(to_zone, to_player)))
+                return entity, {
+                    'success': False,
+                    'events': [],
+                    'from_index': from_index,
+                    'to_index': None,
+                }
+            else:
+                raise ValueError('Unknown on-full strategy {!r}'.format(on_full))
 
         index = self._insert_entity(entity, to_zone, to_player, to_index)
 

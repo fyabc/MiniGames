@@ -61,7 +61,7 @@ class TestCore(unittest.TestCase):
     def _assertZoneAttr(self):
         """Assert that the ``zone`` attribute of entities are correct."""
         for player_id in 0, 1:
-            for zone, z_name in Zone.Idx2Str.items():
+            for zone in Zone.Idx2Str:
                 if zone in (Zone.Invalid, Zone.SetAside, Zone.RFG):
                     continue
                 zone_entities = self.game.get_zone(zone, player_id)
@@ -69,7 +69,7 @@ class TestCore(unittest.TestCase):
                     if entity is None:
                         continue
                     self.assertEqual(entity.zone, zone, 'Entity {} in zone {} has an incorrect zone {}'.format(
-                        entity, z_name, Zone.Idx2Str[entity.zone]))
+                        entity, Zone.repr_zp(zone, player_id), Zone.repr_zp(entity.zone, entity.player_id)))
 
     # Game basic tests.
 
