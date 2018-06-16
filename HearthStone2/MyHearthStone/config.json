@@ -60,7 +60,10 @@
                     "Name": "SimHei",
                     "File": "SimHei.ttf"
                 }
-            }
+            },
+
+            // Run animations in the game or not.
+            "RunAnimations": true
         }
     }
 }

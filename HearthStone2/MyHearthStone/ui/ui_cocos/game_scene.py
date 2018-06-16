@@ -15,6 +15,7 @@ from ...utils.draw.cocos_utils.basic import pos, notice, hs_style_label, get_wid
 from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
 from ...utils.draw.cocos_utils.layers import BackgroundLayer, DialogLayer
 from ...utils.draw.cocos_utils.primitives import Rect
+from ...utils.constants import C
 from .card_sprite import HandSprite, HeroSprite, MinionSprite, HeroPowerSprite, WeaponSprite
 from .selection_manager import SelectionManager
 from .animations import run_animations
@@ -207,18 +208,19 @@ class GameBoardLayer(ActiveLayer):
         debug('Time since last call: {:.6f}s'.format(_time - getattr(self, '_time')))
         setattr(self, '_time', _time)
 
-    def _update_content(self, event_or_trigger, current_event):
-        """Update the game board content, called by game event engine.
+    def _update_content_after_animations(self, dt):
+        """Update the content after all animations.
 
-        Registered at `SelectDeckLayer.on_start_game`.
-
-        todo: Optimize code (performance bottlenecks here).
-        todo: Change all content updates to actions (async scheduled).
+        [NOTE]: This method is scheduled into this layer,
+            and will be called once after animations,
+            then it will be unscheduled.
         """
 
-        self._sm.clear_all()
-
-        run_animations(self, event_or_trigger, current_event)
+        # [NOTE]: The condition can be modified in future, since some animations will change the content immediately?
+        if not self.are_actions_running():
+            self.unschedule(self._update_content_after_animations)
+        else:
+            return
 
         # Right border components.
         for i, player in enumerate(self._player_list()):
@@ -240,7 +242,8 @@ class GameBoardLayer(ActiveLayer):
                 w_sprite = WeaponSprite(player.weapon, pos(self.WeaponX, self.WeaponY[i]), scale=1.0)
                 self.weapon_sprites[player.player_id] = w_sprite
                 self.add(w_sprite, z=1)
-            current_w_spr = self.weapon_sprites[player.player_id]   # type: WeaponSprite
+
+            current_w_spr = self.weapon_sprites[player.player_id]  # type: WeaponSprite
             if current_w_spr is None:
                 # Old weapon sprite not exist, create a new.
                 _new_w_sprite()
@@ -264,6 +267,7 @@ class GameBoardLayer(ActiveLayer):
                 hp_sprite = HeroPowerSprite(player.hero_power, pos(self.HeroPowerX, self.HeroPowerY[i]), scale=1.0)
                 self.hero_power_sprites[player.player_id] = hp_sprite
                 self.add(hp_sprite, z=1)
+
             current_hp_spr = self.hero_power_sprites[player.player_id]  # type: HeroPowerSprite
             if current_hp_spr is None:
                 # Old hero power sprite not exist, create a new.
@@ -327,6 +331,22 @@ class GameBoardLayer(ActiveLayer):
                 self.play_sprites[i].append(minion_sprite)
         for card_sprite in chain(_hand_sprite_cache.values(), _minion_sprite_cache.values()):
             self.remove(card_sprite)
+
+    def _update_content(self, event_or_trigger, current_event):
+        """Update the game board content, called by game event engine.
+
+        Registered at `SelectDeckLayer.on_start_game`.
+        """
+
+        # Refresh selection manager.
+        self._sm.clear_all()
+
+        # Run all animations.
+        if C.UI.Cocos.RunAnimations:
+            run_animations(self, event_or_trigger, current_event)
+
+        # Schedule the content update after animations.
+        self.schedule(self._update_content_after_animations)
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""

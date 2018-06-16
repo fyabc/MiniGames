@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from cocos.cocosnode import CocosNode
-from cocos.draw import Canvas, parameter
+from cocos.draw import Canvas, parameter, Line
 
 __author__ = 'fyabc'
 
@@ -39,4 +39,5 @@ class Circle(CocosNode):
 
 __all__ = [
     'Rect',
+    'Line',
 ]
