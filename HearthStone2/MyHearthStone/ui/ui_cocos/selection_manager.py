@@ -5,11 +5,11 @@
 
 from pyglet.window import mouse
 
-from ...game import player_action as pa
-from ...utils.game import *
-from ...utils.frontend import *
-from ...utils.draw.cocos_utils.basic import notice
 from .card_sprite import EntitySprite
+from .utils.basic import notice
+from ...game import player_action as pa
+from ...utils.frontend import *
+from ...utils.game import *
 
 __author__ = 'fyabc'
 

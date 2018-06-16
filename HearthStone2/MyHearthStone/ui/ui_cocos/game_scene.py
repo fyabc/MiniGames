@@ -8,19 +8,19 @@ from itertools import chain
 from cocos import scene, draw, director, rect
 from cocos.scenes import transitions
 
-from ...utils.game import Zone
-from ...utils.message import debug
-from ...utils.draw.constants import Colors
-from ...utils.draw.cocos_utils.basic import pos, notice, hs_style_label, get_width
-from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, set_color_action
-from ...utils.draw.cocos_utils.layers import BackgroundLayer, DialogLayer
-from ...utils.draw.cocos_utils.primitives import Rect
-from ...utils.constants import C
+from .animations import run_animations
 from .card_sprite import HandSprite, HeroSprite, MinionSprite, HeroPowerSprite, WeaponSprite
 from .selection_manager import SelectionManager
-from .animations import run_animations
-from ...game.core import Game
+from .utils.active import ActiveLayer, ActiveLabel, set_color_action
+from .utils.basic import pos, notice, hs_style_label, get_width
+from .utils.layers import BackgroundLayer, DialogLayer
+from .utils.primitives import Rect
+from ..utils.constants import Colors
 from ...game import player_action as pa
+from ...game.core import Game
+from ...utils.constants import C
+from ...utils.game import Zone
+from ...utils.message import debug
 
 __author__ = 'fyabc'
 
@@ -208,19 +208,22 @@ class GameBoardLayer(ActiveLayer):
         debug('Time since last call: {:.6f}s'.format(_time - getattr(self, '_time')))
         setattr(self, '_time', _time)
 
-    def _update_content_after_animations(self, dt):
-        """Update the content after all animations.
+    def update_content_after_animations(self, dt, scheduled=True):
+        """Update the content after some or all animations.
 
-        [NOTE]: This method is scheduled into this layer,
-            and will be called once after animations,
-            then it will be unscheduled.
+        :param dt: The time interval value.
+        :param scheduled: Scheduled update or not.
+            If this method is not scheduled, it will be called immediately.
+            If this method is scheduled, it will be scheduled into this layer,
+            and will be called once after animations, then it will be unscheduled.
         """
 
         # [NOTE]: The condition can be modified in future, since some animations will change the content immediately?
-        if not self.are_actions_running():
-            self.unschedule(self._update_content_after_animations)
-        else:
-            return
+        if scheduled:
+            if not self.are_actions_running():
+                self.unschedule(self.update_content_after_animations)
+            else:
+                return
 
         # Right border components.
         for i, player in enumerate(self._player_list()):
@@ -346,7 +349,7 @@ class GameBoardLayer(ActiveLayer):
             run_animations(self, event_or_trigger, current_event)
 
         # Schedule the content update after animations.
-        self.schedule(self._update_content_after_animations)
+        self.schedule(self.update_content_after_animations)
 
     def _replace_dialog(self, player_id):
         """Create a replace dialog, and return the selections when the dialog closed."""

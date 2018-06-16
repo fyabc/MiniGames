@@ -5,8 +5,8 @@
 
 from cocos import cocosnode, actions
 
-from ...utils.draw.cocos_utils.basic import *
-from ...utils.draw.cocos_utils.node_tree import set_z
+from .utils.basic import *
+from .utils.node_tree import set_z
 
 __author__ = 'fyabc'
 

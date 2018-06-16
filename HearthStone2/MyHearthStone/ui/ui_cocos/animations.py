@@ -7,15 +7,13 @@
 
 from itertools import chain
 
-from cocos import actions
 import cocos.euclid as eu
+from cocos import actions
 
-from ...game.events.event import Event
+from .utils.primitives import Line
+from ..utils.constants import Colors
 from ...game.events import standard as std_e
-from ...game.triggers.trigger import Trigger
-from ...game.triggers import standard as std_t
-from ...utils.draw.cocos_utils.primitives import Line
-from ...utils.draw.constants import Colors
+from ...game.events.event import Event
 from ...utils.message import debug
 
 __author__ = 'fyabc'
@@ -36,6 +34,13 @@ def remove_myself_action():
     def _remove_myself(self):
         self.parent.remove(self)
     return actions.CallFuncS(_remove_myself)
+
+
+def update_contents_action(layer):
+    """Return the action that update the layer content."""
+    def _update():
+        layer.update_content_after_animations(dt=1.0, scheduled=False)
+    return actions.CallFunc(_update)
 
 
 class LineAnimation(actions.IntervalAction):

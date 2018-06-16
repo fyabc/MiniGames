@@ -1,12 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from cocos import rect, text, actions, director, layer
+from cocos import rect, text, actions, director
 from cocos.sprite import Sprite
 from pyglet.resource import ResourceNotFoundException, image as pyglet_image
 
-from ..constants import Colors
-from ...constants import C
+from ...utils.constants import Colors
+from ....utils.constants import C
 
 __author__ = 'fyabc'
 

@@ -6,12 +6,12 @@
 This is one of the views in MVC pattern.
 """
 
+import pyglet
 from cocos import director, layer, scene, menu
 from cocos.scenes import transitions
-import pyglet
 
-from ...utils.draw.cocos_utils.basic import set_menu_style
-from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
+from .utils.basic import set_menu_style
+from .utils.layers import BackgroundLayer, BasicButtonsLayer
 
 __author__ = 'fyabc'
 

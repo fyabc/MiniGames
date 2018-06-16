@@ -8,12 +8,12 @@ from cocos.sprite import Sprite
 from cocos.text import Label, HTMLLabel
 
 from .select_effect import SelectEffectManager
+from .utils.active import ActiveMixin, children_inside_test
+from .utils.basic import *
+from .utils.primitives import Rect
 from ...utils.constants import C
 from ...utils.game import Klass, Type, Rarity, Race
 from ...utils.package_io import all_cards
-from ...utils.draw.cocos_utils.basic import *
-from ...utils.draw.cocos_utils.active import ActiveMixin, children_inside_test
-from ...utils.draw.cocos_utils.primitives import Rect
 
 __author__ = 'fyabc'
 

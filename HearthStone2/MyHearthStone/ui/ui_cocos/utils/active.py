@@ -13,8 +13,8 @@ from collections.abc import Mapping
 from cocos import layer, sprite, text, rect, actions, director
 from pyglet.window import mouse
 
-from ...constants import C
-from ..constants import Colors
+from ....utils.constants import C
+from ...utils.constants import Colors
 from .basic import get_sprite_box, get_label_box, try_add, try_remove
 
 __author__ = 'fyabc'

@@ -6,11 +6,11 @@ from functools import partial
 from cocos import director, draw, scene
 from cocos.scenes import transitions
 
+from .utils.active import ActiveLayer, ActiveLabel
+from .utils.basic import pos, pos_y, notice
+from .utils.layers import BackgroundLayer, BasicButtonsLayer
+from ..utils.constants import Colors
 from ...game.core import Game
-from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel
-from ...utils.draw.cocos_utils.basic import pos, pos_y, notice
-from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer
-from ...utils.draw.constants import Colors
 
 __author__ = 'fyabc'
 

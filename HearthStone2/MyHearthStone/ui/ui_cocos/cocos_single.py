@@ -10,15 +10,15 @@
 
 from cocos import director
 
-from .main_scene import get_main_scene
 from .collection_scene import get_collection_scene
 from .game_scene import get_game_scene
+from .main_scene import get_main_scene
 from .select_deck_scene import get_select_deck_scene
+from .utils.basic import try_load_image
 from ..frontend import Frontend
 from ...utils.constants import C
 from ...utils.message import info
 from ...utils.resource import index_resources, load_fonts
-from ...utils.draw.cocos_utils.basic import try_load_image
 
 __author__ = 'fyabc'
 

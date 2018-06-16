@@ -6,18 +6,18 @@
 import sys
 from multiprocessing import Process
 
+import pyglet
 from cocos import scene, layer, text, director, draw, actions
 from cocos.sprite import Sprite
-import pyglet
 
 from .game import Zone, Klass, Type, Rarity
-from .draw.constants import Colors
-from ..game.core import Game
 from ..game.card import Card, Minion, Spell, Weapon, HeroCard
-from ..utils.constants import get_package_paths
-from ..utils.resource import load_fonts, index_resources
-from ..utils.message import info, warning, error, setup_logging
+from ..game.core import Game
+from ..ui.utils.constants import Colors
 from ..utils import constants
+from ..utils.constants import get_package_paths
+from ..utils.message import info, warning, error, setup_logging
+from ..utils.resource import load_fonts, index_resources
 
 __author__ = 'fyabc'
 

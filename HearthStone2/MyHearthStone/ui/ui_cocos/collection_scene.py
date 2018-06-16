@@ -7,15 +7,15 @@ from collections import Counter
 from cocos import scene, layer, draw
 from pyglet.window import mouse
 
-from .collection_sprites import StaticCardSprite, CardItem
 from .card_sprite import HandSprite
+from .collection_sprites import StaticCardSprite, CardItem
+from .utils.active import ActiveLayer, ActiveLabel, ActiveSprite, set_color_action
+from .utils.basic import pos, pos_y, Colors, hs_style_label, try_load_image
+from .utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 from ...game.deck import Deck
 from ...utils.game import Klass
 from ...utils.message import info
 from ...utils.package_io import all_cards
-from ...utils.draw.cocos_utils.basic import pos, pos_y, Colors, hs_style_label, try_load_image
-from ...utils.draw.cocos_utils.active import ActiveLayer, ActiveLabel, ActiveSprite, set_color_action
-from ...utils.draw.cocos_utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 
 __author__ = 'fyabc'
 
@@ -439,7 +439,7 @@ class DeckEditLayer(ActiveLayer):
         self.parent.switch_to(DeckSelectID)
 
     def on_title_clicked(self):
-        from ...utils.draw.cocos_utils.layers import LineEditLayer
+        from HearthStone2.MyHearthStone.ui.ui_cocos.utils import LineEditLayer
         DW, DH = 0.5, 0.2
 
         def _ok():
