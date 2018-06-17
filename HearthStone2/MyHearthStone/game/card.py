@@ -43,6 +43,9 @@ class Card(IndependentEntity):
     race = make_property('race', setter=False)
     spell_power = make_property('spell_power')      # TODO: Need to make it read-only?
 
+    # Extension attributes.
+    on_draw = make_property('on_draw', setter=False, default=False)
+
     @property
     def cost(self):
         """Get cost of the card.

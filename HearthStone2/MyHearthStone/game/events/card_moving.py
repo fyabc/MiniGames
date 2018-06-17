@@ -35,9 +35,15 @@ class GenericDrawCard(Event):
     def _repr(self):
         return super()._repr(P=self.player_id, card=self.card)
 
+    def set_owner(self):
+        if self.owner is None:
+            self.owner = self.game.get_player(self.game.current_player)
+
 
 class DrawCard(GenericDrawCard):
     def do(self):
+        self.set_owner()
+
         player = self.game.players[self.player_id]
 
         # Tire damage
@@ -64,6 +70,8 @@ class PutIntoHand(GenericDrawCard):
         self.condition_fn = condition_fn
 
     def do(self):
+        self.set_owner()
+
         deck = self.game.get_zone(Zone.Deck, self.player_id)
 
         candidates = [i for i, c in enumerate(deck) if self.condition_fn(c)]

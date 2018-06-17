@@ -55,7 +55,12 @@ class BasicButtonsLayer(active.ActiveLayer):
         director.director.replace(transitions.FadeTransition(main_scene, duration=1.0))
 
     def goto_options(self):
-        self.ctrl.get_node('main/main').switch_to(1)
+        main_layer = self.ctrl.get_node('main/main')
+        main_layer.switch_to(main_layer.OptionsID)
+
+        # Record the scene that come from.
+        options_menu = main_layer.get_options_menu()
+        options_menu.where_come_from = director.director.scene
 
         main_scene = self.ctrl.get('main')
         if director.director.scene is main_scene:

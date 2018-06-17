@@ -58,6 +58,11 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
         return '{}({})'.format(self.__class__.__name__, self.entity)
 
     @property
+    def static(self):
+        """This is a static card (only contains card id)."""
+        return isinstance(self.entity, (int, str))
+
+    @property
     def is_activated(self):
         return self._is_activated
 
@@ -115,7 +120,20 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
         self.status_border.visible = False
         self.add(self.status_border, z=z)
 
+    def in_control(self):
+        if self.static:
+            return False
+        player_id, game = self.entity.player_id, self.entity.game
+        if self.parent.hot_seat:
+            return player_id == game.current_player
+        else:
+            return player_id == 0
+
     def _update_status_border(self):
+        if not self.in_control():
+            self.status_border.visible = False
+            return
+
         action_status = self.entity.can_do_action()
         if action_status == self.entity.Inactive:
             self.status_border.visible = False
@@ -172,11 +190,6 @@ class HandSprite(EntitySprite):
 
         self._is_front = None
         self.is_front = is_front
-
-    @property
-    def static(self):
-        """This is a static card (only contains card id)."""
-        return isinstance(self.entity, (int, str))
 
     def _c_get(self, key):
         """Get card attributes."""
@@ -482,14 +495,17 @@ class MinionSprite(EntitySprite):
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
 
-        action_status = self.entity.can_do_action()
-        if action_status == self.entity.Inactive:
-            color = self.CommonColor
-        elif action_status == self.entity.Active:
-            color = self.CanActionColor
-        else:   # action_status == self.entity.Highlighted
-            color = self.HighlightColor
-        self.status_border.color = color
+        if not self.in_control():
+            self.status_border.color = self.CommonColor
+        else:
+            action_status = self.entity.can_do_action()
+            if action_status == self.entity.Inactive:
+                color = self.CommonColor
+            elif action_status == self.entity.Active:
+                color = self.CanActionColor
+            else:   # action_status == self.entity.Highlighted
+                color = self.HighlightColor
+            self.status_border.color = color
 
         if self.entity.type == Type.Minion:
             if self.image_sprite is not None:
@@ -522,7 +538,9 @@ class HeroSprite(EntitySprite):
     ImagePart = 0.10, 0.35, 0.76, 0.65  # Start x, start y, width, height
     ImageScale = 1.15
 
-    def __init__(self, hero, position=(0, 0), scale=1.0, **kwargs):
+    def __init__(self, user, hero, position=(0, 0), scale=1.0, **kwargs):
+        self.user = user
+
         # The border that indicate the status of this sprite (inactive, active, highlighted).
         self.attack_label = None
         self.health_label = None
@@ -551,8 +569,10 @@ class HeroSprite(EntitySprite):
         if image is not None:
             self.add(Sprite(image, pos(0.05, 0.255, base=self.SizeBase), scale=self.ImageScale), z=0)
         self.add(Sprite('Hero.png', pos(0, 0, base=self.SizeBase), scale=1.0, opacity=255), z=1)
-        self.add(hs_style_label(str(self.entity.name), pos(0.0, -0.59, base=self.SizeBase),
-                                font_size=14, anchor_y='center'), z=2)
+        self.add(hs_style_label(str(self.user.nickname), pos(0.0, -0.54, base=self.SizeBase),
+                                font_size=18, anchor_y='center'), z=2)
+        self.add(hs_style_label(str(self.entity.name), pos(0.0, -0.65, base=self.SizeBase),
+                                font_size=12, anchor_y='center'), z=2)
 
         self.attack_sprite = Sprite('Atk.png', pos(-0.75, -0.34, base=self.SizeBase), scale=1.0)
         self.attack_sprite.visible = False
@@ -630,16 +650,7 @@ class HeroPowerSprite(EntitySprite):
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
 
-        action_status = self.entity.can_do_action()
-        if action_status == self.entity.Inactive:
-            self.status_border.visible = False
-        else:
-            if action_status == self.entity.Active:
-                color = self.CanActionColor
-            else:  # action_status == self.entity.Highlighted
-                color = self.HighlightColor
-            self.status_border.color = color
-            self.status_border.visible = True
+        self._update_status_border()
 
         self.hp_cost_label.element.text = str(self.entity.cost)
         self.hp_cost_label.element.color = self._get_cost_color()

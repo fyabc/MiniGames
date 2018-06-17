@@ -48,7 +48,16 @@ class GameBoardLayer(ActiveLayer):
                  ((BoardL, 0.5), (HeroL - BoardL, 0.5 - HandRatio))]
 
     def __init__(self, ctrl):
+        """
+
+        :param ctrl:
+        """
         super().__init__(ctrl)
+
+        # This scene is in hot-seat mode (current player always in the bottom) or not.
+        self.hot_seat = True
+        # Where come from?
+        self.where_come_from = None
 
         # Selection manager.
         self._sm = SelectionManager(self)
@@ -68,6 +77,9 @@ class GameBoardLayer(ActiveLayer):
                 'Player {}'.format(i), pos(self.RightCX, y), anchor_y='center', bold=True, font_size=16,
             ), name='label_player_{}'.format(i))
 
+        # Users.
+        self.users = [None, None]
+
         # Card sprites and hero sprites.
         self.hand_sprites = [[], []]
         self.play_sprites = [[], []]
@@ -86,11 +98,14 @@ class GameBoardLayer(ActiveLayer):
         # TODO: Play start game animation, etc.
 
         self._replace_dialog(self.ctrl.game.current_player)
+        self._replace_dialog(1 - self.ctrl.game.current_player)
 
     def on_exit(self):
         # Ensure not called by transition scenes (only called once).
         if isinstance(director.director.scene, transitions.TransitionScene):
             return super().on_exit()
+
+        self.users = [None, None]
 
         # Clear sprites and reset labels.
         for i in range(2):
@@ -160,13 +175,16 @@ class GameBoardLayer(ActiveLayer):
 
         return False
 
-    def prepare_start_game(self, game, selected_decks):
+    def prepare_start_game(self, game, selected_decks, users, **kwargs):
         """Start game preparations. Called by select deck layer before transitions."""
         game.add_callback(self._update_content, when='resolve')
         game.add_callback(self._log_update_time, when='resolve')
         game.add_callback(self._game_end_dialog, when='game_end')
         game.start_game(selected_decks, mode='standard',
-                        class_hero_maps=[self.ctrl.user.class_hero_map for _ in range(2)])
+                        class_hero_maps=[user.class_hero_map for user in users])
+        self.users[0], self.users[1] = users[0], users[1]
+        self.hot_seat = kwargs.pop('hot_seat', True)
+        self.where_come_from = kwargs.pop('where_come_from', None)
 
     def all_entity_sprites(self):
         """Return an iterator over all entity sprites."""
@@ -291,7 +309,8 @@ class GameBoardLayer(ActiveLayer):
             hero_sprite = self.hero_sprites[player.player_id]
             if hero_sprite not in self:
                 hero_sprite = HeroSprite(
-                    player.hero, pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]), scale=0.8)
+                    self.users[player.player_id], player.hero,
+                    pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]), scale=0.8)
                 self.hero_sprites[player.player_id] = hero_sprite
                 self.add(hero_sprite)
             else:
@@ -352,7 +371,15 @@ class GameBoardLayer(ActiveLayer):
         self.schedule(self.update_content_after_animations)
 
     def _replace_dialog(self, player_id):
-        """Create a replace dialog, and return the selections when the dialog closed."""
+        """Do the replacement.
+
+        If this user is AI, get the card replacement directly.
+        Or it will create a replace dialog, and return the selections when the dialog closed.
+        """
+        if self.users[player_id].IsAI:
+            self._on_replacement_selected(None, player_id, replace_list=self.users[player_id].agent.get_replace_card())
+            return
+
         DW, DH = 0.9, 0.6
         game = self.ctrl.game
 
@@ -376,17 +403,22 @@ class GameBoardLayer(ActiveLayer):
             layer_.add(card_sprite)
         layer_.add_to_scene(self.parent)
 
-    def _on_replacement_selected(self, dialog, player_id):
+    def _on_replacement_selected(self, dialog, player_id, replace_list=None):
         """Callback when one replacement selection done."""
+
+        if replace_list is None:
+            replace_list = [i for i, c in enumerate(dialog.card_sprites) if not c.is_front]
 
         game = self.ctrl.game
         game.run_player_action(pa.ReplaceStartCard(
-            game, player_id, [i for i, c in enumerate(dialog.card_sprites) if not c.is_front]))
+            game, player_id, replace_list))
 
-        dialog.remove_from_scene()
-        if game.state != game.GameState.Main:
-            # Replacement for the other player.
-            self._replace_dialog(1 - player_id)
+        if dialog is not None:
+            dialog.remove_from_scene()
+
+        # If replace done, start running main program (if current user is an AI, run it).
+        if game.state == game.GameState.Main:
+            self.maybe_run_ai()
         return True
 
     def _game_end_dialog(self, game_result):
@@ -406,19 +438,47 @@ class GameBoardLayer(ActiveLayer):
 
         def _back_transition():
             layer_.remove_from_scene()
-            director.director.replace(transitions.FadeTransition(self.ctrl.get('select_deck'), duration=0.5))
+            target = self.ctrl.get('select_deck') if self.where_come_from is None else self.where_come_from
+            director.director.replace(transitions.FadeTransition(target, duration=0.5))
         layer_.add_ok(_back_transition)
         layer_.add_to_scene(self.parent)
 
     def _player_list(self):
         """Return the player list, in order of (current player, opponent player)."""
         game = self.ctrl.game
-        return game.players[game.current_player], game.players[1 - game.current_player]
+
+        if self.hot_seat:
+            return game.players[game.current_player], game.players[1 - game.current_player]
+        else:
+            # [NOTE]: If not hot seat, the first user always in bottom.
+            # The caller must ensure the first user is in control.
+            return game.players[0], game.players[1]
+
+    def in_control(self):
+        return not self.users[self.ctrl.game.current_player].IsAI
+
+    def in_dominant(self):
+        if self.hot_seat:
+            return True
+        else:
+            return self.ctrl.game.current_player == 0
+
+    def maybe_run_ai(self):
+        if self.in_control():
+            return
+
+        game = self.ctrl.game
+        user = self.users[game.current_player]
+        agent = user.agent
+
+        while not self.in_control():
+            game.run_player_action(agent.get_player_action())
 
 
 class GameButtonsLayer(ActiveLayer):
-    def __init__(self, ctrl):
+    def __init__(self, ctrl, board: GameBoardLayer):
         super().__init__(ctrl)
+        self.board = board
 
         self.add(ActiveLabel.hs_style(
             'End Turn', pos(GameBoardLayer.RightCX, 0.5),
@@ -434,6 +494,8 @@ class GameButtonsLayer(ActiveLayer):
     def _on_turn_end(self):
         game = self.ctrl.game
         game.run_player_action(pa.TurnEnd(game))
+
+        self.board.maybe_run_ai()
 
     def _on_options(self):
         game = self.ctrl.game
@@ -487,8 +549,10 @@ def get_game_scene(controller):
     game_scene = scene.Scene()
 
     game_scene.add(get_game_bg(), z=0, name='background')
-    game_scene.add(GameButtonsLayer(controller), z=1, name='buttons')
-    game_scene.add(GameBoardLayer(controller), z=2, name='board')
+
+    board = GameBoardLayer(controller)
+    game_scene.add(GameButtonsLayer(controller, board), z=1, name='buttons')
+    game_scene.add(board, z=2, name='board')
 
     return game_scene
 

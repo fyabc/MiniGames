@@ -16,6 +16,7 @@ from ..game.card import Card
 from ..game.hero import Hero, HeroPower
 from ..game.enchantments.enchantment import Enchantment
 from ..ext.card_builder import load_file
+from ..ext import ExtraData
 
 __author__ = 'fyabc'
 
@@ -69,6 +70,7 @@ class _GameData:
         self.path = path
         self._package_vars = None
         self._package_id = None
+        self.extra_data = {}
 
         self._load_metadata()
 
@@ -163,6 +165,9 @@ class _GameData:
                     name, base_cls, dict_ = 'hero power', HeroPower, hero_powers_dict
                 elif issubclass(var, Enchantment):
                     name, base_cls, dict_ = 'enchantment', Enchantment, enchantents_dict
+                elif isinstance(var, ExtraData):
+                    self.extra_data.update(var)
+                    continue
                 else:
                     continue
                 data = var.data

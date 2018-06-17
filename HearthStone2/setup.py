@@ -5,9 +5,15 @@ from setuptools import setup, find_packages
 
 __author__ = 'fyabc'
 
+# # TODO: Download and install the data here (Using urllib)?
+# from urllib.request import urlopen
+#
+# with open('temp.zip', 'wb') as f, urlopen('https://xxx/temp.zip') as url_f:
+#     f.write(url_f.read())
+
 setup(
     name='MyHearthStone',
-    version='1.3.17',
+    version='1.4.0',
     keywords=('HearthStone', 'game'),
     description='A Python implementation of HearthStone.',
     license='MIT',

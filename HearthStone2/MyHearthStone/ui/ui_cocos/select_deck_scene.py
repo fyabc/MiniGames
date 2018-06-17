@@ -112,8 +112,9 @@ class SelectDeckLayer(ActiveLayer):
             notice(self, 'Must select two decks!')
             return
         # Create new game, register callback and start game.
-        self.ctrl.game = Game(frontend=self.ctrl)
-        self.ctrl.get_node('game/board').prepare_start_game(self.ctrl.game, self.selected_decks)
+        self.ctrl.game = Game()
+        self.ctrl.get_node('game/board').prepare_start_game(
+            self.ctrl.game, self.selected_decks, users=[self.ctrl.user, self.ctrl.user])
 
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=0.5))
 

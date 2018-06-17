@@ -14,23 +14,54 @@ from .message import info
 __author__ = 'fyabc'
 
 
-class AppUser:
-    """The app user class.
+class User:
+    """The base user class.
 
-    This class contain user data, such as decks, cards, packs and dusts.
+    This class contains user information, such as id, nickname, and is AI or not.
     """
+
+    IsAI = None
 
     def __init__(self, user_id=0, nickname='', **kwargs):
         self.user_id = user_id
         self._nickname = nickname if nickname else getpass.getuser()
-        self.decks = [Deck.from_code(deck) if isinstance(deck, str) else deck for deck in kwargs.pop('decks', [])]
-        self.cards = kwargs.pop('cards', {})
-        self.packs = kwargs.pop('packs', {})
-        self.dusts = kwargs.pop('dusts', 0)
 
         # Map classes to heroes (which hero to use for each class).
         self.class_hero_map = kwargs.pop('class_hero_map', DefaultClassHeroMap.copy())
         self._convert_key_to_int()
+
+    @property
+    def nickname(self):
+        return self._nickname
+
+    @nickname.setter
+    def nickname(self, value):
+        if not value:
+            return
+        self._nickname = value
+
+    def _convert_key_to_int(self):
+        self.class_hero_map = {
+            int(k): v for k, v in self.class_hero_map.items()
+        }
+
+
+class AppUser(User):
+    """The app user class.
+
+    This class contain user data, such as decks, cards, packs and dusts.
+    Instances of this class will be dumped as JSON files.
+    """
+
+    IsAI = False
+
+    def __init__(self, user_id=0, nickname='', **kwargs):
+        super().__init__(user_id, nickname, **kwargs)
+
+        self.decks = [Deck.from_code(deck) if isinstance(deck, str) else deck for deck in kwargs.pop('decks', [])]
+        self.cards = kwargs.pop('cards', {})
+        self.packs = kwargs.pop('packs', {})
+        self.dusts = kwargs.pop('dusts', 0)
 
         self.uuid = kwargs.pop('uuid', None)
         if self.uuid is None:
@@ -50,16 +81,6 @@ class AppUser:
             'class_hero_map': self.class_hero_map,
             'uuid': self.uuid,
         }
-
-    @property
-    def nickname(self):
-        return self._nickname
-
-    @nickname.setter
-    def nickname(self, value):
-        if not value:
-            return
-        self._nickname = value
 
     @staticmethod
     def get_user_list():
@@ -117,8 +138,6 @@ class AppUser:
         """Dump the user and update the user list.
 
         [NOTE]: This method will update the user list and put the current user as the first element.
-
-        :return: None
         """
 
         users = self.get_user_list()
@@ -142,7 +161,22 @@ class AppUser:
         with open(user_data_filename, 'w') as f:
             json.dump(self.to_dict(), f, indent=4)
 
-    def _convert_key_to_int(self):
-        self.class_hero_map = {
-            int(k): v for k, v in self.class_hero_map.items()
-        }
+
+class AIUser(User):
+    """The AI user class."""
+
+    IsAI = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.agent_class = kwargs['agent_class']
+        self.agent = None
+
+    def create_agent(self, game, player_id):
+        self.agent = self.agent_class(game, player_id)
+
+
+class AIUserWithDeck(AIUser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.deck = kwargs['deck']

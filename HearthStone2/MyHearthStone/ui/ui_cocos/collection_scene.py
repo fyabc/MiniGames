@@ -439,7 +439,7 @@ class DeckEditLayer(ActiveLayer):
         self.parent.switch_to(DeckSelectID)
 
     def on_title_clicked(self):
-        from HearthStone2.MyHearthStone.ui.ui_cocos.utils import LineEditLayer
+        from .utils.layers import LineEditLayer
         DW, DH = 0.5, 0.2
 
         def _ok():

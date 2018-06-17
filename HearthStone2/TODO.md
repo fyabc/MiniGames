@@ -84,3 +84,12 @@
 - LOE:
     - Keywords
         - **Discover** (a kind of select effects)
+
+
+# UI and other TODOs
+
+- Adventure mode (play with AI)
+
+# Temp TODOs
+
+- Add doc in AI, Game scene and animations.

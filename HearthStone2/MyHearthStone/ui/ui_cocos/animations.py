@@ -11,6 +11,7 @@ import cocos.euclid as eu
 from cocos import actions
 
 from .utils.primitives import Line
+from .utils.basic import notice
 from ..utils.constants import Colors
 from ...game.events import standard as std_e
 from ...game.events.event import Event
@@ -77,10 +78,6 @@ def run_attack_animations(layer, event):
         debug('Attacker or defender sprite not found, animation not run')
         return
 
-    from ...ui.ui_cocos.card_sprite import MinionSprite, HeroSprite
-    assert isinstance(attacker, (MinionSprite, HeroSprite))
-    assert isinstance(defender, (MinionSprite, HeroSprite))
-
     line = Line(attacker.position, attacker.position, color=Colors['white'], stroke_width=1.5)
     layer.add(line)
 
@@ -89,9 +86,16 @@ def run_attack_animations(layer, event):
              remove_myself_action(), target=line)
 
 
+def run_start_turn_animations(layer, event):
+    if layer.in_dominant():
+        notice(layer, 'Turn Begin!')
+
+
 def run_event_animations(layer, event):
     if isinstance(event, std_e.Attack):
         run_attack_animations(layer, event)
+    elif isinstance(event, std_e.BeginOfTurn):
+        run_start_turn_animations(layer, event)
 
     # todo
 
