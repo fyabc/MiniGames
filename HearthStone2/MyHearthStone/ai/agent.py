@@ -17,7 +17,6 @@ class Agent:
         raise NotImplementedError()
 
     def get_replace_card(self):
-        # TODO: Implement it in agent and game scene.
         raise NotImplementedError()
 
 

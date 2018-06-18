@@ -5,7 +5,7 @@ from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
 from MyHearthStone.ext import enc_common
-from MyHearthStone.utils.game import Zone
+from MyHearthStone.utils.game import Zone, DHBonusEventType
 
 __author__ = 'fyabc'
 
@@ -66,10 +66,34 @@ class 力量祝福(Spell):
 
 
 # 保护之手 (40002)
+class 保护之手(Spell):
+    data = {
+        'id': 40002,
+        'type': 1, 'klass': 4, 'cost': 1,
+        'have_target': True,
+    }
+
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
 
 # 谦逊 (40003)
 
+
 # 圣光术 (40004)
+class 圣光术(Spell):
+    data = {
+        'id': 40004,
+        'type': 1, 'klass': 4, 'cost': 2,
+        'have_target': True,
+    }
+    ext.add_dh_bonus_data(data, 6, types=DHBonusEventType.Healing)
+
+    def run(self, target, **kwargs):
+        return [std_events.Healing(self.game, self, target, self.dh_values[0])]
+
 
 # 王者祝福 (40005)
 Enc_王者祝福 = ext.create_enchantment({'id': 40003}, *enc_common.apply_fn_add_a_h(4, 4))
@@ -90,9 +114,25 @@ class 王者祝福(Spell):
 
 # 奉献 (40006)
 
+
 # 愤怒之锤 (40007)
+class 愤怒之锤(Spell):
+    data = {
+        'id': 40007,
+        'type': 1, 'klass': 4, 'cost': 4,
+        'have_target': True,
+    }
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
+
 
 # 圣光的正义 (40008)
+ext.blank_weapon({
+    'id': 40008,
+    'type': 2, 'klass': 4, 'cost': 1, 'attack': 1, 'health': 4,
+})
 
 # 真银圣剑 (40009)
 

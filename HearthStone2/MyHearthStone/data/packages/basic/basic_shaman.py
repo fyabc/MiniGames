@@ -62,17 +62,86 @@ class 图腾召唤(HeroPower):
 
 # 火元素 (70002)
 
+
 # 先祖治疗 (70003)
+class 先祖治疗(Spell):
+    data = {
+        'id': 70003,
+        'type': 1, 'klass': 7, 'cost': 0,
+        'have_target': True,
+    }
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
 
 # 图腾之力 (70004)
 
+
 # 冰霜震击 (70005)
+class 冰霜震击(Spell):
+    data = {
+        'id': 70005,
+        'type': 1, 'klass': 7, 'cost': 1,
+        'have_target': True,
+    }
+    ext.add_dh_bonus_data(data, 1)
+
+    check_target = ext.checker_enemy_character
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
+
 
 # 石化武器 (70006)
+class 石化武器(Spell):
+    data = {
+        'id': 70006,
+        'type': 1, 'klass': 7, 'cost': 2,
+        'have_target': True,
+    }
+
+    check_target = ext.checker_friendly_character
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
+
 
 # 风怒 (70007)
+class 风怒(Spell):
+    data = {
+        'id': 70007,
+        'type': 1, 'klass': 7, 'cost': 2,
+        'have_target': True,
+    }
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
+
 
 # 妖术 (70008)
+class 妖术(Spell):
+    data = {
+        'id': 70008,
+        'type': 1, 'klass': 7, 'cost': 4,
+        'have_target': True,
+    }
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
 
 # 嗜血 (70009)
 

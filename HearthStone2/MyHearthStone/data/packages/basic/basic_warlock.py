@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from random import choice
+
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
@@ -41,7 +43,19 @@ ext.blank_minion({
     'taunt': True, 'race': [Race.Demon],
 })
 
+
 # 魅魔 (80001)
+class 魅魔(Minion):
+    data = {
+        'id': 80001,
+        'klass': 8, 'cost': 2, 'attack': 4, 'health': 3,
+        'battlecry': True, 'race': [Race.Demon],
+    }
+
+    def run_battlecry(self, target, **kwargs):
+        target = choice(self.game.get_zone(Zone.Hand, self.player_id))
+        return [std_events.DiscardCard(self.game, self, target)]
+
 
 # 恐惧地狱火 (80002)
 
@@ -53,8 +67,45 @@ ext.blank_minion({
 
 # 腐蚀术 (80006)
 
+
 # 吸取生命 (80007)
+class 吸取生命(Spell):
+    data = {
+        'id': 80007,
+        'type': 1, 'klass': 8, 'cost': 3,
+        'have_target': True,
+    }
+    ext.add_dh_bonus_data(data, [2, 2])
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
+
 
 # 暗影箭 (80008)
+class 暗影箭(Spell):
+    data = {
+        'id': 80008,
+        'type': 1, 'klass': 8, 'cost': 3,
+        'have_target': True,
+    }
+    ext.add_dh_bonus_data(data, 4)
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        return [std_events.Damage(self.game, self, target, self.dh_values[0])]
+
 
 # 地狱烈焰 (80009)
+class 地狱烈焰(Spell):
+    data = {
+        'id': 80009,
+        'type': 1, 'klass': 8, 'cost': 4,
+    }
+    ext.add_dh_bonus_data(data, 3)
+
+    def run(self, target, **kwargs):
+        targets = ext.collect_all(self, False, oop=True)
+        return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]

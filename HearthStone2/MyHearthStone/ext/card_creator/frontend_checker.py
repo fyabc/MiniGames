@@ -8,7 +8,10 @@ Contains:
     Target tester       (used as ``have_target`` method)
     Target checker      (used as ``check_target`` method)
     Entity collector    (used to collect target entities in battlecry/deathrattle/run methods, usually in AoEs)
+    Checker factories   (create some checkers)
 """
+
+from itertools import chain
 
 from ...utils.game import Type, Zone, Race, order_of_play
 
@@ -52,6 +55,20 @@ def require_minion(self, msg_fn=None):
     return super_result
 
 
+def require_enemy_minion(self, msg_fn=None):
+    super_result = super(type(self), self).can_do_action(msg_fn=msg_fn)
+    if super_result == self.Inactive:
+        return super_result
+
+    if not have_enemy_minion(self):
+        if msg_fn:
+            # TODO: Figure out the correct message.
+            msg_fn('No enemy minions in play, and I can\'t use it!')
+        return self.Inactive
+
+    return super_result
+
+
 # Target testers.
 
 def have_minion(self):
@@ -60,6 +77,10 @@ def have_minion(self):
 
 def have_friendly_minion(self):
     return bool(self.game.get_zone(Zone.Play, self.player_id))
+
+
+def have_enemy_minion(self):
+    return bool(self.game.get_zone(Zone.Play, 1 - self.player_id))
 
 
 def make_have_friendly_race(race):
@@ -228,11 +249,49 @@ def collect_1p_minions(self, except_self, oop=False, player_id=None, except_list
     )
 
 
+# Checker factory functions.
+
+def action_checker_factory_cond(*cond_fn_msg_list):
+    def can_do_action(self, msg_fn=None):
+        super_result = super(type(self), self).can_do_action(msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+        for cond_fn, msg in cond_fn_msg_list:
+            if not cond_fn(self):
+                if msg_fn:
+                    msg_fn(msg)
+                return self.Inactive
+        return super_result
+    return can_do_action
+
+
+def action_target_checker_factory_cond_minion(cond_fn):
+    def can_do_action(self, msg_fn=None):
+        super_result = super(type(self), self).can_do_action(msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+        if any(cond_fn(m) for m in chain(self.game.get_zone(Zone.Play, 0), self.game.get_zone(Zone.Play, 1))):
+            return self.Active
+        else:
+            if msg_fn:
+                msg_fn('No valid target, I can\'t use it!')
+            return self.Inactive
+
+    def check_target(self, target):
+        if not checker_minion(self, target):
+            return False
+        return cond_fn(target)
+
+    return can_do_action, check_target
+
+
 __all__ = [
     'require_board_not_full',
     'require_minion',
+    'require_enemy_minion',
 
     'have_minion',
+    'have_enemy_minion',
     'have_friendly_minion',
     'have_friendly_beast',
     'make_have_friendly_race',
@@ -249,4 +308,7 @@ __all__ = [
     'collect_all_minions',
     'collect_1p',
     'collect_1p_minions',
+
+    'action_checker_factory_cond',
+    'action_target_checker_factory_cond_minion',
 ]

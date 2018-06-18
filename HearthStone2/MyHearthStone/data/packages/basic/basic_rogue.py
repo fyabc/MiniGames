@@ -33,8 +33,29 @@ class 匕首精通(HeroPower):
 
 
 # 背刺 (60000)
+class 背刺(Spell):
+    data = {
+        'id': 60000,
+        'type': 1, 'klass': 6, 'cost': 1,
+        'have_target': True,
+    }
+    ext.add_dh_bonus_data(data, 2)
+
+    can_do_action, check_target = ext.action_target_checker_factory_cond_minion(lambda target: not target.damaged)
+
+    def run(self, target, **kwargs):
+        return [std_events.Damage(self.game, self, target, self.dh_values[0])]
+
 
 # 致命药膏 (60001)
+class 致命药膏(Spell):
+    data = {
+        'id': 60001,
+        'type': 1, 'klass': 6, 'cost': 1,
+    }
+
+    # TODO
+
 
 # 影袭 (60002)
 class 影袭(Spell):
@@ -70,6 +91,7 @@ class 闷棍(Spell):
         'have_target': True,
     }
 
+    can_do_action = ext.require_enemy_minion
     check_target = ext.checker_enemy_minion
 
     def run(self, target, **kwargs):
@@ -78,7 +100,21 @@ class 闷棍(Spell):
 
 # 刀扇 (60005)
 
+
 # 刺杀 (60006)
+class 刺杀(Spell):
+    data = {
+        'id': 60006,
+        'type': 1, 'klass': 6, 'cost': 5,
+        'have_target': True,
+    }
+
+    can_do_action = ext.require_enemy_minion
+    check_target = ext.checker_enemy_minion
+
+    def run(self, target, **kwargs):
+        target.to_be_destroyed = True
+        return []
 
 # 消失 (60007)
 

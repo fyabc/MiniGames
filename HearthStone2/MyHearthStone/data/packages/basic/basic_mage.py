@@ -35,7 +35,18 @@ class 火焰冲击(HeroPower):
 
 # 水元素 (30000)
 
+
 # 奥术飞弹 (30001)
+class 奥术飞弹(Spell):
+    data = {
+        'id': 30001,
+        'type': 1, 'klass': 3, 'cost': 1,
+    }
+    ext.add_dh_bonus_data(data, 3)
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
 
 
 # 镜像 (30002)

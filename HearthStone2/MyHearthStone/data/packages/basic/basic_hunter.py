@@ -42,6 +42,14 @@ class 稳固射击(HeroPower):
 
 
 # 森林狼 (20000)
+class 森林狼(Minion):
+    data = {
+        'id': 20000,
+        'klass': 2, 'cost': 1, 'attack': 1, 'health': 1,
+        'race': [Race.Beast],
+    }
+
+    # TODO
 
 
 # 驯兽师 (20001)
@@ -129,6 +137,14 @@ class 奥术射击(Spell):
 
 
 # 追踪术 (20006)
+class 追踪术(Spell):
+    data = {
+        'id': 20006,
+        'type': 1, 'klass': 2, 'cost': 1,
+    }
+
+    # TODO
+
 
 # 动物伙伴 (20007)
 class 动物伙伴(Spell):
