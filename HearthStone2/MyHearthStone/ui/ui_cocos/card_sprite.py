@@ -57,6 +57,10 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.entity)
 
+    def add_to_layer(self, layer, z=0, name=None):
+        layer.add(self, z=z, name=name)
+        self.update_status_border()
+
     @property
     def static(self):
         """This is a static card (only contains card id)."""
@@ -129,7 +133,7 @@ class EntitySprite(ActiveMixin, cocosnode.CocosNode):
         else:
             return player_id == 0
 
-    def _update_status_border(self):
+    def update_status_border(self):
         if not self.in_control():
             self.status_border.visible = False
             return
@@ -359,6 +363,10 @@ class HandSprite(EntitySprite):
                 'armor-label': [armor_label, 3],
             })
 
+    def update_status_border(self):
+        if not self.static:
+            super().update_status_border()
+
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
         self.is_front = kwargs.pop('is_front', False)
@@ -373,9 +381,6 @@ class HandSprite(EntitySprite):
         if unsel_eff is not _sentinel:
             self.unselected_effect = unsel_eff
         self.sel_mgr.set_sel_eff()
-
-        if not self.static:
-            self._update_status_border()
 
         self.front_sprites['mana-label'][0].element.text = str(self._c_get('cost'))
         self.front_sprites['mana-label'][0].element.color = self._get_cost_color()
@@ -492,9 +497,7 @@ class MinionSprite(EntitySprite):
         else:   # self.entity.type == Type.Permanent
             pass
 
-    def update_content(self, **kwargs):
-        super().update_content(**kwargs)
-
+    def update_status_border(self):
         if not self.in_control():
             self.status_border.color = self.CommonColor
         else:
@@ -506,6 +509,9 @@ class MinionSprite(EntitySprite):
             else:   # action_status == self.entity.Highlighted
                 color = self.HighlightColor
             self.status_border.color = color
+
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
 
         if self.entity.type == Type.Minion:
             if self.image_sprite is not None:
@@ -613,7 +619,6 @@ class HeroSprite(EntitySprite):
             self.armor_sprite.visible = True
 
         self._update_attr_sprite('frozen', self._get_frozen_sprite, z=3)
-        self._update_status_border()
 
 
 class HeroPowerSprite(EntitySprite):
@@ -649,8 +654,6 @@ class HeroPowerSprite(EntitySprite):
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)
-
-        self._update_status_border()
 
         self.hp_cost_label.element.text = str(self.entity.cost)
         self.hp_cost_label.element.color = self._get_cost_color()
@@ -702,6 +705,10 @@ class WeaponSprite(EntitySprite):
 
         self.sheathed_image = Sprite('WeaponSheathed.png', pos(0.0, 0.0, base=self.SizeBase), scale=0.60)
         self.add(self.sheathed_image, z=1)
+
+    def update_status_border(self):
+        # Weapons does not have status border.
+        pass
 
     def update_content(self, **kwargs):
         super().update_content(**kwargs)

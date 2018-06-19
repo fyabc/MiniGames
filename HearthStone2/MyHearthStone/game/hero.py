@@ -45,6 +45,13 @@ class Hero(AliveMixin, IndependentEntity):
             'deathrattle_fns': deathrattle_fns,
         })
 
+    def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):
+        super()._set_zp_hook(old_zone, old_player_id, zone, player_id)
+
+        # If a hero is moved into play (in any case), do the post processing.
+        if zone == Zone.Hero:
+            self.init_attack_status()
+
     def _repr(self):
         return super()._repr(klass=self.data['klass'], P=self.player_id, health=self.health)
 

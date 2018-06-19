@@ -179,10 +179,11 @@ class NoticeLabel(text.Label):
 
     def __init__(self, *args, **kwargs):
         time = kwargs.pop('time', 1.5)
+        action_container = kwargs.pop('action_container', self)
 
         super().__init__(*args, **kwargs)
 
-        self.do(actions.FadeOut(time) + actions.CallFunc(self.remove_self))
+        action_container.do(actions.FadeOut(time) + actions.CallFunc(self.remove_self), target=self)
 
     def remove_self(self):
         self.parent.remove(self)

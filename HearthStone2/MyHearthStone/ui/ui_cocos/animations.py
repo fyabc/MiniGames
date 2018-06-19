@@ -10,11 +10,13 @@ from itertools import chain
 import cocos.euclid as eu
 from cocos import actions
 
+from .card_sprite import *
 from .utils.primitives import Line
-from .utils.basic import notice
+from .utils.basic import notice, pos
 from ..utils.constants import Colors
 from ...game.events import standard as std_e
 from ...game.events.event import Event
+from ...game.triggers.trigger import Trigger
 from ...utils.message import debug
 
 __author__ = 'fyabc'
@@ -81,9 +83,10 @@ def run_attack_animations(layer, event):
     line = Line(attacker.position, attacker.position, color=Colors['white'], stroke_width=1.5)
     layer.add(line)
 
-    layer.do(LineAnimation(start_or_end=False, start=attacker.position, end=defender.position, duration=0.4) +
-             LineAnimation(start_or_end=True, start=attacker.position, end=defender.position, duration=0.4) +
-             remove_myself_action(), target=line)
+    layer.do_animation(
+        LineAnimation(start_or_end=False, start=attacker.position, end=defender.position, duration=0.4) +
+        LineAnimation(start_or_end=True, start=attacker.position, end=defender.position, duration=0.4) +
+        remove_myself_action(), target=line)
 
 
 def run_start_turn_animations(layer, event):
@@ -91,11 +94,32 @@ def run_start_turn_animations(layer, event):
         notice(layer, 'Turn Begin!')
 
 
+def run_draw_card_animations(layer, event):
+    card, player_id = event.card, event.player_id
+    i = layer.player_id_to_i(player_id)
+    hand_sprites = layer.hand_sprites[i]
+
+    spr_kw = {
+        'position': pos(layer.RightCX, layer.DeckY[i]),
+        'is_front': (i == 0), 'scale': 0.35,
+        'sel_mgr_kwargs': {'set_default': i == 0}, 'selected_effect': None, 'unselected_effect': None}
+    new_sprite = HandSprite(card, **spr_kw)
+
+    assert new_sprite not in hand_sprites
+
+    hand_sprites.append(new_sprite)
+    layer.add(new_sprite)
+
+    layer.do_animation(actions.MoveTo(pos(layer.HeroL, layer.HandY[i]), duration=0.8), target=new_sprite)
+
+
 def run_event_animations(layer, event):
     if isinstance(event, std_e.Attack):
         run_attack_animations(layer, event)
     elif isinstance(event, std_e.BeginOfTurn):
         run_start_turn_animations(layer, event)
+    elif isinstance(event, std_e.GenericDrawCard):
+        run_draw_card_animations(layer, event)
 
     # todo
 
@@ -113,17 +137,19 @@ def run_animations(layer, event_or_trigger, current_event):
     :param current_event:
     :return: List of actions.
 
-    [NOTE]: Actions added in this function must be added through ``layer``, like::
+    [NOTE]: Actions added in this function must be added through ``layer.do_animation``, like::
 
-        layer.do(SomeAction(), target=some_sprite)
+        layer.do_animation(SomeAction(), target=some_sprite)
 
     So that the scheduler can check if the animations are done by call the ``are_actions_running`` method.
     """
 
     if isinstance(event_or_trigger, Event):
         run_event_animations(layer, event_or_trigger)
-    else:
+    elif isinstance(event_or_trigger, Trigger):
         run_trigger_animations(layer, event_or_trigger, current_event)
+    else:
+        pass
 
 
 __all__ = [

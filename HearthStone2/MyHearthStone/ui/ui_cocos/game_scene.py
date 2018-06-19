@@ -5,7 +5,7 @@
 
 from itertools import chain
 
-from cocos import scene, draw, director, rect
+from cocos import scene, draw, director, rect, cocosnode
 from cocos.scenes import transitions
 
 from .animations import run_animations
@@ -43,7 +43,9 @@ class GameBoardLayer(ActiveLayer):
     BoardL = 0.05
     TurnEndBtnW = 0.1  # Width of turn end button
     TurnEndBtnT, TurnEndBtnB = 0.5 + TurnEndBtnW / 2, 0.5 - TurnEndBtnW / 2
+    DeckY = (0.25, 0.75)
     HandRatio = 0.23  # Size ratio of hand cards
+    HandY = (0.115, 0.885)
     PlayAreas = [((BoardL, HandRatio), (HeroL - BoardL, 0.5 - HandRatio)),
                  ((BoardL, 0.5), (HeroL - BoardL, 0.5 - HandRatio))]
 
@@ -87,6 +89,10 @@ class GameBoardLayer(ActiveLayer):
         self.hero_sprites = [None, None]
         self.hero_power_sprites = [None, None]
         self.weapon_sprites = [None, None]
+
+        # Animations container. Call ``are_actions_running`` to check if there are animations running.
+        self._animation_container = cocosnode.CocosNode()
+        self.add(self._animation_container)
 
     def on_enter(self):
         super().on_enter()
@@ -226,108 +232,86 @@ class GameBoardLayer(ActiveLayer):
         debug('Time since last call: {:.6f}s'.format(_time - getattr(self, '_time')))
         setattr(self, '_time', _time)
 
-    def update_content_after_animations(self, dt, scheduled=True):
-        """Update the content after some or all animations.
+    def _update_right_border(self, i, player):
+        """Update right border labels."""
+        # Update labels.
+        self.get('label_deck_{}'.format(i)).element.text = '牌库：{}'.format(len(player.deck))
+        self.get('label_mana_{}'.format(i)).element.text = '{}/{}{}{}'.format(
+            player.displayed_mana(), player.max_mana,
+            '' if player.overload == 0 else '\n(Overload {})'.format(player.overload),
+            '' if player.overload_next == 0 else '\n(Overload next {})'.format(player.overload_next),
+        )
+        self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
 
-        :param dt: The time interval value.
-        :param scheduled: Scheduled update or not.
-            If this method is not scheduled, it will be called immediately.
-            If this method is scheduled, it will be scheduled into this layer,
-            and will be called once after animations, then it will be unscheduled.
-        """
-
-        # [NOTE]: The condition can be modified in future, since some animations will change the content immediately?
-        if scheduled:
-            if not self.are_actions_running():
-                self.unschedule(self.update_content_after_animations)
-            else:
+    def _update_weapon_sprites(self, i, player):
+        def _new_w_sprite():
+            if player.weapon is None:
                 return
+            w_sprite = WeaponSprite(player.weapon, pos(self.WeaponX, self.WeaponY[i]), scale=1.0)
+            self.weapon_sprites[player.player_id] = w_sprite
+            w_sprite.add_to_layer(self, z=1)
 
-        # Right border components.
-        for i, player in enumerate(self._player_list()):
-            # Update labels.
-            self.get('label_deck_{}'.format(i)).element.text = '牌库：{}'.format(len(player.deck))
-            self.get('label_mana_{}'.format(i)).element.text = '{}/{}{}{}'.format(
-                player.displayed_mana(), player.max_mana,
-                '' if player.overload == 0 else '\n(Overload {})'.format(player.overload),
-                '' if player.overload_next == 0 else '\n(Overload next {})'.format(player.overload_next),
-            )
-            self.get('label_player_{}'.format(i)).element.text = 'Player {}'.format(player.player_id)
-
-            # TODO: Extract the duplicate code.
-
-            # Create or update weapon sprites.
-            def _new_w_sprite():
-                if player.weapon is None:
-                    return
-                w_sprite = WeaponSprite(player.weapon, pos(self.WeaponX, self.WeaponY[i]), scale=1.0)
-                self.weapon_sprites[player.player_id] = w_sprite
-                self.add(w_sprite, z=1)
-
-            current_w_spr = self.weapon_sprites[player.player_id]  # type: WeaponSprite
-            if current_w_spr is None:
-                # Old weapon sprite not exist, create a new.
+        current_w_spr = self.weapon_sprites[player.player_id]  # type: WeaponSprite
+        if current_w_spr is None:
+            # Old weapon sprite not exist, create a new.
+            _new_w_sprite()
+        else:
+            if player.weapon is None:
+                self.try_remove(current_w_spr)
+            elif current_w_spr.entity is not player.weapon:
+                # Weapon should be replaced with a new one.
+                self.try_remove(current_w_spr)
                 _new_w_sprite()
             else:
-                if player.weapon is None:
-                    self.try_remove(current_w_spr)
-                elif current_w_spr.entity is not player.weapon:
-                    # Weapon should be replaced with a new one.
-                    self.try_remove(current_w_spr)
-                    _new_w_sprite()
-                else:
-                    # Same weapon.
-                    current_w_spr.update_content(**{
-                        'position': pos(self.WeaponX, self.WeaponY[i]),
-                        'scale': 1.0})
+                # Same weapon.
+                current_w_spr.update_content(**{
+                    'position': pos(self.WeaponX, self.WeaponY[i]),
+                    'scale': 1.0})
 
-            # Create or update hero power sprites.
-            def _new_hp_sprite():
-                if player.hero_power is None:
-                    return
-                hp_sprite = HeroPowerSprite(player.hero_power, pos(self.HeroPowerX, self.HeroPowerY[i]), scale=1.0)
-                self.hero_power_sprites[player.player_id] = hp_sprite
-                self.add(hp_sprite, z=1)
+    def _update_hp_sprites(self, i, player):
+        def _new_hp_sprite():
+            if player.hero_power is None:
+                return
+            hp_sprite = HeroPowerSprite(player.hero_power, pos(self.HeroPowerX, self.HeroPowerY[i]), scale=1.0)
+            self.hero_power_sprites[player.player_id] = hp_sprite
+            hp_sprite.add_to_layer(self, z=1)
 
-            current_hp_spr = self.hero_power_sprites[player.player_id]  # type: HeroPowerSprite
-            if current_hp_spr is None:
-                # Old hero power sprite not exist, create a new.
+        current_hp_spr = self.hero_power_sprites[player.player_id]  # type: HeroPowerSprite
+        if current_hp_spr is None:
+            # Old hero power sprite not exist, create a new.
+            _new_hp_sprite()
+        else:
+            if current_hp_spr.entity is not player.hero_power:
+                # Hero power should be replaced with a new one.
+                self.try_remove(current_hp_spr)
                 _new_hp_sprite()
             else:
-                if current_hp_spr.entity is not player.hero_power:
-                    # Hero power should be replaced with a new one.
-                    self.try_remove(current_hp_spr)
-                    _new_hp_sprite()
-                else:
-                    # Same hero power.
-                    current_hp_spr.update_content(**{
-                        'position': pos(self.HeroPowerX, self.HeroPowerY[i]),
-                        'scale': 1.0})
+                # Same hero power.
+                current_hp_spr.update_content(**{
+                    'position': pos(self.HeroPowerX, self.HeroPowerY[i]),
+                    'scale': 1.0})
 
-            # Create or update hero sprites.
-            # TODO: Support replacing heroes.
-            hero_sprite = self.hero_sprites[player.player_id]
-            if hero_sprite not in self:
-                hero_sprite = HeroSprite(
-                    self.users[player.player_id], player.hero,
-                    pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]), scale=0.8)
-                self.hero_sprites[player.player_id] = hero_sprite
-                self.add(hero_sprite)
-            else:
-                hero_sprite.update_content(**{
-                    'position': pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]),
-                    'scale': 0.8})
+    def _update_hero_sprites(self, i, player):
+        # TODO: Support replacing heroes.
+        hero_sprite = self.hero_sprites[player.player_id]
+        if hero_sprite not in self:
+            hero_sprite = HeroSprite(
+                self.users[player.player_id], player.hero,
+                pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]), scale=0.8)
+            self.hero_sprites[player.player_id] = hero_sprite
+            hero_sprite.add_to_layer(self)
+        else:
+            hero_sprite.update_content(**{
+                'position': pos(self.HeroL + (self.RightL - self.HeroL) * 0.5, self.HeroY[i]),
+                'scale': 0.8})
 
-        # Remove all old card sprites, and replace it to new.
-        # [NOTE]: Use cache, need more tests.
+    def _update_hand_sprites(self):
         _hand_sprite_cache = {hand_sprite.entity: hand_sprite
                               for hand_sprite in chain(*self.hand_sprites)}
-        _minion_sprite_cache = {minion_sprite.entity: minion_sprite
-                                for minion_sprite in chain(*self.play_sprites)}
-        for card_sprite_list in self.hand_sprites + self.play_sprites:
+        for card_sprite_list in self.hand_sprites:
             card_sprite_list.clear()
-        for i, (player, y_hand, y_play) in enumerate(zip(self._player_list(), (.115, .885), (.365, .635))):
-            num_hand, num_play = len(player.hand), len(player.play)
+        for i, (player, y_hand) in enumerate(zip(self._player_list(), self.HandY)):
+            num_hand = len(player.hand)
             for j, card in enumerate(player.hand):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_hand) * (self.HeroL - self.BoardL), y_hand),
@@ -338,8 +322,18 @@ class GameBoardLayer(ActiveLayer):
                     hand_sprite.update_content(**spr_kw)
                 else:
                     hand_sprite = HandSprite(card, **spr_kw)
-                    self.add(hand_sprite)
+                    hand_sprite.add_to_layer(self)
                 self.hand_sprites[i].append(hand_sprite)
+        for card_sprite in _hand_sprite_cache.values():
+            self.remove(card_sprite)
+
+    def _update_minion_sprites(self):
+        _minion_sprite_cache = {minion_sprite.entity: minion_sprite
+                                for minion_sprite in chain(*self.play_sprites)}
+        for card_sprite_list in self.play_sprites:
+            card_sprite_list.clear()
+        for i, (player, y_play) in enumerate(zip(self._player_list(), (.365, .635))):
+            num_play = len(player.play)
             for j, card in enumerate(player.play):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_play) * (self.HeroL - self.BoardL), y_play),
@@ -349,10 +343,38 @@ class GameBoardLayer(ActiveLayer):
                     minion_sprite.update_content(**spr_kw)
                 else:
                     minion_sprite = MinionSprite(card, **spr_kw)
-                    self.add(minion_sprite)
+                    minion_sprite.add_to_layer(self)
                 self.play_sprites[i].append(minion_sprite)
-        for card_sprite in chain(_hand_sprite_cache.values(), _minion_sprite_cache.values()):
+        for card_sprite in _minion_sprite_cache.values():
             self.remove(card_sprite)
+
+    def update_content_after_animations(self, dt, scheduled=True):
+        """Update the content after some or all animations.
+
+        :param dt: The time interval value.
+        :param scheduled: Scheduled update or not.
+            If this method is not scheduled, it will be called immediately.
+            If this method is scheduled, it will be scheduled into this layer,
+            and will be called once after animations, then it will be unscheduled.
+        """
+
+        # TODO: Split this method into animation updates.
+
+        # [NOTE]: The condition can be modified in future, since some animations will change the content immediately?
+        if scheduled:
+            if not self._animation_container.are_actions_running():
+                self.unschedule(self.update_content_after_animations)
+            else:
+                return
+
+        for i, player in enumerate(self._player_list()):
+            self._update_right_border(i, player)
+            self._update_weapon_sprites(i, player)
+            self._update_hp_sprites(i, player)
+            self._update_hero_sprites(i, player)
+
+        self._update_hand_sprites()
+        self._update_minion_sprites()
 
     def _update_content(self, event_or_trigger, current_event):
         """Update the game board content, called by game event engine.
@@ -363,12 +385,20 @@ class GameBoardLayer(ActiveLayer):
         # Refresh selection manager.
         self._sm.clear_all()
 
+        # Update status border BEFORE all animations.
+        for sprite in self.all_entity_sprites():
+            if sprite is not None:
+                sprite.update_status_border()
+
         # Run all animations.
         if C.UI.Cocos.RunAnimations:
             run_animations(self, event_or_trigger, current_event)
 
         # Schedule the content update after animations.
         self.schedule(self.update_content_after_animations)
+
+    def do_animation(self, action, target):
+        self._animation_container.do(action, target=target)
 
     def _replace_dialog(self, player_id):
         """Do the replacement.
@@ -443,16 +473,40 @@ class GameBoardLayer(ActiveLayer):
         layer_.add_ok(_back_transition)
         layer_.add_to_scene(self.parent)
 
-    def _player_list(self):
-        """Return the player list, in order of (current player, opponent player)."""
-        game = self.ctrl.game
+    def player_id_to_i(self, player_id):
+        """Map player id to i (i == 0 means user (bottom), i == 1 means enemy (top)).
 
+        In hot seat mode:
+            i == 0 -> current player
+            i == 1 -> opponent player
+        Else:
+            i == 0 -> player 0
+            i == 1 -> player 1
+        """
         if self.hot_seat:
-            return game.players[game.current_player], game.players[1 - game.current_player]
+            return 0 if player_id == self.ctrl.game.current_player else 1
         else:
             # [NOTE]: If not hot seat, the first user always in bottom.
             # The caller must ensure the first user is in control.
-            return game.players[0], game.players[1]
+            return player_id
+
+    def i_to_player_id(self, i):
+        """Map i to player id. See ``player_id_to_i`` for details."""
+        game = self.ctrl.game
+        if self.hot_seat:
+            return game.current_player if i == 0 else (1 - game.current_player)
+        else:
+            return i
+
+    def _player_list(self):
+        """Return the player list in i-order (i == 0, i == 1).
+
+        Order:
+            In hot seat mode: (current player, opponent player)
+            Else: (player 0, player 1)
+        """
+        game = self.ctrl.game
+        return game.players[self.i_to_player_id(0)], game.players[self.i_to_player_id(1)]
 
     def in_control(self):
         return not self.users[self.ctrl.game.current_player].IsAI
@@ -466,13 +520,21 @@ class GameBoardLayer(ActiveLayer):
     def maybe_run_ai(self):
         if self.in_control():
             return
+        self.schedule(self.run_ai_after_animations)
+
+    def run_ai_after_animations(self, dt):
+        """The scheduled method to run AI AFTER animations."""
+        if self._animation_container.are_actions_running():
+            return
 
         game = self.ctrl.game
         user = self.users[game.current_player]
         agent = user.agent
+        game.run_player_action(agent.get_player_action())
 
-        while not self.in_control():
-            game.run_player_action(agent.get_player_action())
+        # If it goes into user turn, unschedule the AI.
+        if self.in_control():
+            self.unschedule(self.run_ai_after_animations)
 
 
 class GameButtonsLayer(ActiveLayer):

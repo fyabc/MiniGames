@@ -88,6 +88,7 @@ class Game:
             'event': [],
             'trigger': [],
             'resolve': [],
+            'game_start': [],
             'game_end': [],
         }
 
@@ -168,8 +169,11 @@ class Game:
                 (event) -> Any (return value ignored)
             3. Trigger: called after the resolve of each trigger.
 
-                (trigger, current_event) -> Any (return type ignored)
-            3. Game end: called when the game end.
+                (trigger, current_event) -> Any (return value ignored)
+            4. Game start: called when the game start (just before game start events resolved).
+
+                () -> Any (return value ignored)
+            4. Game end: called when the game end.
 
                 (game_result) -> Any (return value ignored)
         :type callback: function
@@ -305,10 +309,11 @@ class Game:
             # Callback after each event (maybe useless, only need to call after triggers?)
             # [NOTE]: These calls are after the all processing of events (just before idle),
             # so user will always see the up-to-date result.
-            for callback in self.callbacks['event']:
-                callback(e)
-            for callback in self.callbacks['resolve']:
-                callback(e, None)
+            if isinstance(e, Event):
+                for callback in self.callbacks['event']:
+                    callback(e)
+                for callback in self.callbacks['resolve']:
+                    callback(e, None)
 
     def resolve_triggers(self, triggers, current_event, depth=0):
         """Resolve all triggers in the queue.
@@ -505,6 +510,10 @@ class Game:
 
         self.state = self.GameState.Main
         self.entity.zone = Zone.Play
+
+        for callback in self.callbacks['game_start']:
+            callback()
+
         self.resolve_events(game_begin_standard_events(self))
 
     def end_game(self):
