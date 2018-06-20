@@ -67,9 +67,16 @@
 
             // Animation configurations.
             "Animation": {
-                "AttackTime": 0.25,     // Duration (half) of attack animation
-                "DrawCardTime": 0.7     // Duration of draw card animation
+                "AttackTime": 0.250,        // Duration (half) of attack animation
+                "DrawCardTime": 0.600,      // Duration of draw card animation
+                "PlayMinionTime": 0.525,
+                "OpponentShowTime": 0.525   // Duration of show what cards does your opponent play
             }
         }
+    },
+
+    "AI": {
+        // The agent of inn keeper.
+        "InnKeeperAgent": "PlayNoTarget"
     }
 }

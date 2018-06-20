@@ -106,7 +106,6 @@ def run_draw_card_animations(layer, event):
         'is_front': (i == 0), 'scale': 0.35,
         'sel_mgr_kwargs': {'set_default': i == 0}, 'selected_effect': None, 'unselected_effect': None}
     new_sprite = HandSprite(card, **spr_kw)
-
     assert new_sprite not in hand_sprites
 
     hand_sprites.append(new_sprite)
@@ -117,15 +116,69 @@ def run_draw_card_animations(layer, event):
         target=new_sprite)
 
 
-def run_event_animations(layer, event):
-    if isinstance(event, std_e.Attack):
-        run_attack_animations(layer, event)
-    elif isinstance(event, std_e.BeginOfTurn):
-        run_start_turn_animations(layer, event)
-    elif isinstance(event, std_e.GenericDrawCard):
-        run_draw_card_animations(layer, event)
+def run_play_minion_animations(layer, event):
+    minion, player_id, loc = event.minion, event.player_id, event.summon_event.loc
+    i = layer.player_id_to_i(player_id)
+    play_sprites = layer.play_sprites[i]
 
-    # todo
+    sprite_in_hand = _find_sprite(minion, where=layer.hand_sprites[i])
+    if sprite_in_hand is None:
+        # If not found original hand, do not run animations.
+        return
+
+    spr_kw = {
+        'position': sprite_in_hand.position,
+        'scale': 1.0}
+    new_sprite = MinionSprite(minion, **spr_kw)
+    assert new_sprite not in play_sprites
+
+    play_sprites.insert(loc, new_sprite)
+    new_sprite.add_to_layer(layer)
+
+    layer.do_animation(
+        actions.MoveTo(pos(
+            layer.BoardL + (2 * loc + 1) / (2 * len(play_sprites)) * (layer.HeroL - layer.BoardL),
+            layer.PlayY[i]), duration=C.UI.Cocos.Animation.PlayMinionTime),
+        target=new_sprite)
+
+
+def run_opponent_play_animations(layer, event):
+    # std_e.OnPlay.owner
+    assert isinstance(event, std_e.OnPlay)
+
+    owner, player_id = event.owner, event.player_id
+    i = layer.player_id_to_i(player_id)
+
+    # Only show for opponent play events.
+    if i == 0:
+        return
+
+    spr_kw = {
+        'position': pos(*layer.ShowXY),
+        'is_front': True, 'scale': 0.6,
+        'sel_mgr_kwargs': {'set_default': False}, 'selected_effect': None, 'unselected_effect': None}
+    copied_sprite = HandSprite(owner, **spr_kw)
+    copied_sprite.add_to_layer(layer)
+
+    layer.do_animation(
+        actions.Delay(C.UI.Cocos.Animation.OpponentShowTime) + remove_myself_action(),
+        target=copied_sprite)
+
+
+_EventAnimationMap = {
+    std_e.Attack: [run_attack_animations],
+    std_e.BeginOfTurn: [run_start_turn_animations],
+    std_e.GenericDrawCard: [run_draw_card_animations],
+    std_e.OnPlay: [run_opponent_play_animations],
+    std_e.OnPlayMinion: [run_play_minion_animations],
+}
+
+
+def run_event_animations(layer, event):
+    for klass in event.ancestors():
+        animation_fns = _EventAnimationMap.get(klass, [])
+        for animation_fn in animation_fns:
+            animation_fn(layer, event)
 
 
 def run_trigger_animations(layer, trigger, current_event):

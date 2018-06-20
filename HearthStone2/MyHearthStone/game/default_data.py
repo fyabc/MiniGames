@@ -4,15 +4,16 @@
 """Some shared default data."""
 
 from .deck import Deck
-from ..ai.basic import DefaultAgent
+from ..ai.standard import get_agent_by_name
 from ..utils.game import Klass
 from ..utils.user import AIUser
+from ..utils.constants import C
 
 __author__ = 'fyabc'
 
 
 def get_inn_keeper():
-    return AIUser(agent_class=DefaultAgent, user_id=0, nickname='旅店老板')
+    return AIUser(agent_class=get_agent_by_name(C.AI.InnKeeperAgent), user_id=0, nickname='旅店老板')
 
 
 # Decks of practice mode.

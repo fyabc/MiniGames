@@ -22,20 +22,21 @@ __author__ = 'fyabc'
 
 
 class OnPlay(Phase):
-    pass
+    def __init__(self, game, owner, player_id):
+        super().__init__(game, owner)
+        self.player_id = player_id
 
 
 class AfterPlay(Phase):
-    pass
+    def __init__(self, game, owner, player_id):
+        super().__init__(game, owner)
+        self.player_id = player_id
 
 
 class OnPlaySpell(OnPlay):
     def __init__(self, game, spell, target, player_id=None):
-        super().__init__(game, spell)
+        super().__init__(game, spell, player_id)
         self.target = target
-        self._player_id = player_id
-
-    player_id = dynamic_pid_prop()
 
     @property
     def spell(self):
@@ -114,11 +115,8 @@ class SpellText(Phase):
 
 class AfterSpell(AfterPlay):
     def __init__(self, game, spell, target, player_id=None):
-        super().__init__(game, spell)
+        super().__init__(game, spell, player_id)
         self.target = target
-        self._player_id = player_id
-
-    player_id = dynamic_pid_prop()
 
     @property
     def spell(self):
@@ -133,11 +131,8 @@ class AfterSpell(AfterPlay):
 
 class OnPlayWeapon(OnPlay):
     def __init__(self, game, weapon, target, player_id=None):
-        super().__init__(game, weapon)
+        super().__init__(game, weapon, player_id)
         self.target = target
-        self._player_id = player_id
-
-    player_id = dynamic_pid_prop()
 
     @property
     def weapon(self):
@@ -205,8 +200,7 @@ class EquipWeapon(Phase):
 
 class AfterPlayWeapon(AfterPlay):
     def __init__(self, game, weapon, player_id):
-        super().__init__(game, weapon)
-        self.player_id = player_id
+        super().__init__(game, weapon, player_id)
 
     @property
     def weapon(self):
@@ -244,17 +238,17 @@ def pure_equip_events(game, weapon, to_player, from_player=None, from_zone=None)
 
 class OnPlayMinion(OnPlay):
     def __init__(self, game, minion, loc, target, player_id=None):
-        super().__init__(game, minion)
+        super().__init__(game, minion, player_id)
         self.target = target
         self.summon_event = Summon(self.game, minion, loc, player_id)
 
     @property
-    def player_id(self):
-        return self.summon_event.player_id
-
-    @property
     def minion(self):
         return self.summon_event.minion
+
+    @property
+    def loc(self):
+        return self.summon_event.loc
 
     def _repr(self):
         return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion,
@@ -305,12 +299,8 @@ class AfterPlayMinion(AfterPlay):
     skip_5_steps = True
 
     def __init__(self, game, summon_event):
-        super().__init__(game, summon_event.minion)
+        super().__init__(game, summon_event.minion, summon_event.player_id)
         self.summon_event = summon_event
-
-    @property
-    def player_id(self):
-        return self.summon_event.player_id
 
     @property
     def minion(self):

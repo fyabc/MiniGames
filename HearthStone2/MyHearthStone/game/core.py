@@ -251,12 +251,16 @@ class Game:
                 # Do the event and log history.
                 if e.enable:
                     cons_events = e.do()
+
+                    # TODO: Log disabled events or not?
                     e.message()
                     self.event_history.append(e)
-                    for callback in self.callbacks['event']:
-                        callback(e)
                 else:
                     cons_events = None
+                if e.enable:
+                    for callback in self.callbacks['event']:
+                        callback(e)
+
                 if cons_events:
                     self.resolve_events(cons_events, depth=depth + 1)
 

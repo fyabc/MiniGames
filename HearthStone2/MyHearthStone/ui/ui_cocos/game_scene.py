@@ -46,8 +46,10 @@ class GameBoardLayer(ActiveLayer):
     DeckY = (0.25, 0.75)
     HandRatio = 0.23  # Size ratio of hand cards
     HandY = (0.115, 0.885)
+    PlayY = (0.365, 0.635)
     PlayAreas = [((BoardL, HandRatio), (HeroL - BoardL, 0.5 - HandRatio)),
                  ((BoardL, 0.5), (HeroL - BoardL, 0.5 - HandRatio))]
+    ShowXY = (0.12, 0.8)
 
     def __init__(self, ctrl):
         """
@@ -339,24 +341,23 @@ class GameBoardLayer(ActiveLayer):
             self.remove(card_sprite)
 
     def _update_minion_sprites(self):
-        _minion_sprite_cache = {minion_sprite.entity: minion_sprite
-                                for minion_sprite in chain(*self.play_sprites)}
+        _play_sprite_cache = {play_sprite.entity: play_sprite for play_sprite in chain(*self.play_sprites)}
         for card_sprite_list in self.play_sprites:
             card_sprite_list.clear()
-        for i, (player, y_play) in enumerate(zip(self._player_list(), (.365, .635))):
+        for i, (player, y_play) in enumerate(zip(self._player_list(), self.PlayY)):
             num_play = len(player.play)
             for j, card in enumerate(player.play):
                 spr_kw = {
                     'position': pos(self.BoardL + (2 * j + 1) / (2 * num_play) * (self.HeroL - self.BoardL), y_play),
                     'scale': 1.0}
-                if card in _minion_sprite_cache:
-                    minion_sprite = _minion_sprite_cache.pop(card)
-                    minion_sprite.update_content(**spr_kw)
+                if card in _play_sprite_cache:
+                    play_sprite = _play_sprite_cache.pop(card)
+                    play_sprite.update_content(**spr_kw)
                 else:
-                    minion_sprite = MinionSprite(card, **spr_kw)
-                    minion_sprite.add_to_layer(self)
-                self.play_sprites[i].append(minion_sprite)
-        for card_sprite in _minion_sprite_cache.values():
+                    play_sprite = MinionSprite(card, **spr_kw)
+                    play_sprite.add_to_layer(self)
+                self.play_sprites[i].append(play_sprite)
+        for card_sprite in _play_sprite_cache.values():
             self.remove(card_sprite)
 
     def update_content_after_animations(self, dt, scheduled=True):
