@@ -18,6 +18,7 @@ from ...game.events import standard as std_e
 from ...game.events.event import Event
 from ...game.triggers.trigger import Trigger
 from ...utils.message import debug
+from ...utils.constants import C
 
 __author__ = 'fyabc'
 
@@ -83,9 +84,10 @@ def run_attack_animations(layer, event):
     line = Line(attacker.position, attacker.position, color=Colors['white'], stroke_width=1.5)
     layer.add(line)
 
+    duration = C.UI.Cocos.Animation.AttackTime
     layer.do_animation(
-        LineAnimation(start_or_end=False, start=attacker.position, end=defender.position, duration=0.4) +
-        LineAnimation(start_or_end=True, start=attacker.position, end=defender.position, duration=0.4) +
+        LineAnimation(start_or_end=False, start=attacker.position, end=defender.position, duration=duration) +
+        LineAnimation(start_or_end=True, start=attacker.position, end=defender.position, duration=duration) +
         remove_myself_action(), target=line)
 
 
@@ -108,9 +110,11 @@ def run_draw_card_animations(layer, event):
     assert new_sprite not in hand_sprites
 
     hand_sprites.append(new_sprite)
-    layer.add(new_sprite)
+    new_sprite.add_to_layer(layer)
 
-    layer.do_animation(actions.MoveTo(pos(layer.HeroL, layer.HandY[i]), duration=0.8), target=new_sprite)
+    layer.do_animation(
+        actions.MoveTo(pos(layer.HeroL, layer.HandY[i]), duration=C.UI.Cocos.Animation.DrawCardTime),
+        target=new_sprite)
 
 
 def run_event_animations(layer, event):
@@ -153,5 +157,7 @@ def run_animations(layer, event_or_trigger, current_event):
 
 
 __all__ = [
+    'run_event_animations',
+    'run_trigger_animations',
     'run_animations',
 ]

@@ -8,7 +8,7 @@ from itertools import chain
 from cocos import scene, draw, director, rect, cocosnode
 from cocos.scenes import transitions
 
-from .animations import run_animations
+from .animations import *
 from .card_sprite import HandSprite, HeroSprite, MinionSprite, HeroPowerSprite, WeaponSprite
 from .selection_manager import SelectionManager
 from .utils.active import ActiveLayer, ActiveLabel, set_color_action
@@ -183,6 +183,17 @@ class GameBoardLayer(ActiveLayer):
 
     def prepare_start_game(self, game, selected_decks, users, **kwargs):
         """Start game preparations. Called by select deck layer before transitions."""
+
+        def _cb_event_animations(event):
+            run_event_animations(self, event)
+
+        def _cb_trigger_animations(trigger, current_event):
+            run_trigger_animations(self, trigger, current_event)
+
+        if C.UI.Cocos.RunAnimations:
+            game.add_callback(_cb_event_animations, when='event')
+            game.add_callback(_cb_trigger_animations, when='trigger')
+
         game.add_callback(self._update_content, when='resolve')
         game.add_callback(self._log_update_time, when='resolve')
         game.add_callback(self._game_end_dialog, when='game_end')
@@ -390,10 +401,6 @@ class GameBoardLayer(ActiveLayer):
             if sprite is not None:
                 sprite.update_status_border()
 
-        # Run all animations.
-        if C.UI.Cocos.RunAnimations:
-            run_animations(self, event_or_trigger, current_event)
-
         # Schedule the content update after animations.
         self.schedule(self.update_content_after_animations)
 
@@ -448,6 +455,7 @@ class GameBoardLayer(ActiveLayer):
 
         # If replace done, start running main program (if current user is an AI, run it).
         if game.state == game.GameState.Main:
+            self.update_content_after_animations(dt=1.0, scheduled=False)   # Initial update.
             self.maybe_run_ai()
         return True
 

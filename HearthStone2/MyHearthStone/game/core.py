@@ -159,27 +159,31 @@ class Game:
 
             Callback prototypes:
 
-            1. Resolve: called after the resolve of each event and trigger.
+            1. Resolve: called after the resolve of each event and trigger **(just before idle)**.
 
                 (event_or_trigger, current_event) -> Any (return value ignored)
                 If `event_or_trigger` is an event, `current_event` is None;
                 If `event_or_trigger` is a trigger, `current_event` is the trigger's current event.
-            2. Event: called after the resolve of each event.
+            2. Event: called **JUST** after the resolve of each event.
 
                 (event) -> Any (return value ignored)
-            3. Trigger: called after the resolve of each trigger.
+            3. Trigger: called **JUST** after the resolve of each trigger.
 
                 (trigger, current_event) -> Any (return value ignored)
-            4. Game start: called when the game start (just before game start events resolved).
+            4. Game start: called when the game start **(just before game start events resolved)**.
 
                 () -> Any (return value ignored)
-            4. Game end: called when the game end.
+            5. Game end: called when the game end.
 
                 (game_result) -> Any (return value ignored)
         :type callback: function
         :param when: When to call the callback, candidates: ('resolve', 'event', 'trigger', 'game_end')
         :type when: str
         :return: None
+
+        [NOTE]: Different timing between 'resolve' and 'event' / 'trigger':
+            Since the event processing order is depth-first, the 'resolve' is a post-order traversal,
+            and the 'event' / 'trigger' are pre-order traversals.
         """
 
         try:
@@ -245,9 +249,14 @@ class Game:
                     self._collect_resolve_triggers(pre_e, Trigger.Before, depth)
 
                 # Do the event and log history.
-                cons_events = e.do()
-                e.message()
-                self.event_history.append(e)
+                if e.enable:
+                    cons_events = e.do()
+                    e.message()
+                    self.event_history.append(e)
+                    for callback in self.callbacks['event']:
+                        callback(e)
+                else:
+                    cons_events = None
                 if cons_events:
                     self.resolve_events(cons_events, depth=depth + 1)
 
@@ -310,8 +319,6 @@ class Game:
             # [NOTE]: These calls are after the all processing of events (just before idle),
             # so user will always see the up-to-date result.
             if isinstance(e, Event):
-                for callback in self.callbacks['event']:
-                    callback(e)
                 for callback in self.callbacks['resolve']:
                     callback(e, None)
 
@@ -342,14 +349,14 @@ class Game:
 
             new_queue = t.process(current_event)
             t.message(current_event)
-
-            # Callback after each trigger.
-            for callback in chain(self.callbacks['trigger'], self.callbacks['resolve']):
+            for callback in self.callbacks['trigger']:
                 callback(t, current_event)
 
             if new_queue:
                 self.resolve_events(new_queue, depth + 1)
 
+            for callback in self.callbacks['resolve']:
+                callback(t, current_event)
             i += 1
 
     def _summon_resolution(self):

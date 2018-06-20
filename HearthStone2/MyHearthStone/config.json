@@ -63,7 +63,13 @@
             },
 
             // Run animations in the game or not.
-            "RunAnimations": true
+            "RunAnimations": true,
+
+            // Animation configurations.
+            "Animation": {
+                "AttackTime": 0.25,     // Duration (half) of attack animation
+                "DrawCardTime": 0.7     // Duration of draw card animation
+            }
         }
     }
 }
