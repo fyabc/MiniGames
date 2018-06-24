@@ -34,6 +34,8 @@ class GameBoardLayer(ActiveLayer):
     not player id.
     """
 
+    # TODO: Support different i-player mapping for PVP games (no hot-seat).
+
     RightL = 0.88  # Border of right pane
     RightCX = (1 + RightL) / 2  # Center of right pane
     HeroL = 0.66  # Border of hero pane
@@ -58,9 +60,13 @@ class GameBoardLayer(ActiveLayer):
         """
         super().__init__(ctrl)
 
-        # This scene is in hot-seat mode (current player always in the bottom) or not.
-        self.hot_seat = True
-        # Where come from?
+        # The player id of the main player (in bottom).
+        # Candidates:
+        #   None: Hot seat mode.
+        #   0/1: Player id 0/1 is the main player. The other player id may be another (remote) player or an AI.
+        self.main_player_id = None
+
+        # What scene comes from?
         self.where_come_from = None
 
         # Selection manager.
@@ -202,7 +208,7 @@ class GameBoardLayer(ActiveLayer):
         game.start_game(selected_decks, mode='standard',
                         class_hero_maps=[user.class_hero_map for user in users])
         self.users[0], self.users[1] = users[0], users[1]
-        self.hot_seat = kwargs.pop('hot_seat', True)
+        self.main_player_id = kwargs.pop('main_player_id', None)
         self.where_come_from = kwargs.pop('where_come_from', None)
 
     def all_entity_sprites(self):
@@ -482,22 +488,24 @@ class GameBoardLayer(ActiveLayer):
         layer_.add_ok(_back_transition)
         layer_.add_to_scene(self.parent)
 
+    @property
+    def hot_seat(self):
+        return self.main_player_id is None
+
     def player_id_to_i(self, player_id):
         """Map player id to i (i == 0 means user (bottom), i == 1 means enemy (top)).
 
-        In hot seat mode:
-            i == 0 -> current player
-            i == 1 -> opponent player
+        In hot seat mode (main player id is None):
+            i == 0 <- current player
+            i == 1 <- opponent player
         Else:
-            i == 0 -> player 0
-            i == 1 -> player 1
+            i == 0 <- main player id
+            i == 1 <- 1 - main player id
         """
         if self.hot_seat:
             return 0 if player_id == self.ctrl.game.current_player else 1
         else:
-            # [NOTE]: If not hot seat, the first user always in bottom.
-            # The caller must ensure the first user is in control.
-            return player_id
+            return 0 if player_id == self.main_player_id else 1
 
     def i_to_player_id(self, i):
         """Map i to player id. See ``player_id_to_i`` for details."""
@@ -505,7 +513,7 @@ class GameBoardLayer(ActiveLayer):
         if self.hot_seat:
             return game.current_player if i == 0 else (1 - game.current_player)
         else:
-            return i
+            return self.main_player_id if i == 0 else (1 - self.main_player_id)
 
     def _player_list(self):
         """Return the player list in i-order (i == 0, i == 1).
@@ -524,7 +532,7 @@ class GameBoardLayer(ActiveLayer):
         if self.hot_seat:
             return True
         else:
-            return self.ctrl.game.current_player == 0
+            return self.ctrl.game.current_player == self.main_player_id
 
     def maybe_run_ai(self):
         if self.in_control():

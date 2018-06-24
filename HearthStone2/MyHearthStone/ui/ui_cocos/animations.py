@@ -143,7 +143,6 @@ def run_play_minion_animations(layer, event):
 
 
 def run_opponent_play_animations(layer, event):
-    # std_e.OnPlay.owner
     assert isinstance(event, std_e.OnPlay)
 
     owner, player_id = event.owner, event.player_id
@@ -165,12 +164,34 @@ def run_opponent_play_animations(layer, event):
         target=copied_sprite)
 
 
+def run_opponent_hero_power_animations(layer, event):
+    assert isinstance(event, std_e.HeroPowerPhase)
+
+    owner, player_id = event.owner, event.player_id
+    i = layer.player_id_to_i(player_id)
+
+    # Only show for opponent hero power events.
+    if i == 0:
+        return
+
+    spr_kw = {
+        'position': pos(*layer.ShowXY), 'scale': 0.6,
+        'selected_effect': None, 'unselected_effect': None}
+    copied_sprite = HeroPowerFullArtSprite(owner, **spr_kw)
+    copied_sprite.add_to_layer(layer)
+
+    layer.do_animation(
+        actions.Delay(C.UI.Cocos.Animation.OpponentShowTime) + remove_myself_action(),
+        target=copied_sprite)
+
+
 _EventAnimationMap = {
     std_e.Attack: [run_attack_animations],
     std_e.BeginOfTurn: [run_start_turn_animations],
     std_e.GenericDrawCard: [run_draw_card_animations],
     std_e.OnPlay: [run_opponent_play_animations],
     std_e.OnPlayMinion: [run_play_minion_animations],
+    std_e.HeroPowerPhase: [run_opponent_hero_power_animations],
 }
 
 

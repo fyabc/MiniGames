@@ -114,7 +114,10 @@ class SelectDeckLayer(ActiveLayer):
         # Create new game, register callback and start game.
         self.ctrl.game = Game()
         self.ctrl.get_node('game/board').prepare_start_game(
-            self.ctrl.game, self.selected_decks, users=[self.ctrl.user, self.ctrl.user])
+            self.ctrl.game, self.selected_decks,
+            users=[self.ctrl.user, self.ctrl.user],
+            main_player_id=None,
+        )
 
         director.director.replace(transitions.FadeTransition(self.ctrl.get('game'), duration=0.5))
 

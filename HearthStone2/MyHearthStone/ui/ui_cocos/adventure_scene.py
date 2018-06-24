@@ -205,7 +205,8 @@ class PracticeModeLayer(ActiveLayer):
             self.ctrl.game, [
                 self._deck_dict['selected'],
                 PracticeDecks['Expert' if self.difficulty else 'Normal'][self.ai_class]],
-            users=[self.ctrl.user, inn_keeper], hot_seat=False,
+            users=[self.ctrl.user, inn_keeper],
+            main_player_id=0,
             where_come_from=self.ctrl.get('adventure')
         )
 

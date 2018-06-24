@@ -25,6 +25,10 @@ class Agent:
     def hand(self):
         return self.game.get_zone(Zone.Hand, self.player_id)
 
+    @property
+    def play(self):
+        return self.game.get_zone(Zone.Play, self.player_id)
+
     def get_player_action(self):
         raise NotImplementedError()
 

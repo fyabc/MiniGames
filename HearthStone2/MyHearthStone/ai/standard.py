@@ -4,7 +4,7 @@
 from . import agent
 
 # Import them to register agents.
-from . import basic
+from .rule_based import basic
 
 __author__ = 'fyabc'
 

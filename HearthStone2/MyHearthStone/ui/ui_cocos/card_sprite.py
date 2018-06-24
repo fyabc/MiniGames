@@ -634,6 +634,7 @@ class HeroPowerSprite(EntitySprite):
         self.common_border = None
         self.hp_available = None
         self.hp_sprite = None
+        self.hp_cost_label = None
         self.hp_exhausted = None
 
         super().__init__(hero_power, position, scale, **kwargs)
@@ -667,6 +668,42 @@ class HeroPowerSprite(EntitySprite):
             self.try_add(self.hp_sprite, z=1)
             self.try_add(self.hp_cost_label, z=3)
             self.try_remove(self.hp_exhausted)
+
+
+class HeroPowerFullArtSprite(EntitySprite):
+    ImagePart = 0.00, 0.00, 1.00, 1.00
+    ImageScale = 1.0
+
+    ImageSize = euclid.Vector2(286, 395)  # Hero power size (original).
+    Size = euclid.Vector2(  # Sprite size.
+        int(ImageSize[0] * ImagePart[2] * ImageScale), int(ImageSize[1] * ImagePart[3] * ImageScale))
+    SizeBase = Size // 2  # Coordinate base of children sprites.
+
+    def __init__(self, hero_power, position=(0, 0), scale=1.0, **kwargs):
+        self.hp_sprite = None
+        self.hp_cost_sprite = None
+        self.hp_cost_label = None
+
+        super().__init__(hero_power, position, scale, **kwargs)
+
+    def _build_components(self):
+        image = try_load_image('HeroPower-{}.png'.format(self.entity.id), image_part=self.ImagePart)
+        self.hp_sprite = Sprite(image, scale=self.ImageScale)
+        self.hp_cost_sprite = Sprite('Mana.png', pos(0.00, 0.805, base=self.SizeBase), scale=0.62,)
+        self.hp_cost_label = hs_style_label(str(self.entity.cost), pos(0, 0.72, base=self.SizeBase), font_size=42)
+
+        self.add(self.hp_sprite, z=0)
+        self.add(self.hp_cost_sprite, z=1)
+        self.add(self.hp_cost_label, z=2)
+
+    def update_status_border(self):
+        # Full art hero power does not have status border.
+        pass
+
+    def update_content(self, **kwargs):
+        super().update_content(**kwargs)
+        self.hp_cost_label.element.text = str(self.entity.cost)
+        self.hp_cost_label.element.color = self._get_cost_color()
 
 
 class WeaponSprite(EntitySprite):
@@ -735,5 +772,6 @@ __all__ = [
     'MinionSprite',
     'HeroSprite',
     'HeroPowerSprite',
+    'HeroPowerFullArtSprite',
     'WeaponSprite',
 ]
