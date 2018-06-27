@@ -310,91 +310,10 @@ def children_inside_test(node, x, y):
     return False
 
 
-def active_scroll_list(self, positions, arrow=True):
-    select_dict = {
-        'CX': 0.5,
-        'ListT': 0.9,
-        'ListB': 0.25,
-        'ArrowY': 0.15,
-        'Size': 10,
-        'show_start': 0,
-        'buttons': [],
-        'selected': None,
-    }
-    select_dict.update(positions)
-
-    def _refresh_list():
-        CX = select_dict['CX']
-        ListT = select_dict['ListT']
-        Size = select_dict['Size']
-        show_start = select_dict['show_start']
-
-        for i, button in enumerate(select_dict['buttons']):
-            button.position = pos(CX, ListT - (ListT - select_dict['ListB']) * (i - show_start) / (Size - 1))
-            if show_start <= i < show_start + Size:
-                self.try_add(button)
-            else:
-                self.try_remove(button)
-
-    def _scroll(is_down_):
-        if is_down_:
-            if select_dict['show_start'] + select_dict['Size'] >= len(select_dict['buttons']):
-                return
-        else:
-            if select_dict['show_start'] == 0:
-                return
-        select_dict['show_start'] += int(is_down_) * 2 - 1
-        _refresh_list()
-
-    if arrow:
-        for is_down in (False, True):
-            self.add(ActiveLabel.hs_style(
-                '[ {} ]'.format('↓' if is_down else '↑'),
-                pos(select_dict['CX'] + 0.05 * (1 if is_down else -1), select_dict['ArrowY']),
-                callback=lambda is_down_=is_down: _scroll(is_down_),
-                font_size=28, anchor_x='center', anchor_y='center', bold=True,
-            ))
-
-    return select_dict, _refresh_list
-
-
-def scroll_list_enter(select_dict, refresh_fn):
-    select_dict['show_start'] = 0
-    select_dict['selected'] = None
-
-    refresh_fn()
-
-
-def scroll_list_exit(self, select_dict):
-    select_dict['show_start'] = 0
-    select_dict['selected'] = None
-
-    for button in select_dict['buttons']:
-        self.try_remove(button)
-
-    select_dict['buttons'].clear()
-
-
 def list_exit(self, sprite_list):
     for sprite_ in sprite_list:
         self.try_remove(sprite_)
     sprite_list.clear()
-
-
-def active_labels_group_select_fn(group, prefix):
-    attr_name = '_{}_selected'.format(prefix)
-
-    def _label_selected(clicked_button):
-        """Undo render of all buttons, then render this (selected) button."""
-        for button in group:
-            assert isinstance(button, ActiveLabel)
-            if getattr(button, attr_name, None) is True:
-                delattr(button, attr_name)
-                button.element.text = button.element.text[2:-2]
-        clicked_button.element.text = '[ {} ]'.format(clicked_button.element.text)
-        setattr(clicked_button, attr_name, True)
-
-    return _label_selected
 
 
 __all__ = [
@@ -405,6 +324,5 @@ __all__ = [
     'ActiveColorLayer',
     'set_color_action',
     'children_inside_test',
-    'active_scroll_list', 'scroll_list_enter', 'scroll_list_exit', 'active_labels_group_select_fn',
     'list_exit',
 ]

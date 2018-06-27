@@ -7,6 +7,7 @@ from cocos import director, draw, scene, layer
 from cocos.scenes import transitions
 
 from .utils.active import *
+from .utils.widgets import *
 from .utils.basic import pos, notice
 from .utils.layers import BackgroundLayer, BasicButtonsLayer
 from ..utils.constants import Colors
@@ -28,40 +29,41 @@ class AdventureSelectLayer(ActiveLayer):
         super().__init__(ctrl)
         self.main_layer = main_layer
 
-        self._select_dict, self._select_refresh = active_scroll_list(self, {
+        self._rb_list_mode = make_radio_button_list(self, {
             'CX': self.SelectCX,
             'ListT': self.SelectListT,
             'ListB': self.SelectListB,
             'ArrowY': self.SelectArrowY,
             'Size': self.SelectSize,
-        })
+        }, prefix='mode', scroll=True)
     
     def on_enter(self):
         super().on_enter()
 
         self._build_buttons_from_main_layer()
-        scroll_list_enter(self._select_dict, self._select_refresh)
+        self._rb_list_mode['on_enter']()
 
     def on_exit(self):
-        scroll_list_exit(self, self._select_dict)
+        self._rb_list_mode['on_exit'](self)
 
         return super().on_exit()
 
     def _build_buttons_from_main_layer(self):
-        fn = active_labels_group_select_fn(self._select_dict['buttons'], prefix='mode')
+        _mode_data = self._rb_list_mode['data']
+        fn = self._rb_list_mode['default_selected_fn']
 
         def _mode_selected(clicked_button, i):
             fn(clicked_button)
             self.main_layer.switch_to(i)
 
-        self._select_dict['buttons'] = [
+        _mode_data['buttons'].extend([
             ActiveLabel.hs_style(
                 layer_.name, pos(0.0, 1.0),
                 callback=partial(_mode_selected, i=i),
                 anchor_x='center', anchor_y='center', self_in_callback=True,
             )
             for i, layer_ in enumerate(self.main_layer.layers)
-        ]
+        ])
 
 
 class PracticeModeLayer(ActiveLayer):
@@ -77,10 +79,11 @@ class PracticeModeLayer(ActiveLayer):
     DiffB = 0.8
     DiffY = (1.0 + DiffB) / 2
 
-    KlassL, KlassR = DeckR + (1.0 - DeckR) * 0.2, DeckR + (1.0 * DeckR) * 0.8
+    KlassL, KlassR = DeckR + (1.0 - DeckR) * 0.15, DeckR + (1.0 - DeckR) * 0.85
     KlassXS = 3
-    KlassT, KlassB = 0.7, 0.25
+    KlassT, KlassB = 0.75, 0.25
 
+    StartT = 0.20
     StartX = (1.0 + DeckR) / 2
     StartY = DeckArrowY
 
@@ -89,49 +92,52 @@ class PracticeModeLayer(ActiveLayer):
         self.name = 'Practice Mode'
 
         self.add(draw.Line(pos(self.DeckR, 0.0), pos(self.DeckR, 1.0), Colors['white'], 2))
+        self.add(draw.Line(pos(self.DeckR, self.DiffB), pos(1.0, self.DiffB), Colors['white'], 2))
+        self.add(draw.Line(pos(self.DeckR, self.StartT), pos(1.0, self.StartT), Colors['white'], 2))
 
-        self._deck_dict, self._deck_refresh = active_scroll_list(self, {
+        self._rb_list_deck = make_radio_button_list(self, {
             'CX': self.DeckCX,
             'ListT': self.DeckListT,
             'ListB': self.DeckListB,
             'ArrowY': self.DeckArrowY,
             'Size': self.DeckListSize,
-        })
+        }, prefix='deck', scroll=True,)
 
-        self.difficulty_group = []
-        self.difficulty = None     # False = Normal, True = Expert
-        self._build_difficulty_buttons()
+        # Difficulty: False = Normal, True = Expert.
+        self._rb_group_diff = make_radio_button_group(self, [
+            {'name': 'Normal', 'position': pos(self.DiffX1, self.DiffY), 'value': False},
+            {'name': 'Expert', 'position': pos(self.DiffX2, self.DiffY), 'value': True},
+        ], 'difficulty')
 
-        self.ai_class_group = []
-        self.ai_class = None
-        self._build_ai_class_buttons()
+        # Klass of AI (Inn Keeper).
+        self._rb_group_ai_class = self._build_ai_class_buttons()
 
         self.add(ActiveLabel.hs_style(
             'Start Game', pos(self.StartX, self.StartY),
             callback=self._on_start_game,
-            font_size=36, anchor_x='center',
+            font_size=36, anchor_x='center', anchor_y='center',
         ))
 
     def on_enter(self):
         super().on_enter()
 
         self._build_deck_buttons()
-
-        scroll_list_enter(self._deck_dict, self._deck_refresh)
+        self._rb_list_deck['on_enter']()
 
     def on_exit(self):
-        scroll_list_exit(self, self._deck_dict)
+        self._rb_list_deck['on_exit'](self)
 
         return super().on_exit()
 
     def _build_deck_buttons(self):
-        fn = active_labels_group_select_fn(self._deck_dict['buttons'], prefix='deck')
+        _deck_data = self._rb_list_deck['data']
+        fn = self._rb_list_deck['default_selected_fn']
 
         def _deck_selected(clicked_button, deck):
             fn(clicked_button)
-            self._deck_dict['selected'] = deck
+            _deck_data['selected'] = deck
 
-        self._deck_dict['buttons'].extend([
+        _deck_data['buttons'].extend([
             ActiveLabel.hs_style(
                 deck.name, pos(0.0, 1.0),
                 callback=partial(_deck_selected, deck=deck),
@@ -140,59 +146,30 @@ class PracticeModeLayer(ActiveLayer):
             for deck in self.ctrl.user.decks
         ])
 
-    def _build_difficulty_buttons(self):
-        fn = active_labels_group_select_fn(self.difficulty_group, 'difficulty')
-
-        def _diff_selected(clicked_button, diff):
-            fn(clicked_button)
-            self.difficulty = diff
-
-        self.difficulty_group.extend([
-            ActiveLabel.hs_style(
-                'Normal', pos(self.DiffX1, self.DiffY),
-                callback=partial(_diff_selected, diff=False),
-                anchor_x='center', anchor_y='center', self_in_callback=True,
-            ),
-            ActiveLabel.hs_style(
-                'Expert', pos(self.DiffX2, self.DiffY),
-                callback=partial(_diff_selected, diff=True),
-                anchor_x='center', anchor_y='center', self_in_callback=True,
-            ),
-        ])
-
-        for button in self.difficulty_group:
-            self.try_add(button)
-
     def _build_ai_class_buttons(self):
-        fn = active_labels_group_select_fn(self.ai_class_group, 'ai_class')
-
-        def _ai_class_selected(clicked_button, klass_):
-            fn(clicked_button)
-            self.ai_class = klass_
+        buttons_data = []
 
         MaxY = (len(Klass.Idx2Str) - 1) // self.KlassXS + 1
         for klass, name in Klass.Idx2Str.items():
             if klass == Klass.Neutral:
                 continue
             y, x = divmod(klass - 1, self.KlassXS)
-            self.ai_class_group.append(ActiveLabel.hs_style(
-                name, pos(self.KlassL + x * (self.KlassR - self.KlassL) / self.KlassXS,
-                          self.KlassT - y * (self.KlassT - self.KlassB) / MaxY),
-                callback=partial(_ai_class_selected, klass_=klass),
-                anchor_x='center', anchor_y='center', self_in_callback=True,
-            ))
-
-        for button in self.ai_class_group:
-            self.try_add(button)
+            position = pos(self.KlassL + x * (self.KlassR - self.KlassL) / (self.KlassXS - 1),
+                           self.KlassT - y * (self.KlassT - self.KlassB) / (MaxY - 1))
+            buttons_data.append({'name': name, 'position': position, 'value': klass})
+        return make_radio_button_group(self, buttons_data, 'ai_class')
 
     def _on_start_game(self):
-        if self._deck_dict['selected'] is None:
+        _deck_data = self._rb_list_deck['data']
+        if _deck_data['selected'] is None:
             notice(self, 'Must select a deck!')
             return
-        if self.difficulty is None:
+        difficulty = self._rb_group_diff['data']['value']
+        if difficulty is None:
             notice(self, 'Must select a difficulty!')
             return
-        if self.ai_class is None:
+        ai_class = self._rb_group_ai_class['data']['value']
+        if ai_class is None:
             notice(self, 'Must select a class as opponent!')
             return
 
@@ -203,8 +180,8 @@ class PracticeModeLayer(ActiveLayer):
 
         self.ctrl.get_node('game/board').prepare_start_game(
             self.ctrl.game, [
-                self._deck_dict['selected'],
-                PracticeDecks['Expert' if self.difficulty else 'Normal'][self.ai_class]],
+                _deck_data['selected'],
+                PracticeDecks['Expert' if difficulty else 'Normal'][ai_class]],
             users=[self.ctrl.user, inn_keeper],
             main_player_id=0,
             where_come_from=self.ctrl.get('adventure')
@@ -217,6 +194,7 @@ def get_adventure_bg():
     select_r = AdventureSelectLayer.SelectR
 
     bg = BackgroundLayer()
+    bg.add(draw.Line(pos(select_r, .0), pos(select_r, 1.), Colors['white'], 2))
     bg.add(draw.Line(pos(select_r, .0), pos(select_r, 1.), Colors['white'], 2))
 
     return bg

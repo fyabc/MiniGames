@@ -38,6 +38,7 @@ class MainMenu(menu.Menu):
         items = [
             menu.MenuItem('New Game', self.on_new_game),
             menu.MenuItem('New Adventure', self.on_new_adventure),
+            menu.MenuItem('Start Server', self.on_start_server),
             menu.MenuItem('Deck', self.on_collections),
             menu.MenuItem('Options', self.on_options),
             menu.MenuItem('Exit', self.on_quit),
@@ -50,6 +51,10 @@ class MainMenu(menu.Menu):
 
     def on_new_adventure(self):
         director.director.replace(transitions.FadeTransition(self.ctrl.scenes['adventure'], duration=1.0))
+
+    def on_start_server(self):
+        # TODO
+        pass
 
     def on_collections(self):
         director.director.replace(transitions.FadeTransition(self.ctrl.scenes['collection'], duration=1.0))
