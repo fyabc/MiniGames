@@ -78,5 +78,10 @@
     "AI": {
         // The agent of inn keeper.
         "InnKeeperAgent": "BaseAgent"
+    },
+
+    "LAN": {
+        // Max capacity of the LAN server.
+        "ServerMaxCapacity": 32
     }
 }

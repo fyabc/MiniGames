@@ -1,64 +1,104 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Utilities of network.
+
+Message format:
+Compressed JSON string
+{
+    "type": "text",
+    # Other information ...
+}
+"""
+
 import json
+
+from ..utils.error import GameError
 
 __author__ = 'fyabc'
 
 
-def _ensure_newline(s):
-    if s and s[-1] != '\n':
-        s += '\r\n'
-    return s
+# Exceptions.
 
-
-def send_obj(fd, obj):
-    fd.write((json.dumps(obj, separators=(',', ':')) + '\n').encode())
-
-
-def recv_obj(fd):
-    return json.loads(fd.readline().strip().decode())
-
-
-# Message are dicts (in JSON format)
-DefaultMsgType = 'text'
-
-
-def send_msg(fd, msg_type, **kwargs):
-    # Default message type
-    kwargs['type'] = msg_type
-    send_obj(fd, kwargs)
-
-
-recv_msg = recv_obj
-
-
-class ClientError(Exception):
-    """The exception class for client errors."""
-
+class NetworkError(GameError):
     pass
 
 
-class NetworkUser:
-    """The network user class."""
-
-    def __init__(self, address, nickname, deck_code):
-        self.address = address
-        self.nickname = nickname
-        self.deck_code = deck_code
-        self.player_id = None
-
-    def __eq__(self, other):
-        return (self.address, self.nickname) == (other.address, other.nickname)
-
-    def __hash__(self):
-        return hash((self.address, self.nickname))
+class ServerFull(GameError):
+    def __init__(self, server):
+        super().__init__('Server(address={}) already full!'.format(server.server_address))
+        self.server = server
 
 
-MessageTypes = {
-    'text',
-    'error',
-    'ok',
-    'user_data',
-    'game_status',
-}
+class UserAlreadyExists(GameError):
+    def __init__(self, server, user):
+        super().__init__('{} already exists in Server(address={})!'.format(user, server))
+        self.user = user
+        self.server = server
+
+
+class UserNotExists(GameError):
+    def __init__(self, server, user):
+        super().__init__('{} does not exist in Server(address={})!'.format(user, server))
+        self.user = user
+        self.server = server
+
+
+class MasterAlreadyExists(GameError):
+    def __init__(self, server, user):
+        super().__init__('Master {} already exists in Server(address={})!'.format(user, server))
+        self.user = user
+        self.server = server
+
+
+# Message utilities.
+
+def send_dict(fd, d):
+    fd.write(((json.dumps(d, separators=(',', ':')) + '\n').encode()))
+
+
+def recv_dict(fd):
+    s = fd.readline().strip().decode()
+    if not s:
+        return None
+    return json.loads(s)
+
+
+class MsgTypes:
+    Text = 'text'
+    OK = 'ok'
+    Error = 'error'
+
+    Default = Text
+
+
+def send_msg(fd, msg_type, **kwargs):
+    kwargs['type'] = msg_type
+    send_dict(fd, kwargs)
+
+
+def recv_msg(fd):
+    """Receive message.
+
+    :param fd:
+    :return: Pair of (msg_type, msg_dict)
+        If no data received, return (None, None), it usually means connection closed.
+    :rtype: tuple
+    """
+    d = recv_dict(fd)
+    if d is None:
+        return None, None
+    return d.get('type', MsgTypes.Default), d
+
+
+__all__ = [
+    'NetworkError',
+    'ServerFull',
+    'UserAlreadyExists',
+    'UserNotExists',
+    'MasterAlreadyExists',
+
+    'MsgTypes',
+    'send_dict', 'recv_dict',
+    'send_msg', 'recv_msg',
+]

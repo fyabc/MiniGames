@@ -8,7 +8,7 @@ import threading
 import socket
 import socketserver
 
-from . import utils
+from . import utils2 as utils
 from ..game.core import Game
 from ..game.player_action import ReplaceStartCard
 from ..game.deck import Deck

@@ -33,7 +33,7 @@ class Frontend:
             self.__check_user_locked()
             self._main()
         except GameError as e:
-            critical(e.message())
+            critical(e)
             return 1
         except Exception as e:
             from traceback import format_exc

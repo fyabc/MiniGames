@@ -4,7 +4,7 @@
 import socket
 import threading
 
-from . import utils
+from . import utils2 as utils
 from ..utils.message import info, error
 
 __author__ = 'fyabc'
