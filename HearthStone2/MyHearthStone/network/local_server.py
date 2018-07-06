@@ -19,12 +19,6 @@ from ..utils.message import warning, info, entity_message
 __author__ = 'fyabc'
 
 
-class UserState:
-    Invalid = -1
-    WaitUserData = 0
-    CloseConnection = 10
-
-
 class BaseLocalServer(socketserver.ThreadingTCPServer):
     def __init__(self, server_address, RequestHandlerClass, bind_and_activate=True, **kwargs):
         super().__init__(server_address, RequestHandlerClass, bind_and_activate=bind_and_activate)
@@ -125,6 +119,9 @@ class BaseLocalHandler(socketserver.StreamRequestHandler):
         if d is None:
             self.state = UserState.CloseConnection
 
+        # TODO:
+        # 1. Get game version info and check it.
+
     def _close_connection(self):
         info('Connection to {} closed'.format(self.client_address))
 
@@ -170,17 +167,22 @@ class LocalHandlerV2(BaseLocalHandler):
         super().finish()
 
 
-def start_server(version, address, **kwargs):
+def create_server(version, address, **kwargs):
     if version == 1:
         server = LocalServerV1(address, LocalHandlerV1, **kwargs)
     elif version == 2:
         server = LocalServerV2(address, LocalHandlerV2, **kwargs)
     else:
         raise ValueError('Unknown version {!r}'.format(version))
+    return server
+
+
+def start_server(server):
     info('Start LAN server {}'.format(server))
     server.serve_forever()
 
 
 __all__ = [
+    'create_server',
     'start_server',
 ]

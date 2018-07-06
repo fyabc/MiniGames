@@ -23,6 +23,10 @@ def main():
                              help='User name, default is %(default)s, will override value of "--uid"')
     group_basic.add_argument('--uid', metavar='ID', action='store', default=None, type=int, dest='user_id_or_name',
                              help='User id, default is %(default)s, will override value of "-u"')
+
+    group_locale = parser.add_argument_group('Locale', 'locale settings')
+    group_locale.add_argument('--locale', metavar='LOCALE', default=None, type=str, dest='locale',
+                              help='Locale string, default is None (use system default locale)')
     # TODO: add more arg options
 
     args = parser.parse_args()
@@ -34,11 +38,12 @@ def main():
     # [NOTE]: This must before the import of any other game modules.
     from .utils.constants import load_arg_config
     load_arg_config({
+        'Locale': args.locale,
         'Frontend': args.frontend,
         'Logging': {
             'Level': args.debug_level.upper(),
             'ScreenLog': args.screen_log,
-        }
+        },
     })
 
     # [NOTE]: The import of C must after the loading of arg config.

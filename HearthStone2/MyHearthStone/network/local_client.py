@@ -55,13 +55,17 @@ class LocalClientV2(BaseLocalClient):
     pass
 
 
-def start_client(version, address, user, **kwargs):
+def create_client(version, address, user, **kwargs):
     if version == 1:
         client = LocalClientV1(user, address, **kwargs)
     elif version == 2:
         client = LocalClientV2(user, address, **kwargs)
     else:
         raise ValueError('Unknown version {!r}'.format(version))
+    return client
+
+
+def start_client(client):
     info('Start LAN client {}'.format(client))
     client.run()
 
@@ -70,5 +74,6 @@ __all__ = [
     'BaseLocalClient',
     'LocalClientV1',
     'LocalClientV2',
+    'create_client',
     'start_client',
 ]

@@ -91,6 +91,12 @@ def recv_msg(fd):
     return d.get('type', MsgTypes.Default), d
 
 
+class UserState:
+    Invalid = -1
+    WaitUserData = 0
+    CloseConnection = 10
+
+
 __all__ = [
     'NetworkError',
     'ServerFull',
@@ -101,4 +107,6 @@ __all__ = [
     'MsgTypes',
     'send_dict', 'recv_dict',
     'send_msg', 'recv_msg',
+
+    'UserState',
 ]
