@@ -37,14 +37,16 @@ def main():
     # Load project config.
     # [NOTE]: This must before the import of any other game modules.
     from .utils.constants import load_arg_config
-    load_arg_config({
-        'Locale': args.locale,
+    arg_config = {
         'Frontend': args.frontend,
         'Logging': {
             'Level': args.debug_level.upper(),
             'ScreenLog': args.screen_log,
         },
-    })
+    }
+    if args.locale is not None:
+        arg_config['Locale'] = args.locale
+    load_arg_config(arg_config)
 
     # [NOTE]: The import of C must after the loading of arg config.
     from .utils.constants import C
