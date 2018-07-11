@@ -579,3 +579,6 @@ class IndependentEntity(GameEntity):
         if self.zone not in [Zone.Hand, Zone.Play, Zone.Hero, Zone.HeroPower]:
             return self.Inactive
         return self.Active
+
+    def player_operations(self):
+        pass
