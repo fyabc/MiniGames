@@ -16,35 +16,113 @@ Change both here and selection manager.
 For some cards with extra choices (e.g. **Choose One** cards and "Tracking"), need to do some extra ops.
 Op list examples:
     [NOTE]: All of these op lists can be canceled when in the middle.
-    1. Minion (no target):
-      SelectHand, SelectPosition, Done
-    2. Minion (target):
-      SelectHand, SelectPosition, SelectTarget, Done
-    3. Minion (no target, select): (Example: **Discover**)
-      SelectHand, SelectPosition, SelectChoice, Done
-    4. Minion (target, select): (Example: **Keeper of the Grove**)
-      SelectHand, SelectPosition, SelectChoice, SelectTarget, Done
-    5. Minion (target, select, [select after target]): (No example now)
+    - Minion (no target):
+      SelectOwner, SelectPosition, Done
+    - Minion (target):
+      SelectOwner, SelectPosition, SelectTarget, Done
+    - Minion (no target, select): (Example: **Discover**)
+      SelectOwner, SelectPosition, SelectChoice, Done
+    - Minion (target, select): (Example: "Keeper of the Grove")
+      SelectOwner, SelectPosition, SelectChoice, SelectTarget, Done
+    - Minion (target, select, [select after target]): (No example now)
       ???
-    6. Minion (conditional target, select): (No example, now)
-      SelectHand, SelectPosition, SelectChoice, [SelectTarget], Done
+    - Minion (conditional target, select): (No example now)
+      SelectOwner, SelectPosition, SelectChoice, [SelectTarget], Done
+      
+    - Spell (conditional target, select): (Example: "Wrath")
+      SelectOwner, SelectChoice, [SelectTarget], Done
 """
 
 __author__ = 'fyabc'
 
 
-# Some basic player operations, represented by integers.
-
+# TODO: Move them into enumerations.
 SelectOwner = 0
-SO = SelectOwner
 SelectMinionPosition = 1
-SMP = SelectMinionPosition
 SelectTarget = 2
-ST = 2
+SelectChoice = 3
 
 
-# Complicate player operations.
+class PlayerOpNode:
+    def __init__(self, op, child_or_map, can_undo=True):
+        self.op = op
+        self.can_undo = can_undo
+        if isinstance(child_or_map, (type(None), PlayerOpNode)):
+            # Single child (include terminal node (child is None).
+            self._single_child = True
+        else:
+            # Multiple children.
+            assert isinstance(child_or_map, dict)
+            self._single_child = False
+        self.child_or_map = child_or_map
 
-class SelectChoice:
-    def __init__(self, choices):
-        self.choices = choices
+    def __repr__(self):
+        # TODO
+        return '{}'.format(self.__class__.__name__)
+
+    def next_op(self, choice=None):
+        if self._single_child:
+            return self.child_or_map
+        else:
+            return self.child_or_map[choice]
+
+    def get_choice(self):
+        if self._single_child:
+            return None
+        else:
+            return list(self.child_or_map.keys())
+
+
+class SelectChoiceNode(PlayerOpNode):
+    def __init__(self, children_map, can_undo=True):
+        super().__init__(SelectChoice, children_map, can_undo)
+
+
+class PlayerOperationSequence:
+    """The class of player operation sequence.
+
+    This sequence is like a tree, different operations may cause different consequent operations.
+    Example:
+        "Starfall"
+            SelectOwner -> SelectChoice --> (AoE) Done
+                                        +-> (Single damage) SelectTarget -> Done
+    """
+    def __init__(self, tree: PlayerOpNode):
+        self._tree = tree
+        self._cursor = tree
+        self.can_reset = True
+
+    def get_op(self):
+        if self._cursor is None:
+            return None
+        return self._cursor.op
+
+    def next_operation(self, choice=None):
+        self._none_guard()
+        self._cursor = self._cursor.next_op(choice)
+
+        if self._cursor is None:
+            return None
+        if not self._cursor.can_undo:
+            self.can_reset = False
+        return self._cursor.op
+
+    def get_choice(self):
+        self._none_guard()
+        return self._cursor.get_choice()
+
+    def reset(self):
+        self._cursor = self._tree
+        self.can_reset = True
+
+    def _none_guard(self):
+        if self._cursor is None:
+            # Should not reach here.
+            raise RuntimeError('Player operation sequence has been already finished')
+
+
+__all__ = [
+    'SelectOwner', 'SelectMinionPosition', 'SelectTarget',
+
+    'PlayerOperationSequence',
+]

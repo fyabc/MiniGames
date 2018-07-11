@@ -7,6 +7,7 @@ from collections import ChainMap
 from itertools import chain
 import re
 
+from .player_operation import *
 from ..utils.game import Zone, Type, DHBonusType
 from ..utils.message import entity_message, warning, debug
 
@@ -581,4 +582,9 @@ class IndependentEntity(GameEntity):
         return self.Active
 
     def player_operations(self):
-        pass
+        """Get the player operation list of this independent entity.
+
+        :return: List of player operations.
+        :rtype: PlayerOperationSequence
+        """
+        return SelectOwner,
