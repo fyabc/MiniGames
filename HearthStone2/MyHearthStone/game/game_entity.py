@@ -7,7 +7,6 @@ from collections import ChainMap
 from itertools import chain
 import re
 
-from .player_operation import CommonTrees, PlayerOperationSequence
 from ..utils.game import Zone, Type, DHBonusType
 from ..utils.message import entity_message, warning, debug
 
@@ -581,10 +580,11 @@ class IndependentEntity(GameEntity):
             return self.Inactive
         return self.Active
 
-    def player_operations(self):
-        """Get the player operation sequence of this independent entity.
+    def player_operation_tree(self):
+        """Get the player operation tree of this independent entity.
 
-        :return: List of player operations.
-        :rtype: PlayerOperationSequence
+        :return: Tree of player operations.
+        :rtype: PlayerOpTree
         """
-        return PlayerOperationSequence(CommonTrees['NoTargetNoMinion'])
+        # TODO: Implement them in all subclasses.
+        raise NotImplementedError()

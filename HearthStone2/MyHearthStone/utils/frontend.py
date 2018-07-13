@@ -18,7 +18,7 @@ def validate_target(card, target, msg_fn):
 
     # TODO: Move it into ``Card``.
 
-    if target is not None and card.player_id != target.player_id and target.stealth:
+    if target is not None and card.player_id != target.player_id and getattr(target, 'stealth', False):
         msg_fn('Character with stealth cannot be targeted!')
         return False
 
@@ -28,6 +28,70 @@ def validate_target(card, target, msg_fn):
     return True
 
 
+class PlayerOperationSequence:
+    """The class of player operation sequence.
+
+    This sequence is like a tree, different operations may cause different consequent operations.
+    Example:
+        "Starfall"
+            SelectOwner -> SelectChoice --> (AoE) Done
+                                        +-> (Single damage) SelectTarget -> Done
+    """
+    def __init__(self, tree):
+        self._tree = tree
+        self._cursor = tree
+        self.can_reset = True   # TODO: Generalize it to ``reset_cursor``.
+
+    def __repr__(self):
+        return '''POS(tree=\n{})\n'''.format(
+            self._tree.repr_with_cursor(self._cursor, indent=4, depth=1))
+
+    @property
+    def tree(self):
+        return self._tree
+
+    @property
+    def cursor(self):
+        return self._cursor
+
+    @property
+    def cursor_op(self):
+        if self._cursor is None:
+            return None
+        return self._cursor.op
+
+    def next_operation(self, choice=None, random=False):
+        self._none_guard()
+        self._cursor = self._cursor.next_op(choice, random=random)
+
+        if self._cursor is None:
+            return None
+        if not self._cursor.can_undo:
+            self.can_reset = False
+        return self._cursor.op
+
+    def get_choice(self):
+        self._none_guard()
+        return self._cursor.get_choice()
+
+    def set_tree(self, tree):
+        self._tree = tree
+        self.reset()
+
+    def reset(self):
+        self._cursor = self._tree
+        self.can_reset = True
+
+    def clear(self):
+        self.set_tree(None)
+
+    def _none_guard(self):
+        if self._cursor is None:
+            # Should not reach here.
+            raise RuntimeError('Player operation sequence has been already finished')
+
+
 __all__ = [
     'validate_target',
+    'PlayerOperationSequence',
 ]

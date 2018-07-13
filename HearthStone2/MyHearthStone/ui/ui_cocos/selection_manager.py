@@ -8,6 +8,7 @@ from pyglet.window import mouse
 from .card_sprite import EntitySprite
 from .utils.basic import notice
 from ...game import player_action as pa
+from ...game.player_operation import PlayerOps
 from ...utils.frontend import *
 from ...utils.game import *
 
@@ -33,6 +34,8 @@ class SelectionManager:
         self.board = game_board
         self.state = self.C
 
+        # Player operation sequence and related data.
+        self.seq = PlayerOperationSequence(None)
         # Selections.
         self.sel = {
             'source': None,
@@ -68,20 +71,41 @@ class SelectionManager:
             self.clear_all()
             return True
 
-        # print('$Click at {}, P={}, Zone={}, index={}, state={}'.format(
-        #     sprite, player.player_id, Zone.Idx2Str[zone], index, self.state))
+        entity = sprite.entity
 
-        if self.state != self.C and zone == Zone.HeroPower:
-            # [NOTE]: Hero power can be selected only in common state now.
-            self._msg_fn('This is not a valid target!')
-            return True
+        if zone != entity.zone or player.player_id != entity.player_id:
+            from ...utils.message import warning
+            warning('Click at zone {}, but sprite have zone {}'.format(
+                Zone.repr_zp(entity.zone, entity.player_id),
+                Zone.repr_zp(zone, player.player_id),
+            ))
+
+        # TODO: change into player operation system.
+        print('#In click entity')
+        if self.seq.cursor is None:
+            self.seq.set_tree(entity.player_operation_tree())
+            print('#Create a new player operation sequence')
+        else:
+            op = self.seq.cursor_op
+            print('#Op:', PlayerOps.Idx2Str[op])
+
+            # TODO: Do something according to the current op.
+            if op == PlayerOps.ConfirmPlay:
+                # TODO: Add return here...
+                pass
+            elif op == PlayerOps.SelectTarget:
+                pass
+            elif op == PlayerOps.SelectChoice:
+                pass
+            elif op == PlayerOps.SelectMinionPosition:
+                pass
+            elif op == PlayerOps.SelectDefender:
+                pass
+            else:
+                raise ValueError('Unknown or not implemented op {}'.format(op))
+        print('#Player operation sequence:', self.seq)
 
         if self.state == self.C:
-            entity = sprite.entity
-
-            # TODO
-            print('#Player operations:', entity.player_operations())
-
             if entity.can_do_action(msg_fn=self._msg_fn) == entity.Inactive:
                 return False
             else:
@@ -143,7 +167,7 @@ class SelectionManager:
             return False
         elif self.state == self.ST:
             card = self.sel['source']
-            target = sprite.entity
+            target = entity
             if not validate_target(card, target, self._msg_fn):
                 return False
             game.run_player_action(pa.PlaySpell(game, card, target, card.player_id))
@@ -155,7 +179,7 @@ class SelectionManager:
         elif self.state == self.MT2:
             minion = self.sel['source']
             index = self.sel['index']
-            target = sprite.entity
+            target = entity
             if not validate_target(minion, target, self._msg_fn):
                 return False
             game.run_player_action(pa.PlayMinion(game, minion, index, target, minion.player_id))
@@ -164,7 +188,7 @@ class SelectionManager:
             return False
         elif self.state == self.WT:
             card = self.sel['source']
-            target = sprite.entity
+            target = entity
             if not validate_target(card, target, self._msg_fn):
                 return False
             game.run_player_action(pa.PlayWeapon(game, card, target, card.player_id))
@@ -175,14 +199,14 @@ class SelectionManager:
             return False
         elif self.state == self.HPT:
             entity = self.sel['source']
-            target = sprite.entity
+            target = entity
             if not validate_target(entity, target, self._msg_fn):
                 return False
             game.run_player_action(pa.UseHeroPower(game, target, entity.player_id))
             return True
         elif self.state == self.A:
             attacker = self.sel['source']
-            defender = sprite.entity
+            defender = entity
             if not attacker.check_defender(defender, self._msg_fn):
                 return False
             game.run_player_action(pa.ToAttack(game, attacker, defender))
@@ -221,6 +245,25 @@ class SelectionManager:
         if buttons & mouse.RIGHT:
             self.clear_all()
             return True
+
+        print('#In click space')
+        op = self.seq.cursor_op
+        print('#Op:', PlayerOps.Idx2Str[op])
+        # TODO: Do something according to the current op.
+        if op == PlayerOps.ConfirmPlay:
+            self.seq.next_operation()
+            # TODO: Add return here...
+        elif op == PlayerOps.SelectTarget:
+            pass
+        elif op == PlayerOps.SelectChoice:
+            pass
+        elif op == PlayerOps.SelectMinionPosition:
+            pass
+        elif op == PlayerOps.SelectDefender:
+            pass
+        else:
+            raise ValueError('Unknown or not implemented op {}'.format(op))
+        print('#Player operation sequence:', self.seq)
 
         # print('$Click at space:', player_id, index)
 
@@ -270,6 +313,21 @@ class SelectionManager:
 
     def _msg_fn(self, msg: str):
         notice(self.board, msg)
+
+    def _maybe_run(self, game, return_value=True):
+        while self.seq.cursor_op == PlayerOps.Run:
+            cursor = self.seq.cursor
+
+            from ...game.player_operation import RunTree
+            assert isinstance(cursor, RunTree)
+
+            player_action = cursor.run(game, self.sel)
+            # TODO: Clear sel or not?
+            game.run_player_action(player_action)
+
+            self.seq.next_operation()
+
+        return return_value
 
 
 __all__ = [

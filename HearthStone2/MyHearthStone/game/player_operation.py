@@ -33,37 +33,58 @@ Op list examples:
       SelectChoice, [SelectTarget], Done
 """
 
+import random as _random
+
+from . import player_action as pa
+from ..utils.game import EnumMeta
+
 __author__ = 'fyabc'
 
 
-# TODO: Move them into enumerations.
-SelectMinionPosition = 1
-SelectTarget = 2
-SelectChoice = 3
-ConfirmPlay = 4
-SelectDefender = 5
+class PlayerOps(metaclass=EnumMeta):
+    Invalid = -1
+    ConfirmPlay = 0
+    SelectTarget = 1
+    SelectChoice = 2
+    SelectMinionPosition = 3
+    SelectDefender = 4
+    Run = 5
 
 
-class PlayerOpNode:
-    def __init__(self, op, child_or_map, can_undo=True):
+class PlayerOpTree:
+    def __init__(self, op, child_or_map=None, can_undo=True):
+        """Create a tree of player operations.
+
+        :param op: The integer that represents the operation.
+        :param child_or_map: The child, or the children map.
+        :param can_undo: Can I undo this operation? [True]
+        """
         self.op = op
         self.can_undo = can_undo
-        if isinstance(child_or_map, (type(None), PlayerOpNode)):
-            # Single child (include terminal node (child is None).
-            self._single_child = True
-        else:
-            # Multiple children.
-            assert isinstance(child_or_map, dict)
-            self._single_child = False
-        self._child_or_map = child_or_map
+
+        self._single_child = None
+        self._child_or_map = None
+        self.set_child(child_or_map)
 
     def __repr__(self):
-        # TODO
-        return '{}'.format(self.__class__.__name__)
+        return '{}(\n{})'.format(self.__class__.__name__, self.repr_with_cursor(None, indent=4, depth=1))
 
-    def repr_with_cursor(self, cursor):
-        # TODO
-        return ''
+    def repr_with_cursor(self, cursor, indent=4, depth=0):
+        indents = ' ' * depth * indent
+        result = '{}{}{}\n'.format(
+            indents,
+            '*' if cursor is self else '',
+            PlayerOps.Idx2Str[self.op])
+        if self._child_or_map is None:
+            return result
+        elif self._single_child:
+            return result + self._child_or_map.repr_with_cursor(cursor, indent=indent, depth=depth + 1)
+        else:
+            result += ''.join(
+                '{}> {}:\n{}'.format(indents, k, v.repr_with_cursor(cursor, indent=indent, depth=depth + 1))
+                for k, v in self._child_or_map.items()
+            )
+        return result
 
     @classmethod
     def chain(cls, op_list, can_undo_list=None):
@@ -75,11 +96,32 @@ class PlayerOpNode:
             head = cls(op, head, can_undo=can_undo)
         return head
 
-    def next_op(self, choice=None):
+    @classmethod
+    def chain_nodes(cls, node_list):
+        head = None
+        for node in reversed(node_list):
+            node.set_child(head)
+            head = node
+        return head
+
+    def set_child(self, child_or_map):
+        if isinstance(child_or_map, (type(None), PlayerOpTree)):
+            # Single child (include terminal node (child is None).
+            self._single_child = True
+        else:
+            # Multiple children.
+            assert isinstance(child_or_map, dict)
+            self._single_child = False
+        self._child_or_map = child_or_map
+
+    def next_op(self, choice=None, random=False):
         if self._single_child:
             return self._child_or_map
         else:
-            return self._child_or_map[choice]
+            if random:
+                return self._child_or_map[_random.choice(self.get_choice())]
+            else:
+                return self._child_or_map[choice]
 
     def get_choice(self):
         if self._single_child:
@@ -88,76 +130,71 @@ class PlayerOpNode:
             return list(self._child_or_map.keys())
 
 
-class SelectChoiceNode(PlayerOpNode):
-    def __init__(self, children_map, can_undo=True):
-        super().__init__(SelectChoice, children_map, can_undo=can_undo)
+class SelectChoiceTree(PlayerOpTree):
+    def __init__(self, title, children_map, can_undo=True):
+        super().__init__(PlayerOps.SelectChoice, children_map, can_undo=can_undo)
+        self.title = title
+
+
+class RunTree(PlayerOpTree):
+    """A special player operation tree node.
+
+    This node is not a real operation, it just means that need to run a player action.
+    When frontend selection manager meet this node, it will run it and get the next automatically.
+    """
+
+    def __init__(self, run_fn, child):
+        """
+
+        :param run_fn: Callable that return the player action.
+        :type run_fn: callable
+            Signature: (game, po_data) -> PlayerAction
+        :param child:
+        """
+        super().__init__(PlayerOps.Run, child, can_undo=False)
+        self._run_fn = run_fn
+
+    def run(self, game, po_data):
+        return self._run_fn(game, po_data)
+
+
+# Some commonly used run functions and run nodes.
+def _run_play_spell_no_target(game, po_data):
+    card = po_data['source']
+    return pa.PlaySpell(game, card, None, card.player_id)
+
+
+def _run_play_spell_target(game, po_data):
+    card = po_data['source']
+    return pa.PlaySpell(game, card, po_data['target'], card.player_id)
+
+
+RunNoTargetSpell = RunTree(_run_play_spell_no_target, None)
+RunTargetSpell = RunTree(_run_play_spell_target, None)
 
 
 # Some commonly used default player operation trees.
-_PON = PlayerOpNode
+_PON = PlayerOpTree
 CommonTrees = {
-    'NoTargetNoMinion': _PON.chain([ConfirmPlay]),
-    'HaveTargetNoMinion':  _PON.chain([SelectTarget, ConfirmPlay]),
-    'NoTargetMinion':  _PON.chain([SelectMinionPosition]),
-    'HaveTargetMinion':  _PON.chain([SelectMinionPosition, SelectTarget]),
-    'Attack': _PON.chain([SelectDefender]),
+    # TODO: Append ``RunTree``. How to create the player action?
+    'NoTargetMinion':  _PON.chain_nodes([]),
+    'HaveTargetMinion':  _PON.chain_nodes([]),
+    'NoTargetSpell': _PON.chain_nodes([_PON(PlayerOps.ConfirmPlay), RunNoTargetSpell]),
+    'HaveTargetSpell':  _PON.chain_nodes([_PON(PlayerOps.SelectTarget), RunTargetSpell]),
+    'NoTargetWeapon': _PON.chain_nodes([]),
+    'HaveTargetWeapon':  _PON.chain_nodes([]),
+    'NoTargetHeroCard': _PON.chain_nodes([]),
+    'HaveTargetHeroCard':  _PON.chain_nodes([]),
+    'NoTargetHeroPower': _PON.chain_nodes([]),
+    'HaveTargetHeroPower':  _PON.chain_nodes([]),
+    'Attack': _PON.chain_nodes([]),
 }
 
-
-class PlayerOperationSequence:
-    """The class of player operation sequence.
-
-    This sequence is like a tree, different operations may cause different consequent operations.
-    Example:
-        "Starfall"
-            SelectOwner -> SelectChoice --> (AoE) Done
-                                        +-> (Single damage) SelectTarget -> Done
-    """
-    def __init__(self, tree: PlayerOpNode):
-        self._tree = tree
-        self._cursor = tree
-        self.can_reset = True   # TODO: Generalize it to ``reset_cursor``.
-
-    def __repr__(self):
-        return '''\
-POS(
-    tree={},
-)
-'''.format(self._tree.repr_with_cursor(self._cursor))
-
-    def get_op(self):
-        if self._cursor is None:
-            return None
-        return self._cursor.op
-
-    def next_operation(self, choice=None):
-        self._none_guard()
-        self._cursor = self._cursor.next_op(choice)
-
-        if self._cursor is None:
-            return None
-        if not self._cursor.can_undo:
-            self.can_reset = False
-        return self._cursor.op
-
-    def get_choice(self):
-        self._none_guard()
-        return self._cursor.get_choice()
-
-    def reset(self):
-        self._cursor = self._tree
-        self.can_reset = True
-
-    def _none_guard(self):
-        if self._cursor is None:
-            # Should not reach here.
-            raise RuntimeError('Player operation sequence has been already finished')
-
-
 __all__ = [
-    'SelectMinionPosition', 'SelectTarget', 'SelectChoice', 'ConfirmPlay',
+    'PlayerOps',
 
-    'SelectChoiceNode',
+    'PlayerOpTree',
+    'SelectChoiceTree',
+    'RunTree',
     'CommonTrees',
-    'PlayerOperationSequence',
 ]
