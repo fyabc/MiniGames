@@ -5,6 +5,7 @@
 
 from .game_entity import IndependentEntity, make_property
 from .alive_mixin import AliveMixin
+from .player_operation import CommonTrees, PlayerOperationSequence
 from ..utils.game import Zone, Type
 
 __author__ = 'fyabc'
@@ -196,6 +197,14 @@ class Minion(AliveMixin, Card):
             return self.Inactive
 
         return super_result
+
+    def player_operations(self):
+        # If in play, return attack operations, else return play operations.
+        if self.zone == Zone.Play:
+            return PlayerOperationSequence(CommonTrees['Attack'])
+        else:
+            assert self.zone == Zone.Hand
+            return PlayerOperationSequence(CommonTrees['NoTargetMinion'])
 
 
 class Spell(Card):

@@ -4,12 +4,12 @@
 """Player operations are components of player actions.
 
 Examples:
-    Select owner
     Select position
     Select target
     Select choice (**Choose One**, **Discover**, **Adapt**, etc)
 
 TODO: Migrate "have_target" system into this system.
+TODO: Extend this system into other player actions, such as "attack", not only "play".
 
 Change both here and selection manager.
 
@@ -17,30 +17,31 @@ For some cards with extra choices (e.g. **Choose One** cards and "Tracking"), ne
 Op list examples:
     [NOTE]: All of these op lists can be canceled when in the middle.
     - Minion (no target):
-      SelectOwner, SelectPosition, Done
+      SelectPosition, Done
     - Minion (target):
-      SelectOwner, SelectPosition, SelectTarget, Done
+      SelectPosition, SelectTarget, Done
     - Minion (no target, select): (Example: **Discover**)
-      SelectOwner, SelectPosition, SelectChoice, Done
+      SelectPosition, SelectChoice, Done
     - Minion (target, select): (Example: "Keeper of the Grove")
-      SelectOwner, SelectPosition, SelectChoice, SelectTarget, Done
+      SelectPosition, SelectChoice, SelectTarget, Done
     - Minion (target, select, [select after target]): (No example now)
       ???
     - Minion (conditional target, select): (No example now)
-      SelectOwner, SelectPosition, SelectChoice, [SelectTarget], Done
+      SelectPosition, SelectChoice, [SelectTarget], Done
       
     - Spell (conditional target, select): (Example: "Wrath")
-      SelectOwner, SelectChoice, [SelectTarget], Done
+      SelectChoice, [SelectTarget], Done
 """
 
 __author__ = 'fyabc'
 
 
 # TODO: Move them into enumerations.
-SelectOwner = 0
 SelectMinionPosition = 1
 SelectTarget = 2
 SelectChoice = 3
+ConfirmPlay = 4
+SelectDefender = 5
 
 
 class PlayerOpNode:
@@ -54,28 +55,53 @@ class PlayerOpNode:
             # Multiple children.
             assert isinstance(child_or_map, dict)
             self._single_child = False
-        self.child_or_map = child_or_map
+        self._child_or_map = child_or_map
 
     def __repr__(self):
         # TODO
         return '{}'.format(self.__class__.__name__)
 
+    def repr_with_cursor(self, cursor):
+        # TODO
+        return ''
+
+    @classmethod
+    def chain(cls, op_list, can_undo_list=None):
+        if can_undo_list is None:
+            can_undo_list = [True for _ in op_list]
+        assert len(op_list) == len(can_undo_list), 'Length of op list != can undo list'
+        head = None
+        for op, can_undo in zip(reversed(op_list), reversed(can_undo_list)):
+            head = cls(op, head, can_undo=can_undo)
+        return head
+
     def next_op(self, choice=None):
         if self._single_child:
-            return self.child_or_map
+            return self._child_or_map
         else:
-            return self.child_or_map[choice]
+            return self._child_or_map[choice]
 
     def get_choice(self):
         if self._single_child:
             return None
         else:
-            return list(self.child_or_map.keys())
+            return list(self._child_or_map.keys())
 
 
 class SelectChoiceNode(PlayerOpNode):
     def __init__(self, children_map, can_undo=True):
-        super().__init__(SelectChoice, children_map, can_undo)
+        super().__init__(SelectChoice, children_map, can_undo=can_undo)
+
+
+# Some commonly used default player operation trees.
+_PON = PlayerOpNode
+CommonTrees = {
+    'NoTargetNoMinion': _PON.chain([ConfirmPlay]),
+    'HaveTargetNoMinion':  _PON.chain([SelectTarget, ConfirmPlay]),
+    'NoTargetMinion':  _PON.chain([SelectMinionPosition]),
+    'HaveTargetMinion':  _PON.chain([SelectMinionPosition, SelectTarget]),
+    'Attack': _PON.chain([SelectDefender]),
+}
 
 
 class PlayerOperationSequence:
@@ -90,7 +116,14 @@ class PlayerOperationSequence:
     def __init__(self, tree: PlayerOpNode):
         self._tree = tree
         self._cursor = tree
-        self.can_reset = True
+        self.can_reset = True   # TODO: Generalize it to ``reset_cursor``.
+
+    def __repr__(self):
+        return '''\
+POS(
+    tree={},
+)
+'''.format(self._tree.repr_with_cursor(self._cursor))
 
     def get_op(self):
         if self._cursor is None:
@@ -122,7 +155,9 @@ class PlayerOperationSequence:
 
 
 __all__ = [
-    'SelectOwner', 'SelectMinionPosition', 'SelectTarget',
+    'SelectMinionPosition', 'SelectTarget', 'SelectChoice', 'ConfirmPlay',
 
+    'SelectChoiceNode',
+    'CommonTrees',
     'PlayerOperationSequence',
 ]

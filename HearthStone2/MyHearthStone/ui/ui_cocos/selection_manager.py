@@ -78,6 +78,10 @@ class SelectionManager:
 
         if self.state == self.C:
             entity = sprite.entity
+
+            # TODO
+            print('#Player operations:', entity.player_operations())
+
             if entity.can_do_action(msg_fn=self._msg_fn) == entity.Inactive:
                 return False
             else:
