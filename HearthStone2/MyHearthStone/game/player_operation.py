@@ -160,34 +160,79 @@ class RunTree(PlayerOpTree):
 
 # Some commonly used run functions and run nodes.
 def _run_play_spell_no_target(game, po_data):
-    card = po_data['source']
-    return pa.PlaySpell(game, card, None, card.player_id)
+    source = po_data['source']
+    return pa.PlaySpell(game, source, None, source.player_id)
 
 
 def _run_play_spell_target(game, po_data):
-    card = po_data['source']
-    return pa.PlaySpell(game, card, po_data['target'], card.player_id)
+    source = po_data['source']
+    return pa.PlaySpell(game, source, po_data['target'], source.player_id)
+
+
+def _run_play_weapon_no_target(game, po_data):
+    source = po_data['source']
+    return pa.PlayWeapon(game, source, None, source.player_id)
+
+
+def _run_play_weapon_target(game, po_data):
+    source = po_data['source']
+    return pa.PlayWeapon(game, source, po_data['target'], source.player_id)
+
+
+def _run_play_minion_no_target(game, po_data):
+    source = po_data['source']
+    index = po_data['index']
+    return pa.PlayMinion(game, source, index, None, source.player_id)
+
+
+def _run_play_minion_target(game, po_data):
+    source = po_data['source']
+    index = po_data['index']
+    return pa.PlayMinion(game, source, index, po_data['target'], source.player_id)
+
+
+def _run_hero_power_no_target(game, po_data):
+    source = po_data['source']
+    return pa.UseHeroPower(game, None, source.player_id)
+
+
+def _run_hero_power_target(game, po_data):
+    source = po_data['source']
+    return pa.UseHeroPower(game, po_data['target'], source.player_id)
+
+
+def _run_attack(game, po_data):
+    source = po_data['source']
+    return pa.ToAttack(game, source, po_data['defender'])
 
 
 RunNoTargetSpell = RunTree(_run_play_spell_no_target, None)
 RunTargetSpell = RunTree(_run_play_spell_target, None)
+RunNoTargetWeapon = RunTree(_run_play_weapon_no_target, None)
+RunTargetWeapon = RunTree(_run_play_weapon_target, None)
+RunNoTargetMinion = RunTree(_run_play_minion_no_target, None)
+RunTargetMinion = RunTree(_run_play_minion_target, None)
+RunNoTargetHeroPower = RunTree(_run_hero_power_no_target, None)
+RunTargetHeroPower = RunTree(_run_hero_power_target, None)
+RunAttack = RunTree(_run_attack, None)
 
 
 # Some commonly used default player operation trees.
 _PON = PlayerOpTree
+_PO = PlayerOps
 CommonTrees = {
-    # TODO: Append ``RunTree``. How to create the player action?
-    'NoTargetMinion':  _PON.chain_nodes([]),
-    'HaveTargetMinion':  _PON.chain_nodes([]),
-    'NoTargetSpell': _PON.chain_nodes([_PON(PlayerOps.ConfirmPlay), RunNoTargetSpell]),
-    'HaveTargetSpell':  _PON.chain_nodes([_PON(PlayerOps.SelectTarget), RunTargetSpell]),
-    'NoTargetWeapon': _PON.chain_nodes([]),
-    'HaveTargetWeapon':  _PON.chain_nodes([]),
-    'NoTargetHeroCard': _PON.chain_nodes([]),
-    'HaveTargetHeroCard':  _PON.chain_nodes([]),
-    'NoTargetHeroPower': _PON.chain_nodes([]),
-    'HaveTargetHeroPower':  _PON.chain_nodes([]),
-    'Attack': _PON.chain_nodes([]),
+    'NoTargetMinion':  _PON.chain_nodes([_PON(_PO.SelectMinionPosition, RunNoTargetMinion)]),
+    'HaveTargetMinion':  _PON.chain_nodes([_PON(_PO.SelectMinionPosition), _PON(_PO.SelectTarget), RunTargetMinion]),
+    'NoTargetSpell': _PON.chain_nodes([_PON(_PO.ConfirmPlay), RunNoTargetSpell]),
+    'HaveTargetSpell':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetSpell]),
+    'NoTargetWeapon': _PON.chain_nodes([_PON(_PO.ConfirmPlay), RunNoTargetWeapon]),
+    'HaveTargetWeapon':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetWeapon]),
+    # TODO: Implement hero cards
+    # 'NoTargetHeroCard': _PON.chain_nodes([]),
+    # 'HaveTargetHeroCard':  _PON.chain_nodes([]),
+    'NoTargetHeroPower': RunNoTargetHeroPower,
+    'HaveTargetHeroPower':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetHeroPower]),
+    'Attack': _PON.chain_nodes([_PON(_PO.SelectTarget), RunAttack]),
 }
 
 __all__ = [

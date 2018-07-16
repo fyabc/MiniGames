@@ -251,9 +251,11 @@ class SelectionManager:
         print('#Op:', PlayerOps.Idx2Str[op])
         # TODO: Do something according to the current op.
         if op == PlayerOps.ConfirmPlay:
+            # TODO: Add validate target here (before get player action)...
             self.seq.next_operation()
             # TODO: Add return here...
         elif op == PlayerOps.SelectTarget:
+            # TODO: Add msg fn 'must select a target' here...
             pass
         elif op == PlayerOps.SelectChoice:
             pass
