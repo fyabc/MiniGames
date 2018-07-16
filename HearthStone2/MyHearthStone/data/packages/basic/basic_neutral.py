@@ -89,7 +89,7 @@ __author__ = 'fyabc'
 ext.create_damage_minion({
     'id': 0,
     'cost': 1, 'attack': 1, 'health': 1,
-    'battlecry': True, 'have_target': True,
+    'battlecry': True, 'po_tree': '$HaveTarget',
 }, 1)
 
 # 暗鳞先知 (1)
@@ -144,7 +144,7 @@ class 巫医(Minion):
     data = {
         'id': 5,
         'cost': 1, 'attack': 2, 'health': 1,
-        'have_target': True, 'battlecry': True,
+        'po_tree': '$HaveTarget', 'battlecry': True,
     }
 
     def run_battlecry(self, target, **kwargs):
@@ -238,7 +238,7 @@ blank_minion({
 ext.create_damage_minion({
     'id': 16,
     'cost': 3, 'attack': 2, 'health': 2,
-    'battlecry': True, 'have_target': True,
+    'battlecry': True, 'po_tree': '$HaveTarget',
 }, 1)
 
 
@@ -286,16 +286,16 @@ Enc_破碎残阳祭司 = ext.create_enchantment({'id': 2}, *enc_common.apply_fn_
 
 
 class 破碎残阳祭司(Minion):
-    """[NOTE]: This is a classic card of (permanently) granted enchantments."""
+    """[NOTE]: This is a classic card of (permanently) granted enchantments.
+    [NOTE]: This is a classic card of conditional have target cards.
+    """
     data = {
         'id': 20,
         'cost': 3, 'attack': 3, 'health': 2,
         'battlecry': True,
     }
 
-    @property
-    def have_target(self):
-        return bool(self.game.get_zone(Zone.Play, self.player_id))
+    player_operation_tree = ext.make_conditional_targeted_po_tree(ext.have_friendly_minion)
 
     check_target = ext.checker_friendly_minion
 
@@ -403,7 +403,7 @@ class 古拉巴什狂暴者(Minion):
 ext.create_damage_minion({
     'id': 31,
     'cost': 5, 'attack': 4, 'health': 2,
-    'battlecry': True, 'have_target': True,
+    'battlecry': True, 'po_tree': '$HaveTarget',
 }, 2)
 
 

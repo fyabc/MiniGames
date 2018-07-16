@@ -52,10 +52,7 @@ class 叫嚣的中士(Minion):
         'battlecry': True,
     }
 
-    @property
-    def have_target(self):
-        return bool(self.game.get_zone(Zone.Play, self.player_id)) or \
-               bool(self.game.get_zone(Zone.Play, 1 - self.player_id))
+    player_operation_tree = ext.make_conditional_targeted_po_tree(ext.have_minion)
 
     def run_battlecry(self, target, **kwargs):
         if target is not None:

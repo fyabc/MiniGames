@@ -5,7 +5,7 @@
 
 from .game_entity import IndependentEntity, make_property
 from .alive_mixin import AliveMixin
-from .player_operation import CommonTrees
+from .player_operation import CommonTrees, translate_po_tree
 from ..utils.game import Zone, Type
 
 __author__ = 'fyabc'
@@ -21,7 +21,6 @@ class Card(IndependentEntity):
         'cost': 0,
         'overload': 0,
         'spell_power': 0,
-        'have_target': False,
     }
 
     def __init__(self, game, player_id):
@@ -66,10 +65,6 @@ class Card(IndependentEntity):
     @cost.setter
     def cost(self, value):
         self.data['cost'] = value
-
-    @property
-    def have_target(self):
-        return self.data['have_target']
 
     def check_target(self, target: IndependentEntity):
         """Check the validity of the target."""
@@ -127,6 +122,9 @@ class Minion(AliveMixin, Card):
 
         'battlecry': False,
         'deathrattle': False,
+
+        'po_tree': 'NoTargetMinion',
+        'attack_po_tree': 'Attack',
     }
 
     def __init__(self, game, player_id):
@@ -199,12 +197,13 @@ class Minion(AliveMixin, Card):
         return super_result
 
     def player_operation_tree(self):
+        # [NOTE]: Subclasses can set the data "attack_po_tree" to set attack po trees.
+        # However, some complex player operations need to override this method directly.
         # If in play, return attack operations, else return play operations.
         if self.zone == Zone.Play:
-            return CommonTrees['Attack']
+            return translate_po_tree(self.data.get('attack_po_tree', 'Attack'), entity=self)
         else:
-            assert self.zone == Zone.Hand
-            return CommonTrees['NoTargetMinion']
+            return super().player_operation_tree()
 
 
 class Spell(Card):
@@ -215,6 +214,8 @@ class Spell(Card):
 
         'secret': False,
         'quest': False,
+
+        'po_tree': 'NoTargetSpell',
     }
 
     DamageValues = []   # Used for spell damage description rendering.
@@ -254,6 +255,8 @@ class Weapon(Card):
 
         'battlecry': False,
         'deathrattle': False,
+
+        'po_tree': 'NoTargetWeapon',
     }
 
     def __init__(self, game, player_id):
@@ -346,6 +349,9 @@ class Weapon(Card):
 
         return real_heal
 
+    def player_operation_tree(self):
+        return CommonTrees['NoTargetWeapon']
+
 
 class HeroCard(Card):
     """The class of hero card."""
@@ -354,6 +360,8 @@ class HeroCard(Card):
         'type': Type.HeroCard,
 
         'armor': 5,
+
+        # TODO: po_tree
     }
 
     def __init__(self, game, player_id):

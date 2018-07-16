@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
+import inspect
 from types import new_class
 
 from ...utils.message import warning
@@ -34,8 +34,7 @@ def add_to_module(result, module_dict):
     [NOTE]: This method must be called by other creators directly if `module_dict` is not given.
     """
     if module_dict is None:
-        # noinspection PyProtectedMember
-        module_dict = sys._getframe(2).f_globals
+        module_dict = inspect.stack()[2].frame.f_globals
 
     # Get the module name of caller.
     result.__module__ = module_dict['__name__']

@@ -7,6 +7,7 @@ from collections import ChainMap
 from itertools import chain
 import re
 
+from .player_operation import PlayerOps, PlayerOpTree, translate_po_tree
 from ..utils.game import Zone, Type, DHBonusType
 from ..utils.message import entity_message, warning, debug
 
@@ -523,15 +524,9 @@ class IndependentEntity(GameEntity):
     def have_target(self):
         """Property called by frontend the test if this (playable) entity require a target.
 
-        Usually used by cards and hero power.
-
-        If it returns ``False``, the frontend will insert a special "select target" phase
-        when play the card or hero power.
-
-        [NOTE]: This attribute may be changed in the game, such as combo cards.
-        See card 破碎残阳祭司(20) for more details.
+        Now implemented by po tree, check if it contains a select target operation.
         """
-        return False
+        return any(op == PlayerOps.SelectTarget for op in self.player_operation_tree())
 
     def check_target(self, target: 'IndependentEntity'):
         """When a playable entity with target is played, this method is called to check if
@@ -586,5 +581,7 @@ class IndependentEntity(GameEntity):
         :return: Tree of player operations.
         :rtype: PlayerOpTree
         """
-        # TODO: Implement them in all subclasses.
-        raise NotImplementedError()
+
+        # [NOTE]: Subclasses can set the data "po_tree" to set po trees.
+        # However, some complex player operations need to override this method directly.
+        return translate_po_tree(self.data.get('po_tree', None), entity=self)

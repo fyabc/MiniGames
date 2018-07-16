@@ -401,7 +401,7 @@ class GameBoardLayer(ActiveLayer):
         """
 
         # Refresh selection manager.
-        self._sm.clear_all()
+        self._sm.clear_frontend()
 
         # Update status border BEFORE all animations.
         for sprite in self.all_entity_sprites():

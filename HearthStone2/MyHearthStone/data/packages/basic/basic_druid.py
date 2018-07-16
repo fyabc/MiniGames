@@ -39,7 +39,6 @@ class 变形(HeroPower):
     data = {
         'id': 0,
         'klass': 1, 'is_basic': True, 'cost': 2,
-        'have_target': False,
     }
 
     def run(self, target, **kwargs):
@@ -61,7 +60,7 @@ class 月火术(Spell):
     data = {
         'id': 10001,
         'type': 1, 'klass': 1, 'cost': 0,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 1)
 
@@ -112,7 +111,7 @@ class 野性印记(Spell):
     data = {
         'id': 10004,
         'type': 1, 'klass': 1, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     check_target = ext.checker_minion
@@ -154,7 +153,7 @@ class 治疗之触(Spell):
     data = {
         'id': 10006,
         'type': 1, 'klass': 1, 'cost': 3,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 8, DHBonusEventType.Healing)
 
@@ -170,7 +169,7 @@ class 横扫(Spell):
     data = {
         'id': 10008,
         'type': 1, 'klass': 1, 'cost': 4,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, [4, 1])
 
@@ -203,7 +202,7 @@ class 星火术(Spell):
     data = {
         'id': 10009,
         'type': 1, 'klass': 1, 'cost': 6,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     ext.add_dh_bonus_data(data, 5)

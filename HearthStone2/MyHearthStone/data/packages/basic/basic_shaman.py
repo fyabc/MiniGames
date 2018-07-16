@@ -28,7 +28,6 @@ class 图腾召唤(HeroPower):
     data = {
         'id': 6,
         'klass': 7, 'is_basic': True, 'cost': 2,
-        'have_target': False,
     }
 
     BasicTotems = {"70010", "70011", "70012", "70013"}
@@ -68,7 +67,7 @@ class 先祖治疗(Spell):
     data = {
         'id': 70003,
         'type': 1, 'klass': 7, 'cost': 0,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_minion
@@ -86,7 +85,7 @@ class 冰霜震击(Spell):
     data = {
         'id': 70005,
         'type': 1, 'klass': 7, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 1)
 
@@ -102,7 +101,7 @@ class 石化武器(Spell):
     data = {
         'id': 70006,
         'type': 1, 'klass': 7, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     check_target = ext.checker_friendly_character
@@ -117,7 +116,7 @@ class 风怒(Spell):
     data = {
         'id': 70007,
         'type': 1, 'klass': 7, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_minion
@@ -133,7 +132,7 @@ class 妖术(Spell):
     data = {
         'id': 70008,
         'type': 1, 'klass': 7, 'cost': 4,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_minion

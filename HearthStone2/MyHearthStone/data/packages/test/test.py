@@ -12,6 +12,14 @@ from MyHearthStone.utils.game import Zone
 __author__ = 'fyabc'
 
 
+def _cond_fn(self):
+    my_hand = self.game.get_zone(Zone.Hand, self.player_id)
+    if self in my_hand:
+        return len(my_hand) >= 2
+    else:
+        return bool(my_hand)
+
+
 class TestDiscardHand(Minion):
     """战吼：选择一张手牌，将其弃置。"""
     data = {
@@ -21,13 +29,7 @@ class TestDiscardHand(Minion):
 
     check_target = ext.checker_my_hand
 
-    @property
-    def have_target(self):
-        my_hand = self.game.get_zone(Zone.Hand, self.player_id)
-        if self in my_hand:
-            return len(my_hand) >= 2
-        else:
-            return bool(my_hand)
+    player_operation_tree = ext.make_conditional_targeted_po_tree(_cond_fn)
 
     def run_battlecry(self, target, **kwargs):
         return [std_events.DiscardCard(self.game, self, target)]

@@ -43,3 +43,5 @@ class 血吼(Weapon):
         'id': 1090013,
         'type': 2, 'rarity': 3, 'klass': 9, 'cost': 7, 'attack': 7, 'health': 1,
     }
+
+    # TODO

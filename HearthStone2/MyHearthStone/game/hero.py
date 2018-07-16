@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .game_entity import IndependentEntity, make_property
+from .player_operation import translate_po_tree
 from .alive_mixin import AliveMixin
 from ..utils.game import Zone, Type
 
@@ -22,6 +23,8 @@ class Hero(AliveMixin, IndependentEntity):
         # Other attributes.
         'deathrattle': False,
         'anti_magic': False,
+
+        'attack_po_tree': 'Attack',
     }
 
     def __init__(self, game, player_id):
@@ -75,6 +78,9 @@ class Hero(AliveMixin, IndependentEntity):
         """
         return []
 
+    def player_operation_tree(self):
+        return translate_po_tree(self.data.get('attack_po_tree', 'Attack'), entity=self)
+
 
 class HeroPower(IndependentEntity):
     """The class of hero power."""
@@ -89,10 +95,11 @@ class HeroPower(IndependentEntity):
         'is_basic': False,
 
         'cost': 2,
-        'have_target': False,
 
         # Test if it is a passive hero power.
-        'passive': False
+        'passive': False,
+
+        'po_tree': 'NoTargetHeroPower',
     }
 
     def __init__(self, game, player_id):
@@ -123,10 +130,6 @@ class HeroPower(IndependentEntity):
     @cost.setter
     def cost(self, value):
         self.data['cost'] = value
-
-    @property
-    def have_target(self):
-        return self.data['have_target']
 
     def run(self, target: IndependentEntity, **kwargs):
         """Run the hero power.

@@ -17,7 +17,7 @@ class 炎爆术(Spell):
     data = {
         'id': 1030013,
         'type': 1, 'rarity': 3, 'klass': 3, 'cost': 10,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 10)
 

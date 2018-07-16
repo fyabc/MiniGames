@@ -27,7 +27,7 @@ class 次级治疗术(HeroPower):
     data = {
         'id': 4,
         'klass': 5, 'is_basic': True, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 2)
 
@@ -50,7 +50,7 @@ class 神圣惩击(Spell):
     data = {
         'id': 50001,
         'type': 1, 'klass': 5, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 2)
 
@@ -65,7 +65,7 @@ class 真言术_盾(Spell):
     data = {
         'id': 50003,
         'type': 1, 'klass': 5, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_minion
@@ -95,7 +95,7 @@ class 暗言术_痛(Spell):
     data = {
         'id': 50006,
         'type': 1, 'klass': 5, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action, check_target = ext.action_target_checker_factory_cond_minion(lambda target: target.attack <= 3)
@@ -115,7 +115,7 @@ class 精神控制(Spell):
     data = {
         'id': 50009,
         'type': 1, 'klass': 5, 'cost': 10,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     # TODO: Extract these condition-message pairs.

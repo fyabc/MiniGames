@@ -28,7 +28,6 @@ class 全副武装(HeroPower):
     data = {
         'id': 8,
         'klass': 9, 'is_basic': True, 'cost': 2,
-        'have_target': False,
     }
 
     def run(self, target, **kwargs):
@@ -71,7 +70,7 @@ class 冲锋(Spell):
     data = {
         'id': 90003,
         'type': 1, 'klass': 9, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_minion
@@ -120,7 +119,7 @@ class 斩杀(Spell):
     data = {
         'id': 90005,
         'type': 1, 'klass': 9, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     # TODO: checkers

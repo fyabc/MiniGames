@@ -21,7 +21,7 @@ class 受祝福的勇士(Spell):
     data = {
         'id': 1040010,
         'type': 1, 'rarity': 2, 'klass': 4, 'cost': 5,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     check_target = ext.checker_minion

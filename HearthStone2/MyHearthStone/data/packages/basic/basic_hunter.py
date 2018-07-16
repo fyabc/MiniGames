@@ -30,7 +30,6 @@ class 稳固射击(HeroPower):
     data = {
         'id': 1,
         'klass': 2, 'is_basic': True, 'cost': 2,
-        'have_target': False,
     }
     ext.add_dh_bonus_data(data, [2])
 
@@ -64,7 +63,7 @@ class 驯兽师(Minion):
         'battlecry': True,
     }
 
-    have_target = property(fget=ext.make_have_friendly_race(Race.Beast))
+    player_operation_tree = ext.make_conditional_targeted_po_tree(ext.make_have_friendly_race(Race.Beast))
 
     def check_target(self, target):
         if not ext.checker_friendly_minion(self, target):
@@ -114,7 +113,7 @@ class 猎人印记(Spell):
     data = {
         'id': 20004,
         'type': 1, 'klass': 2, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     check_target = ext.checker_minion
@@ -129,7 +128,7 @@ class 奥术射击(Spell):
     data = {
         'id': 20005,
         'type': 1, 'klass': 2, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 2)
 
@@ -165,7 +164,7 @@ class 杀戮命令(Spell):
     data = {
         'id': 20008,
         'type': 1, 'klass': 2, 'cost': 3,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, [3, 5])
 

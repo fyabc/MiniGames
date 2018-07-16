@@ -27,7 +27,6 @@ class 生命分流(HeroPower):
     data = {
         'id': 7,
         'klass': 8, 'is_basic': True, 'cost': 2,
-        'have_target': False,
     }
     ext.add_dh_bonus_data(data, 2)
 
@@ -73,7 +72,7 @@ class 吸取生命(Spell):
     data = {
         'id': 80007,
         'type': 1, 'klass': 8, 'cost': 3,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, [2, 2])
 
@@ -87,7 +86,7 @@ class 暗影箭(Spell):
     data = {
         'id': 80008,
         'type': 1, 'klass': 8, 'cost': 3,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 4)
 

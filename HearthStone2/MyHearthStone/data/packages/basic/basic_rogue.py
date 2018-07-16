@@ -25,7 +25,6 @@ class 匕首精通(HeroPower):
     data = {
         'id': 5,
         'klass': 6, 'is_basic': True, 'cost': 2,
-        'have_target': False,
     }
 
     def run(self, target, **kwargs):
@@ -37,7 +36,7 @@ class 背刺(Spell):
     data = {
         'id': 60000,
         'type': 1, 'klass': 6, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 2)
 
@@ -74,7 +73,7 @@ class 毒刃(Spell):
     data = {
         'id': 60003,
         'type': 1, 'klass': 6, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 1)
 
@@ -88,7 +87,7 @@ class 闷棍(Spell):
     data = {
         'id': 60004,
         'type': 1, 'klass': 6, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_enemy_minion
@@ -106,7 +105,7 @@ class 刺杀(Spell):
     data = {
         'id': 60006,
         'type': 1, 'klass': 6, 'cost': 5,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_enemy_minion

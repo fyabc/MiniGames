@@ -25,7 +25,7 @@ class 火焰冲击(HeroPower):
     data = {
         'id': 2,
         'klass': 3, 'is_basic': True, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 1)
 
@@ -83,7 +83,7 @@ class 寒冰箭(Spell):
     data = {
         'id': 30004,
         'type': 1, 'klass': 3, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 3)
 
@@ -109,7 +109,7 @@ class 火球术(Spell):
     data = {
         'id': 30007,
         'type': 1, 'klass': 3, 'cost': 4,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 6)
 
@@ -122,7 +122,7 @@ class 变形术(Spell):
     data = {
         'id': 30008,
         'type': 1, 'klass': 3, 'cost': 4,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     can_do_action = ext.require_minion

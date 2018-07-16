@@ -8,9 +8,6 @@ Examples:
     Select target
     Select choice (**Choose One**, **Discover**, **Adapt**, etc)
 
-TODO: Migrate "have_target" system into this system.
-TODO: Extend this system into other player actions, such as "attack", not only "play".
-
 Change both here and selection manager.
 
 For some cards with extra choices (e.g. **Choose One** cards and "Tracking"), need to do some extra ops.
@@ -36,7 +33,7 @@ Op list examples:
 import random as _random
 
 from . import player_action as pa
-from ..utils.game import EnumMeta
+from ..utils.game import EnumMeta, Type
 
 __author__ = 'fyabc'
 
@@ -203,7 +200,7 @@ def _run_hero_power_target(game, po_data):
 
 def _run_attack(game, po_data):
     source = po_data['source']
-    return pa.ToAttack(game, source, po_data['defender'])
+    return pa.ToAttack(game, source, po_data['target'])
 
 
 RunNoTargetSpell = RunTree(_run_play_spell_no_target, None)
@@ -221,7 +218,7 @@ RunAttack = RunTree(_run_attack, None)
 _PON = PlayerOpTree
 _PO = PlayerOps
 CommonTrees = {
-    'NoTargetMinion':  _PON.chain_nodes([_PON(_PO.SelectMinionPosition, RunNoTargetMinion)]),
+    'NoTargetMinion':  _PON.chain_nodes([_PON(_PO.SelectMinionPosition), RunNoTargetMinion]),
     'HaveTargetMinion':  _PON.chain_nodes([_PON(_PO.SelectMinionPosition), _PON(_PO.SelectTarget), RunTargetMinion]),
     'NoTargetSpell': _PON.chain_nodes([_PON(_PO.ConfirmPlay), RunNoTargetSpell]),
     'HaveTargetSpell':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetSpell]),
@@ -232,8 +229,40 @@ CommonTrees = {
     # 'HaveTargetHeroCard':  _PON.chain_nodes([]),
     'NoTargetHeroPower': RunNoTargetHeroPower,
     'HaveTargetHeroPower':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetHeroPower]),
-    'Attack': _PON.chain_nodes([_PON(_PO.SelectTarget), RunAttack]),
+    'Attack': _PON.chain_nodes([_PON(_PO.SelectDefender), RunAttack]),
 }
+
+
+def translate_po_tree(po_tree, entity=None):
+    """Translate the player operation tree.
+
+    If ``po_tree`` is str: retrieve ``CommonTrees``.
+        Some special keys:
+            '$HaveTarget': use ``get_common_po_tree_by_type`` to get the po tree by type.
+    If it is a ``PlayerOpTree``: return itself.
+    Other values are error.
+
+    :param po_tree: str or ``PlayerOpTree`` instance.
+    :param entity: Optional entity used for special keys.
+    :return:
+    """
+    if isinstance(po_tree, str):
+        if po_tree == '$HaveTarget' and entity is not None:
+            po_tree = get_common_po_tree_by_type(entity, have_target=True)
+        if po_tree in CommonTrees:
+            return CommonTrees[po_tree]
+        else:
+            raise ValueError('Unknown player operation tree name {!r}'.format(po_tree))
+    elif isinstance(po_tree, PlayerOpTree):
+        return po_tree
+    else:
+        raise ValueError('Incorrect player operation tree value {}'.format(po_tree))
+
+
+def get_common_po_tree_by_type(entity, have_target=True):
+    """Get commonly used po tree name by entity type."""
+    return '{}{}'.format('HaveTarget' if have_target else 'NoTarget', Type.Idx2Str[entity.type])
+
 
 __all__ = [
     'PlayerOps',
@@ -242,4 +271,7 @@ __all__ = [
     'SelectChoiceTree',
     'RunTree',
     'CommonTrees',
+
+    'translate_po_tree',
+    'get_common_po_tree_by_type',
 ]

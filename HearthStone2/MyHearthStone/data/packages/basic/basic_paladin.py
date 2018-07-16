@@ -26,7 +26,6 @@ class 援军(HeroPower):
     data = {
         'id': 3,
         'klass': 4, 'is_basic': True, 'cost': 2,
-        'have_target': False,
     }
 
     can_do_action = ext.require_board_not_full
@@ -55,7 +54,7 @@ class 力量祝福(Spell):
     data = {
         'id': 40001,
         'type': 1, 'klass': 4, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     check_target = ext.checker_minion
@@ -70,7 +69,7 @@ class 保护之手(Spell):
     data = {
         'id': 40002,
         'type': 1, 'klass': 4, 'cost': 1,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     check_target = ext.checker_minion
@@ -87,7 +86,7 @@ class 圣光术(Spell):
     data = {
         'id': 40004,
         'type': 1, 'klass': 4, 'cost': 2,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
     ext.add_dh_bonus_data(data, 6, types=DHBonusEventType.Healing)
 
@@ -103,7 +102,7 @@ class 王者祝福(Spell):
     data = {
         'id': 40005,
         'type': 1, 'klass': 4, 'cost': 4,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     check_target = ext.checker_minion
@@ -120,7 +119,7 @@ class 愤怒之锤(Spell):
     data = {
         'id': 40007,
         'type': 1, 'klass': 4, 'cost': 4,
-        'have_target': True,
+        'po_tree': '$HaveTarget',
     }
 
     def run(self, target, **kwargs):

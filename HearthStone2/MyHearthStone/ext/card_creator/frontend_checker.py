@@ -9,6 +9,8 @@ Contains:
     Target checker      (used as ``check_target`` method)
     Entity collector    (used to collect target entities in battlecry/deathrattle/run methods, usually in AoEs)
     Checker factories   (create some checkers)
+
+    # TODO: Target tester -> PO tree generator (used as ``player_operation_tree`` method)
 """
 
 from itertools import chain
@@ -90,6 +92,17 @@ def make_have_friendly_race(race):
 
 
 have_friendly_beast = make_have_friendly_race(Race.Beast)
+
+
+# Player operation tree generators.
+
+
+def make_conditional_targeted_po_tree(cond_fn, data_key='po_tree'):
+    def _player_operation_tree(self):
+        if cond_fn(self):
+            self.data[data_key] = '$HaveTarget'
+        return super(type(self), self).player_operation_tree()
+    return _player_operation_tree
 
 
 # Target checkers.
@@ -295,6 +308,8 @@ __all__ = [
     'have_friendly_minion',
     'have_friendly_beast',
     'make_have_friendly_race',
+
+    'make_conditional_targeted_po_tree',
 
     'checker_minion',
     'checker_friendly_character',
