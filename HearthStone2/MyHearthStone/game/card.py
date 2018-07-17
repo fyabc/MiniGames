@@ -66,7 +66,7 @@ class Card(IndependentEntity):
     def cost(self, value):
         self.data['cost'] = value
 
-    def check_target(self, target: IndependentEntity):
+    def check_target(self, target: IndependentEntity, **kwargs):
         """Check the validity of the target."""
 
         if target is None:
@@ -181,6 +181,9 @@ class Minion(AliveMixin, Card):
         :param kwargs: Other arguments, such as location.
         :return: list of events.
         """
+        # TODO: Change deathrattle into triggers (same as other on-death triggers),
+        #   because current implementation is incorrect on deathrattle enchantments (enchantments and tags will be
+        #   cleared when moving to graveyard (before deathrattle), so they cannot be remembered)
         return []
 
     def can_do_action(self, msg_fn=None):

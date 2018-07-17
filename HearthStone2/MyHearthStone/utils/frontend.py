@@ -6,12 +6,13 @@
 __author__ = 'fyabc'
 
 
-def validate_target(card, target, msg_fn):
+def validate_target(card, target, msg_fn, po_data=None):
     """Validate the target of the card.
 
     :param card:
     :param target:
     :param msg_fn:
+    :param po_data:
     :return: The target is valid or not.
     :rtype: bool
     """
@@ -22,7 +23,7 @@ def validate_target(card, target, msg_fn):
         msg_fn('Character with stealth cannot be targeted!')
         return False
 
-    if not card.check_target(target):
+    if not card.check_target(target, po_data=po_data):
         msg_fn('This is not a valid target!')
         return False
     return True
@@ -70,9 +71,9 @@ class PlayerOperationSequence:
             self.can_reset = False
         return self._cursor.op
 
-    def get_choice(self):
+    def get_choices(self):
         self._none_guard()
-        return self._cursor.get_choice()
+        return self._cursor.get_choices()
 
     def set_tree(self, tree):
         self._tree = tree

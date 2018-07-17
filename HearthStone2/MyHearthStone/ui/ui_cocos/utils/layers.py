@@ -6,7 +6,7 @@ from cocos.scenes import transitions
 from pyglet.window import key as pyglet_key
 
 from .primitives import Rect
-from .basic import pos, Colors, hs_style_label
+from .basic import pos, Colors, hs_style_label, alpha_color
 from . import active
 
 __author__ = 'fyabc'
@@ -128,9 +128,65 @@ class LineEditLayer(DialogLayer):
             pass
 
 
+class SelectChoiceLayer(DialogLayer):
+    def __init__(self, color, width=None, height=None, position=(0, 0), **kwargs):
+        self.sel_mgr = kwargs.pop('sel_mgr', None)  # Selection manager (caller).
+        choices = kwargs.pop('choices', [])  # List of choice sprites.
+        cancel = kwargs.pop('cancel', True)  # Add cancel?
+        self.hidden_opacity = kwargs.pop('hidden_opacity', 0)
+
+        # Still stop mouse release event to avoid selection conflict.
+        stop_event = {
+            'on_mouse_motion': False,
+            'on_mouse_release': True,
+        }
+        super().__init__(color, width, height, position, stop_event=stop_event, **kwargs)
+
+        # Store opacity when showing.
+        self.showing_opacity = self.opacity
+
+        self.showing = True
+        self.hide_show_button = active.ActiveLabel.hs_style(
+            '隐藏', pos(0.05, 0.03, base=self.size), anchor_x='center',
+            callback=self.toggle_hide_show,
+        )
+        self.add(self.hide_show_button, name='hide_show_button')
+
+        if cancel:
+            self.add(active.ActiveLabel.hs_style(
+                '取消', pos(0.95, 0.03, base=self.size), anchor_x='center',
+                callback=self.cancel,
+            ), name='cancel_button')
+
+        num_cards = len(choices)
+        for i, sprite in enumerate(choices):
+            sprite.position = pos((2 * i + 1) / (2 * num_cards + 1), 0.5, base=self.size)
+            self.add(sprite)
+
+    def cancel(self):
+        self.remove_from_scene()
+        self.sel_mgr.clear_all()
+
+    def toggle_hide_show(self):
+        if self.showing:
+            self.showing = False
+            for child in self.get_children():
+                if child is not self.hide_show_button:
+                    child.visible = False
+            self.opacity = self.hidden_opacity
+            self.hide_show_button.element.text = '显示'
+        else:
+            self.showing = True
+            for child in self.get_children():
+                child.visible = True
+            self.opacity = self.showing_opacity
+            self.hide_show_button.element.text = '隐藏'
+
+
 __all__ = [
     'BackgroundLayer',
     'BasicButtonsLayer',
     'DialogLayer',
     'LineEditLayer',
+    'SelectChoiceLayer',
 ]

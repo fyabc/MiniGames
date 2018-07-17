@@ -86,6 +86,10 @@ def get_sprite_box(sprite: Sprite):
     return rect.Rect(*global_bl, *(global_tr - global_bl))
 
 
+def alpha_color(color, alpha):
+    return tuple(color[:3]) + (alpha,)
+
+
 def try_load_image(name, image_part=None, image_size=None, default=None):
     """
 
@@ -204,7 +208,7 @@ def notice(layer_, text_, **kwargs):
 
 
 __all__ = [
-    'Colors',
+    'Colors', 'alpha_color',
     'get_width', 'get_height', 'pos', 'pos_x', 'pos_y',
     'get_sprite_box', 'get_label_box',
     'try_load_image',

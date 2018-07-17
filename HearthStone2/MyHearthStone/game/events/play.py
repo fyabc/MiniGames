@@ -95,10 +95,11 @@ class SpellBenderPhase(Phase):
 
 
 class SpellText(Phase):
-    def __init__(self, game, spell, target, player_id=None):
+    def __init__(self, game, spell, target, player_id=None, po_data=None):
         super().__init__(game, spell)
         self.target = target
         self._player_id = player_id
+        self.po_data = {} if po_data is None else po_data
 
     player_id = dynamic_pid_prop()
 
@@ -110,7 +111,7 @@ class SpellText(Phase):
         return super()._repr(P=self.player_id, spell=self.owner, target=self.target)
 
     def do(self):
-        return self.spell.run(self.target)
+        return self.spell.run(self.target, po_data=self.po_data)
 
 
 class AfterSpell(AfterPlay):
@@ -171,11 +172,12 @@ def destroy_old_weapons(game, player_id):
 
 
 class EquipWeapon(Phase):
-    def __init__(self, game, weapon, target, player_id, is_played=True):
+    def __init__(self, game, weapon, target, player_id, is_played=True, po_data=None):
         super().__init__(game, weapon)
         self.target = target
         self.player_id = player_id
         self.is_played = is_played
+        self.po_data = {} if po_data is None else po_data
 
     @property
     def weapon(self):
@@ -191,7 +193,7 @@ class EquipWeapon(Phase):
         Finally your old weapon is destroyed and removed from play.
         The Deathrattle of your old weapon (if any) and Grave Shambler are resolved in the order of play.
         """
-        bc_events = self.weapon.run_battlecry(self.target) if self.is_played else []
+        bc_events = self.weapon.run_battlecry(self.target, po_data=self.po_data) if self.is_played else []
 
         destroy_old_weapons(self.game, self.player_id)
 
@@ -275,10 +277,11 @@ class OnPlayMinion(OnPlay):
 
 
 class BattlecryPhase(Phase):
-    def __init__(self, game, summon_event, target):
+    def __init__(self, game, summon_event, target, po_data=None):
         super().__init__(game, summon_event.minion)
         self.summon_event = summon_event
         self.target = target
+        self.po_data = {} if po_data is None else po_data
 
     @property
     def player_id(self):
@@ -292,7 +295,7 @@ class BattlecryPhase(Phase):
         return super()._repr(P=self.summon_event.player_id, minion=self.summon_event.minion, target=self.target)
 
     def do(self):
-        return self.minion.run_battlecry(self.target)
+        return self.minion.run_battlecry(self.target, po_data=self.po_data)
 
 
 class AfterPlayMinion(AfterPlay):

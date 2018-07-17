@@ -65,8 +65,8 @@ class 驯兽师(Minion):
 
     player_operation_tree = ext.make_conditional_targeted_po_tree(ext.make_have_friendly_race(Race.Beast))
 
-    def check_target(self, target):
-        if not ext.checker_friendly_minion(self, target):
+    def check_target(self, target, **kwargs):
+        if not ext.checker_friendly_minion(self, target, **kwargs):
             return False
         assert isinstance(target, Minion)
         if Race.Beast not in target.race:
@@ -142,7 +142,27 @@ class 追踪术(Spell):
         'type': 1, 'klass': 2, 'cost': 1,
     }
 
-    # TODO
+    def player_operation_tree(self):
+        from MyHearthStone.game.player_operation import PlayerOps, PlayerOpTree, SelectChoiceTree, RunNodes, CommonTrees
+
+        deck_top = self.game.get_zone(Zone.Deck, self.player_id)[:3]
+
+        if not deck_top:
+            # If deck is empty, do nothing.
+            return CommonTrees['NoTargetSpell']
+
+        return SelectChoiceTree('1', {
+            card: RunNodes['NoTargetSpell']
+            for card in deck_top
+        })
+
+    def run(self, target, **kwargs):
+        choice = kwargs['po_data'].get('choice.1', None)
+        if choice is None:
+            return []
+        choices = kwargs['po_data']['choice.1.all']
+        # TODO: put the chosen one into hand, discard (mill) others.
+        return []
 
 
 # 动物伙伴 (20007)

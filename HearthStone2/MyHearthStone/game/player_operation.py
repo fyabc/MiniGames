@@ -116,11 +116,11 @@ class PlayerOpTree:
             return self._child_or_map
         else:
             if random:
-                return self._child_or_map[_random.choice(self.get_choice())]
+                return self._child_or_map[_random.choice(self.get_choices())]
             else:
                 return self._child_or_map[choice]
 
-    def get_choice(self):
+    def get_choices(self):
         if self._single_child:
             return None
         else:
@@ -156,80 +156,103 @@ class RunTree(PlayerOpTree):
 
 
 # Some commonly used run functions and run nodes.
+
+def _extra_po_data(po_data):
+    """Get extra po data, passed to player actions."""
+    return {
+        k: v
+        for k, v in po_data.items()
+        if k not in ('source', 'target', 'index')
+    }
+
+
 def _run_play_spell_no_target(game, po_data):
     source = po_data['source']
-    return pa.PlaySpell(game, source, None, source.player_id)
+    return pa.PlaySpell(game, source, None, source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_play_spell_target(game, po_data):
     source = po_data['source']
-    return pa.PlaySpell(game, source, po_data['target'], source.player_id)
+    return pa.PlaySpell(game, source, po_data['target'], source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_play_weapon_no_target(game, po_data):
     source = po_data['source']
-    return pa.PlayWeapon(game, source, None, source.player_id)
+    return pa.PlayWeapon(game, source, None, source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_play_weapon_target(game, po_data):
     source = po_data['source']
-    return pa.PlayWeapon(game, source, po_data['target'], source.player_id)
+    return pa.PlayWeapon(game, source, po_data['target'], source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_play_minion_no_target(game, po_data):
     source = po_data['source']
     index = po_data['index']
-    return pa.PlayMinion(game, source, index, None, source.player_id)
+    return pa.PlayMinion(game, source, index, None, source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_play_minion_target(game, po_data):
     source = po_data['source']
     index = po_data['index']
-    return pa.PlayMinion(game, source, index, po_data['target'], source.player_id)
+    return pa.PlayMinion(game, source, index, po_data['target'], source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_hero_power_no_target(game, po_data):
     source = po_data['source']
-    return pa.UseHeroPower(game, None, source.player_id)
+    return pa.UseHeroPower(game, None, source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_hero_power_target(game, po_data):
     source = po_data['source']
-    return pa.UseHeroPower(game, po_data['target'], source.player_id)
+    return pa.UseHeroPower(game, po_data['target'], source.player_id, po_data=_extra_po_data(po_data))
 
 
 def _run_attack(game, po_data):
     source = po_data['source']
-    return pa.ToAttack(game, source, po_data['target'])
+    return pa.ToAttack(game, source, po_data['target'], po_data=_extra_po_data(po_data))
 
 
-RunNoTargetSpell = RunTree(_run_play_spell_no_target, None)
-RunTargetSpell = RunTree(_run_play_spell_target, None)
-RunNoTargetWeapon = RunTree(_run_play_weapon_no_target, None)
-RunTargetWeapon = RunTree(_run_play_weapon_target, None)
-RunNoTargetMinion = RunTree(_run_play_minion_no_target, None)
-RunTargetMinion = RunTree(_run_play_minion_target, None)
-RunNoTargetHeroPower = RunTree(_run_hero_power_no_target, None)
-RunTargetHeroPower = RunTree(_run_hero_power_target, None)
-RunAttack = RunTree(_run_attack, None)
+RunNodes = {
+    'NoTargetMinion': RunTree(_run_play_minion_no_target, None),
+    'HaveTargetMinion': RunTree(_run_play_minion_target, None),
+    'NoTargetSpell': RunTree(_run_play_spell_no_target, None),
+    'HaveTargetSpell': RunTree(_run_play_spell_target, None),
+    'NoTargetWeapon': RunTree(_run_play_weapon_no_target, None),
+    'HaveTargetWeapon': RunTree(_run_play_minion_target, None),
+    # TODO: Implement hero cards
+    # 'NoTargetHeroCard': None,
+    # 'HaveTargetHeroCard': None,
+    'NoTargetHeroPower': RunTree(_run_hero_power_no_target, None),
+    'HaveTargetHeroPower': RunTree(_run_hero_power_target, None),
+    'Attack': RunTree(_run_attack, None),
+}
 
 
 # Some commonly used default player operation trees.
 _PON = PlayerOpTree
 _PO = PlayerOps
 CommonTrees = {
-    'NoTargetMinion':  _PON.chain_nodes([_PON(_PO.SelectMinionPosition), RunNoTargetMinion]),
-    'HaveTargetMinion':  _PON.chain_nodes([_PON(_PO.SelectMinionPosition), _PON(_PO.SelectTarget), RunTargetMinion]),
-    'NoTargetSpell': _PON.chain_nodes([_PON(_PO.ConfirmPlay), RunNoTargetSpell]),
-    'HaveTargetSpell':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetSpell]),
-    'NoTargetWeapon': _PON.chain_nodes([_PON(_PO.ConfirmPlay), RunNoTargetWeapon]),
-    'HaveTargetWeapon':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetWeapon]),
+    'NoTargetMinion':  _PON.chain_nodes(
+        [_PON(_PO.SelectMinionPosition), RunNodes['NoTargetMinion']]),
+    'HaveTargetMinion':  _PON.chain_nodes(
+        [_PON(_PO.SelectMinionPosition), _PON(_PO.SelectTarget), RunNodes['HaveTargetMinion']]),
+    'NoTargetSpell': _PON.chain_nodes(
+        [_PON(_PO.ConfirmPlay), RunNodes['NoTargetSpell']]),
+    'HaveTargetSpell':  _PON.chain_nodes(
+        [_PON(_PO.SelectTarget), RunNodes['HaveTargetSpell']]),
+    'NoTargetWeapon': _PON.chain_nodes(
+        [_PON(_PO.ConfirmPlay), RunNodes['NoTargetWeapon']]),
+    'HaveTargetWeapon':  _PON.chain_nodes(
+        [_PON(_PO.SelectTarget), RunNodes['HaveTargetWeapon']]),
     # TODO: Implement hero cards
     # 'NoTargetHeroCard': _PON.chain_nodes([]),
     # 'HaveTargetHeroCard':  _PON.chain_nodes([]),
-    'NoTargetHeroPower': RunNoTargetHeroPower,
-    'HaveTargetHeroPower':  _PON.chain_nodes([_PON(_PO.SelectTarget), RunTargetHeroPower]),
-    'Attack': _PON.chain_nodes([_PON(_PO.SelectDefender), RunAttack]),
+    'NoTargetHeroPower': RunNodes['NoTargetHeroPower'],
+    'HaveTargetHeroPower':  _PON.chain_nodes(
+        [_PON(_PO.SelectTarget), RunNodes['HaveTargetHeroPower']]),
+    'Attack': _PON.chain_nodes(
+        [_PON(_PO.SelectDefender), RunNodes['Attack']]),
 }
 
 
@@ -239,6 +262,7 @@ def translate_po_tree(po_tree, entity=None):
     If ``po_tree`` is str: retrieve ``CommonTrees``.
         Some special keys:
             '$HaveTarget': use ``get_common_po_tree_by_type`` to get the po tree by type.
+            '$NoTarget': use ``get_common_po_tree_by_type`` to get the po tree by type.
     If it is a ``PlayerOpTree``: return itself.
     Other values are error.
 
@@ -249,6 +273,8 @@ def translate_po_tree(po_tree, entity=None):
     if isinstance(po_tree, str):
         if po_tree == '$HaveTarget' and entity is not None:
             po_tree = get_common_po_tree_by_type(entity, have_target=True)
+        elif po_tree == '$NoTarget' and entity is not None:
+            po_tree = get_common_po_tree_by_type(entity, have_target=False)
         if po_tree in CommonTrees:
             return CommonTrees[po_tree]
         else:
@@ -270,6 +296,7 @@ __all__ = [
     'PlayerOpTree',
     'SelectChoiceTree',
     'RunTree',
+    'RunNodes',
     'CommonTrees',
 
     'translate_po_tree',

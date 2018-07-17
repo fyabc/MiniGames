@@ -7,9 +7,10 @@ __author__ = 'fyabc'
 
 
 class HeroPowerPhase(Phase):
-    def __init__(self, game, hero_power, target):
+    def __init__(self, game, hero_power, target, po_data=None):
         super().__init__(game, hero_power)
         self.target = target
+        self.po_data = {} if po_data is None else po_data
     
     @property
     def hero_power(self):
@@ -27,7 +28,7 @@ class HeroPowerPhase(Phase):
         player = self.game.get_player(self.player_id)
         player.spend_mana(hp.cost)
 
-        events = hp.run(self.target)
+        events = hp.run(self.target, po_data=self.po_data)
         hp.exhausted = True
 
         player.log_use_hero_power()

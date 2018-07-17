@@ -43,20 +43,10 @@ class ActiveMixin:
 
     def __init__(self, *args, **kwargs):
         callback_args = kwargs.pop('callback_args', ())
-        if not isinstance(callback_args, Mapping):
-            callback_args = {mouse.LEFT: callback_args}
-
-        # todo: Support callback kwargs in callback map (how?).
-
         callback = kwargs.pop('callback', None)
-        if callback is None:
-            self._callback_map = {}
-        elif isinstance(callback, Mapping):
-            self._callback_map = {k: (v, callback_args.get(k, ()), {}) for k, v in callback.items()}
-        else:
-            self._callback_map = {
-                mouse.LEFT: (callback, callback_args.get(mouse.LEFT, ()), {}),
-            }
+
+        self._callback_map = None
+        self.set_callback(callback, callback_args)
 
         self.selected_effect = kwargs.pop('selected_effect', None)
         self.unselected_effect = kwargs.pop('unselected_effect', None)
@@ -75,6 +65,21 @@ class ActiveMixin:
 
     def is_inside_box(self, x, y):
         return self.get_box().contains(x, y)
+
+    def set_callback(self, callback=None, callback_args=()):
+        if not isinstance(callback_args, Mapping):
+            callback_args = {mouse.LEFT: callback_args}
+
+        # todo: Support callback kwargs in callback map (how?).
+
+        if callback is None:
+            self._callback_map = {}
+        elif isinstance(callback, Mapping):
+            self._callback_map = {k: (v, callback_args.get(k, ()), {}) for k, v in callback.items()}
+        else:
+            self._callback_map = {
+                mouse.LEFT: (callback, callback_args.get(mouse.LEFT, ()), {}),
+            }
 
     def _find_callback_entry(self, buttons):
         if buttons in self._callback_map:
@@ -231,7 +236,15 @@ class ActiveLayerMixin:
         self.enabled = True
 
         # If this is True, will stop the events from being sent to lower (smaller z-value) layers.
+        # This can be a dict to set different behavior of different events.
         self.stop_event = False
+
+    def _get_stop_event(self, event_type):
+        if isinstance(self.stop_event, bool):
+            return self.stop_event
+        else:
+            assert isinstance(self.stop_event, dict)
+            return self.stop_event.get(event_type, False)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         """Handler for mouse release events.
@@ -247,7 +260,7 @@ class ActiveLayerMixin:
             if hasattr(child, 'on_mouse_release'):
                 if child.on_mouse_release(x, y, buttons, modifiers) is True:
                     return True
-        return self.stop_event
+        return self._get_stop_event('on_mouse_release')
 
     def on_mouse_motion(self, x, y, dx, dy):
         """Handler for mouse motion events.
@@ -263,7 +276,7 @@ class ActiveLayerMixin:
             if hasattr(child, 'on_mouse_motion'):
                 if child.on_mouse_motion(x, y, dx, dy) is True:
                     return True
-        return self.stop_event
+        return self._get_stop_event('on_mouse_motion')
 
     try_add = try_add
     try_remove = try_remove

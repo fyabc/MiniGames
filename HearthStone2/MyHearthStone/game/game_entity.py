@@ -528,11 +528,17 @@ class IndependentEntity(GameEntity):
         """
         return any(op == PlayerOps.SelectTarget for op in self.player_operation_tree())
 
-    def check_target(self, target: 'IndependentEntity'):
+    def check_target(self, target: 'IndependentEntity', **kwargs):
         """When a playable entity with target is played, this method is called to check if
         the target is correct or not.
 
         If it is incorrect, the frontend will do nothing but show some message like "This is not a valid target!".
+
+        :param target:
+        :param kwargs:
+            :keyword po_data: For some cards with select effect, need to access ``po_data``
+            to determine different conditions.
+        [NOTE]: This method MUST NOT change its parameters, especially ``po_data``.
 
         Here is the most common implementation.
         """

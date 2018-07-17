@@ -107,24 +107,24 @@ def make_conditional_targeted_po_tree(cond_fn, data_key='po_tree'):
 
 # Target checkers.
 
-def checker_minion(self, target):
-    if not super(type(self), self).check_target(target):
+def checker_minion(self, target, **kwargs):
+    if not super(type(self), self).check_target(target, **kwargs):
         return False
     if target.zone != Zone.Play:
         return False
     return True
 
 
-def checker_friendly_character(self, target):
-    if not super(type(self), self).check_target(target):
+def checker_friendly_character(self, target, **kwargs):
+    if not super(type(self), self).check_target(target, **kwargs):
         return False
     if target.player_id != self.player_id:
         return False
     return True
 
 
-def checker_friendly_minion(self, target):
-    if not super(type(self), self).check_target(target):
+def checker_friendly_minion(self, target, **kwargs):
+    if not super(type(self), self).check_target(target, **kwargs):
         return False
     if target.zone != Zone.Play:
         return False
@@ -133,16 +133,16 @@ def checker_friendly_minion(self, target):
     return True
 
 
-def checker_enemy_character(self, target):
-    if not super(type(self), self).check_target(target):
+def checker_enemy_character(self, target, **kwargs):
+    if not super(type(self), self).check_target(target, **kwargs):
         return False
     if target.player_id == self.player_id:
         return False
     return True
 
 
-def checker_enemy_minion(self, target):
-    if not super(type(self), self).check_target(target):
+def checker_enemy_minion(self, target, **kwargs):
+    if not super(type(self), self).check_target(target, **kwargs):
         return False
     if target.zone != Zone.Play:
         return False
@@ -151,7 +151,7 @@ def checker_enemy_minion(self, target):
     return True
 
 
-def checker_my_hand(self, target):
+def checker_my_hand(self, target, **kwargs):
     """The target checker of my hand.
 
     This checker is used for DIY cards that will select your hand as target.
@@ -290,8 +290,8 @@ def action_target_checker_factory_cond_minion(cond_fn):
                 msg_fn('No valid target, I can\'t use it!')
             return self.Inactive
 
-    def check_target(self, target):
-        if not checker_minion(self, target):
+    def check_target(self, target, **kwargs):
+        if not checker_minion(self, target, **kwargs):
             return False
         return cond_fn(target)
 

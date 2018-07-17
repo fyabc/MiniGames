@@ -27,7 +27,7 @@ class SelectionManager:
             'index': None,
         }
 
-    def click_at(self, sprite, player, zone, index, click_args):
+    def click_at(self, sprite, player, zone, index, click_args=(0, 0, mouse.LEFT, 0)):
         """Click at a sprite that related to a game entity.
 
         :param sprite: (Sprite) The clicked sprite.
@@ -51,6 +51,10 @@ class SelectionManager:
 
         entity = sprite.entity
 
+        if zone is None:
+            zone = entity.zone
+        if player is None:
+            player = game.get_player(entity.player_id)
         if zone != entity.zone or player.player_id != entity.player_id:
             from ...utils.message import warning
             warning('Click at zone {}, but sprite have zone {}'.format(
@@ -67,6 +71,7 @@ class SelectionManager:
                 seq.set_tree(entity.player_operation_tree())
                 self.sel['source'] = entity
                 sprite.on_mouse_release(*click_args)
+                self.prepare_op()
                 handled = True
             # print('#Create a new player operation sequence')
         else:
@@ -79,7 +84,7 @@ class SelectionManager:
             elif op == PlayerOps.SelectTarget:
                 # Click at an entity when need to select a target:
                 #   Validate it. If passed, add to selection and go to next op; else ignore it.
-                if not validate_target(self.sel['source'], entity, self._msg_fn):
+                if not validate_target(self.sel['source'], entity, self._msg_fn, po_data=self.sel):
                     pass
                 else:
                     self.sel['target'] = entity
@@ -90,13 +95,15 @@ class SelectionManager:
                 # Click at an entity when need to select a choice:
                 #   Check if the entity is in the choice.
                 #   If in, add to selection and go to next op; else ignore it.
-                choice = seq.get_choice()
-                if entity not in choice:
+                choices = seq.get_choices()
+                if entity not in choices:
                     pass
                 else:
                     self.sel['choice.{}'.format(seq.cursor.title)] = entity
-                    self._next_operation()
-                    sprite.on_mouse_release(*click_args)
+                    # [NOTE]: Also store all choices, sometimes useful (e.g. "Tracking" need to discard (mill) them).
+                    self.sel['choice.{}.all'.format(seq.cursor.title)] = choices
+                    self._next_operation(entity)
+                    # [NOTE]: Does not call ``on_mouse_release`` here.
                     handled = True
             elif op == PlayerOps.SelectMinionPosition:
                 # Click at an entity when need to select a minion position: just ignore it.
@@ -212,7 +219,7 @@ class SelectionManager:
     def clear_all(self):
         self.clear_frontend()
         self._clear_selection()
-        self.seq.reset()
+        self.seq.clear()
 
     def _clear_selection(self):
         for k in self.sel:
@@ -240,6 +247,11 @@ class SelectionManager:
 
             self._next_operation()
 
+    def _select_choice_callback(self, sprite):
+        # Does not pass click args (cannot access it).
+        sprite.parent.remove_from_scene()
+        self.click_at(sprite, None, None, None)
+
     def prepare_op(self):
         """Prepare the operation.
 
@@ -247,8 +259,28 @@ class SelectionManager:
         For select choice operations, create a select dialog.
         """
         if self.seq.cursor_op == PlayerOps.SelectChoice:
+            from .utils.basic import Colors, pos, alpha_color
+            from .utils.layers import SelectChoiceLayer
+            from .card_sprite import HandSprite
+
+            DW, DH = 0.9, 0.6
+            choices = self.seq.get_choices()
+
+            choice_sprites = [
+                HandSprite(
+                    card, (0, 0), scale=0.6,
+                    callback=self._select_choice_callback,
+                    self_in_callback=True,
+                    sel_mgr_kwargs={'set_default': False})
+                for card in choices
+            ]
+
+            layer_ = SelectChoiceLayer(
+                alpha_color(Colors['black'], 150), *map(int, pos(DW, DH)), position=pos((1 - DW) / 2, (1 - DH) / 2),
+                border=True, sel_mgr=self, cancel=self.seq.can_reset, choices=choice_sprites)
+            layer_.add_to_scene(self.board.parent)
+
             # TODO: Create a select dialog
-            pass
 
 
 __all__ = [
