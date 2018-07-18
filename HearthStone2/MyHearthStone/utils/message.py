@@ -26,7 +26,7 @@ def _get_handler(level=_logging.INFO, file=None, fmt=None, datefmt=None):
     if file is None:
         handler = _logging.StreamHandler()
     else:
-        handler = _logging.FileHandler(file)
+        handler = _logging.FileHandler(file, encoding='utf-8')
     handler.setFormatter(_logging.Formatter(fmt=fmt, datefmt=datefmt, style='{'))
     handler.setLevel(level)
 

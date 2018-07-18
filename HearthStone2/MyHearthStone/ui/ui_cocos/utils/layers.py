@@ -111,7 +111,6 @@ class LineEditLayer(DialogLayer):
         self.name_label.element.text = value
 
     def on_key_press(self, key, modifiers):
-        print('Press', hex(key), modifiers)
         if key == pyglet_key.BACKSPACE:
             # BACKSPACE means delete the last char.
             self.deck_name = self.deck_name[:-1]

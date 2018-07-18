@@ -161,8 +161,12 @@ class 追踪术(Spell):
         if choice is None:
             return []
         choices = kwargs['po_data']['choice.1.all']
-        # TODO: put the chosen one into hand, discard (mill) others.
-        return []
+        # Put the chosen one into hand, discard (mill) others.
+        result = [std_events.PutIntoHand(self.game, self, lambda c: c is choice, self.player_id)]
+        for c in choices:
+            if c is not choice:
+                result.append(std_events.MillCard(self.game, self, c))
+        return result
 
 
 # 动物伙伴 (20007)

@@ -119,9 +119,28 @@ class AreaDiscardCard(AreaEvent):
             for target in targets])
 
 
-class MillCard(Event):
-    # TODO
-    pass
+class MillCard(DelayResolvedEvent):
+    """The event to discard (mill) a card from deck to graveyard."""
+
+    def __init__(self, game, owner, target):
+        super().__init__(game, owner)
+        self.target = target
+
+    def _repr(self):
+        return super()._repr(source=self.owner, target=self.target)
+
+    def do_real_work(self):
+        player_id = self.target.player_id
+        _, status = self.game.move(player_id, Zone.Deck, self.target, player_id, Zone.Graveyard, 'last')
+
+        self.pending_events = status['events']
+
+
+class AreaMillCard(AreaEvent):
+    def __init__(self, game, owner, targets):
+        super().__init__(game, owner, events=[
+            MillCard(game, owner, target)
+            for target in targets])
 
 
 def replace_events(game, target, new_entity, loc=None):
@@ -155,6 +174,6 @@ def replace_events(game, target, new_entity, loc=None):
 __all__ = [
     'GenericDrawCard', 'DrawCard', 'PutIntoHand',
     'DiscardCard', 'AreaDiscardCard',
-    'MillCard',
+    'MillCard', 'AreaMillCard',
     'replace_events',
 ]
