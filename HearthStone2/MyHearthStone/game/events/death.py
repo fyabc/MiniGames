@@ -30,7 +30,11 @@ class DeathPhase(Phase):
         return self.deaths
 
 
-class HeroDeath(Event):
+class DeathEvent(Event):
+    pass
+
+
+class HeroDeath(DeathEvent):
     def _repr(self):
         return super()._repr(hero=self.owner)
 
@@ -38,13 +42,10 @@ class HeroDeath(Event):
         owner = self.owner
         _push_death_cache(self.game, owner)
         owner.play_state = False
-        result = []
-        for dr in self.owner.deathrattle_fns:
-            result.extend(dr(self.owner))
-        return result
+        return []
 
 
-class MinionDeath(Event):
+class MinionDeath(DeathEvent):
     """The event of minion death."""
     def __init__(self, game, death, location):
         super().__init__(game, death)
@@ -59,22 +60,16 @@ class MinionDeath(Event):
 
     def do(self):
         _push_death_cache(self.game, self.owner)
-        result = []
-        for dr in self.owner.deathrattle_fns:
-            result.extend(dr(self.owner, location=self.location))
-        return result
+        return []
 
 
-class WeaponDeath(Event):
+class WeaponDeath(DeathEvent):
     def _repr(self):
         return super()._repr(weapon=self.owner)
 
     def do(self):
         _push_death_cache(self.game, self.owner)
-        result = []
-        for dr in self.owner.deathrattle_fns:
-            result.extend(dr(self.owner))
-        return result
+        return []
 
 
 def create_death_event(game, death, location=None):
@@ -88,3 +83,13 @@ def create_death_event(game, death, location=None):
         return WeaponDeath(game, death)
     else:
         raise ValueError('Unknown death type {}'.format(type_))
+
+
+__all__ = [
+    'DeathPhase',
+    'DeathEvent',
+    'HeroDeath',
+    'MinionDeath',
+    'WeaponDeath',
+    'create_death_event',
+]

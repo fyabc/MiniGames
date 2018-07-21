@@ -46,12 +46,16 @@ class Enchantment(GameEntity):
         """
         super().__init__(game)
         self.target = target
+
+        # The creator of this enchantment.
+        self.creator = kwargs.pop('creator', None)
         # TODO: Is this correct? Or make this a property that always trace the recent oop value of target?
-        self.oop = kwargs.pop('oop', None)
+        self.oop = kwargs.pop('oop', None if self.creator is None else self.creator.oop)
 
         target.add_enchantment(self)
 
-        self.set_zp(Zone.Play, player_id=kwargs.pop('player_id', None))
+        self.set_zp(Zone.Play, player_id=kwargs.pop(
+            'player_id', None if self.creator is None else self.creator.player_id))
 
         # Apply the enchantment immediately.
         self.apply_imm()
@@ -106,6 +110,7 @@ class Enchantment(GameEntity):
         This method will set the oop and player id of the enchantment from the creator.
         """
 
+        kwargs['creator'] = creator
         kwargs['oop'] = creator.oop
         kwargs['player_id'] = creator.player_id
         enc = cls(*args, **kwargs)

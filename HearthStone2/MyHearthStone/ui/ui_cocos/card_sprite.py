@@ -528,7 +528,7 @@ class MinionSprite(EntitySprite):
             self._update_attr_sprite('frozen', self._get_frozen_sprite, z=5)
 
             # TODO: Only show one sprite at mid-bottom when more than one available (show which?).
-            self._update_attr_sprite('deathrattle_fns', self._get_dr_sprite, z=5)
+            self._update_attr_sprite('dr_list', self._get_dr_sprite, z=5)
 
         else:   # self.entity.type == Type.Permanent
             # Anything to do?

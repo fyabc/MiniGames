@@ -16,13 +16,19 @@ __author__ = 'fyabc'
 _sentinel = object()
 
 
-def make_property(name, setter=True, deleter=False, default=_sentinel):
+def make_property(name, setter=True, deleter=False, default=_sentinel, callable_default=False):
     if default is _sentinel:
         def _getter(self):
             return self.data[name]
     else:
-        def _getter(self):
-            return self.data.get(name, default)
+        if callable_default:
+            assert callable(default)
+
+            def _getter(self):
+                return self.data.get(name, default())
+        else:
+            def _getter(self):
+                return self.data.get(name, default)
 
     def _setter(self, value):
         self.data[name] = value
@@ -344,6 +350,18 @@ class IndependentEntity(GameEntity):
         # Temporary data dict for aura update.
         self.aura_tmp = {}
 
+    def _reset_tags(self):
+        # Remain dr_trigger, and update dr_list.
+        dr_trigger = self.dr_trigger
+        dr_list = [dr_trigger] if dr_trigger is not None else []
+
+        super()._reset_tags()
+
+        self.data.update({
+            'dr_trigger': dr_trigger,
+            'dr_list': dr_list,
+        })
+
     @classmethod
     def get_cahr(cls):
         """Get cost / attack / health / armor (basic attributes)."""
@@ -407,8 +425,8 @@ class IndependentEntity(GameEntity):
     def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):
         super()._set_zp_hook(old_zone, old_player_id, zone, player_id)
 
-        # Modify enchantments.
         if old_zone == Zone.Play and zone != Zone.Play:
+            # Modify enchantments.
             for e_list in (self.enchantments, self.aura_enchantments):
                 # Removed from play. Detach all enchantments (with some exceptions). See "RuleZ5a".
                 for enchantment in e_list:
@@ -517,6 +535,18 @@ class IndependentEntity(GameEntity):
     def static_description(cls):
         """The static version of the card description."""
         return cls.DH_PATTERN.subn(lambda mo: mo.group(1), cls.data['description'])[0]
+
+    # Methods for deathrattle.
+
+    # The own deathrattle trigger of this entity.
+    dr_trigger = make_property('dr_trigger', default=None)
+
+    # List of all deathrattles (self owned and granted by enchantments).
+    dr_list = make_property('dr_list', default=list, callable_default=True)
+
+    def register_dr_triggers(self):
+        for dr_trigger in self.dr_list:
+            dr_trigger.register_before_death()
 
     # Methods for frontend.
 

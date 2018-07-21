@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from itertools import chain
 import random
 from typing import *
 
@@ -412,6 +411,10 @@ class Game:
             create_death_event(self, death, location)
             for (death, location) in deaths]
 
+        # Register deathrattles ([NOTE]: BEFORE the card moving)
+        for death_event in death_events:
+            death_event.owner.register_dr_triggers()
+
         for death_event in death_events:
             death = death_event.owner
 
@@ -653,6 +656,9 @@ class Game:
                 # See <https://hearthstone.gamepedia.com/Advanced_rulebook#Full_Zone_Instant_Removal> for details.
                 if from_zone == Zone.Play:
                     self.data['instant_death_events'].append(create_death_event(self, entity, location=from_index))
+
+                    # Register deathrattles ([NOTE]: BEFORE the card moving)
+                    entity.register_dr_triggers()
 
                 # Move it to graveyard.
                 to_zone = Zone.Graveyard

@@ -22,7 +22,6 @@ class Hero(AliveMixin, IndependentEntity):
 
         # Other attributes.
         'deathrattle': False,
-        'anti_magic': False,
 
         'attack_po_tree': 'Attack',
     }
@@ -40,12 +39,7 @@ class Hero(AliveMixin, IndependentEntity):
 
     def _reset_tags(self):
         super()._reset_tags()
-        # TODO: Better solution? Get "deathrattle" attribute automatically?
-        deathrattle_fns = [] if type(self).run_deathrattle == Hero.run_deathrattle else [type(self).run_deathrattle]
         self.data.update({
-            # Deathrattle functions.
-            # TODO: Silence will clear this list, some effects that given deathrattle will extend this list.
-            'deathrattle_fns': deathrattle_fns,
         })
 
     def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):
@@ -60,8 +54,6 @@ class Hero(AliveMixin, IndependentEntity):
 
     init_hero_power_id = make_property('hero_power', setter=False)
     deathrattle = make_property('deathrattle', setter=False)
-    anti_magic = make_property('anti_magic')
-    deathrattle_fns = make_property('deathrattle_fns')
 
     def _aura_update_before(self):
         super()._aura_update_before()

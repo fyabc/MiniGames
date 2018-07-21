@@ -384,7 +384,7 @@ class 古拉巴什狂暴者(Minion):
         'cost': 5, 'attack': 2, 'health': 7,
     }
 
-    class Trig_古拉巴什狂暴者(std_triggers.Trigger):
+    class Trig_古拉巴什狂暴者(std_triggers.AttachedTrigger):
         respond = [std_events.Damage]
 
         def process(self, event: respond[0]):

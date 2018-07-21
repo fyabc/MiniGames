@@ -42,7 +42,7 @@ class TestPredamage(Minion):
         'rarity': 2, 'cost': 3, 'attack': 2, 'health': 4,
     }
 
-    class Trig_Predamage(std_triggers.Trigger):
+    class Trig_Predamage(std_triggers.AttachedTrigger):
         respond = [std_events.Damage]
         timing = [std_triggers.Trigger.Before]
 

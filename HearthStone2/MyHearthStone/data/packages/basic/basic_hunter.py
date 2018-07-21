@@ -89,7 +89,7 @@ class 饥饿的秃鹫(Minion):
         'race': [Race.Beast],
     }
 
-    class Trig_饥饿的秃鹫(std_triggers.Trigger):
+    class Trig_饥饿的秃鹫(std_triggers.AttachedTrigger):
         respond = [std_events.Summon]
 
         def process(self, event: respond[0]):

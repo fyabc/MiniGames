@@ -24,7 +24,7 @@ class 暴乱狂战士(Minion):
         'rarity': 2, 'klass': 9, 'cost': 3, 'attack': 2, 'health': 4,
     }
 
-    class Trig_暴乱狂战士(std_triggers.Trigger):
+    class Trig_暴乱狂战士(std_triggers.AttachedTrigger):
         respond = [std_events.Damage]
 
         def process(self, event: respond[0]):

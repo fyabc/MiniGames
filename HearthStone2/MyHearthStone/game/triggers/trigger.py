@@ -8,11 +8,7 @@ __author__ = 'fyabc'
 
 
 class Trigger:
-    """The base trigger class.
-
-    TODO: More docstring.
-    """
-
+    """The base trigger class."""
     Before = 0
     After = 1
 
@@ -24,9 +20,6 @@ class Trigger:
     # such as ``respond[0], timing[0]; respond[1], timing[1]; ...``.
     timing = [After]
 
-    # Zones that this trigger is active.
-    zones = [Zone.Play]
-
     def __init__(self, game, owner):
         """
 
@@ -37,9 +30,6 @@ class Trigger:
         self.game = game
         self.owner = owner
         self.enable = True
-
-        # Automatically add it to its owner.
-        owner.add_trigger(self)
 
         # The event to be resolved (may be useless?)
         # self.event = None
@@ -88,18 +78,37 @@ class Trigger:
         return self._repr()
 
     def _repr(self, **kwargs):
-        kwargs['owner'] = self.owner
         return entity_message(self, kwargs, prefix='^')
 
 
-class StandardBeforeTrigger(Trigger):
+class AttachedTrigger(Trigger):
+    """The commonly used trigger class, attached to its owner (an independent entity).
+
+    TODO: More docstring.
+    """
+
+    # Zones that this trigger is active.
+    zones = [Zone.Play]
+
+    def __init__(self, game, owner):
+        super().__init__(game, owner)
+
+        # Automatically add it to its owner.
+        owner.add_trigger(self)
+
+    def _repr(self, **kwargs):
+        kwargs['owner'] = self.owner
+        return super()._repr(**kwargs)
+
+
+class StandardBeforeTrigger(AttachedTrigger):
     """Class of standard triggers that run before any other triggers."""
 
     def __init__(self, game):
         super().__init__(game, game.entity)
 
 
-class StandardAfterTrigger(Trigger):
+class StandardAfterTrigger(AttachedTrigger):
     """Class of standard triggers that run after any other triggers."""
 
     OopMax = 1 << 31
@@ -115,6 +124,7 @@ class StandardAfterTrigger(Trigger):
 
 __all__ = [
     'Trigger',
+    'AttachedTrigger',
     'StandardBeforeTrigger',
     'StandardAfterTrigger',
 ]

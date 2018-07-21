@@ -5,6 +5,7 @@
 
 from collections.abc import Iterable
 
+from ...game.triggers.deathrattle import DrTrigger
 from ...utils.game import DHBonusEventType
 
 __author__ = 'fyabc'

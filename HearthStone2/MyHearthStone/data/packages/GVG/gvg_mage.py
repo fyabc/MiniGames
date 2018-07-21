@@ -22,7 +22,7 @@ class 烈焰巨兽(Minion):
         'race': [Race.Mech],
     }
 
-    class Trig_烈焰巨兽(std_triggers.Trigger):
+    class Trig_烈焰巨兽(std_triggers.AttachedTrigger):
         respond = [std_events.GenericDrawCard]
         zones = [Zone.Hand]
 

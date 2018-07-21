@@ -5,7 +5,7 @@
 
 from MyHearthStone.ext import Minion
 from MyHearthStone.ext import blank_minion
-from MyHearthStone.ext import std_events
+from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.utils.game import Zone, Race
 
 __author__ = 'fyabc'
@@ -18,6 +18,12 @@ class 蓝腮骑士(Minion):
         'race': [Race.Murloc],
     }
 
-    def run_deathrattle(self, **kwargs):
-        location = kwargs.pop('location', 'last')
-        return std_events.pure_summon_events(self.game, 7, self.player_id, loc=location)
+    def __init__(self, game, player_id):
+        super().__init__(game, player_id)
+        # TODO: Change other deathrattle cards like this.
+        self.dr_trigger = std_triggers.DrTrigger.create(
+            self.game, owner=self,
+            dr_fn=lambda trigger, event: std_events.pure_summon_events(
+                self.game, "7", self.player_id, loc=event.location),
+            reg_fn=None, data=None,
+        )

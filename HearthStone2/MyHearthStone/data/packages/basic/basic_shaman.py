@@ -163,7 +163,7 @@ class 治疗图腾(Minion):
         'race': [Race.Totem], 'derivative': True,
     }
 
-    class Trig_治疗图腾(std_triggers.Trigger):
+    class Trig_治疗图腾(std_triggers.AttachedTrigger):
         respond = [std_events.EndOfTurn]
 
         def process(self, event: respond[0]):
