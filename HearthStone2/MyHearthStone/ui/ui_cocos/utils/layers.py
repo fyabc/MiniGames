@@ -6,7 +6,7 @@ from cocos.scenes import transitions
 from pyglet.window import key as pyglet_key
 
 from .primitives import Rect
-from .basic import pos, Colors, hs_style_label, alpha_color
+from .basic import pos, Colors, hs_style_label
 from . import active
 
 __author__ = 'fyabc'

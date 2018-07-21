@@ -30,6 +30,14 @@ class Rect(Canvas):
         self.line_to(self.rect.bottomright)
         self.line_to(self.rect.bottomleft)
 
+    def set_rect_attr(self, name, value):
+        """Set rect attributes, also set the dirty flag.
+
+        Common code ``r.rect.center = p`` will not set the dirty flag, use ``r.set_rect_attr('center', p)`` instead.
+        """
+        setattr(self.rect, name, value)
+        self._dirty = True
+
 
 class Circle(CocosNode):
     def draw(self, *args, **kwargs):

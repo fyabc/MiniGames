@@ -4,7 +4,7 @@
 import bisect
 from collections import Counter
 
-from cocos import scene, layer, draw
+from cocos import scene, layer, draw, rect
 from pyglet.window import mouse
 
 from .card_sprite import HandSprite
@@ -12,6 +12,7 @@ from .collection_sprites import StaticCardSprite, CardItem
 from .utils.active import ActiveLayer, ActiveLabel, ActiveSprite, set_color_action
 from .utils.basic import pos, pos_y, Colors, hs_style_label, try_load_image
 from .utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
+from .utils.primitives import Rect
 from ...game.deck import Deck
 from ...utils.game import Klass
 from ...utils.message import info
@@ -43,10 +44,24 @@ class CollectionsLayer(ActiveLayer):
     PageB = 0.25
     PageL = 0.05
     PageR = CollectionsR - 0.05
+    KlassIconY = 0.94
+    KlassIconDeltaX = 0.05
+    KlassIconL, KlassIconR = PageL, PageL + (Klass.NumEnums - 1) * KlassIconDeltaX
+    KlassIconScale = 1.0
+    KlassIconSize = 48 * KlassIconScale
     SwitchY = 0.15
 
     # Use ``StaticCardSprite`` or ``HandSprite``.
     UseStaticSprite = False
+
+    KlassOrder = {
+        k: v for v, k in enumerate([
+            Klass.Druid, Klass.Hunter, Klass.Mage,
+            Klass.Paladin, Klass.Priest, Klass.Rogue,
+            Klass.Shaman, Klass.Warlock, Klass.Warrior,
+            Klass.Monk, Klass.DeathKnight, Klass.Neutral,
+        ])
+    }
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
@@ -56,6 +71,23 @@ class CollectionsLayer(ActiveLayer):
         self.page_id = 0
         self.page_card_sprites = []
         self.page_card_sprites_cache = {}
+
+        # TODO: Group pages by klass.
+
+        # Class icons and activated marker.
+        _rect = rect.Rect(0, 0, self.KlassIconSize, self.KlassIconSize)
+        _rect.center = pos(self.KlassIconL, self.KlassIconY)
+        self.klass_icon_activated = Rect(_rect, color=Colors['orange'], width=2)
+        self.add(self.klass_icon_activated)
+
+        for klass_name, klass in Klass.Str2Idx.items():
+            i = self.KlassOrder[klass]
+            self.add(ActiveSprite(
+                try_load_image('ClassIcon-{}.png'.format(klass_name), default='ClassIcon-Neutral.png'),
+                pos(self.KlassIconL + i * self.KlassIconDeltaX, self.KlassIconY),
+                callback=lambda klass_=klass: self._select_klass(klass_),
+                scale=1.0,
+            ))
 
         for is_right in (False, True):
             self.add(ActiveLabel.hs_style(
@@ -80,7 +112,7 @@ class CollectionsLayer(ActiveLayer):
         return super().on_exit()
 
     def _create_card_sprite(self, card_id, x, y):
-        """Create a card sprite from card image, or create a \"blank\" sprite if image not exists."""
+        """Create a card sprite from card image, or create a "blank" sprite if image not exists."""
         from pyglet.resource import ResourceNotFoundException
         position = pos(self.PageL + (self.PageR - self.PageL) * (2 * x + 1) / (2 * self.PageSize[0]),
                        self.PageT + (self.PageB - self.PageT) * (2 * y + 1) / (2 * self.PageSize[1]))
@@ -116,16 +148,19 @@ class CollectionsLayer(ActiveLayer):
             card_sprite = _mk_hand_sprite()
         return card_sprite
 
+    @classmethod
+    def _card_order(cls, e):
+        data = e[1].data
+        return (cls.KlassOrder[data['klass']], data['cost'], data['type'],
+                data.get('attack', 0), data.get('health', 0), data['id'])
+
     def _refresh_card_id_pages(self):
         """Recalculate card id pages and refresh related sprites."""
 
         id_card_list = ((k, v) for k, v in all_cards().items() if v.data['derivative'] is False)
         # Add more filters here.
 
-        def _key(e):
-            data = e[1].data
-            return data['klass'], data['cost'], data['type'], data.get('attack', 0), data.get('health', 0), data['id']
-        id_card_list = sorted(id_card_list, key=_key)
+        id_card_list = sorted(id_card_list, key=self._card_order)
         card_ids = [k for k, v in id_card_list]
 
         page_size = self.PageSize[0] * self.PageSize[1]
@@ -134,6 +169,12 @@ class CollectionsLayer(ActiveLayer):
             for i in range((len(card_ids) + page_size - 1) // page_size)
         ]
         self._switch_card_page()
+
+    def _select_klass(self, klass):
+        print('Klass {} selected!'.format(klass))
+        self.klass_icon_activated.set_rect_attr('center', pos(
+            self.KlassIconL + self.KlassOrder[klass] * self.KlassIconDeltaX, self.KlassIconY))
+        # TODO
 
     def _switch_card_page(self, delta_id=0):
         """Called when switch the card page.

@@ -39,6 +39,7 @@ class EnumMeta(type):
         idx2str = {v: k for k, v in str2idx.items()}
         ns['Str2Idx'] = str2idx
         ns['Idx2Str'] = idx2str
+        ns['NumEnums'] = len(str2idx)
 
         return super().__new__(mcs, name, bases, ns)
 
