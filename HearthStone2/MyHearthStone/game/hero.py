@@ -62,14 +62,6 @@ class Hero(AliveMixin, IndependentEntity):
         if weapon is not None and not weapon.sheathed:
             self.aura_tmp['attack'] += weapon.attack
 
-    def run_deathrattle(self, **kwargs):
-        """Run the deathrattle. Implemented in subclasses.
-
-        :param kwargs: Other arguments, such as location.
-        :return: list of events.
-        """
-        return []
-
     def player_operation_tree(self):
         return translate_po_tree(self.data.get('attack_po_tree', 'Attack'), entity=self)
 

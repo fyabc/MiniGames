@@ -10,6 +10,7 @@ from ...game.enchantments.enchantment import Enchantment, AuraEnchantment
 from ...game.enchantments.aura import Aura
 from ...game.enchantments import common as enc_common
 from ...game.enchantments.dh_bonus import *
+from ...game.enchantments.deathrattle import *
 
 __author__ = 'fyabc'
 

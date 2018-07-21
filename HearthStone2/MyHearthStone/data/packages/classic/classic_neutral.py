@@ -88,14 +88,20 @@ blank_minion({
 
 # 战利品贮藏者 (1000008)
 class 战利品贮藏者(Minion):
+    """[NOTE]: This is a classic card of deathrattle."""
     data = {
         'id': 1000008,
         'rarity': 1, 'cost': 2, 'attack': 2, 'health': 1,
         'deathrattle': True,
     }
 
-    def run_deathrattle(self, **kwargs):
-        return [std_events.DrawCard(self.game, self, self.player_id)]
+    def __init__(self, game, player_id):
+        super().__init__(game, player_id)
+        self.dr_trigger = std_triggers.DrTrigger.create(
+            self.game, owner=self,
+            dr_fn=lambda trigger, event: [std_events.DrawCard(self.game, self, self.player_id)],
+            reg_fn=None, data=None
+        )
 
 
 # 恐狼前锋 (1000009)

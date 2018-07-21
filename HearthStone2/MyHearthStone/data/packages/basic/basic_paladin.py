@@ -57,6 +57,7 @@ class 力量祝福(Spell):
         'po_tree': '$HaveTarget',
     }
 
+    can_do_action = ext.require_minion
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
@@ -72,6 +73,7 @@ class 保护之手(Spell):
         'po_tree': '$HaveTarget',
     }
 
+    can_do_action = ext.require_minion
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
@@ -105,6 +107,7 @@ class 王者祝福(Spell):
         'po_tree': '$HaveTarget',
     }
 
+    can_do_action = ext.require_minion
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):

@@ -20,7 +20,6 @@ class 蓝腮骑士(Minion):
 
     def __init__(self, game, player_id):
         super().__init__(game, player_id)
-        # TODO: Change other deathrattle cards like this.
         self.dr_trigger = std_triggers.DrTrigger.create(
             self.game, owner=self,
             dr_fn=lambda trigger, event: std_events.pure_summon_events(

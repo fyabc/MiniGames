@@ -15,12 +15,28 @@ class DrEnchantment(Enchantment):
     }
 
     def __init__(self, game, target, **kwargs):
-        self.dr_trigger = kwargs.pop('dr_trigger', None)
+        self._kw = kwargs
         super().__init__(game, target, **kwargs)
 
     dr_trigger = make_property('dr_trigger', default=None)
 
     def apply_imm(self):
+        # Create the deathrattle trigger.
+        from ..triggers.deathrattle import DrTrigger
+        self.dr_trigger = DrTrigger.create(
+            self.game, owner=self.creator,
+            target=self.target,
+            dr_fn=self._kw.get('dr_fn', None),
+            reg_fn=self._kw.get('reg_fn', None),
+            data=self._kw.get('data', None),
+            owned=False,
+        )
+        del self._kw
+
         # Add the deathrattle trigger into dr_list.
-        if self.dr_trigger is not None:
-            self.target.dr_list.append(self.dr_trigger)
+        self.target.dr_list.append(self.dr_trigger)
+
+
+__all__ = [
+    'DrEnchantment',
+]

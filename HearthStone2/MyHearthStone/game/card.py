@@ -166,17 +166,6 @@ class Minion(AliveMixin, Card):
 
         return []
 
-    def run_deathrattle(self, **kwargs):
-        """Run the deathrattle. Implemented in subclasses.
-
-        :param kwargs: Other arguments, such as location.
-        :return: list of events.
-        """
-        # TODO: Change deathrattle into triggers (same as other on-death triggers),
-        #   because current implementation is incorrect on deathrattle enchantments (enchantments and tags will be
-        #   cleared when moving to graveyard (before deathrattle), so they cannot be remembered)
-        return []
-
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
         if super_result == self.Inactive:
@@ -311,14 +300,6 @@ class Weapon(Card):
         :return: list of events.
         """
 
-        return []
-
-    def run_deathrattle(self, **kwargs):
-        """Run the deathrattle. Implemented in subclasses.
-
-        :param kwargs: Other arguments, such as location.
-        :return: list of events.
-        """
         return []
 
     def take_damage(self, value):

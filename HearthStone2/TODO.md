@@ -43,6 +43,7 @@
     - Discard effect (e.g. "Soulfire")
     - Transform effects (e.g. "Polymorph" and "Hex")
     - Permanently Control effects (e.g. "Mind Control")
+    - Select effects (e.g. **Choose One** effects, "Tracking")
 - Classic:
     - Keywords
         - **Deathrattle**
@@ -67,7 +68,6 @@
 
 - Basic:
     - Splitted spell damage (e.g. "Arcane Missiles")
-    - Select effects (e.g. **Choose One** effects, "Tracking")
 - Classic:
     - Keywords
         - **Combo**
@@ -88,8 +88,9 @@
 
 # UI and other TODOs
 
-- Adventure mode (play with AI)
+- Group cards in classes in collection scene
 
 # Temp TODOs
 
+- Add doc in commonly used extension modules, classes and functions.
 - Add doc in AI, Game scene and animations.
