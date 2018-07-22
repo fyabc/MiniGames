@@ -3,6 +3,7 @@
 
 import bisect
 from collections import Counter
+import itertools
 
 from cocos import scene, layer, draw, rect
 from pyglet.window import mouse
@@ -68,11 +69,21 @@ class CollectionsLayer(ActiveLayer):
 
         # Card pages (each page contains some card_ids) to show.
         self.card_id_pages = []
-        self.page_id = 0
-        self.page_card_sprites = []
-        self.page_card_sprites_cache = {}
 
         # TODO: Group pages by klass.
+
+        # Page list groups: Klass ID -> page list
+        self.page_list_groups = {
+            k: [] for k in self.KlassOrder
+        }
+        # Current klass id. By default klass of group 0.
+        self._klass_id = {v: k for k, v in self.KlassOrder.items()}[0]
+        # Current page id.
+        self.page_id = 0
+
+        # Sprites of current page, and cache of all card sprites.
+        self.page_card_sprites = []
+        self.card_cache = {}
 
         # Class icons and activated marker.
         _rect = rect.Rect(0, 0, self.KlassIconSize, self.KlassIconSize)
@@ -80,12 +91,14 @@ class CollectionsLayer(ActiveLayer):
         self.klass_icon_activated = Rect(_rect, color=Colors['orange'], width=2)
         self.add(self.klass_icon_activated)
 
+        self.klass_icons = {}
         for klass_name, klass in Klass.Str2Idx.items():
+            # TODO: These icons may be hidden if not any cards.
             i = self.KlassOrder[klass]
             self.add(ActiveSprite(
                 try_load_image('ClassIcon-{}.png'.format(klass_name), default='ClassIcon-Neutral.png'),
                 pos(self.KlassIconL + i * self.KlassIconDeltaX, self.KlassIconY),
-                callback=lambda klass_=klass: self._select_klass(klass_),
+                callback=lambda klass_=klass: setattr(self, 'current_klass', klass_),
                 scale=1.0,
             ))
 
@@ -119,7 +132,7 @@ class CollectionsLayer(ActiveLayer):
         callback = self._get_card_callbacks(card_id)
         sel_mgr_kwargs = {'move_to_top': True}
 
-        result = self.page_card_sprites_cache.get(card_id, None)
+        result = self.card_cache.get(card_id, None)
         if result is not None:
             # Only need to modify position.
             result.position = position
@@ -131,7 +144,7 @@ class CollectionsLayer(ActiveLayer):
                 is_front=True, scale=0.5, callback=callback,
                 sel_mgr_kwargs=sel_mgr_kwargs,
             )
-            self.page_card_sprites_cache[card_id] = sprite
+            self.card_cache[card_id] = sprite
             return sprite
 
         if not self.UseStaticSprite:
@@ -143,7 +156,7 @@ class CollectionsLayer(ActiveLayer):
                 scale=0.61, callback=callback,
                 sel_mgr_kwargs=sel_mgr_kwargs,
             )
-            self.page_card_sprites_cache[card_id] = card_sprite
+            self.card_cache[card_id] = card_sprite
         except ResourceNotFoundException:
             card_sprite = _mk_hand_sprite()
         return card_sprite
@@ -170,11 +183,20 @@ class CollectionsLayer(ActiveLayer):
         ]
         self._switch_card_page()
 
-    def _select_klass(self, klass):
+    @property
+    def klass_id(self):
+        return self._klass_id
+
+    @klass_id.setter
+    def klass_id(self, klass):
+        if self._klass_id == klass:
+            return
+
+        self._klass_id = klass
         print('Klass {} selected!'.format(klass))
         self.klass_icon_activated.set_rect_attr('center', pos(
             self.KlassIconL + self.KlassOrder[klass] * self.KlassIconDeltaX, self.KlassIconY))
-        # TODO
+        # TODO: switch group.
 
     def _switch_card_page(self, delta_id=0):
         """Called when switch the card page.
