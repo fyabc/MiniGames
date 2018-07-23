@@ -3,7 +3,6 @@
 
 import bisect
 from collections import Counter
-import itertools
 
 from cocos import scene, layer, draw, rect
 from pyglet.window import mouse
@@ -11,7 +10,7 @@ from pyglet.window import mouse
 from .card_sprite import HandSprite
 from .collection_sprites import StaticCardSprite, CardItem
 from .utils.active import ActiveLayer, ActiveLabel, ActiveSprite, set_color_action
-from .utils.basic import pos, pos_y, Colors, hs_style_label, try_load_image
+from .utils.basic import pos, pos_x, pos_y, Colors, hs_style_label, try_load_image
 from .utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 from .utils.primitives import Rect
 from ...game.deck import Deck
@@ -63,6 +62,7 @@ class CollectionsLayer(ActiveLayer):
             Klass.Monk, Klass.DeathKnight, Klass.Neutral,
         ])
     }
+    KlassOrderR = {v: k for k, v in KlassOrder.items()}
 
     def __init__(self, ctrl):
         super().__init__(ctrl)
@@ -77,7 +77,7 @@ class CollectionsLayer(ActiveLayer):
             k: [] for k in self.KlassOrder
         }
         # Current klass id. By default klass of group 0.
-        self._klass_id = {v: k for k, v in self.KlassOrder.items()}[0]
+        self.klass_id = self.KlassOrderR[0]
         # Current page id.
         self.page_id = 0
 
@@ -93,20 +93,22 @@ class CollectionsLayer(ActiveLayer):
 
         self.klass_icons = {}
         for klass_name, klass in Klass.Str2Idx.items():
-            # TODO: These icons may be hidden if not any cards.
+            # [NOTE]: These icons may be hidden if not any cards.
             i = self.KlassOrder[klass]
-            self.add(ActiveSprite(
+            icon = ActiveSprite(
                 try_load_image('ClassIcon-{}.png'.format(klass_name), default='ClassIcon-Neutral.png'),
                 pos(self.KlassIconL + i * self.KlassIconDeltaX, self.KlassIconY),
-                callback=lambda klass_=klass: setattr(self, 'current_klass', klass_),
-                scale=1.0,
-            ))
+                callback=lambda klass_=klass: self.set_klass_id(klass_, refresh_page=True),
+                scale=1.0
+            )
+            self.klass_icons[klass] = icon
+            self.add(icon)
 
         for is_right in (False, True):
             self.add(ActiveLabel.hs_style(
                 '[ {} ]'.format('→' if is_right else '←'),
                 pos((self.PageL + self.PageR) / 2 + 0.05 * (1 if is_right else -1), self.SwitchY),
-                callback=lambda is_right_=is_right: self._switch_card_page(1 if is_right_ else -1),
+                callback=self._next_card_page if is_right else self._previous_card_page,
                 font_size=28, anchor_x='center', anchor_y='center', bold=True,
             ), name='button_page_{}'.format('right' if is_right else 'left'))
 
@@ -164,39 +166,97 @@ class CollectionsLayer(ActiveLayer):
     @classmethod
     def _card_order(cls, e):
         data = e[1].data
-        return (cls.KlassOrder[data['klass']], data['cost'], data['type'],
-                data.get('attack', 0), data.get('health', 0), data['id'])
+        return data['cost'], data['type'], data.get('attack', 0), data.get('health', 0), data['id']
 
     def _refresh_card_id_pages(self):
         """Recalculate card id pages and refresh related sprites."""
 
-        id_card_list = ((k, v) for k, v in all_cards().items() if v.data['derivative'] is False)
+        id_card_groups = {klass: [] for klass in self.KlassOrder}
+        for k, v in all_cards().items():
+            if v.data['derivative']:
+                continue
+            id_card_groups[v.data['klass']].append((k, v))
         # Add more filters here.
 
-        id_card_list = sorted(id_card_list, key=self._card_order)
-        card_ids = [k for k, v in id_card_list]
+        card_id_groups = {
+            klass: [k for k, v in sorted(id_card_group, key=self._card_order)]
+            for klass, id_card_group in id_card_groups.items()
+        }
 
         page_size = self.PageSize[0] * self.PageSize[1]
-        self.card_id_pages = [
-            card_ids[i * page_size: (i + 1) * page_size]
-            for i in range((len(card_ids) + page_size - 1) // page_size)
-        ]
-        self._switch_card_page()
+        self.page_list_groups = {
+            klass: [
+                card_id_group[i * page_size: (i + 1) * page_size]
+                for i in range((len(card_id_group) + page_size - 1) // page_size)
+            ]
+            for klass, card_id_group in card_id_groups.items() if card_id_group
+        }
+        self._switch_card_page2(0)
+        self._refresh_klass_icons()
 
-    @property
-    def klass_id(self):
-        return self._klass_id
+    def _refresh_klass_icons(self):
+        i = 0
+        for order in range(len(self.KlassOrderR)):
+            klass = self.KlassOrderR[order]
+            icon = self.klass_icons[klass]
+            if klass in self.page_list_groups:
+                icon.visible = True
+                icon.x = pos_x(self.KlassIconL + i * self.KlassIconDeltaX)
+                i += 1
+            else:
+                icon.visible = False
 
-    @klass_id.setter
-    def klass_id(self, klass):
-        if self._klass_id == klass:
+    def set_klass_id(self, klass, refresh_page=False):
+        if self.klass_id == klass:
             return
 
-        self._klass_id = klass
-        print('Klass {} selected!'.format(klass))
-        self.klass_icon_activated.set_rect_attr('center', pos(
-            self.KlassIconL + self.KlassOrder[klass] * self.KlassIconDeltaX, self.KlassIconY))
-        # TODO: switch group.
+        self.klass_id = klass
+        self.klass_icon_activated.set_rect_attr('center', self.klass_icons[klass].position)
+
+        if refresh_page:
+            self._switch_card_page2(0)
+
+    def _switch_card_page2(self, page_id):
+        self.page_id = page_id
+        current_page = self.page_list_groups[self.klass_id][self.page_id]
+
+        self._remove_card_page()
+
+        for i, card_id in enumerate(current_page):
+            x, y = i % self.PageSize[0], i // self.PageSize[0]
+            card_sprite = self._create_card_sprite(card_id, x, y)
+            self.page_card_sprites.append(card_sprite)
+            self.add(card_sprite)
+
+    def _next_card_page(self):
+        page_id = self.page_id + 1
+        if page_id == len(self.page_list_groups[self.klass_id]):
+            klass_order = self.KlassOrder[self.klass_id] + 1
+            # Skip empty klasses.
+            while self.KlassOrderR[klass_order] not in self.page_list_groups:
+                klass_order += 1
+            if klass_order == len(self.KlassOrder):
+                # Hit the end
+                return
+            self.set_klass_id(self.KlassOrderR[klass_order], refresh_page=False)
+            self._switch_card_page2(0)
+        else:
+            self._switch_card_page2(page_id)
+
+    def _previous_card_page(self):
+        page_id = self.page_id - 1
+        if page_id == -1:
+            klass_order = self.KlassOrder[self.klass_id] - 1
+            while self.KlassOrderR[klass_order] not in self.page_list_groups:
+                klass_order -= 1
+            if klass_order == -1:
+                # Hit the start
+                return
+            new_klass_id = self.KlassOrderR[klass_order]
+            self.set_klass_id(new_klass_id, refresh_page=False)
+            self._switch_card_page2(len(self.page_list_groups[new_klass_id]) - 1)
+        else:
+            self._switch_card_page2(page_id)
 
     def _switch_card_page(self, delta_id=0):
         """Called when switch the card page.
