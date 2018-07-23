@@ -70,8 +70,6 @@ class CollectionsLayer(ActiveLayer):
         # Card pages (each page contains some card_ids) to show.
         self.card_id_pages = []
 
-        # TODO: Group pages by klass.
-
         # Page list groups: Klass ID -> page list
         self.page_list_groups = {
             k: [] for k in self.KlassOrder
@@ -98,7 +96,7 @@ class CollectionsLayer(ActiveLayer):
             icon = ActiveSprite(
                 try_load_image('ClassIcon-{}.png'.format(klass_name), default='ClassIcon-Neutral.png'),
                 pos(self.KlassIconL + i * self.KlassIconDeltaX, self.KlassIconY),
-                callback=lambda klass_=klass: self.set_klass_id(klass_, refresh_page=True),
+                callback=lambda klass_=klass: self.set_klass_id(klass_, refresh_page=True, silent_same=True),
                 scale=1.0
             )
             self.klass_icons[klass] = icon
@@ -118,7 +116,6 @@ class CollectionsLayer(ActiveLayer):
         # if isinstance(director.director.scene, transitions.TransitionScene):
         #     return
 
-        self.page_id = 0
         self._refresh_card_id_pages()
         
     def on_exit(self):
@@ -191,7 +188,13 @@ class CollectionsLayer(ActiveLayer):
             ]
             for klass, card_id_group in card_id_groups.items() if card_id_group
         }
-        self._switch_card_page2(0)
+
+        # Get the first available klass.
+        klass_order = self.KlassOrder[self.klass_id]
+        while self.KlassOrderR[klass_order] not in self.page_list_groups:
+            klass_order += 1
+        self.set_klass_id(self.KlassOrderR[klass_order], refresh_page=True)
+
         self._refresh_klass_icons()
 
     def _refresh_klass_icons(self):
@@ -206,10 +209,9 @@ class CollectionsLayer(ActiveLayer):
             else:
                 icon.visible = False
 
-    def set_klass_id(self, klass, refresh_page=False):
-        if self.klass_id == klass:
+    def set_klass_id(self, klass, refresh_page=False, silent_same=False):
+        if silent_same and self.klass_id == klass:
             return
-
         self.klass_id = klass
         self.klass_icon_activated.set_rect_attr('center', self.klass_icons[klass].position)
 
