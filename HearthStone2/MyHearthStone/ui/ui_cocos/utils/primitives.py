@@ -7,7 +7,17 @@ from cocos.draw import Canvas, parameter, Line
 __author__ = 'fyabc'
 
 
-class Rect(Canvas):
+class MyPrimitives(Canvas):
+    def set_attr(self, name, value):
+        """Set sprite attributes, also set the dirty flag.
+
+        Common code ``r.attr = p`` will not set the dirty flag, use ``r.set_attr('attr', p)`` instead.
+        """
+        setattr(self, name, value)
+        self._dirty = True
+
+
+class Rect(MyPrimitives):
     """The CocosNode to draw a rectangle."""
     # todo: Support filled rect.
 

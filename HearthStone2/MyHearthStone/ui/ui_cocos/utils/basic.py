@@ -207,6 +207,45 @@ def notice(layer_, text_, **kwargs):
     layer_.add(NoticeLabel(text_, **kw_with_default))
 
 
+def popup_input(title, width=250, height=70):
+    import tkinter
+    import tkinter.ttk as ttk
+
+    master = tkinter.Tk()
+    master.title(title)
+
+    scr_width, scr_height = master.winfo_screenwidth(), master.winfo_screenheight()
+    x, y = int(scr_width * 0.5 - width * 0.5), int(scr_height * 0.5 - height * 0.5)
+    master.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+
+    e = ttk.Entry(master)
+    e.focus_set()
+    # e.config(width=int(width * 0.7))    # This width is in character, not pixel.
+    e.place(relx=0.5, rely=0.25, anchor=tkinter.CENTER, width=int(width * 0.7))
+
+    result = None
+
+    def callback(event=None):
+        nonlocal result
+        result = e.get()
+        master.destroy()
+
+    def callback_cancel(event=None):
+        nonlocal result
+        result = None
+        master.destroy()
+
+    master.bind('<Return>', callback)
+    master.bind('<Escape>', callback_cancel)
+
+    b = ttk.Button(master, text='OK', width=10, command=callback)
+    b.place(relx=0.5, rely=0.7, anchor=tkinter.CENTER)
+
+    master.mainloop()
+
+    return result
+
+
 __all__ = [
     'Colors', 'alpha_color',
     'get_width', 'get_height', 'pos', 'pos_x', 'pos_y',
@@ -217,4 +256,5 @@ __all__ = [
     'DefaultLabelStyle',
     'hs_style_label',
     'NoticeLabel', 'notice',
+    'popup_input'
 ]

@@ -10,18 +10,38 @@
 
 from collections.abc import Mapping
 
-from cocos import layer, sprite, text, rect, actions, director
+from cocos import layer, sprite, text, rect, actions, director, cocosnode
 from pyglet.window import mouse
 
 from ....utils.constants import C
 from ...utils.constants import Colors
-from .basic import get_sprite_box, get_label_box, try_add, try_remove, pos, pos_y
+from .basic import get_sprite_box, get_label_box, try_add, try_remove
 
 __author__ = 'fyabc'
 
 
 def set_color_action(color):
     return actions.CallFuncS(lambda label: setattr(label.element, 'color', color))
+
+
+def children_inside_test(node, x, y):
+    """Test if the point is inside the node according to its children.
+    It will check the box of all labels and sprites in the children list of the node.
+
+    :param node: The node to be tested.
+    :param x: (number) x-value of the position.
+    :param y: (number) y-value of the position.
+    :return: (bool) Point `(x, y)` is inside the box of `node`.
+    """
+
+    for child in node.get_children():
+        if isinstance(child, text.Label):
+            if get_label_box(child).contains(x, y):
+                return True
+        elif isinstance(child, sprite.Sprite):
+            if get_sprite_box(child).contains(x, y):
+                return True
+    return False
 
 
 # noinspection PyArgumentList
@@ -218,6 +238,25 @@ class ActiveSprite(ActiveMixin, sprite.Sprite):
         return get_sprite_box(self)
 
 
+class ActiveGroup(ActiveMixin, cocosnode.CocosNode):
+    """A commonly used base class of active sprite.
+
+    This sprite is active, and is a group of several child sprites.
+
+    Subclasses should override ``_build_components`` method to build children.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._build_components()
+
+    get_box = None
+    is_inside_box = children_inside_test
+
+    def _build_components(self):
+        raise NotImplementedError()
+
+
 # noinspection PyUnresolvedReferences, PyArgumentList
 class ActiveLayerMixin:
     """The mixin class of active Cocos2d-Python layers.
@@ -303,26 +342,6 @@ class ActiveColorLayer(ActiveLayerMixin, layer.ColorLayer):
         return self.width, self.height
 
 
-def children_inside_test(node, x, y):
-    """Test if the point is inside the node according to its children.
-    It will check the box of all labels and sprites in the children list of the node.
-
-    :param node: The node to be tested.
-    :param x: (number) x-value of the position.
-    :param y: (number) y-value of the position.
-    :return: (bool) Point `(x, y)` is inside the box of `node`.
-    """
-
-    for child in node.get_children():
-        if isinstance(child, text.Label):
-            if get_label_box(child).contains(x, y):
-                return True
-        elif isinstance(child, sprite.Sprite):
-            if get_sprite_box(child).contains(x, y):
-                return True
-    return False
-
-
 def list_exit(self, sprite_list):
     for sprite_ in sprite_list:
         self.try_remove(sprite_)
@@ -333,6 +352,7 @@ __all__ = [
     'ActiveMixin',
     'ActiveLabel',
     'ActiveSprite',
+    'ActiveGroup',
     'ActiveLayer',
     'ActiveColorLayer',
     'set_color_action',

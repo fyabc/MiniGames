@@ -8,9 +8,9 @@ from cocos import scene, layer, draw, rect
 from pyglet.window import mouse
 
 from .card_sprite import HandSprite
-from .collection_sprites import StaticCardSprite, CardItem
+from .collection_sprites import StaticCardSprite, CardItem, CostFilterSprite
 from .utils.active import ActiveLayer, ActiveLabel, ActiveSprite, set_color_action
-from .utils.basic import pos, pos_x, pos_y, Colors, hs_style_label, try_load_image
+from .utils.basic import pos, pos_x, pos_y, Colors, hs_style_label, try_load_image, popup_input
 from .utils.layers import BackgroundLayer, BasicButtonsLayer, DialogLayer
 from .utils.primitives import Rect
 from ...game.deck import Deck
@@ -50,6 +50,10 @@ class CollectionsLayer(ActiveLayer):
     KlassIconScale = 1.0
     KlassIconSize = 48 * KlassIconScale
     SwitchY = 0.15
+    CostFilterL, CostFilterDeltaX = PageL, 0.04
+    CostFilterY = 0.20
+    CostFilterScale = 1.0
+    SearchPos = PageL, 0.12
 
     # Use ``StaticCardSprite`` or ``HandSprite``.
     UseStaticSprite = False
@@ -96,19 +100,40 @@ class CollectionsLayer(ActiveLayer):
             icon = ActiveSprite(
                 try_load_image('ClassIcon-{}.png'.format(klass_name), default='ClassIcon-Neutral.png'),
                 pos(self.KlassIconL + i * self.KlassIconDeltaX, self.KlassIconY),
-                callback=lambda klass_=klass: self.set_klass_id(klass_, refresh_page=True, silent_same=True),
-                scale=1.0
+                callback=lambda klass_=klass: self.set_klass_id(klass_, page_to_0=True, silent_same=True),
+                scale=1.0,
             )
             self.klass_icons[klass] = icon
             self.add(icon)
 
+        # Next and previous page.
         for is_right in (False, True):
             self.add(ActiveLabel.hs_style(
                 '[ {} ]'.format('→' if is_right else '←'),
-                pos((self.PageL + self.PageR) / 2 + 0.05 * (1 if is_right else -1), self.SwitchY),
+                pos((self.PageL + self.PageR) * 0.8 + 0.05 * (self.PageR - self.PageL) * (1 if is_right else -1),
+                    self.SwitchY),
                 callback=self._next_card_page if is_right else self._previous_card_page,
                 font_size=28, anchor_x='center', anchor_y='center', bold=True,
             ), name='button_page_{}'.format('right' if is_right else 'left'))
+
+        # Filters: cost
+        self.cost_filter_fns = set()
+
+        self.cost_filter_list = []
+        for i in range(10):
+            self._build_cost_filter(str(i), lambda cost, i_=i: cost == i_,
+                                    pos(self.CostFilterL + i * self.CostFilterDeltaX, self.CostFilterY))
+        self._build_cost_filter('10+', lambda cost: cost >= 10,
+                                pos(self.CostFilterL + 10 * self.CostFilterDeltaX, self.CostFilterY))
+
+        # Filters: search
+        self.search_text = None
+        self.search_text_label = ActiveLabel.hs_style(
+            '搜索', pos(*self.SearchPos),
+            callback=self._search_callback_map(),
+            font_size=22, anchor_x='left', anchor_y='center',
+        )
+        self.add(self.search_text_label)
 
     def on_enter(self):
         super().on_enter()
@@ -116,7 +141,7 @@ class CollectionsLayer(ActiveLayer):
         # if isinstance(director.director.scene, transitions.TransitionScene):
         #     return
 
-        self._refresh_card_id_pages()
+        self.refresh_pages()
         
     def on_exit(self):
         # [NOTE]: Not clear cache when exit the collections layer.
@@ -165,21 +190,26 @@ class CollectionsLayer(ActiveLayer):
         data = e[1].data
         return data['cost'], data['type'], data.get('attack', 0), data.get('health', 0), data['id']
 
-    def _refresh_card_id_pages(self):
+    def refresh_pages(self):
         """Recalculate card id pages and refresh related sprites."""
 
+        # Calculate all cards to show.
         id_card_groups = {klass: [] for klass in self.KlassOrder}
         for k, v in all_cards().items():
             if v.data['derivative']:
                 continue
+            if any(not filter_fn(v.data['cost']) for filter_fn in self.cost_filter_fns):
+                continue
+            if not self._match_search_text(v):
+                continue
             id_card_groups[v.data['klass']].append((k, v))
-        # Add more filters here.
 
         card_id_groups = {
             klass: [k for k, v in sorted(id_card_group, key=self._card_order)]
             for klass, id_card_group in id_card_groups.items()
         }
 
+        # Split into pages.
         page_size = self.PageSize[0] * self.PageSize[1]
         self.page_list_groups = {
             klass: [
@@ -189,13 +219,20 @@ class CollectionsLayer(ActiveLayer):
             for klass, card_id_group in card_id_groups.items() if card_id_group
         }
 
-        # Get the first available klass.
-        klass_order = self.KlassOrder[self.klass_id]
-        while self.KlassOrderR[klass_order] not in self.page_list_groups:
-            klass_order += 1
-        self.set_klass_id(self.KlassOrderR[klass_order], refresh_page=True)
-
+        # Get the first available klass. Try old klass id at first.
+        klass_order = 0 if self.klass_id is None else self.KlassOrder[self.klass_id]
+        if self.KlassOrderR[klass_order] not in self.page_list_groups:
+            # If current klass is empty, search start from 0.
+            klass_order = 0
+            while klass_order < len(self.KlassOrderR) and self.KlassOrderR[klass_order] not in self.page_list_groups:
+                klass_order += 1
+        if klass_order == len(self.KlassOrderR):
+            # The result page is empty.
+            new_klass_id = None
+        else:
+            new_klass_id = self.KlassOrderR[klass_order]
         self._refresh_klass_icons()
+        self.set_klass_id(new_klass_id, page_to_0=True)
 
     def _refresh_klass_icons(self):
         i = 0
@@ -209,20 +246,59 @@ class CollectionsLayer(ActiveLayer):
             else:
                 icon.visible = False
 
-    def set_klass_id(self, klass, refresh_page=False, silent_same=False):
+    def _build_cost_filter(self, text, filter_fn, position):
+        filter_sprite = CostFilterSprite(
+            text, filter_fn, self,
+            position=position, scale=self.CostFilterScale,
+        )
+        self.cost_filter_list.append(filter_sprite)
+        self.add(filter_sprite)
+
+    def _search_callback_map(self):
+        def _search_shared(search_text):
+            self.search_text = self._parse_search_text(search_text)
+            self.search_text_label.element.text = '搜索' if search_text is None else '搜索：{}'.format(search_text)
+            self.refresh_pages()
+
+        return {
+            mouse.LEFT: lambda: _search_shared(popup_input('搜索')),
+            mouse.RIGHT: lambda: _search_shared(None),
+        }
+
+    def _parse_search_text(self, search_text):
+        # TODO: Support more complex keywords search in this method and ``_match_search_text``,
+        # see <https://hearthstone.gamepedia.com/Collection_manager#Keywords> as example.
+        return search_text
+
+    def _match_search_text(self, card):
+        if self.search_text is None:
+            return True
+        # Search in name and description.
+        return self.search_text in card.data['name'] or self.search_text in card.static_description()
+
+    def set_klass_id(self, klass, page_to_0=False, silent_same=False):
         if silent_same and self.klass_id == klass:
             return
         self.klass_id = klass
-        self.klass_icon_activated.set_rect_attr('center', self.klass_icons[klass].position)
 
-        if refresh_page:
-            self._switch_card_page2(0)
+        # None means page is empty.
+        if klass is None:
+            self.klass_icon_activated.visible = False
+        else:
+            self.klass_icon_activated.visible = True
+            self.klass_icon_activated.set_rect_attr('center', self.klass_icons[klass].position)
+
+        new_page_id = 0 if page_to_0 else self.page_id
+        self._switch_card_page2(new_page_id)
 
     def _switch_card_page2(self, page_id):
         self.page_id = page_id
-        current_page = self.page_list_groups[self.klass_id][self.page_id]
-
         self._remove_card_page()
+
+        if self.klass_id is None:
+            return
+
+        current_page = self.page_list_groups[self.klass_id][self.page_id]
 
         for i, card_id in enumerate(current_page):
             x, y = i % self.PageSize[0], i // self.PageSize[0]
@@ -231,49 +307,40 @@ class CollectionsLayer(ActiveLayer):
             self.add(card_sprite)
 
     def _next_card_page(self):
+        if self.klass_id is None:
+            return
+
         page_id = self.page_id + 1
         if page_id == len(self.page_list_groups[self.klass_id]):
             klass_order = self.KlassOrder[self.klass_id] + 1
             # Skip empty klasses.
-            while self.KlassOrderR[klass_order] not in self.page_list_groups:
+            while klass_order < len(self.KlassOrder) and self.KlassOrderR[klass_order] not in self.page_list_groups:
                 klass_order += 1
             if klass_order == len(self.KlassOrder):
                 # Hit the end
                 return
-            self.set_klass_id(self.KlassOrderR[klass_order], refresh_page=False)
+            self.set_klass_id(self.KlassOrderR[klass_order], page_to_0=False)
             self._switch_card_page2(0)
         else:
             self._switch_card_page2(page_id)
 
     def _previous_card_page(self):
+        if self.klass_id is None:
+            return
+
         page_id = self.page_id - 1
         if page_id == -1:
             klass_order = self.KlassOrder[self.klass_id] - 1
-            while self.KlassOrderR[klass_order] not in self.page_list_groups:
+            while klass_order >= 0 and self.KlassOrderR[klass_order] not in self.page_list_groups:
                 klass_order -= 1
             if klass_order == -1:
                 # Hit the start
                 return
             new_klass_id = self.KlassOrderR[klass_order]
-            self.set_klass_id(new_klass_id, refresh_page=False)
+            self.set_klass_id(new_klass_id, page_to_0=False)
             self._switch_card_page2(len(self.page_list_groups[new_klass_id]) - 1)
         else:
             self._switch_card_page2(page_id)
-
-    def _switch_card_page(self, delta_id=0):
-        """Called when switch the card page.
-        Remove old cards, add new cards.
-        """
-        self.page_id = min(max(0, self.page_id + delta_id), len(self.card_id_pages) - 1)
-        current_page = self.card_id_pages[self.page_id]
-
-        self._remove_card_page()
-
-        for i, card_id in enumerate(current_page):
-            x, y = i % self.PageSize[0], i // self.PageSize[0]
-            card_sprite = self._create_card_sprite(card_id, x, y)
-            self.page_card_sprites.append(card_sprite)
-            self.add(card_sprite)
 
     def _remove_card_page(self, clear=True):
         for card_sprite in self.page_card_sprites:
@@ -564,6 +631,7 @@ class DeckEditLayer(ActiveLayer):
         self.parent.switch_to(DeckSelectID)
 
     def on_title_clicked(self):
+        # TODO: Change this into tkinter input box (input + delete deck).
         from .utils.layers import LineEditLayer
         DW, DH = 0.5, 0.2
 

@@ -1,11 +1,6 @@
-# HearthStone Versions
+# HearthStone Versions and Patches
 
-- ...
-- Patch 9.2.0.21517
-- Patch 9.4.0.22115
-- Patch 10.0.0.22611
-- Patch 11.0.0.23966
-- ...
+See [here](https://hearthstone.gamepedia.com/Patches).
 
 # Implemented Features
 
@@ -88,7 +83,7 @@
 
 # UI and other TODOs
 
-- Group cards in classes in collection scene
+- More unit tests
 
 # Temp TODOs
 

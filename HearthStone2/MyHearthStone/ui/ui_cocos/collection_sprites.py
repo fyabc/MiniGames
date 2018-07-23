@@ -3,12 +3,13 @@
 
 """Sprites used for collection scene."""
 
-from cocos import cocosnode, euclid
+from cocos import cocosnode, euclid, rect
 from cocos.sprite import Sprite
 
 from .select_effect import SelectEffectManager
-from .utils.active import ActiveMixin, children_inside_test, ActiveSprite
-from .utils.basic import hs_style_label, pos
+from .utils.active import ActiveMixin, children_inside_test, ActiveSprite, ActiveGroup
+from .utils.basic import hs_style_label, pos, Colors
+from .utils.primitives import Rect
 from ...utils.game import Rarity
 from ...utils.package_io import all_cards
 
@@ -107,7 +108,74 @@ class CardItem(ActiveMixin, cocosnode.CocosNode):
             self.add(self.label_n, z=1, name='label_n')
 
 
+class CostFilterSprite(ActiveGroup):
+    Size = euclid.Vector2(50, 50)  # Item size (original).
+    SizeBase = Size // 2  # Coordinate base of children sprites.
+
+    def __init__(self, text, filter_fn, collection_scene, position=(0, 0), scale=1.0):
+        self._is_activated = None
+        self.mana_sprite = None
+        self.cost_label = None
+        self.activated_border = None
+        self.text = text
+
+        super().__init__(
+            callback=self._callback,
+        )
+
+        self.position = position
+        self.scale = scale
+
+        self.filter_fn = filter_fn
+        self.collection_scene = collection_scene
+
+        self.is_activated = False
+
+    @property
+    def is_activated(self):
+        return self._is_activated
+
+    @is_activated.setter
+    def is_activated(self, value):
+        if value == self._is_activated:
+            return
+        self._is_activated = value
+        if value:
+            self.activated_border.visible = True
+            self.collection_scene.cost_filter_fns.add(self.filter_fn)
+        else:
+            self.activated_border.visible = False
+            self.collection_scene.cost_filter_fns.discard(self.filter_fn)
+
+    def _callback(self):
+        # from .utils.basic import popup_input
+        if not self.is_activated:
+            for sprite in self.collection_scene.cost_filter_list:
+                sprite.is_activated = False
+            # Activate this, deactivate all others.
+            self.is_activated = True
+        else:
+            # Just deactivate this.
+            self.is_activated = False
+        self.collection_scene.refresh_pages()
+        # print(repr(popup_input('Hello')))
+
+    def _build_components(self):
+        self.mana_sprite = Sprite('Mana.png', pos(0.0, 0.0, base=self.SizeBase), scale=0.4)
+        self.add(self.mana_sprite, z=0)
+
+        self.cost_label = hs_style_label(
+            self.text, pos(0.0, 0.0, base=self.SizeBase), anchor_x='center', anchor_y='center', font_size=20, )
+        self.add(self.cost_label, z=1)
+
+        border_rect = rect.Rect(0, 0, self.Size[0], self.Size[1])
+        border_rect.center = (0, 0)
+        self.activated_border = Rect(border_rect, Colors['orange'], width=2)
+        self.add(self.activated_border, z=2)
+
+
 __all__ = [
     'StaticCardSprite',
     'CardItem',
+    'CostFilterSprite',
 ]
