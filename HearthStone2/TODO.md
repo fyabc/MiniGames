@@ -39,6 +39,7 @@ See [here](https://hearthstone.gamepedia.com/Patches).
     - Transform effects (e.g. "Polymorph" and "Hex")
     - Permanently Control effects (e.g. "Mind Control")
     - Select effects (e.g. **Choose One** effects, "Tracking")
+    - Splitted spell damage (e.g. "Arcane Missiles")
 - Classic:
     - Keywords
         - **Deathrattle**
@@ -62,7 +63,7 @@ See [here](https://hearthstone.gamepedia.com/Patches).
 # TODOs
 
 - Basic:
-    - Splitted spell damage (e.g. "Arcane Missiles")
+    - Nothing
 - Classic:
     - Keywords
         - **Combo**

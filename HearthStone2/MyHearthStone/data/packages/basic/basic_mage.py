@@ -38,6 +38,7 @@ class 火焰冲击(HeroPower):
 
 # 奥术飞弹 (30001)
 class 奥术飞弹(Spell):
+    """[NOTE]: This is a classic card of distributed random damage."""
     data = {
         'id': 30001,
         'type': 1, 'klass': 3, 'cost': 1,
@@ -45,8 +46,10 @@ class 奥术飞弹(Spell):
     ext.add_dh_bonus_data(data, 3)
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        return [std_events.DistributedDamage(
+            self.game, self, self.dh_values[0],
+            collect_fn=lambda: ext.collect_1p(self, False, player_id=1 - self.player_id, ignore_dead=True),
+        )]
 
 
 # 镜像 (30002)

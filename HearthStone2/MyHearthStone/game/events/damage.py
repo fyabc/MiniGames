@@ -6,7 +6,9 @@
 See <https://hearthstone.gamepedia.com/Advanced_rulebook#Damage_and_Healing> for details.
 """
 
-from .event import DelayResolvedEvent, AreaEvent
+import random
+
+from .event import Event, DelayResolvedEvent, AreaEvent
 from .misc import LoseDivineShield, LoseStealth
 from ...utils.constants import version_larger_equal
 from ...utils.game import DHBonusEventType
@@ -15,10 +17,11 @@ __author__ = 'fyabc'
 
 
 class Damage(DelayResolvedEvent):
-    def __init__(self, game, owner, target, value, work_done=False):
+    def __init__(self, game, owner, target, value, work_done=False, apply_dh_bonus=True):
         super().__init__(game, owner, work_done=work_done)
         self.target = target
         self.value = value
+        self.apply_dh_bonus = apply_dh_bonus
 
     def _repr(self):
         return super()._repr(source=self.owner, target=self.target, value=self.value)
@@ -30,8 +33,9 @@ class Damage(DelayResolvedEvent):
         """
         self.pending_events = []
 
-        # Apply proposed damage bonuses.
-        self.value = self.owner.get_proposed_dh_value(self.value, DHBonusEventType.Damage)
+        # Apply proposed damage bonuses (unless it is from a distributed damage event).
+        if self.apply_dh_bonus:
+            self.value = self.owner.get_proposed_dh_value(self.value, DHBonusEventType.Damage)
 
         if self.value <= 0:
             self.disable()
@@ -66,7 +70,51 @@ class AreaDamage(AreaEvent):
             for target, value in zip(targets, values)])
 
 
+class RandomDamage(Damage):
+    def __init__(self, game, owner, collect_fn, value, apply_dh_bonus=True, random_fn=None):
+        super().__init__(game, owner, None, value, work_done=False, apply_dh_bonus=apply_dh_bonus)
+        self.collect_fn = collect_fn
+
+        # By default, choose one in equal probability.
+        self.random_fn = random.choice if random_fn is None else random_fn
+
+    def do_real_work(self):
+        # [NOTE]: Collect when running this event (previous events have been resolved)
+        if self.target is None:
+            candidates = self.collect_fn()
+
+            # If no available target, just stop and disable it.
+            if not candidates:
+                self.disable()
+                return
+
+            self.target = self.random_fn(candidates)
+        super().do_real_work()
+
+
+class DistributedDamage(Event):
+    def __init__(self, game, owner, value, collect_fn, random_fn=None):
+        super().__init__(game, owner)
+        self.value = value
+        self.collect_fn = collect_fn
+        self.random_fn = random_fn
+
+    def do(self):
+        self.value = self.owner.get_proposed_dh_value(self.value, DHBonusEventType.Damage)
+
+        if self.value <= 0:
+            self.disable()
+            return []
+
+        return [
+            RandomDamage(self.game, self.owner, self.collect_fn, 1, apply_dh_bonus=False, random_fn=self.random_fn)
+            for _ in range(self.value)
+        ]
+
+
 __all__ = [
     'Damage',
     'AreaDamage',
+    'RandomDamage',
+    'DistributedDamage',
 ]

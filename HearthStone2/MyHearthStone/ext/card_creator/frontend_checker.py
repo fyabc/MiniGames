@@ -168,23 +168,40 @@ def checker_my_hand(self, target, **kwargs):
 
 # Entity collectors.
 
-def entity_collector(game, *pzts, oop=False, except_list=()):
+def entity_collector(game, *pzts, oop=False, except_list=(), **kwargs):
     """
 
     :param game:
-    :param pzts:
+    :param pzts: List of tuples of (player_id, zone, types)
     :param oop:
     :param except_list:
-    :return:
+    :param kwargs:
+        :keyword ignore_dead: Ignore dead entities (minions or heroes) or not. [False]
+            Most "negative" effects will ignore dead entities,
+            since most "positive" effects will count them,
+            and most AoE effects will count them.
+
+            See Rule 5:
+                <https://hearthstone.gamepedia.com/Advanced_rulebook#Sequences.2C_Phases.2C_Queues.2C_Resolution>
+            and extra section:
+                <https://hearthstone.gamepedia.com/Advanced_rulebook#What_actually_ignores_Mortally_Wounded.3F>
+            for more details.
+    :return: List of collected entities.
     """
 
     result = []
 
+    ignore_dead = kwargs.pop('ignore_dead', False)
+
+    def _cond_fn(e):
+        if types != 'any' and e.type not in types:
+            return False
+        if ignore_dead and not getattr(e, 'alive'):
+            return False
+        return True
+
     for player_id, zone, types in pzts:
-        if types == 'any':
-            result.extend(e for e in game.get_zone(zone, player_id))
-        else:
-            result.extend(e for e in game.get_zone(zone, player_id) if e.type in types)
+        result.extend(e for e in game.get_zone(zone, player_id) if _cond_fn(e))
 
     for e in except_list:
         try:
@@ -197,7 +214,7 @@ def entity_collector(game, *pzts, oop=False, except_list=()):
     return result
 
 
-def collect_all(self, except_self, oop=False, except_list=()):
+def collect_all(self, except_self, oop=False, except_list=(), **kwargs):
     if except_self:
         except_list += (self,)
     return entity_collector(
@@ -206,10 +223,11 @@ def collect_all(self, except_self, oop=False, except_list=()):
         (1, Zone.Hero, (Type.Hero,)), (1, Zone.Play, (Type.Minion,)),
         oop=oop,
         except_list=except_list,
+        **kwargs,
     )
 
 
-def collect_all_minions(self, except_self, oop=False, except_list=()):
+def collect_all_minions(self, except_self, oop=False, except_list=(), **kwargs):
     if except_self:
         except_list += (self,)
     return entity_collector(
@@ -217,10 +235,11 @@ def collect_all_minions(self, except_self, oop=False, except_list=()):
         (0, Zone.Play, (Type.Minion,)), (1, Zone.Play, (Type.Minion,)),
         oop=oop,
         except_list=except_list,
+        **kwargs,
     )
 
 
-def collect_1p(self, except_self, oop=False, player_id=None, except_list=()):
+def collect_1p(self, except_self, oop=False, player_id=None, except_list=(), **kwargs):
     """Collect one-player minions and hero.
 
     :param self:
@@ -238,10 +257,11 @@ def collect_1p(self, except_self, oop=False, player_id=None, except_list=()):
         (player_id, Zone.Hero, (Type.Hero,)), (player_id, Zone.Play, (Type.Minion,)),
         oop=oop,
         except_list=except_list,
+        **kwargs,
     )
 
 
-def collect_1p_minions(self, except_self, oop=False, player_id=None, except_list=()):
+def collect_1p_minions(self, except_self, oop=False, player_id=None, except_list=(), **kwargs):
     """Collect one-player minions.
 
     :param self:
@@ -259,6 +279,7 @@ def collect_1p_minions(self, except_self, oop=False, player_id=None, except_list
         (player_id, Zone.Play, (Type.Minion,)),
         oop=oop,
         except_list=except_list,
+        **kwargs,
     )
 
 
