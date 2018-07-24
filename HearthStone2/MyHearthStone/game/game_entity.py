@@ -202,6 +202,7 @@ class GameEntity(metaclass=SetDataMeta):
             self.update_auras(old_zone, zone)
 
             # Reset tags to default value.
+            # TODO: Reset tags in all moving? Or just in some movements?
             self._reset_tags()
 
         self._set_zp_hook(old_zone, old_player_id, zone, player_id)
@@ -245,18 +246,28 @@ class GameEntity(metaclass=SetDataMeta):
     package = make_property('package', setter=False)
     silenced = make_property('silenced', default=False)     # This entity is silenced or not.
 
-    def _reset_tags(self):
-        """Reset tags when moving between zones.
+    def _reserved_tags(self):
+        """Get the tags to be reserved when resetting tags.
 
-        Subclasses such as ``AliveMixin`` should overwrite it.
+        Subclasses can override it to add more reserved tags.
+
+        All game entities need to reserve "player_id" and "zone" now.
+        """
+        return {
+            'player_id': self.player_id,
+            'zone': self.zone,
+        }
+
+    def _reset_tags(self):
+        """Reset tags to default state (same as ``cls_data``) when moving between zones.
+
+        Subclasses such as ``AliveMixin`` should override it to reset its .
         """
         # Clear all old tags except ``player_id`` and ``zone``.
-        player_id, zone = self.player_id, self.zone
+        reserved_tags = self._reserved_tags()
         self.data.clear()
-        self.data.update({
-            'player_id': player_id,
-            'zone': zone,
-        })
+
+        self.data.update(reserved_tags)
 
     @property
     def init_player_id(self):
@@ -350,17 +361,19 @@ class IndependentEntity(GameEntity):
         # Temporary data dict for aura update.
         self.aura_tmp = {}
 
-    def _reset_tags(self):
+    def _reserved_tags(self):
+        data = super()._reserved_tags()
+
         # Remain dr_trigger, and update dr_list.
         dr_trigger = self.dr_trigger
         dr_list = [dr_trigger] if dr_trigger is not None else []
 
-        super()._reset_tags()
-
-        self.data.update({
+        data.update({
             'dr_trigger': dr_trigger,
             'dr_list': dr_list,
         })
+
+        return data
 
     @classmethod
     def get_cahr(cls):
@@ -422,10 +435,39 @@ class IndependentEntity(GameEntity):
     def all_enchantments(self):
         return chain(self.enchantments, self.aura_enchantments)
 
+    def _need_modify_enchantments(self, old_zone, new_zone):
+        """Check if need to modify enchantments.
+
+        4 types of zones: deck, hand, play zones, graveyard.
+
+        In patch 12.0, the rule of enchantment modification in zone movements is clear::
+
+            TODO: Add ref link of advanced rulebook after patch 12.0.
+        TODO: Change into a big table?
+        """
+
+        play_zones = [Zone.Play, Zone.Secret, Zone.Weapon, Zone.Hero, Zone.HeroPower]
+
+        if old_zone == new_zone:
+            return False
+        if old_zone == Zone.Graveyard or new_zone == Zone.Graveyard:
+            return True
+        if old_zone in play_zones and new_zone in play_zones:
+            return False
+        if old_zone in play_zones:  # new_zone not in play_zones
+            return True
+        if new_zone in play_zones:  # old_zone not in play_zones
+            return False
+        if old_zone == Zone.Deck and new_zone == Zone.Hand:
+            return False
+        if old_zone == Zone.Hand and new_zone == Zone.Deck:
+            return True
+        return False
+
     def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):
         super()._set_zp_hook(old_zone, old_player_id, zone, player_id)
 
-        if old_zone == Zone.Play and zone != Zone.Play:
+        if self._need_modify_enchantments(old_zone, zone):
             # Modify enchantments.
             for e_list in (self.enchantments, self.aura_enchantments):
                 # Removed from play. Detach all enchantments (with some exceptions). See "RuleZ5a".

@@ -24,14 +24,13 @@ class AliveMixin:
         super()._reset_tags()
 
         self.data.update({
-            'attack': 0,
             'damage': 0,
             'max_health': self.cls_data['health'],
             'armor': 0,                 # [NOTE]: Even support armor for minions (for future DIYs).
 
             # Attack related attributes.
             'n_attack': None,
-            'n_total_attack': 1,
+            'n_total_attack': 2 if self.data.get('windfury', False) else 1,
         })
 
     # Health-related properties.
@@ -112,7 +111,7 @@ class AliveMixin:
 
     @property
     def attack(self):
-        return max(0, self.data['attack'])
+        return max(0, self.data.get('attack', 0))
 
     @attack.setter
     def attack(self, value):

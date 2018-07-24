@@ -137,8 +137,6 @@ class Minion(AliveMixin, Card):
         super()._reset_tags()
 
         self.data.update({
-            'attack': self.cls_data['attack'],
-            'n_total_attack': 2 if self.cls_data['windfury'] else 1,
         })
 
     def _set_zp_hook(self, old_zone, old_player_id, zone, player_id):

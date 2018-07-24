@@ -22,6 +22,7 @@ class DrTrigger(Trigger):
         3. Remove it from core after processing.
 
         This design is to reduce the number of deathrattle triggers, since they are active in all zones.
+        This design need to reserve "dr_trigger" and "dr_list" data when resetting tags between zones.
     """
     respond = [standard.DeathEvent]
 
@@ -37,7 +38,6 @@ class DrTrigger(Trigger):
         :param reg_fn: The function called when registered in death creation step.
             Some deathrattles may need to remember the state of the target here.
             Call signature: (this_trigger) -> None
-        :param kwargs: Other parameters need to be stored in the trigger when created.
         """
         super().__init__(game, owner)
         self.target = target

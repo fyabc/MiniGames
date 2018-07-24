@@ -84,6 +84,7 @@ See [here](https://hearthstone.gamepedia.com/Patches).
 # UI and other TODOs
 
 - More unit tests
+- Implement better AI
 
 # Temp TODOs
 
