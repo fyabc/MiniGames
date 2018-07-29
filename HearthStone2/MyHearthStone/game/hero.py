@@ -93,6 +93,8 @@ class HeroPower(IndependentEntity):
             'player_id': player_id,
         })
 
+        self.oop = self.game.entity.oop
+
     def _repr(self):
         return super()._repr(P=self.player_id, cost=self.cost, exhausted=self.exhausted)
 

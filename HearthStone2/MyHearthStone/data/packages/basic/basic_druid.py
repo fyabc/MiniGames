@@ -162,6 +162,27 @@ class 治疗之触(Spell):
 
 
 # 野蛮咆哮 (10007)
+class Enc_野蛮咆哮(Enchantment):
+    data = {'id': 10003}
+
+    def __init__(self, game, target, **kwargs):
+        super().__init__(game, target, **kwargs)
+        std_triggers.DetachOnTurnEnd(self.game, self)
+
+    apply, apply_imm = enc_common.apply_fn_add_attack(2)
+
+
+class 野蛮咆哮(Spell):
+    data = {
+        'id': 10007,
+        'type': 1, 'klass': 1, 'cost': 3,
+    }
+
+    def run(self, target, **kwargs):
+        targets = ext.collect_1p(self, False, oop=True, player_id=self.player_id)
+        for e in targets:
+            Enc_野蛮咆哮.from_card(self, self.game, e)
+        return []
 
 
 # 横扫 (10008)

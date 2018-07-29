@@ -1,8 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-# TODO: Apply DH values.
-
 import random
 
 from MyHearthStone import ext
