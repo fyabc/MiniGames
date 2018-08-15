@@ -7,6 +7,7 @@ from MyHearthStone import ext
 from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
+from MyHearthStone.ext import Aura, AuraEnchantment
 from MyHearthStone.utils.game import Zone, Race
 
 __author__ = 'fyabc'
@@ -39,6 +40,9 @@ class 稳固射击(HeroPower):
 
 
 # 森林狼 (20000)
+Enc_森林狼 = ext.create_enchantment({'id': 20000}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
+
+
 class 森林狼(Minion):
     data = {
         'id': 20000,
@@ -46,7 +50,17 @@ class 森林狼(Minion):
         'race': [Race.Beast],
     }
 
-    # TODO
+    class Aura_森林狼(Aura):
+        def check_entity(self, entity, **kwargs):
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
+                and Race.Beast in entity.race and entity is not self.owner
+
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_森林狼.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_森林狼(self.game, self)
 
 
 # 驯兽师 (20001)
@@ -76,7 +90,39 @@ class 驯兽师(Minion):
             Enc_驯兽师.from_card(self, self.game, target)
         return []
 
+
 # 苔原犀牛 (20002)
+Enc_苔原犀牛 = ext.create_enchantment(
+    {'id': 20002}, apply_fn=enc_common.set_target_attr_imm('charge', True), base=AuraEnchantment)
+
+
+class 苔原犀牛(Minion):
+    """[NOTE]: This is a classic card of charge aura (no attack/health/cost) aura.
+
+    TODO: Need test.
+        Test summon new beast;
+        Test death of Rhino;
+        Test multiple Rhinos;
+        ...
+    """
+    data = {
+        'id': 20002,
+        'klass': 2, 'cost': 5, 'attack': 2, 'health': 5,
+        'race': [Race.Beast],
+    }
+
+    class Aura_苔原犀牛(Aura):
+        def check_entity(self, entity, **kwargs):
+            # [NOTE]: Contains himself.
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
+                   and Race.Beast in entity.race
+
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_苔原犀牛.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_苔原犀牛(self.game, self)
 
 
 # 饥饿的秃鹫 (20003)
@@ -248,6 +294,9 @@ ext.blank_minion({
 
 
 # 雷欧克 (20011)
+Enc_雷欧克 = ext.create_enchantment({'id': 20004}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
+
+
 class 雷欧克(Minion):
     data = {
         'id': 20011,
@@ -255,7 +304,17 @@ class 雷欧克(Minion):
         'race': [Race.Beast], 'derivative': True,
     }
 
-    # TODO
+    class Aura_雷欧克(Aura):
+        def check_entity(self, entity, **kwargs):
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
+                and entity is not self.owner
+
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_雷欧克.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_雷欧克(self.game, self)
 
 
 # 霍弗 (20012)

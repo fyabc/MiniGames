@@ -87,6 +87,8 @@ class Enchantment(GameEntity):
 
         Subclasses should overwrite this method, and they should only modify the attributes directly.
         For example, ``self.taunt = True``.
+
+        [NOTE]: Permanent enchantments should usually use this method to change entity attributes, e.g. "Charge".
         """
         pass
 
@@ -98,6 +100,8 @@ class Enchantment(GameEntity):
 
         Subclasses should overwrite this method, and they should only modify ``self.aura_tmp``.
         For example, ``self.aura_tmp['attack'] *= 2``.
+
+        [NOTE]: Aura enchantments should usually use this method to change entity attributes, e.g. "Tundra Rhino".
         """
         pass
 
