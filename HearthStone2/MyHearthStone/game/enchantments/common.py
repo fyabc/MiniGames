@@ -101,7 +101,7 @@ def set_target_attr(key, value):
     return _apply
 
 
-def set_target_attr_imm(key, value):
+def set_target_attr_temp(key, value):
     def _apply(self):
         self.target.aura_tmp[key] = value
     return _apply
@@ -120,6 +120,6 @@ __all__ = [
     'apply_fn_set_health',
     'apply_fn_add_a_h',
     'set_target_attr',
-    'set_target_attr_imm',
+    'set_target_attr_temp',
     'modify_aura_tmp',
 ]

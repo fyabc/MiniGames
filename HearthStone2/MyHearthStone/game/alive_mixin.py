@@ -14,9 +14,6 @@ class AliveMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Temporary data dict for aura update.
-        self.aura_tmp = {}
-
     def _reset_tags(self):
         # Data of alive entities.
 
@@ -175,6 +172,21 @@ class AliveMixin:
         return self.taunt and (self.stealth or self.immune)
 
     # Aura related.
+
+    def _aura_attributes(self):
+        # TODO: Replace hard coding here.
+        # TODO: More aura attributes.
+        result = super()._aura_attributes()
+        result.update({'taunt', 'charge', 'rush', 'immune', 'anti_magic'})
+        return result
+
+    def _aura_update_before(self):
+        # Add some specific data for alive entities.
+        super()._aura_update_before()
+        self.aura_tmp.update({
+            'attack': self.cls_data.get('attack', 0),
+            'max_health': self.cls_data.get('health', 0),
+        })
 
     # Frontend related.
 

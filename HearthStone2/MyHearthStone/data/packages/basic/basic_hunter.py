@@ -65,7 +65,7 @@ class 森林狼(Minion):
 
 # 驯兽师 (20001)
 Enc_驯兽师 = ext.create_enchantment(
-    {'id': 20001}, *enc_common.apply_fn_add_a_h(2, 2, apply_imm_other=enc_common.set_target_attr('taunt', True)))
+    {'id': 20001}, *enc_common.apply_fn_add_a_h(2, 2, apply_other=enc_common.set_target_attr_temp('taunt', True)))
 
 
 class 驯兽师(Minion):
@@ -93,7 +93,7 @@ class 驯兽师(Minion):
 
 # 苔原犀牛 (20002)
 Enc_苔原犀牛 = ext.create_enchantment(
-    {'id': 20002}, apply_fn=enc_common.set_target_attr_imm('charge', True), base=AuraEnchantment)
+    {'id': 20002}, apply_fn=enc_common.set_target_attr_temp('charge', True), base=AuraEnchantment)
 
 
 class 苔原犀牛(Minion):

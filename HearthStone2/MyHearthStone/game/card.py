@@ -149,6 +149,11 @@ class Minion(AliveMixin, Card):
     battlecry = make_property('battlecry', setter=False)
     deathrattle = make_property('deathrattle', setter=False)
 
+    def _aura_attributes(self):
+        result = super()._aura_attributes()
+        result.update({'cost'})
+        return result
+
     def run_battlecry(self, target: IndependentEntity, **kwargs):
         """Run the battlecry. Implemented in subclasses.
 

@@ -475,13 +475,26 @@ class IndependentEntity(GameEntity):
                     enchantment.detach(remove_from_target=False)
                 e_list.clear()
 
+    def _aura_attributes(self):
+        """Attributes for aura update. Subclasses can override this for more attributes.
+
+        Example of aura attributes:
+            attack, health, cost, charge, taunt
+        Example of non-aura attributes:
+            stealth, divine_shield and other read-only attributes
+        """
+        return set()
+
     def _aura_update_before(self):
-        """Set base status before aura update."""
-        self.aura_tmp.update({
-            'attack': self.cls_data.get('attack', 0),
-            'max_health': self.cls_data.get('health', 0),
-            'cost': self.cls_data.get('cost', 0),
-        })
+        """Set base status before aura update.
+
+        Attributes returned from ``self._aura_attributes`` will be updated, others will not be updated.
+        """
+
+        # Copy some dynamic attributes.
+        for k in self._aura_attributes():
+            if k in self.cls_data:
+                self.aura_tmp[k] = self.cls_data[k]
 
     def _aura_update_after(self):
         """Apply calculated result after aura update.

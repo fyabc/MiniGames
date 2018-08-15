@@ -126,6 +126,11 @@ class HeroPower(IndependentEntity):
         """
         return []
 
+    def _aura_attributes(self):
+        result = super()._aura_attributes()
+        result.update({'cost'})
+        return result
+
     def can_do_action(self, msg_fn=None):
         super_result = super().can_do_action(msg_fn=msg_fn)
         if super_result == self.Inactive:
