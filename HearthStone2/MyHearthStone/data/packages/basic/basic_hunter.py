@@ -97,14 +97,7 @@ Enc_苔原犀牛 = ext.create_enchantment(
 
 
 class 苔原犀牛(Minion):
-    """[NOTE]: This is a classic card of charge aura (no attack/health/cost) aura.
-
-    TODO: Need test.
-        Test summon new beast;
-        Test death of Rhino;
-        Test multiple Rhinos;
-        ...
-    """
+    """[NOTE]: This is a classic card of charge aura (no attack/health/cost) aura."""
     data = {
         'id': 20002,
         'klass': 2, 'cost': 5, 'attack': 2, 'health': 5,

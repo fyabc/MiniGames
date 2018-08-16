@@ -3,8 +3,8 @@
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
-from MyHearthStone.ext import std_events
-from MyHearthStone.utils.game import order_of_play, Zone
+from MyHearthStone.ext import std_events, std_triggers
+from MyHearthStone.utils.game import order_of_play, Zone, Race
 
 __author__ = 'fyabc'
 
@@ -34,6 +34,24 @@ class 火焰冲击(HeroPower):
 
 
 # 水元素 (30000)
+class 水元素(Minion):
+    data = {
+        'id': 30000,
+        'klass': 3, 'cost': 4, 'attack': 3, 'health': 6,
+        'race': [Race.Elemental],
+    }
+
+    class Trig_水元素(std_triggers.AttachedTrigger):
+        respond = [std_events.Damage]
+
+        def process(self, event: respond[0]):
+            if event.owner is not self.owner:
+                return []
+            return [std_events.Freeze(self.game, self.owner, event.target)]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Trig_水元素(self.game, self)
 
 
 # 奥术飞弹 (30001)
@@ -106,6 +124,16 @@ class 奥术智慧(Spell):
 
 
 # 冰霜新星 (30006)
+class 冰霜新星(Spell):
+    data = {
+        'id': 30006,
+        'type': 1, 'klass': 3, 'cost': 3,
+    }
+
+    def run(self, target, **kwargs):
+        targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
+        return [std_events.Freeze(self.game, self, target) for target in targets]
+
 
 # 火球术 (30007)
 class 火球术(Spell):

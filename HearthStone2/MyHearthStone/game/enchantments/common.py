@@ -28,6 +28,28 @@ def apply_fn_add_attack(value, apply_other=None, apply_imm_other=None):
     return _apply, _apply_imm
 
 
+def apply_fn_set_attack(value, apply_other=None, apply_imm_other=None):
+    """Apply function of enchantments 'set attack to value'.
+
+    :param value:
+    :param apply_other: Other function to call in ``apply``.
+    :param apply_imm_other: Other function to call in ``apply_imm``.
+    :return: Apply function and apply_imm function.
+    :rtype: tuple
+    """
+    def _apply(self):
+        self.target.aura_tmp['attack'] = value
+        if apply_other:
+            apply_other(self)
+
+    def _apply_imm(self):
+        self.target.damage = 0
+        if apply_imm_other:
+            apply_imm_other(self)
+
+    return _apply, _apply_imm
+
+
 def apply_fn_add_health(value, apply_other=None, apply_imm_other=None):
     """Apply function of enchantments '+value health'.
 
@@ -116,6 +138,7 @@ def modify_aura_tmp(key, op):
 
 __all__ = [
     'apply_fn_add_attack',
+    'apply_fn_set_attack',
     'apply_fn_add_health',
     'apply_fn_set_health',
     'apply_fn_add_a_h',
