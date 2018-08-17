@@ -5,8 +5,8 @@ from itertools import chain
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
-from MyHearthStone.ext import std_events
-from MyHearthStone.utils.game import Zone
+from MyHearthStone.ext import std_events, std_triggers
+from MyHearthStone.utils.game import Zone, Type
 
 __author__ = 'fyabc'
 
@@ -37,12 +37,24 @@ class 次级治疗术(HeroPower):
 
 # 北郡牧师 (50000)
 class 北郡牧师(Minion):
+    # TODO: Need test.
+
     data = {
         'id': 50000,
         'klass': 5, 'cost': 1, 'attack': 1, 'health': 3,
     }
 
-    # TODO
+    class Trig_北郡牧师(std_triggers.AttachedTrigger):
+        respond = [std_events.Healing]
+
+        def process(self, event: respond[0]):
+            if event.target.type != Type.Minion:
+                return []
+            return [std_events.DrawCard(self.game, self.owner, self.owner.player_id)]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Trig_北郡牧师(self.game, self)
 
 
 # 神圣惩击 (50001)
@@ -75,7 +87,21 @@ class 真言术_盾(Spell):
         # TODO
         return []
 
+
 # 神圣之灵 (50004)
+class 神圣之灵(Spell):
+    data = {
+        'id': 50005,
+        'type': 1, 'klass': 5, 'cost': 2,
+        'po_tree': '$HaveTarget',
+    }
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
 
 
 # 心灵震爆 (50005)
@@ -104,7 +130,20 @@ class 暗言术_痛(Spell):
         target.to_be_destroyed = True
         return []
 
+
 # 暗言术：灭 (50007)
+class 暗言术_灭(Spell):
+    data = {
+        'id': 50006,
+        'type': 1, 'klass': 5, 'cost': 3,
+        'po_tree': '$HaveTarget',
+    }
+
+    can_do_action, check_target = ext.action_target_checker_factory_cond_minion(lambda target: target.attack >= 5)
+
+    def run(self, target, **kwargs):
+        target.to_be_destroyed = True
+        return []
 
 # 神圣新星 (50008)
 
