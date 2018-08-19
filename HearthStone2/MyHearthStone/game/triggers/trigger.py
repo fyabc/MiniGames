@@ -108,7 +108,7 @@ class AttachedTrigger(Trigger):
 
     def copy(self, new_owner=None):
         result = super().copy(new_owner=new_owner)
-        result.owner.add_trigger(result)
+        # [NOTE]: Does not call ``add_trigger`` here.
         return result
 
     def _repr(self, **kwargs):

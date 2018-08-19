@@ -415,7 +415,11 @@ class IndependentEntity(GameEntity):
         # 1.1. Copy deathrattles.
         assert not self.dr_list or self.dr_list[0] is self.dr_trigger, \
             'The assumption that the first element of ``dr_list`` is ``dr_trigger`` is violated'
-        new_dr_list = result.data['dr_list'] = [t.copy(new_owner=result) for t in result.data['dr_list']]
+        new_dr_list = []
+        for i, t in enumerate(result.data['dr_list']):
+            # [NOTE]: For the first trigger (owned trigger), also change the owner.
+            new_dr_list.append(t.copy(new_owner=result if i == 0 else None, new_target=result))
+        result.data['dr_list'] = new_dr_list
         if new_dr_list:
             result.data['dr_trigger'] = new_dr_list[0]
         else:

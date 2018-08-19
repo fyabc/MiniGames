@@ -45,6 +45,12 @@ class DrTrigger(Trigger):
         self.reg_fn = reg_fn
         self.data = {} if data is None else data
 
+    def copy(self, new_owner=None, new_target=None):
+        result = super().copy(new_owner=new_owner)
+        if new_target is not None:
+            result.target = new_target
+        return result
+
     def register_before_death(self):
         self.game.register_trigger(self)
         if self.reg_fn is not None:
@@ -59,10 +65,6 @@ class DrTrigger(Trigger):
         # Remove myself from core after processing.
         self.game.remove_trigger(self)
         return result
-
-    def _process_internal(self, event: respond[0]):
-        """Subclasses should overwrite this method to do the real processing."""
-        return []
 
     @classmethod
     def create(cls, game, **kwargs):
