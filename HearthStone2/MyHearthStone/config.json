@@ -26,7 +26,7 @@
 
     "Game": {
         // HearthStone version
-        "Version": "11.1.0",
+        "Version": "12.0.0",
 
         // Some constants of deck.
         "DeckSize": 30,

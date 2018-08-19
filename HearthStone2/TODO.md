@@ -48,6 +48,8 @@ See [here](https://hearthstone.gamepedia.com/Patches).
         > TODO: Need test
     - Damage / healing bonus effects (e.g. "Prophet Velen", "Fallen Hero")
     - Predamage triggers (e.g. "Ice Block")
+    - Copy effects in play (e.g. "Faceless Manipulator")
+        > TODO: Need full tests
 - GVG:
     - On-draw effect (e.g. "Flame Leviathan")
 - TWW:
@@ -70,7 +72,7 @@ See [here](https://hearthstone.gamepedia.com/Patches).
         - **Overload**
         - **Secrets**
         - **Silence**
-    - Copy effects (e.g. "Faceless Manipulator")
+    - Copy effects between any zones (e.g. "Mind Vision")
     - Non-spell transform effects (e.g. "Faceless Manipulator")
     - Modify healing to damage effects (e.g. "Auchenai Soulpriest")
     - Mana related

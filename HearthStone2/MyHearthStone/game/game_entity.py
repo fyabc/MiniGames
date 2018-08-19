@@ -4,6 +4,7 @@
 """The base class of game entities."""
 
 from collections import ChainMap
+from copy import copy as cp
 from itertools import chain
 import re
 
@@ -157,6 +158,30 @@ class GameEntity(metaclass=SetDataMeta):
             self._init_player_id = self.data.get('player_id', value)
         self.data[tag] = value
 
+    def copy(self):
+        """Copy the entity.
+
+        [NOTE]: Subclasses should override this method in subclasses to handle special cases such as ``dr_list``.
+
+        :return: The copied entity.
+        """
+        # TODO: How to make this method more "automatically"?
+        # TODO: Need test: need to call ``_reset_tags``, ``set_zp`` and other init methods or not?
+
+        # 1. Create a shallow copy. Immutable attributes are copied automatically.
+        result = cp(self)
+
+        # 2. Copy data. Only shallow copy the top-level (entity-level) data, other part (cls_data) are remain shared.
+        result.data = result.data.parents.new_child(cp(result.data.maps[0]))
+
+        # 3. Copy triggers and auras.
+        result.triggers = {t.copy(new_owner=result) for t in result.triggers}
+        result.update_triggers(Zone.Invalid, result.zone)
+        result.auras = {a.copy(new_owner=result) for a in result.auras}
+        result.update_auras(Zone.Invalid, result.zone)
+
+        return result
+
     # Basic attributes: zone and player id.
 
     def set_zp(self, zone=None, player_id=None):
@@ -205,6 +230,8 @@ class GameEntity(metaclass=SetDataMeta):
             # TODO: Reset tags in all moving? Or just in some movements?
             self._reset_tags()
 
+            # TODO: Set oop here when moving into play?
+
         self._set_zp_hook(old_zone, old_player_id, zone, player_id)
 
         debug('Move {} from P_{}#{} to P_{}#{}.'.format(
@@ -239,6 +266,11 @@ class GameEntity(metaclass=SetDataMeta):
         self.set_zp(zone=None, player_id=player_id)
 
     player_id = property(fget=_get_player_id, fset=_set_player_id)
+
+    @property
+    def entity_data(self):
+        """Get the entity-level data."""
+        return self.data.maps[0]
 
     id = make_property('id', setter=False)
     name = make_property('name', setter=False)
@@ -374,6 +406,29 @@ class IndependentEntity(GameEntity):
         })
 
         return data
+
+    def copy(self):
+        result = super().copy()
+        assert isinstance(result, type(self))
+
+        # 1. Copy mutable attributes.
+        # 1.1. Copy deathrattles.
+        assert not self.dr_list or self.dr_list[0] is self.dr_trigger, \
+            'The assumption that the first element of ``dr_list`` is ``dr_trigger`` is violated'
+        new_dr_list = result.data['dr_list'] = [t.copy(new_owner=result) for t in result.data['dr_list']]
+        if new_dr_list:
+            result.data['dr_trigger'] = new_dr_list[0]
+        else:
+            result.data['dr_trigger'] = None
+        # 1.2. Copy races.
+        if 'race' in self.entity_data:
+            result.data['race'] = cp(result.data['race'])
+
+        # 2. Copy enchantments. [NOTE]: Aura effects are not copied.
+        result.enchantments = [e.copy(new_target=result) for e in result.enchantments]
+        result.aura_enchantments = []
+
+        return result
 
     @classmethod
     def get_cahr(cls):

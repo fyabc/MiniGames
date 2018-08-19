@@ -336,7 +336,7 @@ class AfterSummon(Phase):
         return []
 
 
-def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone=None):
+def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone=None, copy=False):
     """Utility for merely summon a minion.
 
     :param game: The game of the minion.
@@ -345,11 +345,13 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
     :param loc: integer or 'last', The location of the minion to summon.
     :param from_player: The from player id, None if the minion is generated.
     :param from_zone: The from zone id, None if the minion is generated.
+    :param copy: Indicate copy the entity or not.
+        [NOTE]: If it is True, parameters ``from_player`` and ``from_zone`` will be ignored.
     :return: event list.
     """
 
-    if from_zone is None:
-        minion, status = game.generate(to_player, Zone.Play, loc, minion)
+    if copy or from_zone is None or from_player is None:
+        minion, status = game.generate(to_player, Zone.Play, loc, minion, copy=copy)
     else:
         minion, status = game.move(from_player, from_zone, minion, to_player, Zone.Play, loc)
     success = status['success']

@@ -69,7 +69,18 @@ class 神圣惩击(Spell):
     def run(self, target, **kwargs):
         return [std_events.Damage(self.game, self, target, self.dh_values[0])]
 
+
 # 心灵视界 (50002)
+class 心灵视界(Spell):
+    """[NOTE]: This is a classic card of (permanent) copy effect."""
+    data = {
+        'id': 50002,
+        'type': 1, 'klass': 5, 'cost': 1,
+    }
+
+    def run(self, target, **kwargs):
+        self.game.generate()
+        return []
 
 
 # 真言术：盾 (50003)

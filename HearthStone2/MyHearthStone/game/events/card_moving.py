@@ -1,7 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""Card moving events."""
+"""Card moving events.
+
+TODO: Add "ShuffleIntoHand".
+"""
 
 import random
 
@@ -171,9 +174,20 @@ def replace_events(game, target, new_entity, loc=None):
     return old_status['events'] + new_status['events']
 
 
+def copy_events(game, target, loc=None):
+    """Utility for copy an entity into hand.
+
+    [NOTE]: The retention of enchantments between copying becomes more consistent after Patch 12.0.0.25770.
+        This update greatly simplify the implementation of copy effects: now any copy effects can share this method.
+
+        See <https://hearthstone.gamepedia.com/Patch_12.0.0.25770#Game_Mechanics_Updates> for more details.
+    """
+
+
 __all__ = [
     'GenericDrawCard', 'DrawCard', 'PutIntoHand',
     'DiscardCard', 'AreaDiscardCard',
     'MillCard', 'AreaMillCard',
     'replace_events',
+    'copy_events',
 ]

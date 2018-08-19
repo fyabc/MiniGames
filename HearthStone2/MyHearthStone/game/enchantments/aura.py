@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from copy import copy as cp
+
 from ...utils.message import entity_message
 from ...utils.game import Zone, AuraType
 
@@ -34,6 +36,13 @@ class Aura:
     @property
     def oop(self):
         return self.owner.oop
+
+    def copy(self, new_owner=None):
+        result = cp(self)
+        if new_owner is not None:
+            result.owner = new_owner
+        # [NOTE]: Does not call ``add_aura`` here.
+        return result
 
     def prepare_update(self):
         """Prepare the update of this aura, called by aura update methods of ``Game``.

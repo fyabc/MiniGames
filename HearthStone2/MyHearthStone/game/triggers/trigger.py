@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from copy import copy as cp
+
 from ...utils.message import info, entity_message
 from ...utils.game import Zone
 
@@ -37,6 +39,14 @@ class Trigger:
     @property
     def oop(self):
         return self.owner.oop
+
+    def copy(self, new_owner=None):
+        result = cp(self)
+
+        if new_owner is not None:
+            result.owner = new_owner
+
+        return result
 
     def queue_condition(self, event):
         """Check if this trigger can be queued."""
@@ -95,6 +105,11 @@ class AttachedTrigger(Trigger):
 
         # Automatically add it to its owner.
         owner.add_trigger(self)
+
+    def copy(self, new_owner=None):
+        result = super().copy(new_owner=new_owner)
+        result.owner.add_trigger(result)
+        return result
 
     def _repr(self, **kwargs):
         kwargs['owner'] = self.owner

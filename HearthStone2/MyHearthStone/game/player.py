@@ -158,20 +158,10 @@ class Player(IndependentEntity):
 
     # Entity movement methods.
 
-    def generate(self, to_zone, to_index, entity):
+    def generate(self, to_zone, to_index, entity, copy=False):
         """Generate an entity into a zone.
 
-        :param to_zone: The target zone.
-        :param entity: The entity id to be generated, or the entity object.
-        :param to_index: The target index of the entity.
-            if it is 'last', means append.
-        :return: a tuple of (entity, dict)
-            The generated entity (None when failed).
-            The dict contains:
-                'success': The bool indicate success or not.
-                'events': The list contains consequence events.
-                'from_index': None.
-                'to_index': The final insert index.
+        See ``Game.generate`` for more doc details.
         """
 
         # If the play board is full, do nothing.
@@ -189,6 +179,10 @@ class Player(IndependentEntity):
             entity = str(entity)
         if isinstance(entity, str):
             entity = self.create_card(entity, player_id=self.player_id)
+        else:
+            # If ``copy`` is True and entity is not an id, insert the copy of it.
+            if copy:
+                entity = entity.copy()
 
         index = self.insert_entity(entity, to_zone, to_index)
 
@@ -197,6 +191,8 @@ class Player(IndependentEntity):
             'events': [],
             'to_index': index,
         }
+
+    # TODO: Implement ``replace`` method?
 
     def insert_entity(self, entity, to_zone, to_index):
         """Insert an entity.
@@ -210,7 +206,6 @@ class Player(IndependentEntity):
 
         # todo: set oop when moving to play zone.
         # todo: set other things
-        # todo: fix the problems of hero, weapons, and other unique zones (how to insert?)
 
         if to_index == 'last':
             tz.append(entity)

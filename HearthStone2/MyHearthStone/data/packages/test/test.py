@@ -78,3 +78,18 @@ class QuickDamage(Spell):
 
     def run(self, target, **kwargs):
         return [std_events.Damage(self.game, self, self.game.get_hero(1 - self.player_id), self.dh_values[0])]
+
+
+class TestCopy(Spell):
+    """选择一个随从，召唤它的一个复制。"""
+    data = {
+        'id': "T00000004",
+        'type': 1, 'rarity': 0, 'cost': 0,
+        'po_tree': '$HaveTarget',
+    }
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        return std_events.pure_summon_events(self.game, target, self.player_id, 'last', copy=True)

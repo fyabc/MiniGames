@@ -691,7 +691,7 @@ class Game:
             'to_index': index,
         }
 
-    def generate(self, to_player, to_zone, to_index, entity):
+    def generate(self, to_player, to_zone, to_index, entity, copy=False):
         """Generate an entity into a zone.
 
         :param to_player: The target player id.
@@ -699,6 +699,13 @@ class Game:
         :param entity: The entity id to be generated, or the entity object.
         :param to_index: The target index of the entity.
             if it is 'last', means append.
+        :param copy: Indicate copy the entity or not.
+            If ``False``, just insert the entity.
+                In this case, the ``entity`` parameter is expected to be a "raw" entity (zone and player id are Invalid)
+            If ``True``, copy the entity before insert.
+                In this case, some enchantments may be detached.
+            (No difference if ``entity`` is an int)
+        :type copy: bool
         :return: a tuple of (entity, dict)
             The generated entity (None when failed).
             The dict contains:
@@ -708,7 +715,7 @@ class Game:
                 'to_index': The final insert index.
         """
 
-        return self.players[to_player].generate(to_zone, to_index, entity)
+        return self.players[to_player].generate(to_zone, to_index, entity, copy=copy)
 
     def _insert_entity(self, entity, to_zone, to_player, to_index):
         return self.players[to_player].insert_entity(entity, to_zone, to_index)

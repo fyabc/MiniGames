@@ -63,6 +63,23 @@ class Enchantment(GameEntity):
     def _repr(self):
         return super()._repr()
 
+    def copy(self, new_target=None):
+        result = super().copy()
+
+        if new_target is not None:
+            result.target = new_target
+        # [NOTE]: Does not call ``add_enchantment`` here.
+
+        # Reset and set zp. TODO: Need test.
+        old_zp = result.zone, result.player_id
+        result.data['zone'] = Zone.Invalid
+        result.data['player_id'] = None
+        result.set_zp(*old_zp)
+
+        # [NOTE]: Does not call ``apply_imm`` here.
+
+        return result
+
     def set_zp(self, zone=None, player_id=None):
         # TODO: Specific behaviour of enchantment: (or needn't?)
         # Only have two zones: Play & RFG.
