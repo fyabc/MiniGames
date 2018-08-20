@@ -59,12 +59,13 @@ class OnPlaySpell(OnPlay):
         player = self.game.get_player(self.player_id)
         player.spend_mana(self.spell.cost)
 
-        # [NOTE]: move it to `Game.move`?
-        self.spell.oop = self.game.inc_oop()
-
-        tz = Zone.Graveyard
         if self.spell.data['secret'] or self.spell.data['quest']:
             tz = Zone.Secret
+        else:
+            tz = Zone.Graveyard
+            # [NOTE]: When moving to Graveyard, still need to set the oop.
+            # If moving to Secret, oop is automatically set.
+            self.spell.oop = self.game.inc_oop()
 
         self.game.move(self.player_id, Zone.Hand, self.spell, self.player_id, tz, 'last')
 
@@ -154,9 +155,6 @@ class OnPlayWeapon(OnPlay):
         player = self.game.get_player(self.player_id)
         player.spend_mana(self.weapon.cost)
 
-        # [NOTE]: move it to `Game.move`?
-        self.weapon.oop = self.game.inc_oop()
-
         # [NOTE]: Insert the new weapon into the first one (index 0).
         _, status = self.game.move(self.player_id, Zone.Hand, self.weapon, self.player_id, Zone.Weapon, 0)
 
@@ -232,9 +230,6 @@ def pure_equip_events(game, weapon, to_player, from_player=None, from_zone=None)
         weapon, status = game.move(from_player, from_zone, weapon, to_player, Zone.Weapon, 0)
     assert status['success'], 'The equipment of weapon must succeed'
 
-    # [NOTE]: move it to ``Game.move``?
-    weapon.oop = game.inc_oop()
-
     return [EquipWeapon(game, weapon, None, to_player, is_played=False)]
 
 
@@ -267,9 +262,6 @@ class OnPlayMinion(OnPlay):
 
         se = self.summon_event
         self.game.summon_events.add(se)
-
-        # [NOTE]: move it to `Game.move`?
-        self.minion.oop = self.game.inc_oop()
 
         _, status = self.game.move(se.player_id, Zone.Hand, self.minion, se.player_id, Zone.Play, se.loc)
 
@@ -360,9 +352,6 @@ def pure_summon_events(game, minion, to_player, loc, from_player=None, from_zone
     if success:
         summon_event = Summon(game, minion, to_index, to_player)
         game.summon_events.add(summon_event)
-
-        # [NOTE]: move it to ``Game.move``?
-        minion.oop = game.inc_oop()
 
         # [NOTE] ``AfterSummon`` phase appears before ``Summon`` event.
         # Is this a bug or not?

@@ -1,11 +1,12 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from itertools import chain
+import random
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events, std_triggers
+from MyHearthStone.ext import enc_common, Enchantment
 from MyHearthStone.utils.game import Zone, Type
 
 __author__ = 'fyabc'
@@ -37,8 +38,6 @@ class 次级治疗术(HeroPower):
 
 # 北郡牧师 (50000)
 class 北郡牧师(Minion):
-    # TODO: Need test.
-
     data = {
         'id': 50000,
         'klass': 5, 'cost': 1, 'attack': 1, 'health': 3,
@@ -79,11 +78,17 @@ class 心灵视界(Spell):
     }
 
     def run(self, target, **kwargs):
-        self.game.generate()
-        return []
+        opp_hand = self.game.get_zone(Zone.Hand, 1 - self.player_id)
+        if not opp_hand:
+            return []
+        copy_target = random.choice(opp_hand)
+        return std_events.copy_events(self.game, copy_target, self.player_id, Zone.Hand, 'last')
 
 
 # 真言术：盾 (50003)
+Enc_真言术_盾 = ext.create_enchantment({'id': 50000}, *enc_common.apply_fn_add_health(2))
+
+
 class 真言术_盾(Spell):
     data = {
         'id': 50003,
@@ -95,14 +100,27 @@ class 真言术_盾(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        Enc_真言术_盾.from_card(self, self.game, target)
+        return [std_events.DrawCard(self.game, self, self.player_id)]
 
 
 # 神圣之灵 (50004)
+class Enc_神圣之灵(Enchantment):
+    data = {
+        'id': 50001,
+    }
+
+    def __init__(self, game, target, **kwargs):
+        super().__init__(game, target, **kwargs)
+        self.add_health = kwargs['add_health']
+
+    def apply(self):
+        self.target.aura_tmp['max_health'] += self.add_health
+
+
 class 神圣之灵(Spell):
     data = {
-        'id': 50005,
+        'id': 50004,
         'type': 1, 'klass': 5, 'cost': 2,
         'po_tree': '$HaveTarget',
     }
@@ -111,7 +129,7 @@ class 神圣之灵(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        # TODO
+        Enc_神圣之灵.from_card(self, self.game, target, add_health=target.health)
         return []
 
 
@@ -145,7 +163,7 @@ class 暗言术_痛(Spell):
 # 暗言术：灭 (50007)
 class 暗言术_灭(Spell):
     data = {
-        'id': 50006,
+        'id': 50007,
         'type': 1, 'klass': 5, 'cost': 3,
         'po_tree': '$HaveTarget',
     }
@@ -156,7 +174,17 @@ class 暗言术_灭(Spell):
         target.to_be_destroyed = True
         return []
 
+
 # 神圣新星 (50008)
+class 神圣新星(Spell):
+    data = {
+        'id': 50008,
+        'type': 1, 'klass': 5, 'cost': 5,
+    }
+
+    def run(self, target, **kwargs):
+        # TODO
+        return []
 
 
 # 精神控制 (50009)

@@ -167,21 +167,22 @@ def replace_events(game, target, new_entity, loc=None):
     old_entity, old_status = game.move(player_id, zone, loc, player_id, Zone.Graveyard, 'last')
     new_entity, new_status = game.generate(player_id, zone, loc, new_entity)
 
-    if zone == Zone.Play:
-        # [NOTE]: move it to `Game.move`?
-        new_entity.oop = game.inc_oop()
-
     return old_status['events'] + new_status['events']
 
 
-def copy_events(game, target, loc=None):
+def copy_events(game, target, to_player, to_zone, loc):
     """Utility for copy an entity into hand.
 
     [NOTE]: The retention of enchantments between copying becomes more consistent after Patch 12.0.0.25770.
         This update greatly simplify the implementation of copy effects: now any copy effects can share this method.
 
         See <https://hearthstone.gamepedia.com/Patch_12.0.0.25770#Game_Mechanics_Updates> for more details.
+
+    [NOTE]: If copy to play zone (summon), please call ``pure_summon_events`` instead.
     """
+
+    new_entity, status = game.generate(to_player, to_zone, loc, target, copy=True)
+    return status['events']
 
 
 __all__ = [

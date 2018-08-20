@@ -84,6 +84,10 @@ class Zone(metaclass=EnumMeta):
     def repr_zp(cls, zone, player_id):
         return 'P_{}#{}'.format(player_id, cls.Idx2Str[zone])
 
+    @classmethod
+    def play_zones(cls):
+        return {cls.Play, cls.Secret, cls.Weapon, cls.Hero, cls.HeroPower}
+
 
 class Rarity(metaclass=EnumMeta):
     """An enumeration class, contains rarities."""

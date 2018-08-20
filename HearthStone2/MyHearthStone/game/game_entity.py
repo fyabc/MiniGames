@@ -230,7 +230,9 @@ class GameEntity(metaclass=SetDataMeta):
             # TODO: Reset tags in all moving? Or just in some movements?
             self._reset_tags()
 
-            # TODO: Set oop here when moving into play?
+        # [NOTE]: Set oop here when moving into play.
+        if zone in Zone.play_zones() and old_zone not in Zone.play_zones():
+            self.oop = self.game.inc_oop()
 
         self._set_zp_hook(old_zone, old_player_id, zone, player_id)
 
