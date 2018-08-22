@@ -59,7 +59,14 @@ class 图腾召唤(HeroPower):
 
 # 风语者 (70001)
 
+
 # 火元素 (70002)
+ext.create_damage_minion({
+    'id': 70002,
+    'klass': 7, 'cost': 6, 'attack': 6, 'health': 5,
+    'battlecry': True, 'po_tree': '$HaveTarget',
+    'race': [Race.Elemental],
+}, 3)
 
 
 # 先祖治疗 (70003)

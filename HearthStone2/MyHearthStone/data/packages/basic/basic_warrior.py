@@ -122,10 +122,10 @@ class 斩杀(Spell):
         'po_tree': '$HaveTarget',
     }
 
-    # TODO: checkers
+    # TODO: checkers and can_do_action
 
     def run(self, target, **kwargs):
-        # TODO
+        target.to_be_destroyed = True
         return []
 
 
@@ -150,3 +150,7 @@ ext.blank_weapon({
 })
 
 # 奥金斧 (90009)
+ext.blank_weapon({
+    'id': 90009,
+    'type': 2, 'klass': 9, 'cost': 5, 'attack': 5, 'health': 2,
+})

@@ -93,3 +93,4 @@ See [here](https://hearthstone.gamepedia.com/Patches).
 
 - Add doc in commonly used extension modules, classes and functions.
 - Add doc in AI, Game scene and animations.
+- Add ``dh_bonus`` related code into damage and healing minions?

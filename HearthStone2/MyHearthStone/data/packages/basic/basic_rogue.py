@@ -97,7 +97,19 @@ class 闷棍(Spell):
         _, status = self.game.move(target.player_id, target.zone, target, target.player_id, Zone.Hand, 'last')
         return status['events']
 
+
 # 刀扇 (60005)
+class 刀扇(Spell):
+    data = {
+        'id': 60005,
+        'type': 1, 'klass': 6, 'cost': 3,
+    }
+    ext.add_dh_bonus_data(data, 1)
+
+    def run(self, target, **kwargs):
+        targets = ext.collect_1p_minions(self, oop=True, player_id=1 - self.player_id)
+        return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets]),
+                std_events.DrawCard(self.game, self, self.player_id)]
 
 
 # 刺杀 (60006)
@@ -117,9 +129,22 @@ class 刺杀(Spell):
 
 # 消失 (60007)
 
+
 # 疾跑 (60008)
+class 疾跑(Spell):
+    data = {
+        'id': 60008,
+        'type': 1, 'klass': 6, 'cost': 7,
+    }
+
+    run = ext.draw_card_fn(4)
+
 
 # 刺客之刃 (60009)
+ext.blank_weapon({
+    'id': 60009,
+    'type': 2, 'klass': 6, 'cost': 5, 'attack': 3, 'health': 3,
+})
 
 
 # Derivatives

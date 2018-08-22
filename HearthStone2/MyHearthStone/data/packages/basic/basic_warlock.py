@@ -6,7 +6,7 @@ from random import choice
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events
-from MyHearthStone.utils.game import Race, Zone
+from MyHearthStone.utils.game import Race, Zone, DHBonusEventType
 
 __author__ = 'fyabc'
 
@@ -57,8 +57,32 @@ class 魅魔(Minion):
 
 
 # 恐惧地狱火 (80002)
+class 恐惧地狱火(Minion):
+    data = {
+        'id': 80002,
+        'klass': 8, 'cost': 6, 'attack': 6, 'health': 6,
+        'battlecry': True, 'race': [Race.Demon],
+    }
+
+    def run_battlecry(self, target, **kwargs):
+        targets = ext.collect_all(self, oop=True, except_list=(self,))
+        return [std_events.AreaDamage(self.game, self, targets, [1 for _ in targets])]
+
 
 # 牺牲契约 (80003)
+class 牺牲契约(Spell):
+    data = {
+        'id': 80003,
+        'type': 1, 'klass': 8, 'cost': 0,
+        'po_tree': '$HaveTarget',
+    }
+    ext.add_dh_bonus_data(data, 5, DHBonusEventType.Healing)
+
+    # TODO: Can do action and check target: have demon.
+
+    def run(self, target, **kwargs):
+        target.to_be_destroyed = True
+        return [std_events.Healing(self.game, self, self.game.get_hero(self.player_id), self.dh_values[0])]
 
 # 灵魂之火 (80004)
 
@@ -74,11 +98,13 @@ class 吸取生命(Spell):
         'type': 1, 'klass': 8, 'cost': 3,
         'po_tree': '$HaveTarget',
     }
-    ext.add_dh_bonus_data(data, [2, 2])
+    ext.add_dh_bonus_data(data, [2, 2], [DHBonusEventType.Damage, DHBonusEventType.Healing])
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        return [
+            std_events.Damage(self.game, self, target, self.dh_values[0]),
+            std_events.Healing(self.game, self, target, self.dh_values[1]),
+        ]
 
 
 # 暗影箭 (80008)
