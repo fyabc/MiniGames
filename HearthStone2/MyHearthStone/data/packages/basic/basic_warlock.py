@@ -106,5 +106,5 @@ class 地狱烈焰(Spell):
     ext.add_dh_bonus_data(data, 3)
 
     def run(self, target, **kwargs):
-        targets = ext.collect_all(self, False, oop=True)
+        targets = ext.collect_all(self, oop=True)
         return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]

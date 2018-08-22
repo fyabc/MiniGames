@@ -214,9 +214,7 @@ def entity_collector(game, *pzts, oop=False, except_list=(), **kwargs):
     return result
 
 
-def collect_all(self, except_self, oop=False, except_list=(), **kwargs):
-    if except_self:
-        except_list += (self,)
+def collect_all(self, oop=False, except_list=(), **kwargs):
     return entity_collector(
         self.game,
         (0, Zone.Hero, (Type.Hero,)), (0, Zone.Play, (Type.Minion,)),
@@ -227,9 +225,7 @@ def collect_all(self, except_self, oop=False, except_list=(), **kwargs):
     )
 
 
-def collect_all_minions(self, except_self, oop=False, except_list=(), **kwargs):
-    if except_self:
-        except_list += (self,)
+def collect_all_minions(self, oop=False, except_list=(), **kwargs):
     return entity_collector(
         self.game,
         (0, Zone.Play, (Type.Minion,)), (1, Zone.Play, (Type.Minion,)),
@@ -239,19 +235,16 @@ def collect_all_minions(self, except_self, oop=False, except_list=(), **kwargs):
     )
 
 
-def collect_1p(self, except_self, oop=False, player_id=None, except_list=(), **kwargs):
+def collect_1p(self, oop=False, player_id=None, except_list=(), **kwargs):
     """Collect one-player minions and hero.
 
     :param self:
-    :param except_self:
     :param oop:
     :param player_id:
     :param except_list:
     :return:
     """
     player_id = self.player_id if player_id is None else player_id
-    if except_self:
-        except_list += (self,)
     return entity_collector(
         self.game,
         (player_id, Zone.Hero, (Type.Hero,)), (player_id, Zone.Play, (Type.Minion,)),
@@ -261,19 +254,16 @@ def collect_1p(self, except_self, oop=False, player_id=None, except_list=(), **k
     )
 
 
-def collect_1p_minions(self, except_self, oop=False, player_id=None, except_list=(), **kwargs):
+def collect_1p_minions(self, oop=False, player_id=None, except_list=(), **kwargs):
     """Collect one-player minions.
 
     :param self:
-    :param except_self:
     :param oop:
     :param player_id:
     :param except_list:
     :return:
     """
     player_id = self.player_id if player_id is None else player_id
-    if except_self:
-        except_list += (self,)
     return entity_collector(
         self.game,
         (player_id, Zone.Play, (Type.Minion,)),

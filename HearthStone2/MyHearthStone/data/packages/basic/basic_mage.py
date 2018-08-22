@@ -66,7 +66,7 @@ class 奥术飞弹(Spell):
     def run(self, target, **kwargs):
         return [std_events.DistributedDamage(
             self.game, self, self.dh_values[0],
-            collect_fn=lambda: ext.collect_1p(self, False, player_id=1 - self.player_id, ignore_dead=True),
+            collect_fn=lambda: ext.collect_1p(self, player_id=1 - self.player_id, ignore_dead=True),
         )]
 
 
@@ -95,7 +95,7 @@ class 魔爆术(Spell):
     ext.add_dh_bonus_data(data, 1)
 
     def run(self, target, **kwargs):
-        targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
+        targets = ext.collect_1p_minions(self, oop=True, player_id=1 - self.player_id)
         return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 
@@ -131,7 +131,7 @@ class 冰霜新星(Spell):
     }
 
     def run(self, target, **kwargs):
-        targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
+        targets = ext.collect_1p_minions(self, oop=True, player_id=1 - self.player_id)
         return [std_events.Freeze(self.game, self, target) for target in targets]
 
 
@@ -174,7 +174,7 @@ class 烈焰风暴(Spell):
     ext.add_dh_bonus_data(data, 4)
 
     def run(self, target, **kwargs):
-        targets = ext.collect_1p_minions(self, False, oop=True, player_id=1 - self.player_id)
+        targets = ext.collect_1p_minions(self, oop=True, player_id=1 - self.player_id)
         return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 

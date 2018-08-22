@@ -61,7 +61,7 @@ class 旋风斩(Spell):
     ext.add_dh_bonus_data(data, 1)
 
     def run(self, target, **kwargs):
-        targets = ext.collect_all_minions(self, False, oop=True)
+        targets = ext.collect_all_minions(self, oop=True)
         return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 

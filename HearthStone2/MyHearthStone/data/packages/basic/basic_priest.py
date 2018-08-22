@@ -7,7 +7,7 @@ from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import enc_common, Enchantment
-from MyHearthStone.utils.game import Zone, Type
+from MyHearthStone.utils.game import Zone, Type, DHBonusEventType
 
 __author__ = 'fyabc'
 
@@ -177,14 +177,20 @@ class 暗言术_灭(Spell):
 
 # 神圣新星 (50008)
 class 神圣新星(Spell):
+    """[NOTE]: This is a classic card of multiple damage-healing bonus values with different type."""
     data = {
         'id': 50008,
         'type': 1, 'klass': 5, 'cost': 5,
     }
+    ext.add_dh_bonus_data(data, [2, 2], [DHBonusEventType.Damage, DHBonusEventType.Healing])
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        enemies = ext.collect_1p(self, oop=True, player_id=1 - self.player_id)
+        friends = ext.collect_1p(self, oop=True, player_id=self.player_id)
+        return [
+            std_events.AreaDamage(self.game, self, enemies, [self.dh_values[0] for _ in enemies]),
+            std_events.AreaHealing(self.game, self, friends, [self.dh_values[1] for _ in friends]),
+        ]
 
 
 # 精神控制 (50009)

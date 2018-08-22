@@ -143,7 +143,7 @@ class 奉献(Spell):
     ext.add_dh_bonus_data(data, 2)
 
     def run(self, target, **kwargs):
-        targets = ext.collect_1p(self, False, oop=True, player_id=1 - self.player_id)
+        targets = ext.collect_1p(self, oop=True, player_id=1 - self.player_id)
         return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 

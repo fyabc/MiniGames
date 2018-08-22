@@ -179,7 +179,7 @@ class 野蛮咆哮(Spell):
     }
 
     def run(self, target, **kwargs):
-        targets = ext.collect_1p(self, False, oop=True, player_id=self.player_id)
+        targets = ext.collect_1p(self, oop=True, player_id=self.player_id)
         for e in targets:
             Enc_野蛮咆哮.from_card(self, self.game, e)
         return []

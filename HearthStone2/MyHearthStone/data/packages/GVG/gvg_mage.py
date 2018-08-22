@@ -29,7 +29,7 @@ class 烈焰巨兽(Minion):
         def process(self, event: respond[0]):
             if event.card is not self.owner:
                 return []
-            targets = ext.collect_all(self, except_self=False, oop=True)
+            targets = ext.collect_all(self, oop=True)
             return [std_events.AreaDamage(self.game, self.owner, targets, [2 for _ in targets])]
 
     def __init__(self, *args, **kwargs):
