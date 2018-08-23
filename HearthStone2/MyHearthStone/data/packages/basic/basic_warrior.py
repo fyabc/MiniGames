@@ -5,7 +5,8 @@ import random
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
-from MyHearthStone.ext import std_events
+from MyHearthStone.ext import Enchantment, enc_common
+from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.utils.game import Zone, order_of_play
 
 __author__ = 'fyabc'
@@ -130,6 +131,16 @@ class 斩杀(Spell):
 
 
 # 英勇打击 (90006)
+class Enc_英勇打击(Enchantment):
+    data = {'id': 90002}
+
+    def __init__(self, game, target, **kwargs):
+        super().__init__(game, target, **kwargs)
+        std_triggers.DetachOnTurnEnd(self.game, self)
+
+    apply, apply_imm = enc_common.apply_fn_add_attack(4)
+
+
 class 英勇打击(Spell):
     data = {
         'id': 90006,
@@ -137,7 +148,7 @@ class 英勇打击(Spell):
     }
 
     def run(self, target, **kwargs):
-        # TODO
+        Enc_英勇打击.from_card(self, self.game, self.game.get_hero(self.player_id))
         return []
 
 
