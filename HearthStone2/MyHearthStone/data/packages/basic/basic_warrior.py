@@ -153,6 +153,16 @@ class 英勇打击(Spell):
 
 
 # 盾牌格挡 (90007)
+class 盾牌格挡(Spell):
+    data = {
+        'id': 90007,
+        'type': 1, 'klass': 9, 'cost': 3,
+    }
+
+    def run(self, target, **kwargs):
+        return [std_events.GainArmor(self.game, self, self.game.get_hero(self.player_id), 5),
+                std_events.DrawCard(self.game, self, self.player_id)]
+
 
 # 炽炎战斧 (90008)
 ext.blank_weapon({
