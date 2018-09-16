@@ -84,9 +84,43 @@ class 牺牲契约(Spell):
         target.to_be_destroyed = True
         return [std_events.Healing(self.game, self, self.game.get_hero(self.player_id), self.dh_values[0])]
 
+
 # 灵魂之火 (80004)
+class 灵魂之火(Spell):
+    data = {
+        'id': 80004,
+        'type': 1, 'klass': 8, 'cost': 1,
+        'po_tree': '$HaveTarget',
+    }
+    ext.add_dh_bonus_data(data, 4)
+
+    def run(self, target, **kwargs):
+        discard_target = choice(self.game.get_zone(Zone.Hand, self.player_id))
+        return [std_events.Damage(self.game, self, target, self.dh_values[0]),
+                std_events.DiscardCard(self.game, self, discard_target)]
+
 
 # 死亡缠绕 (80005)
+class 死亡缠绕(Spell):
+    """[NOTE]: This is a classic card of two-step effect and conditional effect."""
+    data = {
+        'id': 80005,
+        'type': 1, 'klass': 8, 'cost': 1,
+        'po_tree': '$HaveTarget',
+    }
+    ext.add_dh_bonus_data(data, 1)
+
+    can_do_action = ext.require_minion
+    check_target = ext.checker_minion
+
+    def run(self, target, **kwargs):
+        # [NOTE]: The default parameter (event self) of condition is ignored.
+        def condition(_):
+            return not target.alive
+        return [
+            std_events.Damage(self.game, self, target, self.dh_values[0]),
+            std_events.condition_wrap(std_events.DrawCard(self.game, self), condition),
+        ]
 
 # 腐蚀术 (80006)
 

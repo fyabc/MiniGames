@@ -3,6 +3,8 @@
 
 """Utilities for events."""
 
+import types
+
 __author__ = 'fyabc'
 
 
@@ -15,6 +17,32 @@ def dynamic_pid_prop():
                                    'it will calculate it dynamically.')
 
 
+def condition_wrap(event, condition):
+    """Wrap the event with a condition function.
+
+    The returned event will get a wrapped ``do`` method, which will check the condition before the original ``do``.
+    If the check result is False, this event will be disabled, and will return an empty event list.
+
+    :param event:
+    :param condition: The callback.
+        (self: Event) -> bool
+    :return: The modified event.
+    """
+
+    orig_do = event.do
+
+    def do(self):
+        if not condition(self):
+            self.disable()
+            return []
+        return orig_do()
+
+    event.do = types.MethodType(do, event)
+
+    return event
+
+
 __all__ = [
     'dynamic_pid_prop',
+    'condition_wrap',
 ]

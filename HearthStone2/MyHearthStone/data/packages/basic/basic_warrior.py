@@ -5,9 +5,9 @@ import random
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
-from MyHearthStone.ext import Enchantment, enc_common
+from MyHearthStone.ext import Enchantment, AuraEnchantment, Aura, enc_common
 from MyHearthStone.ext import std_events, std_triggers
-from MyHearthStone.utils.game import Zone, order_of_play
+from MyHearthStone.utils.game import Zone, Type
 
 __author__ = 'fyabc'
 
@@ -36,13 +36,26 @@ class 全副武装(HeroPower):
 
 
 # 战歌指挥官 (90000)
+Enc_战歌指挥官 = ext.create_enchantment({'id': 90000}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
+
+
 class 战歌指挥官(Minion):
     data = {
         'id': 90000,
         'klass': 9, 'cost': 3, 'attack': 2, 'health': 3,
     }
 
-    # TODO
+    class Aura_战歌指挥官(Aura):
+        def check_entity(self, entity, **kwargs):
+            return entity.zone == Zone.Play and entity.type == Type.Minion and \
+                   entity.player_id == self.owner.player_id and entity.charge
+
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_战歌指挥官.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_战歌指挥官(self.game, self)
 
 
 # 库卡隆精英卫士 (90001)
@@ -123,7 +136,21 @@ class 斩杀(Spell):
         'po_tree': '$HaveTarget',
     }
 
-    # TODO: checkers and can_do_action
+    def can_do_action(self, msg_fn=None):
+        super_result = super().can_do_action(msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+        if any(m.damaged for m in self.game.get_zone(Zone.Play, 1 - self.player_id)):
+            return self.Active
+        else:
+            if msg_fn:
+                msg_fn('No valid target, I can\'t use it!')
+            return self.Inactive
+
+    def check_target(self, target, **kwargs):
+        if not ext.checker_enemy_minion(self, target, **kwargs):
+            return False
+        return target.damaged
 
     def run(self, target, **kwargs):
         target.to_be_destroyed = True

@@ -76,7 +76,7 @@ from MyHearthStone.ext import blank_minion
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import message as msg
-from MyHearthStone.utils.game import Race, Zone
+from MyHearthStone.utils.game import Race, Zone, Type
 
 __author__ = 'fyabc'
 
@@ -105,8 +105,8 @@ class 暗鳞先知(Minion):
 
     class Aura_暗鳞先知(Aura):
         def check_entity(self, entity, **kwargs):
-            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
-                and Race.Murloc in entity.race and entity is not self.owner
+            return entity.zone == Zone.Play and entity.type == Type.Minion and \
+                   entity.player_id == self.owner.player_id and Race.Murloc in entity.race and entity is not self.owner
 
         def grant_enchantment(self, entity, **kwargs):
             Enc_暗鳞先知.from_card(self.owner, self.game, entity, self)
@@ -254,8 +254,8 @@ class 团队领袖(Minion):
 
     class Aura_团队领袖(Aura):
         def check_entity(self, entity, **kwargs):
-            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id \
-                and entity is not self.owner
+            return entity.zone == Zone.Play and entity.type == Type.Minion and \
+                   entity.player_id == self.owner.player_id and entity is not self.owner
 
         def grant_enchantment(self, entity, **kwargs):
             Enc_团队领袖.from_card(self.owner, self.game, entity, self)
@@ -515,7 +515,8 @@ class 暴风城勇士(Minion):
             super().__init__(*args, **kwargs)
 
         def check_entity(self, entity, **kwargs):
-            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id and entity is not self.owner
+            return entity.zone == Zone.Play and entity.type == Type.Minion and \
+                   entity.player_id == self.owner.player_id and entity is not self.owner
 
         def grant_enchantment(self, entity, **kwargs):
             Enc_暴风城勇士.from_card(self.owner, self.game, entity, self)

@@ -14,7 +14,7 @@ from .combat import *
 from .hero_power import *
 from .freeze import *
 from .misc import *
-from .utils import dynamic_pid_prop
+from .utils import *
 from ...utils.constants import C
 from ...utils.game import Zone
 from ...utils.message import debug
