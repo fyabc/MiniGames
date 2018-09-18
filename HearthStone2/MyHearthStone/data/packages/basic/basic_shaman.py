@@ -5,8 +5,8 @@ from random import choice
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
-from MyHearthStone.ext import std_events
-from MyHearthStone.ext import std_triggers
+from MyHearthStone.ext import std_events, std_triggers
+from MyHearthStone.ext import enc_common
 from MyHearthStone.utils.game import Race, Zone
 
 __author__ = 'fyabc'
@@ -55,9 +55,9 @@ class 图腾召唤(HeroPower):
         return std_events.pure_summon_events(self.game, choice(self._candidates()), self.player_id, 'last')
 
 
-# 火舌图腾 (70000)
+# 火舌图腾 (70000) *
 
-# 风语者 (70001)
+# 风语者 (70001) *
 
 
 # 火元素 (70002)
@@ -69,7 +69,7 @@ ext.create_damage_minion({
 }, 3)
 
 
-# 先祖治疗 (70003)
+# 先祖治疗 (70003) *
 class 先祖治疗(Spell):
     data = {
         'id': 70003,
@@ -84,7 +84,24 @@ class 先祖治疗(Spell):
         # TODO
         return []
 
-# 图腾之力 (70004)
+
+# 图腾之力 (70004) *
+Enc_图腾之力 = ext.create_enchantment({'id': 70003}, *enc_common.apply_fn_add_health(2))
+
+
+class 图腾之力(Spell):
+    data = {
+        'id': 70004,
+        'type': 1, 'klass': 7, 'cost': 0,
+    }
+
+    def run(self, target, **kwargs):
+        # Collect all friend totems.
+        targets = ext.collect_1p_minions(self, oop=True, player_id=self.player_id)
+        targets = [m for m in targets if Race.Totem in m.race]
+        for e in targets:
+            Enc_图腾之力.from_card(self, self.game, e)
+        return []
 
 
 # 冰霜震击 (70005)
@@ -103,7 +120,7 @@ class 冰霜震击(Spell):
         return []
 
 
-# 石化武器 (70006)
+# 石化武器 (70006) *
 class 石化武器(Spell):
     data = {
         'id': 70006,
@@ -118,7 +135,7 @@ class 石化武器(Spell):
         return []
 
 
-# 风怒 (70007)
+# 风怒 (70007) *
 class 风怒(Spell):
     data = {
         'id': 70007,
@@ -145,11 +162,27 @@ class 妖术(Spell):
     can_do_action = ext.require_minion
     check_target = ext.checker_minion
 
-    def run(self, target, **kwargs):
-        # TODO
-        return []
+    FrogId = 48
 
-# 嗜血 (70009)
+    def run(self, target, **kwargs):
+        return std_events.replace_events(self.game, target, new_entity=self.FrogId)
+
+
+# 嗜血 (70009) *
+Enc_嗜血 = ext.create_enchantment({'id': 70006}, *enc_common.apply_fn_add_attack(3))
+
+
+class 嗜血(Spell):
+    data = {
+        'id': 70009,
+        'type': 1, 'klass': 7, 'cost': 5,
+    }
+
+    def run(self, target, **kwargs):
+        targets = ext.collect_1p_minions(self, oop=True, player_id=self.player_id)
+        for e in targets:
+            Enc_嗜血.from_card(self, self.game, e)
+        return []
 
 
 # Derivatives

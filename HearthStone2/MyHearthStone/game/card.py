@@ -154,7 +154,7 @@ class Minion(AliveMixin, Card):
         result.update({'cost'})
         return result
 
-    def run_battlecry(self, target: IndependentEntity, **kwargs):
+    def run_battlecry(self, target: 'IndependentEntity', **kwargs):
         """Run the battlecry. Implemented in subclasses.
 
         [NOTE]: Notes from Advanced Rulebook:
