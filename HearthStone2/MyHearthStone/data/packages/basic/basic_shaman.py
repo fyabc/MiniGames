@@ -5,6 +5,7 @@ from random import choice
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Minion, Spell, Hero, HeroPower
+from MyHearthStone.ext import Enchantment, Aura, AuraEnchantment
 from MyHearthStone.ext import std_events, std_triggers
 from MyHearthStone.ext import enc_common
 from MyHearthStone.utils.game import Race, Zone
@@ -56,6 +57,36 @@ class 图腾召唤(HeroPower):
 
 
 # 火舌图腾 (70000) *
+Enc_火舌图腾 = ext.create_enchantment({'id': 70000}, *enc_common.apply_fn_add_attack(2), base=AuraEnchantment)
+
+
+class 火舌图腾(Minion):
+    data = {
+        'id': 70000,
+        'klass': 7, 'cost': 2, 'attack': 0, 'health': 3,
+        'race': [Race.Totem],
+    }
+
+    class Aura_火舌图腾(Aura):
+        def __init__(self, game, owner):
+            super().__init__(game, owner)
+            self.location = None
+
+        def prepare_update(self):
+            z, p = self.owner.zone, self.owner.player_id
+            self.location = self.game.get_zone(z, p).index(self.owner)
+
+        def check_entity(self, entity, **kwargs):
+            return entity.zone == Zone.Play and entity.player_id == self.owner.player_id and \
+                abs(kwargs['location'] - self.location) == 1
+
+        def grant_enchantment(self, entity, **kwargs):
+            Enc_火舌图腾.from_card(self.owner, self.game, entity, self)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Aura_火舌图腾(self.game, self)
+
 
 # 风语者 (70001) *
 
@@ -121,6 +152,18 @@ class 冰霜震击(Spell):
 
 
 # 石化武器 (70006) *
+class Enc_石化武器(Enchantment):
+    data = {
+        'id': 70004,
+    }
+
+    def __init__(self, game, target, **kwargs):
+        super().__init__(game, target, **kwargs)
+        std_triggers.DetachOnTurnEnd(self.game, self)
+
+    apply, apply_imm = enc_common.apply_fn_add_attack(2)
+
+
 class 石化武器(Spell):
     data = {
         'id': 70006,
@@ -131,7 +174,7 @@ class 石化武器(Spell):
     check_target = ext.checker_friendly_character
 
     def run(self, target, **kwargs):
-        # TODO
+        Enc_石化武器.from_card(self, self.game, target)
         return []
 
 

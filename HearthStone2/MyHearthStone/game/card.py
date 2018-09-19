@@ -210,7 +210,7 @@ class Spell(Card):
         return super()._repr(name=self.data['name'], CAH=[self.cost], P=self.player_id,
                              oop=self.oop, __show_cls=False)
 
-    def run(self, target: IndependentEntity, **kwargs):
+    def run(self, target: 'IndependentEntity', **kwargs):
         """Run the spell.
 
         [NOTE]: Notes from Advanced Rulebook:
@@ -295,7 +295,7 @@ class Weapon(Card):
     def sheathed(self):
         return self.player_id != self.game.current_player
 
-    def run_battlecry(self, target: IndependentEntity, **kwargs):
+    def run_battlecry(self, target: 'IndependentEntity', **kwargs):
         """Run the battlecry. Implemented in subclasses.
 
         :param target: Target of the battlecry.

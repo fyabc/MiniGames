@@ -92,7 +92,7 @@ ext.create_damage_minion({
     'battlecry': True, 'po_tree': '$HaveTarget',
 }, 1)
 
-# 暗鳞先知 (1)
+# 暗鳞先知 (1) *
 Enc_暗鳞先知 = ext.create_enchantment({'id': 0}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
 
 
@@ -242,7 +242,7 @@ ext.create_damage_minion({
 }, 1)
 
 
-# 团队领袖 (17)
+# 团队领袖 (17) *
 Enc_团队领袖 = ext.create_enchantment({'id': 1}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
 
 
@@ -280,7 +280,7 @@ blank_minion({
 })
 
 
-# 破碎残阳祭司 (20)
+# 破碎残阳祭司 (20) *
 # [NOTE]: Must assign this to a global variable, or use ``add_to_module`` argument.
 Enc_破碎残阳祭司 = ext.create_enchantment({'id': 2}, *enc_common.apply_fn_add_a_h(1, 1))
 
@@ -373,7 +373,7 @@ blank_minion({
 })
 
 
-# 古拉巴什狂暴者 (30)
+# 古拉巴什狂暴者 (30) *
 Enc_古拉巴什狂暴者 = ext.create_enchantment({'id': 3}, *enc_common.apply_fn_add_attack(3))
 
 
@@ -407,7 +407,7 @@ ext.create_damage_minion({
 }, 2)
 
 
-# 霜狼督军 (32)
+# 霜狼督军 (32) *
 class Enc_霜狼督军(Enchantment):
     data = {
         'id': 4,
@@ -498,7 +498,7 @@ blank_minion({
 })
 
 
-# 暴风城勇士 (40)
+# 暴风城勇士 (40) *
 # TODO: Is this correct to use these apply functions for aura enchantments?
 Enc_暴风城勇士 = ext.create_enchantment({'id': 5}, *enc_common.apply_fn_add_a_h(1, 1), base=AuraEnchantment)
 

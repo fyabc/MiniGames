@@ -17,7 +17,7 @@ __author__ = 'fyabc'
 # Druid (1) #
 #############
 
-# Druid (0)
+# Druid (0) *
 class StdDruid(Hero):
     data = {
         'id': 0,
@@ -79,6 +79,7 @@ class 激活(Spell):
         return []
 
 
+# 爪击 (10003) *
 class Enc_爪击(Enchantment):
     data = {'id': 10001}
 
@@ -89,7 +90,6 @@ class Enc_爪击(Enchantment):
     apply, apply_imm = enc_common.apply_fn_add_attack(2)
 
 
-# 爪击 (10003)
 class 爪击(Spell):
     data = {
         'id': 10003,
@@ -102,7 +102,7 @@ class 爪击(Spell):
         return [std_events.GainArmor(self.game, self, hero, 2)]
 
 
-# 野性印记 (10004)
+# 野性印记 (10004) *
 Enc_野性印记 = ext.create_enchantment(
     {'id': 10002}, *enc_common.apply_fn_add_a_h(2, 2, apply_other=enc_common.set_target_attr_temp('taunt', True)))
 
@@ -161,7 +161,7 @@ class 治疗之触(Spell):
         return [std_events.Healing(self.game, self, target, self.dh_values[0])]
 
 
-# 野蛮咆哮 (10007)
+# 野蛮咆哮 (10007) *
 class Enc_野蛮咆哮(Enchantment):
     data = {'id': 10003}
 

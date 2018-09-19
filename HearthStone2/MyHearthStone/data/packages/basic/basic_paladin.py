@@ -46,7 +46,7 @@ class 列王守卫(Minion):
         return [std_events.Healing(self.game, self, self.game.get_hero(self.player_id), 6)]
 
 
-# 力量祝福 (40001)
+# 力量祝福 (40001) *
 Enc_力量祝福 = ext.create_enchantment({'id': 40000}, *enc_common.apply_fn_add_attack(3))
 
 
@@ -82,7 +82,7 @@ class 保护之手(Spell):
         return []
 
 
-# 谦逊 (40003)
+# 谦逊 (40003) *
 Enc_谦逊 = ext.create_enchantment({'id': 40001}, *enc_common.apply_fn_set_attack(1))
 
 
@@ -114,7 +114,7 @@ class 圣光术(Spell):
         return [std_events.Healing(self.game, self, target, self.dh_values[0])]
 
 
-# 王者祝福 (40005)
+# 王者祝福 (40005) *
 Enc_王者祝福 = ext.create_enchantment({'id': 40002}, *enc_common.apply_fn_add_a_h(4, 4))
 
 

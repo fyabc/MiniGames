@@ -46,7 +46,7 @@ class 背刺(Spell):
         return [std_events.Damage(self.game, self, target, self.dh_values[0])]
 
 
-# 致命药膏 (60001)
+# 致命药膏 (60001) *
 class 致命药膏(Spell):
     data = {
         'id': 60001,
@@ -127,7 +127,23 @@ class 刺杀(Spell):
         target.to_be_destroyed = True
         return []
 
+
 # 消失 (60007)
+class 消失(Spell):
+    data = {
+        'id': 60007,
+        'type': 1, 'klass': 6, 'cost': 6,
+    }
+
+    # TODO: Check if it requires at least one minion.
+
+    def run(self, target, **kwargs):
+        targets = ext.collect_all_minions(self, oop=True)
+        events = []
+        for t in targets:
+            _, status = self.game.move(t.player_id, t.zone, t, t.player_id, Zone.Hand, 'last')
+            events.append(status['events'])
+        return events
 
 
 # 疾跑 (60008)

@@ -122,7 +122,7 @@ class 死亡缠绕(Spell):
             std_events.condition_wrap(std_events.DrawCard(self.game, self), condition),
         ]
 
-# 腐蚀术 (80006)
+# 腐蚀术 (80006) *
 
 
 # 吸取生命 (80007)

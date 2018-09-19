@@ -85,7 +85,7 @@ class 心灵视界(Spell):
         return std_events.copy_events(self.game, copy_target, self.player_id, Zone.Hand, 'last')
 
 
-# 真言术：盾 (50003)
+# 真言术：盾 (50003) *
 Enc_真言术_盾 = ext.create_enchantment({'id': 50000}, *enc_common.apply_fn_add_health(2))
 
 
@@ -104,7 +104,7 @@ class 真言术_盾(Spell):
         return [std_events.DrawCard(self.game, self, self.player_id)]
 
 
-# 神圣之灵 (50004)
+# 神圣之灵 (50004) *
 class Enc_神圣之灵(Enchantment):
     data = {
         'id': 50001,

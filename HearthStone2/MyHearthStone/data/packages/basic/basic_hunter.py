@@ -39,7 +39,7 @@ class 稳固射击(HeroPower):
             value=self.dh_values[0])]
 
 
-# 森林狼 (20000)
+# 森林狼 (20000) *
 Enc_森林狼 = ext.create_enchantment({'id': 20000}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
 
 
@@ -63,7 +63,7 @@ class 森林狼(Minion):
         self.Aura_森林狼(self.game, self)
 
 
-# 驯兽师 (20001)
+# 驯兽师 (20001) *
 Enc_驯兽师 = ext.create_enchantment(
     {'id': 20001}, *enc_common.apply_fn_add_a_h(2, 2, apply_other=enc_common.set_target_attr_temp('taunt', True)))
 
@@ -91,7 +91,7 @@ class 驯兽师(Minion):
         return []
 
 
-# 苔原犀牛 (20002)
+# 苔原犀牛 (20002) *
 Enc_苔原犀牛 = ext.create_enchantment(
     {'id': 20002}, apply_fn=enc_common.set_target_attr_temp('charge', True), base=AuraEnchantment)
 
@@ -142,7 +142,7 @@ class 饥饿的秃鹫(Minion):
         self.Trig_饥饿的秃鹫(self.game, self)
 
 
-# 猎人印记 (20004)
+# 猎人印记 (20004) *
 Enc_猎人印记 = ext.create_enchantment({'id': 20003}, *enc_common.apply_fn_set_health(1))
 
 
@@ -286,7 +286,7 @@ ext.blank_minion({
 })
 
 
-# 雷欧克 (20011)
+# 雷欧克 (20011) *
 Enc_雷欧克 = ext.create_enchantment({'id': 20004}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
 
 

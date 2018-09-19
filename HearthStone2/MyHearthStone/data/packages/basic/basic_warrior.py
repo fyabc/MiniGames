@@ -35,7 +35,7 @@ class 全副武装(HeroPower):
         return [std_events.GainArmor(self.game, self, self.game.get_hero(self.player_id), 2)]
 
 
-# 战歌指挥官 (90000)
+# 战歌指挥官 (90000) *
 Enc_战歌指挥官 = ext.create_enchantment({'id': 90000}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
 
 
@@ -79,7 +79,7 @@ class 旋风斩(Spell):
         return [std_events.AreaDamage(self.game, self, targets, [self.dh_values[0] for _ in targets])]
 
 
-# 冲锋 (90003)
+# 冲锋 (90003) *
 class 冲锋(Spell):
     data = {
         'id': 90003,
@@ -157,7 +157,7 @@ class 斩杀(Spell):
         return []
 
 
-# 英勇打击 (90006)
+# 英勇打击 (90006) *
 class Enc_英勇打击(Enchantment):
     data = {'id': 90002}
 
