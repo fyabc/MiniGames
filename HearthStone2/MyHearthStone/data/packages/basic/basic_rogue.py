@@ -3,6 +3,7 @@
 
 from MyHearthStone import ext
 from MyHearthStone.ext import Spell, Hero, HeroPower
+from MyHearthStone.ext import enc_common
 from MyHearthStone.ext import std_events
 from MyHearthStone.utils.game import Zone
 
@@ -47,13 +48,29 @@ class 背刺(Spell):
 
 
 # 致命药膏 (60001) *
+Enc_致命药膏 = ext.create_enchantment({'id': 60000}, *enc_common.apply_fn_add_attack(2))
+
+
 class 致命药膏(Spell):
     data = {
         'id': 60001,
         'type': 1, 'klass': 6, 'cost': 1,
     }
 
-    # TODO
+    def can_do_action(self, msg_fn=None):
+        super_result = super().can_do_action(msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+        if self.game.get_weapon(self.player_id) is None:
+            if msg_fn:
+                msg_fn('I must equip a weapon!')
+            return self.Inactive
+        return super_result
+
+    def run(self, target, **kwargs):
+        weapon = self.game.get_weapon(self.player_id)
+        Enc_致命药膏.from_card(self, self.game, weapon)
+        return []
 
 
 # 影袭 (60002)

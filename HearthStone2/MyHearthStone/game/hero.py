@@ -31,8 +31,6 @@ class Hero(AliveMixin, IndependentEntity):
 
         self.player_id = player_id
 
-        # todo: How to assign weapon attributes to hero attributes?
-
         self.play_state = True  # False means lose. When this hero removed from play, set it to False.
 
         self.oop = self.game.entity.oop
@@ -60,6 +58,7 @@ class Hero(AliveMixin, IndependentEntity):
         # Add weapon attack. FIXME: Is this correct?
         weapon = self.game.get_weapon(self.player_id)
         if weapon is not None and not weapon.sheathed:
+            # todo: How to assign weapon attributes to hero attributes?
             self.aura_tmp['attack'] += weapon.attack
 
     def player_operation_tree(self):

@@ -238,6 +238,7 @@ class Weapon(Card):
         'windfury': False,
         'poisonous': False,
         'lifesteal': False,
+        'immune': False,
 
         'battlecry': False,
         'deathrattle': False,
@@ -318,6 +319,19 @@ class Weapon(Card):
         self.data['damage'] -= real_heal
 
         return real_heal
+
+    def _aura_attributes(self):
+        result = super()._aura_attributes()
+        result.update({'immune'})
+        return result
+
+    def _aura_update_before(self):
+        # Add some specific data for alive entities.
+        super()._aura_update_before()
+        self.aura_tmp.update({
+            'attack': self.cls_data.get('attack', 0),
+            'max_health': self.cls_data.get('health', 0),
+        })
 
     def player_operation_tree(self):
         return CommonTrees['NoTargetWeapon']
