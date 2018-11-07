@@ -112,7 +112,6 @@ class Minion(AliveMixin, Card):
         'charge': False,
         'divine_shield': False,
         'stealth': False,
-        'windfury': False,
         'poisonous': False,
         'lifesteal': False,
         'recruit': False,
@@ -235,7 +234,6 @@ class Weapon(Card):
         'attack': 1,
         'health': 1,
 
-        'windfury': False,
         'poisonous': False,
         'lifesteal': False,
         'immune': False,
@@ -283,6 +281,9 @@ class Weapon(Card):
     @property
     def alive(self):
         return self.data['damage'] < self.data['max_health'] and not self.to_be_destroyed
+
+    windfury = make_property('windfury', default=False)
+    mega_windfury = make_property('mega_windfury', default=False)
 
     @property
     def attack(self):

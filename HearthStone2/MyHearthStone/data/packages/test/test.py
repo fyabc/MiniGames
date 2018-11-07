@@ -20,6 +20,9 @@ def _cond_fn(self):
         return bool(my_hand)
 
 
+# TODO: Add card names into test card docstrings.
+
+
 class TestDiscardHand(Minion):
     """战吼：选择一张手牌，将其弃置。"""
     data = {

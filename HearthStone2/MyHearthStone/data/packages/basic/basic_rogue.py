@@ -176,7 +176,7 @@ class 疾跑(Spell):
 # 刺客之刃 (60009)
 ext.blank_weapon({
     'id': 60009,
-    'type': 2, 'klass': 6, 'cost': 5, 'attack': 3, 'health': 3,
+    'type': 2, 'klass': 6, 'cost': 5, 'attack': 3, 'health': 4,
 })
 
 

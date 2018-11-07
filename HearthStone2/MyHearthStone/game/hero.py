@@ -60,6 +60,8 @@ class Hero(AliveMixin, IndependentEntity):
         if weapon is not None and not weapon.sheathed:
             # todo: How to assign weapon attributes to hero attributes?
             self.aura_tmp['attack'] += weapon.attack
+            self.aura_tmp['windfury'] = weapon.windfury
+            self.aura_tmp['mega_windfury'] = weapon.mega_windfury
 
     def player_operation_tree(self):
         return translate_po_tree(self.data.get('attack_po_tree', 'Attack'), entity=self)

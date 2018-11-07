@@ -27,7 +27,6 @@ class AliveMixin:
 
             # Attack related attributes.
             'n_attack': None,
-            'n_total_attack': 2 if self.data.get('windfury', False) else 1,
         })
 
     # Health-related properties.
@@ -94,7 +93,6 @@ class AliveMixin:
     first_turn = make_property('first_turn', deleter=True, default=False)
 
     n_attack = make_property('n_attack')
-    n_total_attack = make_property('n_total_attack')
 
     # TODO: Implement these properties.
     can_attack = make_property('can_attack', default=True)
@@ -105,6 +103,8 @@ class AliveMixin:
     charge = make_property('charge', default=False)
     rush = make_property('rush', default=False)
     frozen = make_property('frozen', default=False)
+    windfury = make_property('windfury', default=False)
+    mega_windfury = make_property('mega_windfury', default=False)
 
     @property
     def attack(self):
@@ -114,13 +114,21 @@ class AliveMixin:
     def attack(self, value):
         self.data['attack'] = value
 
+    def _get_n_total_attack(self):
+        """Get the number of total attacks."""
+        if self.mega_windfury:
+            return 4
+        if self.windfury:
+            return 2
+        return 1
+
     @property
     def attack_status(self):
         # Heroes are always "charge".
         if self.type == Type.Minion:
             if self.first_turn and not self.charge and not self.rush:
                 return 'sleep'
-        if self.n_attack >= self.n_total_attack:
+        if self.n_attack >= self._get_n_total_attack():
             return 'exhausted'
         # TODO: Add other status, such as 'cannot attack'?
         return 'ready'
@@ -177,7 +185,7 @@ class AliveMixin:
         # TODO: Replace hard coding here.
         # TODO: More aura attributes.
         result = super()._aura_attributes()
-        result.update({'taunt', 'charge', 'rush', 'immune', 'anti_magic'})
+        result.update({'taunt', 'charge', 'rush', 'immune', 'anti_magic', 'windfury', 'mega_windfury'})
         return result
 
     def _aura_update_before(self):
