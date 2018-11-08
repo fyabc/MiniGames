@@ -29,7 +29,8 @@ class 暴乱狂战士(Minion):
 
         def process(self, event: respond[0]):
             if event.target.type == Type.Minion:
-                Enc_暴乱狂战士.from_card(event, self.game, self.owner)
+                # TODO: Now create new enchantment for every damage, change it into accumulate a single enchantment?
+                Enc_暴乱狂战士.from_card(self.owner, self.game, self.owner)
             return []
 
     def __init__(self, *args, **kwargs):

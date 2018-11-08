@@ -80,6 +80,14 @@ class 旋风斩(Spell):
 
 
 # 冲锋 (90003) *
+def _apply_冲锋(self):
+    self.target.aura_tmp['charge'] = True
+    self.target.aura_tmp['can_attack_hero'] = False
+
+
+Enc_冲锋 = ext.create_enchantment({'id': 90001}, apply_fn=_apply_冲锋)
+
+
 class 冲锋(Spell):
     data = {
         'id': 90003,
@@ -91,7 +99,7 @@ class 冲锋(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        # TODO
+        Enc_冲锋.from_card(self, self.game, target)
         return []
 
 

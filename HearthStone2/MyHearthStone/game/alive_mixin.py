@@ -185,7 +185,12 @@ class AliveMixin:
         # TODO: Replace hard coding here.
         # TODO: More aura attributes.
         result = super()._aura_attributes()
-        result.update({'taunt', 'charge', 'rush', 'immune', 'anti_magic', 'windfury', 'mega_windfury'})
+        result.update({
+            'taunt', 'charge', 'rush',
+            # 'can_attack', 'can_attack_hero',
+            'immune', 'anti_magic',
+            # 'windfury', 'mega_windfury',
+        })
         return result
 
     def _aura_update_before(self):

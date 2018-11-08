@@ -89,6 +89,24 @@ class 火舌图腾(Minion):
 
 
 # 风语者 (70001) *
+Enc_风语者 = ext.create_enchantment({'id': 70001}, apply_fn=enc_common.set_target_attr_temp('windfury', True))
+
+
+class 风语者(Minion):
+    data = {
+        'id': 70001,
+        'klass': 7, 'cost': 4, 'attack': 3, 'health': 3,
+        'battlecry': True,
+    }
+
+    player_operation_tree = ext.make_conditional_targeted_po_tree(ext.have_friendly_minion)
+
+    check_target = ext.checker_friendly_minion
+
+    def run_battlecry(self, target, **kwargs):
+        if target is not None:
+            Enc_风语者.from_card(self, self.game, target)
+        return []
 
 
 # 火元素 (70002)
@@ -101,6 +119,10 @@ ext.create_damage_minion({
 
 
 # 先祖治疗 (70003) *
+
+Enc_先祖治疗 = ext.create_enchantment({'id': 70002}, apply_fn=enc_common.set_target_attr_temp('taunt', True))
+
+
 class 先祖治疗(Spell):
     data = {
         'id': 70003,
@@ -112,8 +134,8 @@ class 先祖治疗(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        Enc_先祖治疗.from_card(self, self.game, target)
+        return [std_events.Healing(self.game, self, target, target.max_health)]
 
 
 # 图腾之力 (70004) *
@@ -147,8 +169,8 @@ class 冰霜震击(Spell):
     check_target = ext.checker_enemy_character
 
     def run(self, target, **kwargs):
-        # TODO
-        return []
+        return [std_events.Damage(self.game, self, target, self.dh_values[0]),
+                std_events.Freeze(self.game, self, target)]
 
 
 # 石化武器 (70006) *
@@ -179,6 +201,9 @@ class 石化武器(Spell):
 
 
 # 风怒 (70007) *
+Enc_风怒 = ext.create_enchantment({'id': 70004}, apply_fn=enc_common.set_target_attr_temp('windfury', True))
+
+
 class 风怒(Spell):
     data = {
         'id': 70007,
@@ -190,7 +215,7 @@ class 风怒(Spell):
     check_target = ext.checker_minion
 
     def run(self, target, **kwargs):
-        # TODO
+        Enc_风怒.from_card(self, self.game, target)
         return []
 
 
