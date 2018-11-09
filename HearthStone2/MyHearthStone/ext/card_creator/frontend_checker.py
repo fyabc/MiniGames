@@ -5,9 +5,9 @@
 
 Contains:
     Action checker      (used as ``can_do_action`` method)
-    Target tester       (used as ``have_target`` method)
     Target checker      (used as ``check_target`` method)
     Entity collector    (used to collect target entities in battlecry/deathrattle/run methods, usually in AoEs)
+    Target tester       (used as ``have_target`` method)
     Checker factories   (create some checkers)
 
     # TODO: Target tester -> PO tree generator (used as ``player_operation_tree`` method)
@@ -69,29 +69,6 @@ def require_enemy_minion(self, msg_fn=None):
         return self.Inactive
 
     return super_result
-
-
-# Target testers.
-
-def have_minion(self):
-    return bool(self.game.get_zone(Zone.Play, 0)) or bool(self.game.get_zone(Zone.Play, 1))
-
-
-def have_friendly_minion(self):
-    return bool(self.game.get_zone(Zone.Play, self.player_id))
-
-
-def have_enemy_minion(self):
-    return bool(self.game.get_zone(Zone.Play, 1 - self.player_id))
-
-
-def make_have_friendly_race(race):
-    def _have_friendly_race(self):
-        return any(race in e.race for e in self.game.get_zone(Zone.Play, self.player_id))
-    return _have_friendly_race
-
-
-have_friendly_beast = make_have_friendly_race(Race.Beast)
 
 
 # Player operation tree generators.
@@ -273,6 +250,29 @@ def collect_1p_minions(self, oop=False, player_id=None, except_list=(), **kwargs
     )
 
 
+# Target testers.
+
+def have_minion(self, **kwargs):
+    return bool(collect_all_minions(self, oop=False, **kwargs))
+
+
+def have_friendly_minion(self, **kwargs):
+    return bool(collect_1p_minions(self, oop=False, **kwargs))
+
+
+def have_enemy_minion(self, **kwargs):
+    return bool(collect_1p_minions(self, oop=False, player_id=1 - self.player_id, **kwargs))
+
+
+def make_have_friendly_race(race):
+    def _have_friendly_race(self, **kwargs):
+        return any(race in e.race for e in collect_1p_minions(self, oop=False, **kwargs))
+    return _have_friendly_race
+
+
+have_friendly_beast = make_have_friendly_race(Race.Beast)
+
+
 # Checker factory functions.
 
 def action_checker_factory_cond(*cond_fn_msg_list):
@@ -314,12 +314,6 @@ __all__ = [
     'require_minion',
     'require_enemy_minion',
 
-    'have_minion',
-    'have_enemy_minion',
-    'have_friendly_minion',
-    'have_friendly_beast',
-    'make_have_friendly_race',
-
     'make_conditional_targeted_po_tree',
 
     'checker_minion',
@@ -334,6 +328,12 @@ __all__ = [
     'collect_all_minions',
     'collect_1p',
     'collect_1p_minions',
+
+    'have_minion',
+    'have_enemy_minion',
+    'have_friendly_minion',
+    'have_friendly_beast',
+    'make_have_friendly_race',
 
     'action_checker_factory_cond',
     'action_target_checker_factory_cond_minion',

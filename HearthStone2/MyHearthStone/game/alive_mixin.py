@@ -165,7 +165,7 @@ class AliveMixin:
     divine_shield = make_property('divine_shield', default=False)
     stealth = make_property('stealth', default=False)
     immune = make_property('immune', default=False)
-    anti_magic = make_property('anti_magic', default=False)
+    elusive = make_property('elusive', default=False)
 
     @property
     def taunt(self):
@@ -188,7 +188,7 @@ class AliveMixin:
         result.update({
             'taunt', 'charge', 'rush',
             # 'can_attack', 'can_attack_hero',
-            'immune', 'anti_magic',
+            'immune', 'elusive',
             # 'windfury', 'mega_windfury',
         })
         return result

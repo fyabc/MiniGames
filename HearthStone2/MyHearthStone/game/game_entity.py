@@ -395,6 +395,8 @@ class IndependentEntity(GameEntity):
         # Temporary data dict for aura update.
         self.aura_tmp = {}
 
+    race = make_property('race', setter=False)
+
     def _reserved_tags(self):
         data = super()._reserved_tags()
 

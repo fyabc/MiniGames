@@ -80,6 +80,24 @@ class 牺牲契约(Spell):
 
     # TODO: Can do action and check target: have demon.
 
+    def can_do_action(self, msg_fn=None):
+        super_result = super().can_do_action(msg_fn)
+        if super_result == self.Inactive:
+            return super_result
+        if any(Race.Demon in e.race for e in ext.collect_all(self, oop=False)):
+            return self.Active
+        else:
+            if msg_fn:
+                msg_fn('No valid target, I can\'t use it!')
+            return self.Inactive
+
+    def check_target(self, target, **kwargs):
+        if not super().check_target(target, **kwargs):
+            return False
+        if Race.Demon not in target.race:
+            return False
+        return True
+
     def run(self, target, **kwargs):
         target.to_be_destroyed = True
         return [std_events.Healing(self.game, self, self.game.get_hero(self.player_id), self.dh_values[0])]

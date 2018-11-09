@@ -40,7 +40,6 @@ class Card(IndependentEntity):
     klass = make_property('klass', setter=False)
     rarity = make_property('rarity', setter=False)
     derivative = make_property('derivative', setter=False)
-    race = make_property('race', setter=False)
     spell_power = make_property('spell_power')      # TODO: Need to make it read-only?
 
     # Extension attributes.
