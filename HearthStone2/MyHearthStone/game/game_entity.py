@@ -505,7 +505,7 @@ class IndependentEntity(GameEntity):
 
         In patch 12.0, the rule of enchantment modification in zone movements is clear::
 
-            TODO: Add ref link of advanced rulebook after patch 12.0.
+            See <https://hearthstone.gamepedia.com/Patch_12.0.0.25770#Game_Mechanics_Updates> for more details.
         TODO: Change into a big table?
         """
 
