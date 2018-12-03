@@ -14,6 +14,7 @@ class Healing(DelayResolvedEvent):
         super().__init__(game, owner, work_done=work_done)
         self.target = target
         self.value = value
+        self.real_heal = None
 
     def _repr(self):
         return super()._repr(source=self.owner, target=self.target, value=self.value)
@@ -22,10 +23,11 @@ class Healing(DelayResolvedEvent):
         # Apply proposed healing bonuses.
         self.value = self.owner.get_proposed_dh_value(self.value, DHBonusEventType.Healing)
 
-        real_heal = self.target.restore_health(self.value)
+        # [NOTE]: Record the real healing value, some other cards need this value.
+        self.real_heal = self.target.restore_health(self.value)
         # If the Healing Event was prevented or if it did not change the character's current Health,
         # it will not run any triggers.
-        if real_heal <= 0:
+        if self.real_heal <= 0:
             self.disable()
         self.pending_events = []
 
