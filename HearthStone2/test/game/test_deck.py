@@ -10,6 +10,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from MyHearthStone.game.deck import Deck
 from MyHearthStone.utils.game import Klass
 
+from . import utils
+
 __author__ = 'fyabc'
 
 
@@ -18,12 +20,7 @@ class TestDeck(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_deck = Deck(klass=Klass.Str2Idx['Druid'], card_id_list=[
-            "6", "6", "6", "6",
-            "11", "11", "11", "11",
-            "10000", "10000", "10000", "10000",
-            "30007", "30007", "30007", "30007",
-        ], name='Test Druid')
+        cls.test_deck = utils.ExampleDecks[0]
 
     @classmethod
     def tearDownClass(cls):
@@ -42,7 +39,7 @@ class TestDeck(unittest.TestCase):
         self.assertEqual(self.test_deck.name, deck.name)
 
     def testBasic(self):
-        self.assertEqual(str(self.test_deck), "Deck(class=Druid, name='Test Druid', mode=standard)")
+        self.assertEqual(str(self.test_deck), "Deck(class=Mage, name='Test Mage', mode=standard)")
 
     def testCopy(self):
         self._assertDeckSame(self.test_deck.copy())

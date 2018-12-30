@@ -16,25 +16,31 @@ __author__ = 'fyabc'
 
 Seed = 1234
 
+C6 = '6'            # 工程师学徒
+C11 = '11'          # 淡水鳄
+C10000 = '10000'    # 埃隆巴克保护者
+C30007 = '30007'    # 火球术
+Coin = '43'         # 幸运币
+
 ExampleDecks = [
     Deck(klass=Klass.Str2Idx['Mage'], card_id_list=[
-        "6", "6", "6", "6",
-        "11", "11", "11", "11",
-        "10000", "10000", "10000", "10000",
-        "30007", "30007", "30007", "30007",
+        C6, C6, C6, C6,
+        C11, C11, C11, C11,
+        C10000, C10000, C10000, C10000,
+        C30007, C30007, C30007, C30007,
     ], name='Test Mage'),
     Deck(klass=Klass.Str2Idx['Hunter'], card_id_list=[
-        "6", "6", "6", "6",
-        "11", "11", "11", "11",
-        "10000", "10000", "10000", "10000",
-        "30007", "30007", "30007", "30007",
+        C6, C6, C6, C6,
+        C11, C11, C11, C11,
+        C10000, C10000, C10000, C10000,
+        C30007, C30007, C30007, C30007,
     ], name='Test Hunter'),
 ]
 
 ExpectedEntities = [
     {
-        Zone.Deck: ['6', '6', '10000', '30007', '11', '10000', '30007', '10000', '10000', '11', '6', '30007'],
-        Zone.Hand: ['30007', '6', '11', '11', '43'],
+        Zone.Deck: [C6, C6, C10000, C30007, C11, C10000, C30007, C10000, C10000, C11, C6, C30007],
+        Zone.Hand: [C30007, C6, C11, C11, Coin],
         Zone.Play: [],
         Zone.Secret: [],
         Zone.Graveyard: [],
@@ -43,8 +49,8 @@ ExpectedEntities = [
         Zone.HeroPower: [2],
     },
     {
-        Zone.Deck: ['11', '10000', '6', '30007', '10000', '30007', '11', '6', '10000', '30007', '10000', '6'],
-        Zone.Hand: ['11', '30007', '11', '6'],
+        Zone.Deck: [C11, C10000, C6, C30007, C10000, C30007, C11, C6, C10000, C30007, C10000, C6],
+        Zone.Hand: [C11, C30007, C11, C6],
         Zone.Play: [],
         Zone.Secret: [],
         Zone.Graveyard: [],
@@ -55,13 +61,27 @@ ExpectedEntities = [
 ]
 
 
-def example_game(decks=None):
+def example_game(decks=None, replace_start_card=True):
     decks = ExampleDecks if decks is None else decks
 
     random.seed(Seed)
 
     game = Game()
     game.start_game(decks, mode='standard')
-    game.run_player_action(pa.ReplaceStartCard(game, 0, []))
-    game.run_player_action(pa.ReplaceStartCard(game, 1, []))
+    if replace_start_card:
+        game.run_player_action(pa.ReplaceStartCard(game, 0, []))
+        game.run_player_action(pa.ReplaceStartCard(game, 1, []))
     return game
+
+
+def id_list(zone):
+    return [e.id for e in zone]
+
+
+__all__ = [
+    'Seed',
+    'C6', 'C11', 'C10000', 'C30007', 'Coin',
+    'ExampleDecks', 'ExpectedEntities',
+    'example_game',
+    'id_list',
+]

@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+# TODO: Remove old agents, add new random select agents.
+
 from .components import *
 from ..agent import Agent, register_agent
 from ...game import player_action as pa

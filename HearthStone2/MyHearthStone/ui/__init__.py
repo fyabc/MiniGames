@@ -15,7 +15,7 @@ FrontendDict = {
 }
 
 
-def get_frontend(name) -> type(Frontend):
+def get_frontend(name):
     result = FrontendDict.get(name, None)
     if result is None:
         error('Unknown frontend {}, fall back to "text-single".'.format(name))

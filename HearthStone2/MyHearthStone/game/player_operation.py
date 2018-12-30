@@ -49,6 +49,10 @@ class PlayerOps(metaclass=EnumMeta):
 
 
 class PlayerOpTree:
+    """"""
+
+    # TODO: Add docstring.
+
     def __init__(self, op, child_or_map=None, can_undo=True):
         """Create a tree of player operations.
 
@@ -128,6 +132,11 @@ class PlayerOpTree:
 
 
 class SelectChoiceTree(PlayerOpTree):
+    """"""
+
+    # TODO: Add docstring.
+    # TODO: Integrate candidate set of each selection step into the tree.
+
     def __init__(self, title, children_map, can_undo=True):
         super().__init__(PlayerOps.SelectChoice, children_map, can_undo=can_undo)
         self.title = title

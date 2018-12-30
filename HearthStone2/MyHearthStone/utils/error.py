@@ -14,5 +14,5 @@ class SameUserAppExists(GameError):
     """The app with same user already exists when starting the app."""
 
     def __init__(self, user_id: int):
-        super().__init__('Another running application of user {} already exists'.format(self.user_id))
+        super().__init__('Another running application of user {} already exists'.format(user_id))
         self.user_id = user_id
