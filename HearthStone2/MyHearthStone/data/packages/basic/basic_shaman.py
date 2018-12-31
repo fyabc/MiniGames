@@ -201,7 +201,7 @@ class 石化武器(Spell):
 
 
 # 风怒 (70007) *
-Enc_风怒 = ext.create_enchantment({'id': 70004}, apply_fn=enc_common.set_target_attr_temp('windfury', True))
+Enc_风怒 = ext.create_enchantment({'id': 70005}, apply_fn=enc_common.set_target_attr_temp('windfury', True))
 
 
 class 风怒(Spell):

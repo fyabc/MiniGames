@@ -25,7 +25,8 @@ class PlayNoTarget(Agent):
     """This agent will play all available cards in hand which have no target, from left to right."""
     def get_player_action(self):
         for card in self.hand:
-            if not card.have_target and card.can_do_action():
+            po_tree = card.player_operation_tree()
+            if not have_selection(po_tree) and card.can_do_action():
                 return make_pa_no_target(self, card)
         # If no available card, just end the turn.
         return pa.TurnEnd(self.game)
@@ -38,12 +39,14 @@ class BaseAgent(Agent):
     def get_player_action(self):
         # Play hand.
         for card in self.hand:
-            if not card.have_target and card.can_do_action():
+            po_tree = card.player_operation_tree()
+            if not have_selection(po_tree) and card.can_do_action():
                 return make_pa_no_target(self, card)
 
         # Use hero power.
         hp = self.player.hero_power
-        if not hp.have_target and hp.can_do_action():
+        po_tree = hp.player_operation_tree()
+        if not have_selection(po_tree) and hp.can_do_action():
             return pa.UseHeroPower(self.game, None, self.player_id)
 
         # If no available card, just end the turn.

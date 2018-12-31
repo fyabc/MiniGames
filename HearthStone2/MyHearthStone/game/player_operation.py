@@ -52,6 +52,7 @@ class PlayerOpTree:
     """"""
 
     # TODO: Add docstring.
+    # TODO: Integrate candidate set of each selection step into select tree types.
 
     def __init__(self, op, child_or_map=None, can_undo=True):
         """Create a tree of player operations.
@@ -69,6 +70,11 @@ class PlayerOpTree:
 
     def __repr__(self):
         return '{}(\n{})'.format(self.__class__.__name__, self.repr_with_cursor(None, indent=4, depth=1))
+
+    @property
+    def single_child(self):
+        """Indicate this tree contains single child or not."""
+        return self._single_child
 
     def repr_with_cursor(self, cursor, indent=4, depth=0):
         indents = ' ' * depth * indent
@@ -106,8 +112,11 @@ class PlayerOpTree:
         return head
 
     def set_child(self, child_or_map):
-        if isinstance(child_or_map, (type(None), PlayerOpTree)):
-            # Single child (include terminal node (child is None).
+        if child_or_map is None:
+            # Terminal node.
+            self._single_child = True
+        elif isinstance(child_or_map, PlayerOpTree):
+            # Single child.
             self._single_child = True
         else:
             # Multiple children.
@@ -135,7 +144,6 @@ class SelectChoiceTree(PlayerOpTree):
     """"""
 
     # TODO: Add docstring.
-    # TODO: Integrate candidate set of each selection step into the tree.
 
     def __init__(self, title, children_map, can_undo=True):
         super().__init__(PlayerOps.SelectChoice, children_map, can_undo=can_undo)
@@ -239,29 +247,29 @@ RunNodes = {
 
 
 # Some commonly used default player operation trees.
-_PON = PlayerOpTree
+_POT = PlayerOpTree
 _PO = PlayerOps
 CommonTrees = {
-    'NoTargetMinion':  _PON.chain_nodes(
-        [_PON(_PO.SelectMinionPosition), RunNodes['NoTargetMinion']]),
-    'HaveTargetMinion':  _PON.chain_nodes(
-        [_PON(_PO.SelectMinionPosition), _PON(_PO.SelectTarget), RunNodes['HaveTargetMinion']]),
-    'NoTargetSpell': _PON.chain_nodes(
-        [_PON(_PO.ConfirmPlay), RunNodes['NoTargetSpell']]),
-    'HaveTargetSpell':  _PON.chain_nodes(
-        [_PON(_PO.SelectTarget), RunNodes['HaveTargetSpell']]),
-    'NoTargetWeapon': _PON.chain_nodes(
-        [_PON(_PO.ConfirmPlay), RunNodes['NoTargetWeapon']]),
-    'HaveTargetWeapon':  _PON.chain_nodes(
-        [_PON(_PO.SelectTarget), RunNodes['HaveTargetWeapon']]),
+    'NoTargetMinion':  _POT.chain_nodes(
+        [_POT(_PO.SelectMinionPosition), RunNodes['NoTargetMinion']]),
+    'HaveTargetMinion':  _POT.chain_nodes(
+        [_POT(_PO.SelectMinionPosition), _POT(_PO.SelectTarget), RunNodes['HaveTargetMinion']]),
+    'NoTargetSpell': _POT.chain_nodes(
+        [_POT(_PO.ConfirmPlay), RunNodes['NoTargetSpell']]),
+    'HaveTargetSpell':  _POT.chain_nodes(
+        [_POT(_PO.SelectTarget), RunNodes['HaveTargetSpell']]),
+    'NoTargetWeapon': _POT.chain_nodes(
+        [_POT(_PO.ConfirmPlay), RunNodes['NoTargetWeapon']]),
+    'HaveTargetWeapon':  _POT.chain_nodes(
+        [_POT(_PO.SelectTarget), RunNodes['HaveTargetWeapon']]),
     # TODO: Implement hero cards
     # 'NoTargetHeroCard': _PON.chain_nodes([]),
     # 'HaveTargetHeroCard':  _PON.chain_nodes([]),
     'NoTargetHeroPower': RunNodes['NoTargetHeroPower'],
-    'HaveTargetHeroPower':  _PON.chain_nodes(
-        [_PON(_PO.SelectTarget), RunNodes['HaveTargetHeroPower']]),
-    'Attack': _PON.chain_nodes(
-        [_PON(_PO.SelectDefender), RunNodes['Attack']]),
+    'HaveTargetHeroPower':  _POT.chain_nodes(
+        [_POT(_PO.SelectTarget), RunNodes['HaveTargetHeroPower']]),
+    'Attack': _POT.chain_nodes(
+        [_POT(_PO.SelectDefender), RunNodes['Attack']]),
 }
 
 

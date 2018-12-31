@@ -668,15 +668,6 @@ class IndependentEntity(GameEntity):
 
     # Methods for frontend.
 
-    @property
-    def have_target(self):
-        """Property called by frontend the test if this (playable) entity require a target.
-
-        Now implemented by po tree, check if it contains a select target operation.
-        """
-        # TODO: Remove this attribute.
-        return any(op == PlayerOps.SelectTarget for op in self.player_operation_tree())
-
     def check_target(self, target: 'IndependentEntity', **kwargs):
         """When a playable entity with target is played, this method is called to check if
         the target is correct or not.

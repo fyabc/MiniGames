@@ -4,9 +4,30 @@
 """Components of rule-based AI agents."""
 
 from ...game import player_action as pa
+from ...game import player_operation as po
 from ...utils.game import Type
 
 __author__ = 'fyabc'
+
+
+SelectOps = {po.PlayerOps.SelectChoice, po.PlayerOps.SelectTarget}
+
+
+def have_selection(po_tree: po.PlayerOpTree):
+    """Check if the PlayerOperationTree has selection."""
+    tree = po_tree
+    result = tree.op in SelectOps
+
+    while not result:
+        if not tree.single_child:
+            return False
+        tree = tree.next_op()
+        if tree is None:
+            return result
+        else:
+            result = tree.op in SelectOps
+
+    return result
 
 
 def make_pa_no_target(self, card):
@@ -28,6 +49,7 @@ def get_cost_ge_5(agent):
 
 
 __all__ = [
+    'have_selection',
     'make_pa_no_target',
     'get_cost_ge_5',
 ]
