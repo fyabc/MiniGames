@@ -7,12 +7,9 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
-from MyHearthStone.game.player import Player
-from MyHearthStone.game import player_action as pa
 from MyHearthStone.game.events import standard as std_e
-from MyHearthStone.utils.game import Zone
 
-from ..utils import ExpectedEntities, example_game, ExampleDecks
+from HearthStone2.test.test_utils.example import ExpectedEntities, example_game, ExampleDecks
 
 __author__ = 'fyabc'
 

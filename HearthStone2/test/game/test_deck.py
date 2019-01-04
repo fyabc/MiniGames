@@ -5,12 +5,11 @@ import unittest
 import sys
 import os
 
+from ..test_utils import example
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
 from MyHearthStone.game.deck import Deck
-from MyHearthStone.utils.game import Klass
-
-from . import utils
 
 __author__ = 'fyabc'
 
@@ -20,7 +19,7 @@ class TestDeck(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_deck = utils.ExampleDecks[0]
+        cls.test_deck = example.ExampleDecks[0]
 
     @classmethod
     def tearDownClass(cls):

@@ -5,18 +5,15 @@ import unittest
 import sys
 import os
 
+from ..test_utils.example import *
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
 from MyHearthStone.game import player_action as pa
 from MyHearthStone.game.events import standard as std_e
 from MyHearthStone.utils.game import Zone
 
-from .utils import *
-
 __author__ = 'fyabc'
-
-# Game Start Events.
-GSE = [std_e.BeginOfGame, std_e.BeginOfTurn, std_e.DrawCard]
 
 
 class TestPlayerActions(unittest.TestCase):

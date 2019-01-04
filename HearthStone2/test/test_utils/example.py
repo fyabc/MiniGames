@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from MyHearthStone.game.core import Game
 from MyHearthStone.game.deck import Deck
 from MyHearthStone.game import player_action as pa
+from MyHearthStone.game.events import standard as std_e
 from MyHearthStone.utils.game import Klass, Zone
 
 __author__ = 'fyabc'
@@ -60,6 +61,9 @@ ExpectedEntities = [
     },
 ]
 
+# Game Start Events.
+GSE = [std_e.BeginOfGame, std_e.BeginOfTurn, std_e.DrawCard]
+
 
 def example_game(decks=None, replace_start_card=True):
     decks = ExampleDecks if decks is None else decks
@@ -81,7 +85,7 @@ def id_list(zone):
 __all__ = [
     'Seed',
     'C6', 'C11', 'C10000', 'C30007', 'Coin',
-    'ExampleDecks', 'ExpectedEntities',
+    'ExampleDecks', 'ExpectedEntities', 'GSE',
     'example_game',
     'id_list',
 ]
