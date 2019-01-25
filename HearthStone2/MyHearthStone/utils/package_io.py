@@ -36,18 +36,23 @@ def _load_module_variables(root_package_path, package_name, ext='.py'):
     :param package_name: The name of the module.
     :return: All variables in this module.
     """
-    _origin_sys_path = sys.path.copy()
 
+    _origin_sys_path = sys.path.copy()
     full_package_name = os.path.join(root_package_path, package_name)
 
     try:
         spec = spec_from_file_location(package_name, location=os.path.join(root_package_path, package_name + ext))
         module = module_from_spec(spec)
+
+        # [NOTE]: Insert the root package path into the system path,
+        # so that the module can import other submodules.
+        sys.path.insert(0, root_package_path)
+
         spec.loader.exec_module(module)
         module_vars = vars(module)
 
-    except ImportError:
-        error('Error when loading package {}'.format(full_package_name))
+    except ImportError as e:
+        error('Error when loading package {}, error message: {}'.format(full_package_name, e))
         module_vars = None
     finally:
         sys.path = _origin_sys_path
