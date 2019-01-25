@@ -70,6 +70,8 @@ class DrTrigger(Trigger):
     def create(cls, game, **kwargs):
         """Create a deathrattle trigger.
 
+        TODO: Make the creation of deathrattle more convenient.
+
         Usage::
 
             # Used as deathrattle owned by an entity

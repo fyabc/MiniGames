@@ -105,11 +105,12 @@ class Race(metaclass=EnumMeta):
 
     Beast = 0
     Murloc = 1
-    Mech = 2
-    Demon = 3
-    Dragon = 4
-    Totem = 5
-    Elemental = 6
+    Pirate = 2
+    Mech = 3
+    Demon = 4
+    Dragon = 5
+    Totem = 6
+    Elemental = 7
 
 
 class Klass(metaclass=EnumMeta):
