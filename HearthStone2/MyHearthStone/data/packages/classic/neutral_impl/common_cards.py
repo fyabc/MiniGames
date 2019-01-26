@@ -179,7 +179,8 @@ class 阿曼尼狂战士(Minion):
             return entity is self.owner
 
         def grant_enchantment(self, entity, **kwargs):
-            Enc_阿曼尼狂战士.from_card(self.owner, self.game, entity, self)
+            if entity.damaged:
+                Enc_阿曼尼狂战士.from_card(self.owner, self.game, entity, self)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
