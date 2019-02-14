@@ -225,11 +225,109 @@ blank_minion({
 
 
 # 疯狂投弹者 (1000013)
+class 疯狂投弹者(Minion):
+    data = {
+        'id': 1000013,
+        'rarity': 1, 'cost': 2, 'attack': 3, 'health': 2,
+        'battlecry': True,
+    }
 
+    def run_battlecry(self, target, **kwargs):
+        return [std_events.DistributedDamage(
+            self.game, self, 3,
+            collect_fn=lambda: ext.collect_all(
+                self, player_id=1 - self.player_id, ignore_dead=True, except_list=(self,)),
+        )]
+
+
+# 年轻的酒仙 (1000014)
+# 苦痛侍僧 (1000015)
+# 铁喙猫头鹰 (1000016)
+# 腐肉食尸鬼 (1000017)
+# 麦田傀儡 (1000018)
+# 牛头人战士 (1000019)
+# 萨尔玛先知 (1000020)
 
 # 血色十字军战士 (1000021)
 blank_minion({
     'id': 1000021,
     'rarity': 1, 'cost': 3, 'attack': 3, 'health': 1,
     'divine_shield': True,
+})
+
+
+# 大地之环先知 (1000022)
+# 暴怒的狼人 (1000023)
+
+# 丛林猎豹 (1000024)
+blank_minion({
+    'id': 1000024,
+    'rarity': 1, 'cost': 3, 'attack': 4, 'health': 2,
+    'stealth': True, 'race': [Race.Beast],
+})
+
+# 魔古山守望者 (1000025)
+blank_minion({
+    'id': 1000025,
+    'rarity': 1, 'cost': 4, 'attack': 1, 'health': 7,
+    'taunt': True,
+})
+
+# 恐怖海盗 (1000026)
+
+# 银月城守卫 (1000027)
+blank_minion({
+    'id': 1000027,
+    'rarity': 1, 'cost': 4, 'attack': 3, 'health': 3,
+    'divine_shield': True,
+})
+
+# 诅咒教派领袖 (1000028)
+# 破法者 (1000029)
+# 黑铁矮人 (1000030)
+# 年迈的酒仙 (1000031)
+
+# 沼泽爬行者 (1000032)
+blank_minion({
+    'id': 1000032,
+    'rarity': 1, 'cost': 5, 'attack': 3, 'health': 6,
+    'taunt': True,
+})
+
+# 白银之手骑士 (1000033)
+# 恶毒铁匠 (1000034)
+
+# 荆棘谷猛虎 (1000035)
+blank_minion({
+    'id': 1000035,
+    'rarity': 1, 'cost': 5, 'attack': 5, 'health': 5,
+    'stealth': True, 'race': [Race.Beast],
+})
+
+# 风险投资公司雇佣兵 (1000036)
+
+# 风怒鹰身人 (1000037)
+blank_minion({
+    'id': 1000037,
+    'rarity': 1, 'cost': 6, 'attack': 4, 'health': 5,
+    'windfury': True,
+})
+
+# 艾露恩的女祭司 (1000038)
+# 冰霜元素 (1000039)
+
+# Derivations.
+
+# 损坏的傀儡 (1000040)
+blank_minion({
+    'id': 1000040,
+    'rarity': 1, 'cost': 1, 'attack': 2, 'health': 1,
+    'race': [Race.Mech], 'derivative': True,
+})
+
+# 侍从 (1000041)
+blank_minion({
+    'id': 1000041,
+    'rarity': 1, 'cost': 1, 'attack': 2, 'health': 2,
+    'derivative': True,
 })
