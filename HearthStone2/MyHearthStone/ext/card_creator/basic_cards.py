@@ -8,6 +8,7 @@ from functools import partial
 from .utils import create_card, add_to_module
 from ...game.card import Minion, Weapon
 from ...game.events import standard as std_events
+from ...game.triggers import standard as std_triggers
 from ...utils.game import Zone
 
 __author__ = 'fyabc'
@@ -117,6 +118,9 @@ def create_summon_minion(data, summon_id, relative_loc, name=None, module_dict=N
     add_to_module(result, module_dict)
 
     return result
+
+
+# TODO: Add the commonly used deathrattle summon function.
 
 
 __all__ = [

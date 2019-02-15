@@ -246,7 +246,13 @@ class 疯狂投弹者(Minion):
 # 腐肉食尸鬼 (1000017)
 # 麦田傀儡 (1000018)
 # 牛头人战士 (1000019)
+
 # 萨尔玛先知 (1000020)
+blank_minion({
+    'id': 1000020,
+    'rarity': 1, 'cost': 3, 'attack': 2, 'health': 3,
+    'windfury': True,
+})
 
 # 血色十字军战士 (1000021)
 blank_minion({
@@ -257,6 +263,17 @@ blank_minion({
 
 
 # 大地之环先知 (1000022)
+class 大地之环先知(Minion):
+    data = {
+        'id': 1000022,
+        'rarity': 1, 'cost': 3, 'attack': 3, 'health': 3,
+        'battlecry': True, 'po_tree': '$HaveTarget',
+    }
+
+    def run_battlecry(self, target, **kwargs):
+        return [std_events.Healing(self.game, self, target, 3)]
+
+
 # 暴怒的狼人 (1000023)
 
 # 丛林猎豹 (1000024)
@@ -295,6 +312,12 @@ blank_minion({
 })
 
 # 白银之手骑士 (1000033)
+ext.create_summon_minion({
+    'id': 1000033,
+    'rarity': 1, 'cost': 5, 'attack': 4, 'health': 4,
+    'battlecry': True,
+}, 1000115, 1)
+
 # 恶毒铁匠 (1000034)
 
 # 荆棘谷猛虎 (1000035)
@@ -318,16 +341,16 @@ blank_minion({
 
 # Derivations.
 
-# 损坏的傀儡 (1000040)
+# 损坏的傀儡 (1000114)
 blank_minion({
-    'id': 1000040,
+    'id': 1000114,
     'rarity': 1, 'cost': 1, 'attack': 2, 'health': 1,
     'race': [Race.Mech], 'derivative': True,
 })
 
-# 侍从 (1000041)
+# 侍从 (1000115)
 blank_minion({
-    'id': 1000041,
+    'id': 1000115,
     'rarity': 1, 'cost': 1, 'attack': 2, 'health': 2,
     'derivative': True,
 })
