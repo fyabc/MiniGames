@@ -12,7 +12,7 @@ Here are two ways to install the package:
 
 1. Whole distribution (code + data) from cloud (recommended)
     1. Download distribution package
-        Download data file **MyHearthStone-\<version-number>.zip** from <http://home.ustc.edu.cn/~fyabcmyfiles/myhearthstone/>.
+        Download package **MyHearthStone-\<version-number>.zip** from [this link](https://1drv.ms/f/s!AogxxlCJ3vjlkQpMIfXKhNs0O1nH).
         Then extract it.
 
     2. Run install.
@@ -35,7 +35,7 @@ Here are two ways to install the package:
         ```
 
     2. Download resource files
-        Download data file **data-\<version-number>.zip** from <http://home.ustc.edu.cn/~fyabc/myfiles/myhearthstone/>.
+        Download data file **data-\<version-number>.zip** from [this link](https://1drv.ms/f/s!AogxxlCJ3vjlkQpMIfXKhNs0O1nH).
         Then run `copy_data.py` to copy data into the project.
 
         ```bash
