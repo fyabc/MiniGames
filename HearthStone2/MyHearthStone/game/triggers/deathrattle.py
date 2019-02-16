@@ -78,7 +78,7 @@ class DrTrigger(Trigger):
             class M(Minion):
                 def __init__(self, game, player_id):
                     super().__init__(game, player_id)
-                    self.dr_trigger = create_deathrattle(
+                    self.dr_trigger = std_triggers.DrTrigger.create(
                         self.game, owner=self,
                         dr_fn=lambda trigger, event: [],
                         reg_fn=lambda trigger: None,

@@ -181,6 +181,9 @@ def copy_events(game, target, to_player, to_zone, loc):
     [NOTE]: If copy to play zone (summon), please call ``pure_summon_events`` instead.
     """
 
+    if to_zone == Zone.Play:
+        raise RuntimeError('Copy to play zone, please call ``pure_summon_events`` instead')
+
     new_entity, status = game.generate(to_player, to_zone, loc, target, copy=True)
     return status['events']
 

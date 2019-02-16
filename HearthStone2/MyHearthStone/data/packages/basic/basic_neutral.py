@@ -19,7 +19,7 @@ Package ID
 Ordered by:
     Package
     Class
-    Rarity (Basic -> Common -> Rare -> Epic -> Legend -> Derivative
+    Rarity (Basic -> Common -> Rare -> Epic -> Legend -> Derivative)
     Type (Minion -> Spell -> Weapon -> HeroCard)
     Cost Ascending
     Attack Ascending

@@ -244,7 +244,30 @@ class 疯狂投弹者(Minion):
 # 苦痛侍僧 (1000015)
 # 铁喙猫头鹰 (1000016)
 # 腐肉食尸鬼 (1000017)
+
+
 # 麦田傀儡 (1000018)
+class 麦田傀儡(Minion):
+    """[NOTE]: This is a classic card of deathrattle summon."""
+    data = {
+        'id': 1000018,
+        'rarity': 1, 'cost': 3, 'attack': 2, 'health': 3,
+        'race': [Race.Mech], 'deathrattle': True,
+    }
+
+    _derivative_id = 1000114
+
+    def __init__(self, game, player_id):
+        super().__init__(game, player_id)
+        self.dr_trigger = std_triggers.DrTrigger.create(
+            self.game, owner=self,
+            dr_fn=lambda trigger, event: std_events.pure_summon_events(
+                self.game, self._derivative_id, self.player_id, event.location,
+            ),
+            reg_fn=None, data=None,
+        )
+
+
 # 牛头人战士 (1000019)
 
 # 萨尔玛先知 (1000020)
