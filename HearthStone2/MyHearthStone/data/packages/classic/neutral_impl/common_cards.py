@@ -32,7 +32,7 @@ blank_minion({
 })
 
 
-# 叫嚣的中士 (1000002)
+# 叫嚣的中士 (1000002) *
 class Enc_叫嚣的中士(Enchantment):
     data = {
         'id': 1000000,
@@ -94,7 +94,7 @@ blank_minion({
 })
 
 
-# 南海船工 (1000006)
+# 南海船工 (1000006) *
 class 南海船工(Minion):
     data = {
         'id': 1000006,
@@ -131,7 +131,7 @@ class 战利品贮藏者(Minion):
         )
 
 
-# 恐狼前锋 (1000009)
+# 恐狼前锋 (1000009) *
 Enc_恐狼前锋 = ext.create_enchantment({'id': 1000002}, *enc_common.apply_fn_add_attack(1), base=AuraEnchantment)
 
 
@@ -164,7 +164,7 @@ class 恐狼前锋(Minion):
         self.Aura_恐狼前锋(self.game, self)
 
 
-# 阿曼尼狂战士 (1000010)
+# 阿曼尼狂战士 (1000010) *
 Enc_阿曼尼狂战士 = ext.create_enchantment({'id': 1000003}, *enc_common.apply_fn_add_attack(3), base=AuraEnchantment)
 
 
@@ -187,7 +187,7 @@ class 阿曼尼狂战士(Minion):
         self.Aura_阿曼尼狂战士(self.game, self)
 
 
-# 血帆袭击者 (1000011)
+# 血帆袭击者 (1000011) *
 class Enc_血帆袭击者(Enchantment):
     data = {
         'id': 1000004,
@@ -243,7 +243,7 @@ class 疯狂投弹者(Minion):
 # 年轻的酒仙 (1000014)
 # 苦痛侍僧 (1000015)
 # 铁喙猫头鹰 (1000016)
-# 腐肉食尸鬼 (1000017)
+# 腐肉食尸鬼 (1000017) *
 
 
 # 麦田傀儡 (1000018)
@@ -268,7 +268,7 @@ class 麦田傀儡(Minion):
         )
 
 
-# 牛头人战士 (1000019)
+# 牛头人战士 (1000019) *
 
 # 萨尔玛先知 (1000020)
 blank_minion({
@@ -297,7 +297,7 @@ class 大地之环先知(Minion):
         return [std_events.Healing(self.game, self, target, 3)]
 
 
-# 暴怒的狼人 (1000023)
+# 暴怒的狼人 (1000023) *
 
 # 丛林猎豹 (1000024)
 blank_minion({
@@ -313,7 +313,7 @@ blank_minion({
     'taunt': True,
 })
 
-# 恐怖海盗 (1000026)
+# 恐怖海盗 (1000026) *
 
 # 银月城守卫 (1000027)
 blank_minion({
@@ -324,7 +324,9 @@ blank_minion({
 
 # 诅咒教派领袖 (1000028)
 # 破法者 (1000029)
-# 黑铁矮人 (1000030)
+
+# 黑铁矮人 (1000030) *
+
 # 年迈的酒仙 (1000031)
 
 # 沼泽爬行者 (1000032)
@@ -341,7 +343,7 @@ ext.create_summon_minion({
     'battlecry': True,
 }, 1000115, 1)
 
-# 恶毒铁匠 (1000034)
+# 恶毒铁匠 (1000034) *
 
 # 荆棘谷猛虎 (1000035)
 blank_minion({
@@ -350,7 +352,7 @@ blank_minion({
     'stealth': True, 'race': [Race.Beast],
 })
 
-# 风险投资公司雇佣兵 (1000036)
+# 风险投资公司雇佣兵 (1000036) *
 
 # 风怒鹰身人 (1000037)
 blank_minion({

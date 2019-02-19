@@ -4,7 +4,10 @@ The second version of a Python implementation of HearthStone.
 
 New game logic system.
 
-Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gamepedia.com/Advanced_rulebook).
+## Game rules and data
+
+- Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gamepedia.com/Advanced_rulebook).
+- Get card images from [HearthStone Card Images](https://github.com/schmich/hearthstone-card-images).
 
 ## Installation
 

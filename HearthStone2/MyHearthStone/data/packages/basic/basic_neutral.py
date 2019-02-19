@@ -590,3 +590,5 @@ blank_minion({
     'rarity': -1, 'cost': 0, 'attack': 0, 'health': 1,
     'race': [Race.Beast], 'taunt': True, 'derivative': True,
 })
+
+# 香蕉 (49) * TODO
