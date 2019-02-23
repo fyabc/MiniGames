@@ -234,6 +234,7 @@ class HandSprite(EntitySprite):
 
     @staticmethod
     def _render_desc(desc: str, **kwargs) -> str:
+        # TODO: Reduce the font size when the description is too long.
         format_map = {
             'desc': desc,
             # [NOTE]: See `pyglet.text.format.html.HTMLDecoder.font_sizes` to know the font size map.
