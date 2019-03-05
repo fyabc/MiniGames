@@ -29,7 +29,7 @@ def _create_zip(args):
     basename, ext = os.path.splitext(args.file)
     fmt = ext[1:]
     zip_filename = shutil.make_archive(basename, fmt, root_dir=DataDir, base_dir=DataDirName)
-    print(f'Archive data files into {zip_filename!r} in {time.time() - time_start:.6f}s.')
+    print('Archive data files into {!r} in {:.6f}s'.format(zip_filename, time.time() - time_start))
 
 
 def _load_zip(args):
@@ -51,8 +51,8 @@ def _load_zip(args):
             n_files += 1
             _vp('done')
 
-    print(f'Copy {n_files} files in {time.time() - time_start:.6f}s '
-          f'({n_create} created, {n_overwrite} overwritten).')
+    print('Copy {} files in {:.6f}s ({} created, {} overwritten)'.format(
+        n_files, time.time() - time_start, n_create, n_overwrite))
 
 
 def main(args=None):
