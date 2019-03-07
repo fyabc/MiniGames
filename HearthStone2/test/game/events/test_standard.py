@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
 from MyHearthStone.game.events import standard as std_e
 

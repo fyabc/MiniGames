@@ -2,12 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import sys
-import os
 
 from ..test_utils.example import ExampleDecks, ExpectedEntities, example_game
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
 from MyHearthStone.game.player import Player
 from MyHearthStone.game import player_action as pa

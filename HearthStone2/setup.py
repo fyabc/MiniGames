@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 from setuptools import setup, find_packages
 
 __author__ = 'fyabc'
@@ -11,16 +12,28 @@ __author__ = 'fyabc'
 # with open('temp.zip', 'wb') as f, urlopen('https://xxx/temp.zip') as url_f:
 #     f.write(url_f.read())
 
-setup(
-    name='MyHearthStone',
-    version='3.0.0',
-    keywords=('HearthStone', 'game'),
-    description='A Python implementation of HearthStone.',
-    license='MIT',
 
-    url='https://github.com/fyabc/MiniGames/tree/master/HearthStone2',
-    author='fyabc',
-    author_email='fyabc@mail.ustc.edu.cn',
+def _read_metadata():
+    """Read project metadata from *__metadata__.py*."""
+    metadata_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MyHearthStone', '__metadata__.py')
+    metadata = {}
+    with open(metadata_filename, 'r', encoding='utf-8') as f:
+        exec(f.read(), metadata)
+    return metadata
+
+
+_metadata = _read_metadata()
+
+setup(
+    name=_metadata['__title__'],
+    version=_metadata['__version__'],
+    keywords=_metadata['__keywords__'],
+    description=_metadata['__description__'],
+    license=_metadata['__license__'],
+
+    url=_metadata['__url__'],
+    author=_metadata['__author__'],
+    author_email=_metadata['__author_email__'],
 
     packages=find_packages(),
     include_package_data=True,

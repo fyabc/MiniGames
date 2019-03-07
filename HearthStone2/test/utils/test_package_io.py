@@ -2,13 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import sys
-import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-
-from MyHearthStone.utils import package_io as pio
 from MyHearthStone.utils.constants import C
+from MyHearthStone.utils import package_io as pio
 from MyHearthStone.game.card import Spell
 from MyHearthStone.game.hero import Hero
 
@@ -21,8 +17,8 @@ class TestPackageIO(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._old_locale = C.Locale
-        C.Locale = 'zh-CN'
-        pio.reload_packages()
+        C.Locale = 'zh_CN'
+        pio.reload_packages(force=True)
 
     @classmethod
     def tearDownClass(cls):

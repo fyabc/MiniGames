@@ -3,22 +3,24 @@
 
 """Some project constants, include configurations."""
 
+# TODO: Change ``C`` into a function call (lazy loading) to make it more stable?
+
 import os as _os
 import json as _json
 import re as _re
-from collections import namedtuple as _namedtuple
 from distutils.version import StrictVersion as _StrictVersion
 
 from appdirs import AppDirs as _AppDirs
 
 from .config_class import Configuration as _ConfigType
 
+from .. import __metadata__ as _m
 __author__ = 'fyabc'
 
 
-ProjectName = 'HearthStone'
-ProjectAuthor = 'fyabc'
-ProjectVersion = '1.0'
+ProjectName = _m.__title__
+ProjectAuthor = _m.__author__
+ProjectVersion = _m.__version__
 
 ConfigFilename = 'config.json'
 
@@ -63,6 +65,12 @@ def _load_config(config_filename):
 # Project config.
 # [NOTE] Load system config and user config when loading the module, argument config is loaded by user.
 C = _ConfigType.from_dict(_load_config(SystemConfigFilename))
+
+# Add some project metadata.
+C['ProjectName'] = ProjectName
+C['ProjectAuthor'] = ProjectAuthor
+C['Version'] = ProjectVersion
+
 C.iter_update(_ConfigType.from_dict(_load_config(UserConfigFilename)))
 
 
