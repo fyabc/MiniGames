@@ -38,7 +38,7 @@ Here are two ways to install the package:
         ```
 
     2. Download resource files
-        Download data file **data-\<version-number>.zip** from [this link](https://1drv.ms/f/s!AogxxlCJ3vjlkQpMIfXKhNs0O1nH).
+        Download data file **data-\<version-number>.zip** from [this link](https://1drv.ms/f/s!AogxxlCJ3vjllj-4z-pKgJMOZk22).
         Then run `copy_data.py` to copy data into the project.
 
         ```bash
