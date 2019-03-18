@@ -59,8 +59,8 @@ def _main(args):
     from .utils import monkey_patch
     from .ui import get_frontend
 
-    print(C, C['ProjectName'], C['ProjectAuthor'], C['Version'])
-    exit()
+    # print(C, C['ProjectName'], C['ProjectAuthor'], C['Version'])
+    # exit()
 
     setup_logging(level=C.Logging.Level, scr_log=C.Logging.ScreenLog)
 
