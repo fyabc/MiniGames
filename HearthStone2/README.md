@@ -4,6 +4,10 @@ The second version of a Python implementation of HearthStone.
 
 New game logic system.
 
+## NOTE
+
+This project is deprecated, the new version of MyHearthStone is in development.
+
 ## Game rules and data
 
 - Follow the rules from [HearthStone Advanced Rulebook](http://hearthstone.gamepedia.com/Advanced_rulebook).
@@ -15,7 +19,7 @@ Here are two ways to install the package:
 
 1. Whole distribution (code + data) from cloud (recommended)
     1. Download distribution package
-        Download package **MyHearthStone-\<version-number>.zip** from [this link](https://1drv.ms/f/s!AogxxlCJ3vjlkQpMIfXKhNs0O1nH).
+        Download package **MyHearthStone-\<version-number>.zip** from [this link](https://1drv.ms/u/s!AogxxlCJ3vjllj8jjxUzGOhJn8iy?e=8FtzQd).
         Then extract it.
 
     2. Run install.
@@ -38,7 +42,7 @@ Here are two ways to install the package:
         ```
 
     2. Download resource files
-        Download data file **data-\<version-number>.zip** from [this link](https://1drv.ms/f/s!AogxxlCJ3vjllj-4z-pKgJMOZk22).
+        Download data file **data-\<version-number>.zip** from [this link](https://1drv.ms/u/s!AogxxlCJ3vjllj8jjxUzGOhJn8iy?e=8FtzQd).
         Then run `copy_data.py` to copy data into the project.
 
         ```bash
