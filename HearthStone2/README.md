@@ -4,9 +4,9 @@ The second version of a Python implementation of HearthStone.
 
 New game logic system.
 
-## NOTE
+## Important Note: Use MyHearthStone instead
 
-This project is deprecated, the new version of MyHearthStone is in development.
+This project is deprecated and **no longer maintained**, the new version of [MyHearthStone](https://github.com/fyabc/MyHearthStone) is in development.
 
 ## Game rules and data
 
