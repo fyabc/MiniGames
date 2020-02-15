@@ -1,5 +1,0 @@
-include README.md
-
-recursive-include examples *
-recursive-include doc *
-recursive-include Shift_cocos2d/resource *

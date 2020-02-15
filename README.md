@@ -24,7 +24,7 @@ Some MiniGames written in **Python 3**, using *pygame* and *cocos2d* library.
     At first, `cd /path/to/repository/root`
 
     ```bash
-    cd GameName     # GameName is HearthStone, Shift_pygame, ...
+    cd GameName     # GameName is HearthStone, GamePack, ...
     pip install .
     ```
 
@@ -44,8 +44,6 @@ Some MiniGames written in **Python 3**, using *pygame* and *cocos2d* library.
 |Flappy Bird    |2016.06.08 |               |cocos2d        |
 |AntsSpiders    |2016.06.19 |2016.06.27     |pygame         |
 |HearthStone    |2016.11.25 |2016.12.23     |               |
-|Shift_pygame   |2016.12.30 |               |pygame         |
-|Shift_cocos2d  |2016.12.30 |               |cocos2d        |
 |GamePack       |2017.02.28 |2017.03.01     |pygame         |
 
 -------

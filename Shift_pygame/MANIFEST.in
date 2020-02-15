@@ -1,7 +1,0 @@
-include README.md
-
-recursive-include examples *
-recursive-include test *
-recursive-include doc *
-recursive-include Shift_pygame/resource *
-recursive-include Shift_pygame/data *
